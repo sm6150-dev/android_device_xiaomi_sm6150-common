@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013,2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,8 +38,13 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <scsi/ufs/ioctl.h>
+#include <scsi/ufs/ufs.h>
 #include <unistd.h>
 #include <linux/fs.h>
+#include <limits.h>
+#include <dirent.h>
+#include <cutils/properties.h>
 #include "gpt-utils.h"
 #include "sparse_crc32.h"
 
@@ -49,13 +54,13 @@
  * DEFINE SECTION
  ******************************************************************************/
 #define BLK_DEV_FILE    "/dev/block/mmcblk0"
-#define UFS_DEV_DIR     "/dev/block/sda"
 #define BOOT_DEV_DIR    "/dev/block/bootdevice/by-name"
 /* list the names of the backed-up partitions to be swapped */
 #define PTN_SWAP_LIST       "sbl1", "rpm", "tz", "aboot", "hyp", "lksecapp", "keymaster", "cmnlib", "cmnlib64", "pmic", "devcfg"
 /* extension used for the backup partitions - tzbak, abootbak, etc. */
 #define BAK_PTN_NAME_EXT    "bak"
-
+#define XBL_PRIMARY         "/dev/block/bootdevice/by-name/xbl"
+#define XBL_BACKUP          "/dev/block/bootdevice/by-name/xblbak"
 /* GPT defines */
 #define GPT_SIGNATURE               "EFI PART"
 #define HEADER_SIZE_OFFSET          12
@@ -79,15 +84,20 @@
 #define PARTITION_NAME_OFFSET       56
 
 #define MAX_GPT_NAME_SIZE           72
-#define MAX_PATH_LEN                255
 #define MAX_LUNS                    26
+//Size of the buffer that needs to be passed to the UFS ioctl
+#define UFS_ATTR_DATA_SIZE          32
 //This will allow us to get the root lun path from the path to the partition.
 //i.e: from /dev/block/sdaXXX get /dev/block/sda. The assumption here is that
 //the boot critical luns lie between sda to sdz which is acceptable because
 //only user added external disks,etc would lie beyond that limit which do not
 //contain partitions that interest us here.
-#define PATH_TRUNCATE_LOC 14
+#define PATH_TRUNCATE_LOC (sizeof("/dev/block/sda") - 1)
 
+//From /dev/block/sda get just sda
+#define LUN_NAME_START_LOC (sizeof("/dev/block/") - 1)
+#define BOOT_LUN_A_ID 1
+#define BOOT_LUN_B_ID 2
 /******************************************************************************
  * MACROS
  ******************************************************************************/
@@ -135,7 +145,7 @@ enum gpt_state {
 //List of LUN's containing boot critical images.
 //Required in the case of UFS devices
 struct update_data {
-     char lun_list[MAX_LUNS][MAX_PATH_LEN];
+     char lun_list[MAX_LUNS][PATH_MAX];
      int num_valid_entries;
 };
 
@@ -423,8 +433,6 @@ static int gpt_get_state(int fd, enum gpt_instance gpt, enum gpt_state *state)
                             strerror(errno));
             goto error;
     }
-    fprintf(stderr, "gpt_get_state: Block size is  %d\n",
-                    blk_size);
     gpt_header = (uint8_t*)malloc(blk_size);
     if (!gpt_header) {
             fprintf(stderr, "gpt_get_state:Failed to alloc memory for header\n");
@@ -534,6 +542,201 @@ error:
     return -1;
 }
 
+int get_scsi_node_from_bootdevice(const char *bootdev_path,
+                char *sg_node_path,
+                size_t buf_size)
+{
+        char sg_dir_path[PATH_MAX] = {0};
+        char real_path[PATH_MAX] = {0};
+        DIR *scsi_dir = NULL;
+        struct dirent *de;
+        int node_found = 0;
+        if (!bootdev_path || !sg_node_path) {
+                fprintf(stderr, "%s : invalid argument\n",
+                                 __func__);
+                goto error;
+        }
+        if (readlink(bootdev_path, real_path, sizeof(real_path) - 1) < 0) {
+                        fprintf(stderr, "failed to resolve link for %s(%s)\n",
+                                        bootdev_path,
+                                        strerror(errno));
+                        goto error;
+        }
+        if(strlen(real_path) < PATH_TRUNCATE_LOC + 1){
+            fprintf(stderr, "Unrecognized path :%s:\n",
+                           real_path);
+            goto error;
+        }
+        //For the safe side in case there are additional partitions on
+        //the XBL lun we truncate the name.
+        real_path[PATH_TRUNCATE_LOC] = '\0';
+        if(strlen(real_path) < LUN_NAME_START_LOC + 1){
+            fprintf(stderr, "Unrecognized truncated path :%s:\n",
+                           real_path);
+            goto error;
+        }
+        //This will give us /dev/block/sdb/device/scsi_generic
+        //which contains a file sgY whose name gives us the path
+        //to /dev/sgY which we return
+        snprintf(sg_dir_path, sizeof(sg_dir_path) - 1,
+                        "/sys/block/%s/device/scsi_generic",
+                        &real_path[LUN_NAME_START_LOC]);
+        scsi_dir = opendir(sg_dir_path);
+        if (!scsi_dir) {
+                fprintf(stderr, "%s : Failed to open %s(%s)\n",
+                                __func__,
+                                sg_dir_path,
+                                strerror(errno));
+                goto error;
+        }
+        while((de = readdir(scsi_dir))) {
+                if (de->d_name[0] == '.')
+                        continue;
+                else if (!strncmp(de->d_name, "sg", 2)) {
+                          snprintf(sg_node_path,
+                                        buf_size -1,
+                                        "/dev/%s",
+                                        de->d_name);
+                          fprintf(stderr, "%s:scsi generic node is :%s:\n",
+                                          __func__,
+                                          sg_node_path);
+                          node_found = 1;
+                          break;
+                }
+        }
+        if(!node_found) {
+                fprintf(stderr,"%s: Unable to locate scsi generic node\n",
+                               __func__);
+                goto error;
+        }
+        closedir(scsi_dir);
+        return 0;
+error:
+        if (scsi_dir)
+                closedir(scsi_dir);
+        return -1;
+}
+
+int set_boot_lun(char *sg_dev, uint8_t boot_lun_id)
+{
+        int fd = -1;
+        int rc;
+        struct ufs_ioctl_query_data *data = NULL;
+        size_t ioctl_data_size = sizeof(struct ufs_ioctl_query_data) + UFS_ATTR_DATA_SIZE;
+
+        data = (struct ufs_ioctl_query_data*)malloc(ioctl_data_size);
+        if (!data) {
+                fprintf(stderr, "%s: Failed to alloc query data struct\n",
+                                __func__);
+                goto error;
+        }
+        memset(data, 0, ioctl_data_size);
+        data->opcode = UPIU_QUERY_OPCODE_WRITE_ATTR;
+        data->idn = QUERY_ATTR_IDN_BOOT_LU_EN;
+        data->buf_size = UFS_ATTR_DATA_SIZE;
+        data->buffer[0] = boot_lun_id;
+        fd = open(sg_dev, O_RDWR);
+        if (fd < 0) {
+                fprintf(stderr, "%s: Failed to open %s(%s)\n",
+                                __func__,
+                                sg_dev,
+                                strerror(errno));
+                goto error;
+        }
+        rc = ioctl(fd, UFS_IOCTL_QUERY, data);
+        if (rc) {
+                fprintf(stderr, "%s: UFS query ioctl failed(%s)\n",
+                                __func__,
+                                strerror(errno));
+                goto error;
+        }
+        close(fd);
+        free(data);
+        return 0;
+error:
+        if (fd >= 0)
+                close(fd);
+        if (data)
+                free(data);
+        return -1;
+}
+
+//Swtich betwieen using either the primary or the backup
+//boot LUN for boot. This is required since UFS boot partitions
+//cannot have a backup GPT which is what we use for failsafe
+//updates of the other 'critical' partitions. This function will
+//not be invoked for emmc targets and on UFS targets is only required
+//to be invoked for XBL.
+//
+//The algorithm to do this is as follows:
+//- Find the real block device(eg: /dev/block/sdb) that corresponds
+//  to the /dev/block/bootdevice/by-name/xbl(bak) symlink
+//
+//- Once we have the block device 'node' name(sdb in the above example)
+//  use this node to to locate the scsi generic device that represents
+//  it by checking the file /sys/block/sdb/device/scsi_generic/sgY
+//
+//- Once we locate sgY we call the query ioctl on /dev/sgy to switch
+//the boot lun to either LUNA or LUNB
+int set_xbl_boot_partition(enum boot_chain chain)
+{
+        struct stat st;
+        ///sys/block/sdX/device/scsi_generic/
+        char sg_dev_node[PATH_MAX] = {0};
+
+        if(stat(XBL_PRIMARY, &st) ||
+           stat(XBL_BACKUP, &st)){
+                 fprintf(stderr, "%s: xbl/xblbak partition not found(%s)\n",
+                                __func__,
+                                strerror(errno));
+                 goto error;
+        }
+        if(chain == BACKUP_BOOT) {
+                fprintf(stderr, "%s: setting xbl backup lun as boot lun\n",
+                                __func__);
+                if (get_scsi_node_from_bootdevice(XBL_BACKUP,
+                                        sg_dev_node,
+                                        sizeof(sg_dev_node))) {
+                        fprintf(stderr, "%s: Failed to get scsi node path for xblbak\n",
+                                        __func__);
+                        goto error;
+                }
+                if (set_boot_lun(sg_dev_node, BOOT_LUN_B_ID)) {
+                        fprintf(stderr, "%s: Failed to set xblbak as boot partition\n",
+                                        __func__);
+                        goto error;
+                }
+        } else if (chain == NORMAL_BOOT) {
+                fprintf(stderr, "%s: setting xbl primary lun as boot lun\n",
+                                __func__);
+                if (get_scsi_node_from_bootdevice(XBL_PRIMARY,
+                                        sg_dev_node,
+                                        sizeof(sg_dev_node))) {
+                        fprintf(stderr, "%s: Failed to get scsi node path for xbl\n",
+                                        __func__);
+                        goto error;
+                }
+                if (set_boot_lun(sg_dev_node, BOOT_LUN_A_ID)) {
+                        fprintf(stderr, "%s: Failed to set xbl as boot partition\n",
+                                        __func__);
+                        goto error;
+                }
+        }
+        return 0;
+error:
+        return -1;
+}
+
+int is_ufs_device()
+{
+    char bootdevice[PROPERTY_VALUE_MAX] = {0};
+    property_get("ro.boot.bootdevice", bootdevice, "N/A");
+    if (strlen(bootdevice) < strlen(".ufshc") + 1)
+        return 0;
+    return (!strncmp(&bootdevice[strlen(bootdevice) - strlen(".ufshc")],
+                            ".ufshc",
+                            sizeof(".ufshc")));
+}
 //dev_path is the path to the block device that contains the GPT image that
 //needs to be updated. This would be the device which holds one or more critical
 //boot partitions and their backups. In the case of EMMC this function would
@@ -543,38 +746,47 @@ error:
 //their backups
 int prepare_partitions(enum boot_update_stage stage, const char *dev_path)
 {
-    int r;
+    int r = 0;
     int fd = -1;
+    int is_ufs = is_ufs_device();
     enum gpt_state gpt_prim, gpt_second;
     enum boot_update_stage internal_stage;
+    struct stat xbl_partition_stat;
+    struct stat ufs_dir_stat;
 
     if (!dev_path) {
-        fprintf(stderr, "Invalid dev_path passed to prepare_partitions\n");
+        fprintf(stderr, "%s: Invalid dev_path\n",
+                        __func__);
         r = -1;
         goto EXIT;
     }
     fd = open(dev_path, O_RDWR);
     if (fd < 0) {
-        fprintf(stderr, "Opening '%s' failed: %s\n", BLK_DEV_FILE,
-                strerror(errno));
+        fprintf(stderr, "%s: Opening '%s' failed: %s\n",
+                        __func__,
+                       BLK_DEV_FILE,
+                       strerror(errno));
         r = -1;
         goto EXIT;
     }
     r = gpt_get_state(fd, PRIMARY_GPT, &gpt_prim) ||
         gpt_get_state(fd, SECONDARY_GPT, &gpt_second);
     if (r) {
-        fprintf(stderr, "Getting GPT headers state failed\n");
+        fprintf(stderr, "%s: Getting GPT headers state failed\n",
+                        __func__);
         goto EXIT;
     }
 
     /* These 2 combinations are unexpected and unacceptable */
     if (gpt_prim == GPT_BAD_CRC || gpt_second == GPT_BAD_CRC) {
-        fprintf(stderr, "GPT headers CRC corruption detected, aborting\n");
+        fprintf(stderr, "%s: GPT headers CRC corruption detected, aborting\n",
+                        __func__);
         r = -1;
         goto EXIT;
     }
     if (gpt_prim == GPT_BAD_SIGNATURE && gpt_second == GPT_BAD_SIGNATURE) {
-        fprintf(stderr, "Both GPT headers corrupted, aborting\n");
+        fprintf(stderr, "%s: Both GPT headers corrupted, aborting\n",
+                        __func__);
         r = -1;
         goto EXIT;
     }
@@ -587,8 +799,8 @@ int prepare_partitions(enum boot_update_stage stage, const char *dev_path)
     else if (gpt_second == GPT_BAD_SIGNATURE)
         internal_stage = UPDATE_FINALIZE;
     else {
-        fprintf(stderr, "Abnormal GPTs state: primary (%d), secondary (%d), "
-                "aborting\n", gpt_prim, gpt_second);
+        fprintf(stderr, "%s: Abnormal GPTs state: primary (%d), secondary (%d), "
+                "aborting\n", __func__, gpt_prim, gpt_second);
         r = -1;
         goto EXIT;
     }
@@ -604,51 +816,105 @@ int prepare_partitions(enum boot_update_stage stage, const char *dev_path)
 
     switch (stage) {
     case UPDATE_MAIN:
+            if (is_ufs) {
+                if(stat(XBL_PRIMARY, &xbl_partition_stat)||
+                                stat(XBL_BACKUP, &xbl_partition_stat)){
+                        //Non fatal error. Just means this target does not
+                        //use XBL but relies on sbl whose update is handled
+                        //by the normal methods.
+                        fprintf(stderr, "%s: xbl part not found(%s).Assuming sbl in use\n",
+                                        __func__,
+                                        strerror(errno));
+                } else {
+                        //Switch the boot lun so that backup boot LUN is used
+                        r = set_xbl_boot_partition(BACKUP_BOOT);
+                        if(r){
+                                fprintf(stderr, "%s: Failed to set xbl backup partition as boot\n",
+                                                __func__);
+                                goto EXIT;
+                        }
+                }
+        }
+        //Fix up the backup GPT table so that it actually points to
+        //the backup copy of the boot critical images
+        fprintf(stderr, "%s: Preparing for primary partition update\n",
+                        __func__);
         r = gpt2_set_boot_chain(fd, BACKUP_BOOT);
         if (r) {
             if (r < 0)
                 fprintf(stderr,
-                        "Setting secondary GPT to backup boot failed\n");
+                                "%s: Setting secondary GPT to backup boot failed\n",
+                                __func__);
             /* No backup partitions - do not corrupt GPT, do not flag error */
             else
                 r = 0;
             goto EXIT;
         }
-
+        //corrupt the primary GPT so that the backup(which now points to
+        //the backup boot partitions is used)
         r = gpt_set_state(fd, PRIMARY_GPT, GPT_BAD_SIGNATURE);
         if (r) {
-            fprintf(stderr, "Corrupting primary GPT header failed\n");
+            fprintf(stderr, "%s: Corrupting primary GPT header failed\n",
+                            __func__);
             goto EXIT;
         }
-
         break;
     case UPDATE_BACKUP:
+        if (is_ufs) {
+                if(stat(XBL_PRIMARY, &xbl_partition_stat)||
+                                stat(XBL_BACKUP, &xbl_partition_stat)){
+                        //Non fatal error. Just means this target does not
+                        //use XBL but relies on sbl whose update is handled
+                        //by the normal methods.
+                        fprintf(stderr, "%s: xbl part not found(%s).Assuming sbl in use\n",
+                                        __func__,
+                                        strerror(errno));
+                } else {
+                        //Switch the boot lun so that backup boot LUN is used
+                        r = set_xbl_boot_partition(NORMAL_BOOT);
+                        if(r) {
+                                fprintf(stderr, "%s: Failed to set xbl backup partition as boot\n",
+                                                __func__);
+                                goto EXIT;
+                        }
+                }
+        }
+        //Fix the primary GPT header so that is used
+        fprintf(stderr, "%s: Preparing for backup partition update\n",
+                        __func__);
         r = gpt_set_state(fd, PRIMARY_GPT, GPT_OK);
         if (r) {
-            fprintf(stderr, "Fixing primary GPT header failed\n");
+            fprintf(stderr, "%s: Fixing primary GPT header failed\n",
+                             __func__);
             goto EXIT;
         }
-
+        //Corrupt the scondary GPT header
         r = gpt_set_state(fd, SECONDARY_GPT, GPT_BAD_SIGNATURE);
         if (r) {
-            fprintf(stderr, "Corrupting secondary GPT header failed\n");
+            fprintf(stderr, "%s: Corrupting secondary GPT header failed\n",
+                            __func__);
             goto EXIT;
         }
-
         break;
     case UPDATE_FINALIZE:
+        //Undo the changes we had made in the UPDATE_MAIN stage so that the
+        //primary/backup GPT headers once again point to the same set of
+        //partitions
+        fprintf(stderr, "%s: Finalizing partitions\n",
+                        __func__);
         r = gpt2_set_boot_chain(fd, NORMAL_BOOT);
         if (r < 0) {
-            fprintf(stderr, "Setting secondary GPT to normal boot failed\n");
+            fprintf(stderr, "%s: Setting secondary GPT to normal boot failed\n",
+                            __func__);
             goto EXIT;
         }
 
         r = gpt_set_state(fd, SECONDARY_GPT, GPT_OK);
         if (r) {
-            fprintf(stderr, "Fixing secondary GPT header failed\n");
+            fprintf(stderr, "%s: Fixing secondary GPT header failed\n",
+                            __func__);
             goto EXIT;
         }
-
         break;
     default:;
     }
@@ -666,20 +932,23 @@ int add_lun_to_update_list(char *lun_path, struct update_data *dat)
         int i = 0;
         struct stat st;
         if (!lun_path || !dat){
-                fprintf(stderr, "Invalid data passed to add_lun_to_update_list");
+                fprintf(stderr, "%s: Invalid data",
+                                __func__);
                 return -1;
         }
         if (stat(lun_path, &st)) {
-                fprintf(stderr, "Unable to access %s. Skipping adding to list",
+                fprintf(stderr, "%s: Unable to access %s. Skipping adding to list",
+                                __func__,
                                 lun_path);
                 return -1;
         }
         if (dat->num_valid_entries == 0) {
-                fprintf(stderr, "Copying %s into lun_list[%d]\n",
+                fprintf(stderr, "%s: Copying %s into lun_list[%d]\n",
+                                __func__,
                                 lun_path,
                                 i);
                 strlcpy(dat->lun_list[0], lun_path,
-                                MAX_PATH_LEN * sizeof(char));
+                                PATH_MAX * sizeof(char));
                 dat->num_valid_entries = 1;
         } else {
                 for (i = 0; (i < dat->num_valid_entries) &&
@@ -692,12 +961,13 @@ int add_lun_to_update_list(char *lun_path, struct update_data *dat)
                                 return 0;
                         }
                 }
-                fprintf(stderr, "Copying %s into lun_list[%d]\n",
+                fprintf(stderr, "%s: Copying %s into lun_list[%d]\n",
+                                __func__,
                                 lun_path,
                                 dat->num_valid_entries);
                 //Add LUN path lun list
                 strlcpy(dat->lun_list[dat->num_valid_entries], lun_path,
-                                MAX_PATH_LEN * sizeof(char));
+                                PATH_MAX * sizeof(char));
                 dat->num_valid_entries++;
         }
         return 0;
@@ -706,7 +976,7 @@ int add_lun_to_update_list(char *lun_path, struct update_data *dat)
 int prepare_boot_update(enum boot_update_stage stage)
 {
         int r, fd;
-        int is_ufs = 0;
+        int is_ufs = is_ufs_device();
         struct stat ufs_dir_stat;
         struct update_data data;
         int rcode = 0;
@@ -714,16 +984,10 @@ int prepare_boot_update(enum boot_update_stage stage)
         int is_error = 0;
         const char ptn_swap_list[][MAX_GPT_NAME_SIZE] = { PTN_SWAP_LIST };
         //Holds /dev/block/bootdevice/by-name/*bak entry
-        char buf[MAX_PATH_LEN] = {0};
+        char buf[PATH_MAX] = {0};
         //Holds the resolved path of the symlink stored in buf
-        char real_path[MAX_PATH_LEN] = {0};
+        char real_path[PATH_MAX] = {0};
 
-        if(stat(UFS_DEV_DIR, &ufs_dir_stat)) {
-                is_ufs = 0;
-        } else {
-                fprintf(stderr, "UFS device detected\n");
-                is_ufs = 1;
-        }
         if (!is_ufs) {
                 //emmc device. Just pass in path to mmcblk0
                 return prepare_partitions(stage, BLK_DEV_FILE);
@@ -735,37 +999,44 @@ int prepare_boot_update(enum boot_update_stage stage)
                 //each of the paths under
                 ///dev/block/bootdevice/by-name/PTN_SWAP_LIST
                 //actually point to.
+                fprintf(stderr, "%s: Running on a UFS device\n",
+                                __func__);
                 memset(&data, '\0', sizeof(struct update_data));
                 for (i=0; i < ARRAY_SIZE(ptn_swap_list); i++) {
                         snprintf(buf, sizeof(buf),
                                         "%s/%sbak",
                                         BOOT_DEV_DIR,
                                         ptn_swap_list[i]);
-                        fprintf(stderr, "Attempting to process %s\n", buf);
                         if (stat(buf, &ufs_dir_stat)) {
-                                fprintf(stderr, "%s not present. Skipping\n",
-                                                buf);
                                 continue;
                         }
-                        if (readlink(buf, real_path, sizeof(real_path)) < 0)
+                        if (readlink(buf, real_path, sizeof(real_path) - 1) < 0)
                         {
-                                fprintf(stderr, "readlink error. Skipping %s",
+                                fprintf(stderr, "%s: readlink error. Skipping %s",
+                                                __func__,
                                                 strerror(errno));
                         } else {
-                                real_path[PATH_TRUNCATE_LOC] = '\0';
-                                add_lun_to_update_list(real_path, &data);
+                              if(strlen(real_path) < PATH_TRUNCATE_LOC + 1){
+                                    fprintf(stderr, "Unknown path.Skipping :%s:\n",
+                                                real_path);
+                                } else {
+                                    real_path[PATH_TRUNCATE_LOC] = '\0';
+                                    add_lun_to_update_list(real_path, &data);
+                                }
                         }
                         memset(buf, '\0', sizeof(buf));
                         memset(real_path, '\0', sizeof(real_path));
                 }
                 for (i=0; i < data.num_valid_entries; i++) {
-                        fprintf(stderr, "Preparing %s for update stage %d\n",
+                        fprintf(stderr, "%s: Preparing %s for update stage %d\n",
+                                        __func__,
                                         data.lun_list[i],
                                         stage);
                         rcode = prepare_partitions(stage, data.lun_list[i]);
                         if (rcode != 0)
                         {
-                                fprintf(stderr, "Failed to prepare %s.Continuing..\n",
+                                fprintf(stderr, "%s: Failed to prepare %s.Continuing..\n",
+                                                __func__,
                                                 data.lun_list[i]);
                                 is_error = 1;
                         }

@@ -1233,19 +1233,6 @@ case "$target" in
             ;;
         esac
     ;;
-        # Set ro.opengles.version based on chip id.
-        # MSM8937 variants supports OpenGLES 3.1
-        # 196608 is decimal for 0x30000 to report version 3.0
-        # 196609 is decimal for 0x30001 to report version 3.1
-        case "$soc_hwid" in
-            294|295|296}|297|298)
-                setprop ro.opengles.version 196609
-                ;;
-            *)
-                setprop ro.opengles.version 196608
-                ;;
-        esac
-     ;;
 esac
 
 

@@ -1046,6 +1046,25 @@ case "$target" in
 esac
 
 case "$target" in
+    "msm8953")
+
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        case "$soc_id" in
+            "293")
+
+                # Keep low power modes Disabled
+                echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
+	;;
+	esac
+	;;
+esac
+
+case "$target" in
     "msm8937")
 
         if [ -f /sys/devices/soc0/soc_id ]; then

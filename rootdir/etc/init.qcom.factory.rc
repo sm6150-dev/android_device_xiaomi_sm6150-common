@@ -278,6 +278,7 @@ on mmi
     start config_bluetooth
     start sensors
     start media
+    start srvmag_ffbm
     start surfaceflinger
     start fastmmi
     start wcnss-service
@@ -287,19 +288,24 @@ on mmi
     start irsc_util
     start qcamerasvr
     start qcomsysd
-    start srvmag_ffbm
+    start ptt_ffbm
+    start tftp_server
 
 on ffbm
     trigger early-fs
     trigger factory-fs
     trigger fs
     trigger post-fs
-    trigger post-fs-data
 
     # Load properties from /system/ + /factory after fs mount. Place
     # this in another action so that the load will be scheduled after the prior
     # issued fs triggers have completed.
-    trigger load_all_props_action
+    trigger load_system_props_action
+
+    # Now we can mount /data. File encryption requires keymaster to decrypt
+    # /data, which in turn can only be loaded when system properties are present
+    trigger post-fs-data
+    trigger load_persist_props_action
 
     # Remove a file to wake up anything waiting for firmware.
     trigger firmware_mounts_complete

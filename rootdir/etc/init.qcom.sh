@@ -82,7 +82,7 @@ start_msm_irqbalance_8939()
 {
 	if [ -f /system/bin/msm_irqbalance ]; then
 		case "$platformid" in
-		    "239" | "294" | "295")
+		    "239" | "293" | "294" | "295" | "304")
 			start msm_irqbalance;;
 		esac
 	fi
@@ -245,6 +245,9 @@ case "$target" in
         ;;
     "msm8909")
         start_vm_bms
+        ;;
+    "titanium")
+        start_msm_irqbalance_8939
         ;;
     "msm8937")
         start_msm_irqbalance_8939

@@ -98,7 +98,7 @@ AUDIO_HARDWARE += audio.primary.msm8992
 AUDIO_HARDWARE += audio.primary.msm8996
 AUDIO_HARDWARE += audio.primary.msm8952
 AUDIO_HARDWARE += audio.primary.msm8937
-AUDIO_HARDWARE += audio.primary.thorium
+AUDIO_HARDWARE += audio.primary.titanium
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084
@@ -122,7 +122,7 @@ AUDIO_POLICY += audio_policy.msm8992
 AUDIO_POLICY += audio_policy.msm8996
 AUDIO_POLICY += audio_policy.msm8952
 AUDIO_POLICY += audio_policy.msm8937
-AUDIO_POLICY += audio_policy.thorium
+AUDIO_POLICY += audio_policy.titanium
 
 #tinyalsa test apps
 TINY_ALSA_TEST_APPS := tinyplay
@@ -161,6 +161,9 @@ CHROMIUM += libwebviewchromium_plat_support
 
 #CIMAX
 CIMAX := libcimax_spi
+
+#CM
+CM :=CMFileManager
 
 #CONNECTIVITY
 CONNECTIVITY := libcnefeatureconfig
@@ -710,6 +713,7 @@ PRODUCT_PACKAGES += $(BT)
 PRODUCT_PACKAGES += $(C2DCC)
 PRODUCT_PACKAGES += $(CHROMIUM)
 PRODUCT_PACKAGES += $(CIMAX)
+PRODUCT_PACKAGES += $(CM)
 PRODUCT_PACKAGES += $(CONNECTIVITY)
 PRODUCT_PACKAGES += $(CHARGER)
 PRODUCT_PACKAGES += $(CURL)

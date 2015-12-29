@@ -1063,7 +1063,7 @@ case "$target" in
 esac
 
 case "$target" in
-    "msmtitanium")
+    "titanium")
 
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
@@ -1193,8 +1193,8 @@ case "$target" in
                 echo 1 > /sys/devices/system/cpu/cpu6/online
                 echo 1 > /sys/devices/system/cpu/cpu7/online
 
-                # Enable low power modes
-                echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+                # KEEP low power modes Disabled
+                echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
 
                 # SMP scheduler
                 echo 100 > /proc/sys/kernel/sched_upmigrate
@@ -1208,6 +1208,9 @@ case "$target" in
 
                 # Set Memory parameters
                 configure_memory_parameters
+
+                # start energy-awareness service
+                start energy-awareness
 	;;
 	esac
 	;;
@@ -1918,7 +1921,7 @@ case "$target" in
         #start perfd after setprop
         start perfd # start perfd on 8916 and 8939
     ;;
-    "msm8937" | "msmtitanium")
+    "msm8937")
         rm /data/system/perfd/default_values
         start perfd
     ;;

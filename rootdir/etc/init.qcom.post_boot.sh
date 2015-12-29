@@ -1082,6 +1082,13 @@ case "$target" in
         case "$soc_id" in
             "294" | "295" )
 
+	          # Start Host based Touch processing
+                  case "$hw_platform" in
+                    "MTP" | "Surf" | "RCM" )
+			start hbtp
+			;;
+                  esac
+
                 # Apply Scheduler and Governor settings for 8937
 
                 # HMP scheduler settings

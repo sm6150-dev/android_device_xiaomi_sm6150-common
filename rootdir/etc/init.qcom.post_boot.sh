@@ -1071,8 +1071,22 @@ case "$target" in
             soc_id=`cat /sys/devices/system/soc/soc0/id`
         fi
 
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+            hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+            hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+
         case "$soc_id" in
             "293" | "304" )
+
+                # Start Host based Touch processing
+                case "$hw_platform" in
+                     "MTP" | "Surf" | "RCM" )
+                           start hbtp
+                           ;;
+                esac
+
                 #scheduler settings
                 echo 3 > /proc/sys/kernel/sched_window_stats_policy
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size

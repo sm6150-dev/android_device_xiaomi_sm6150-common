@@ -273,6 +273,6 @@ fi
 setprop sys.usb.rps_mask 0
 case "$soc_id" in
 	"294" | "295")
-		setprop sys.usb.rps_mask 10
+		setprop sys.usb.rps_mask 40
 	;;
 esac

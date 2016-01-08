@@ -1095,7 +1095,6 @@ case "$target" in
                 #scheduler settings
                 echo 3 > /proc/sys/kernel/sched_window_stats_policy
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size
-
                 #task packing settings
                 echo 0 > /sys/devices/system/cpu/cpu0/sched_static_cpu_pwr_cost
                 echo 0 > /sys/devices/system/cpu/cpu1/sched_static_cpu_pwr_cost
@@ -1272,6 +1271,9 @@ case "$target" in
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size
                 echo 20000000 > /proc/sys/kernel/sched_ravg_window
 
+                #disable sched_boost in 8917
+                echo 0 > /proc/sys/kernel/sched_boost
+
                 # HMP Task packing settings
                 echo 20 > /proc/sys/kernel/sched_small_task
                 echo 30 > /sys/devices/system/cpu/cpu0/sched_mostly_idle_load
@@ -1371,6 +1373,9 @@ case "$target" in
                 echo 3 > /proc/sys/kernel/sched_window_stats_policy
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size
                 echo 20000000 > /proc/sys/kernel/sched_ravg_window
+
+                #disable sched_boost in 8937
+                echo 0 > /proc/sys/kernel/sched_boost
 
                 # HMP Task packing settings
                 echo 20 > /proc/sys/kernel/sched_small_task
@@ -1494,7 +1499,6 @@ case "$target" in
                 echo 1 > /proc/sys/kernel/power_aware_timer_migration
                 # Set Memory parameters
                 configure_memory_parameters
-
             ;;
             *)
 

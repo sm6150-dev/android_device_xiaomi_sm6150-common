@@ -1063,7 +1063,7 @@ case "$target" in
 esac
 
 case "$target" in
-    "msmtitanium")
+    "titanium")
 
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
@@ -1071,8 +1071,22 @@ case "$target" in
             soc_id=`cat /sys/devices/system/soc/soc0/id`
         fi
 
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+            hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+            hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+
         case "$soc_id" in
             "293" | "304" )
+
+                # Start Host based Touch processing
+                case "$hw_platform" in
+                     "MTP" | "Surf" | "RCM" )
+                           start hbtp
+                           ;;
+                esac
+
                 #scheduler settings
                 echo 3 > /proc/sys/kernel/sched_window_stats_policy
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size
@@ -1140,7 +1154,7 @@ case "$target" in
 
                 #governor settings
                 echo 1 > /sys/devices/system/cpu/cpu0/online
-                echo "interactive" > /sys/devices/system/cpu/cpufreq/scaling_governor
+                echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
                 echo "19000 1401600:39000" > /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
                 echo 85 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
                 echo 20000 > /sys/devices/system/cpu/cpufreq/interactive/timer_rate
@@ -1149,7 +1163,7 @@ case "$target" in
                 echo "85 1401600:80" > /sys/devices/system/cpu/cpufreq/interactive/target_loads
                 echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
                 echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
-                echo 652800 > /sys/devices/system/cpu/cpufreq/scaling_min_freq
+                echo 652800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 
                 # re-enable thermal & BCL core_control now
                 echo 1 > /sys/module/msm_thermal/core_control/enabled
@@ -1179,8 +1193,8 @@ case "$target" in
                 echo 1 > /sys/devices/system/cpu/cpu6/online
                 echo 1 > /sys/devices/system/cpu/cpu7/online
 
-                # Enable low power modes
-                echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+                # KEEP low power modes Disabled
+                echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
 
                 # SMP scheduler
                 echo 100 > /proc/sys/kernel/sched_upmigrate
@@ -1194,6 +1208,9 @@ case "$target" in
 
                 # Set Memory parameters
                 configure_memory_parameters
+
+                # start energy-awareness service
+                start energy-awareness
 	;;
 	esac
 	;;
@@ -1904,7 +1921,7 @@ case "$target" in
         #start perfd after setprop
         start perfd # start perfd on 8916 and 8939
     ;;
-    "msm8937" | "msmtitanium")
+    "msm8937")
         rm /data/system/perfd/default_values
         start perfd
     ;;

@@ -1413,6 +1413,11 @@ case "$target" in
     ;;
 esac
 
+case "$target" in
+     "gold")
+    echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
+     ;;
+esac
 
 case "$target" in
     "apq8084")

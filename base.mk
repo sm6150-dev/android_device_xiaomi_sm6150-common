@@ -351,6 +351,7 @@ LIBCAMERA += camera.msm8992
 LIBCAMERA += camera.msm8996
 LIBCAMERA += camera.msm8952
 LIBCAMERA += camera.msm8937
+LIBCAMERA += camera.titanium
 LIBCAMERA += libcamera
 LIBCAMERA += libmmcamera_interface
 LIBCAMERA += libmmcamera_interface2

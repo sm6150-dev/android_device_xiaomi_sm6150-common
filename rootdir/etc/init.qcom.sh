@@ -246,9 +246,6 @@ case "$target" in
     "msm8909")
         start_vm_bms
         ;;
-    "titanium")
-        start_msm_irqbalance_8939
-        ;;
     "msm8937")
         start_msm_irqbalance_8939
         if [ -f /sys/devices/soc0/soc_id ]; then
@@ -263,7 +260,7 @@ case "$target" in
              hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
         fi
         case "$soc_id" in
-             "294" | "295")
+             "294" | "295" | "303" | "307" | "308" | "309")
                   case "$hw_platform" in
                        "Surf")
                                     setprop qemu.hw.mainkeys 0
@@ -279,6 +276,7 @@ case "$target" in
        esac
         ;;
     "titanium")
+	start_msm_irqbalance_8939
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
         else

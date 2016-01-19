@@ -1193,8 +1193,10 @@ case "$target" in
                 echo 1 > /sys/devices/system/cpu/cpu6/online
                 echo 1 > /sys/devices/system/cpu/cpu7/online
 
-                # KEEP low power modes Disabled
-                echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
+                # Enable low power modes & keep L2 retention disabled
+                echo N > /sys/module/lpm_levels/system/pwr/pwr-l2-retention/idle_enabled
+                echo N > /sys/module/lpm_levels/system/perf/perf-l2-retention/idle_enabled
+                echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
                 # SMP scheduler
                 echo 100 > /proc/sys/kernel/sched_upmigrate
@@ -1232,13 +1234,22 @@ case "$target" in
         fi
 
         case "$soc_id" in
-            "294" | "295" )
+           "303" | "307" | "308" | "309" )
 
-	          # Start Host based Touch processing
+                  # Start Host based Touch processing
                   case "$hw_platform" in
                     "MTP" | "Surf" | "RCM" )
-			start hbtp
-			;;
+                        start hbtp
+                        ;;
+                  esac
+                  ;;
+           "294" | "295" )
+
+                  # Start Host based Touch processing
+                  case "$hw_platform" in
+                    "MTP" | "Surf" | "RCM" )
+                        start hbtp
+                        ;;
                   esac
 
                 # Apply Scheduler and Governor settings for 8937
@@ -1413,6 +1424,11 @@ case "$target" in
     ;;
 esac
 
+case "$target" in
+     "gold")
+    echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
+     ;;
+esac
 
 case "$target" in
     "apq8084")

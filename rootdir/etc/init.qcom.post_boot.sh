@@ -1310,26 +1310,8 @@ case "$target" in
                 do
                     echo 40 > $gpu_bimc_io_percent
                 done
-                # disable thermal & BCL core_control to update interactive gov settings
+                # disable thermal core_control to update interactive gov settings
                 echo 0 > /sys/module/msm_thermal/core_control/enabled
-                for mode in /sys/devices/soc.0/qcom,bcl.*/mode
-                do
-                    echo -n disable > $mode
-                done
-                for hotplug_mask in /sys/devices/soc.0/qcom,bcl.*/hotplug_mask
-                do
-                    bcl_hotplug_mask=`cat $hotplug_mask`
-                    echo 0 > $hotplug_mask
-                done
-                for hotplug_soc_mask in /sys/devices/soc.0/qcom,bcl.*/hotplug_soc_mask
-                do
-                    bcl_soc_hotplug_mask=`cat $hotplug_soc_mask`
-                    echo 0 > $hotplug_soc_mask
-                done
-                for mode in /sys/devices/soc.0/qcom,bcl.*/mode
-                do
-                    echo -n enable > $mode
-                done
 
                 # enable governor for perf cluster
                 echo 1 > /sys/devices/system/cpu/cpu0/online
@@ -1357,24 +1339,8 @@ case "$target" in
                 echo 40000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/sampling_down_factor
                 echo 806400 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
 
-                # re-enable thermal & BCL core_control now
+                # re-enable thermal core_control now
                 echo 1 > /sys/module/msm_thermal/core_control/enabled
-                for mode in /sys/devices/soc.0/qcom,bcl.*/mode
-                do
-                    echo -n disable > $mode
-                done
-                for hotplug_mask in /sys/devices/soc.0/qcom,bcl.*/hotplug_mask
-                do
-                    echo $bcl_hotplug_mask > $hotplug_mask
-                done
-                for hotplug_soc_mask in /sys/devices/soc.0/qcom,bcl.*/hotplug_soc_mask
-                do
-                    echo $bcl_soc_hotplug_mask > $hotplug_soc_mask
-                done
-                for mode in /sys/devices/soc.0/qcom,bcl.*/mode
-                do
-                    echo -n enable > $mode
-                done
 
                 # Bring up all cores online
                 echo 1 > /sys/devices/system/cpu/cpu1/online

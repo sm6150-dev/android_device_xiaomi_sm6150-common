@@ -1092,14 +1092,14 @@ case "$target" in
                 echo 3 > /proc/sys/kernel/sched_ravg_hist_size
 
                 #task packing settings
-                echo 1 > /sys/devices/system/cpu/cpu0/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu1/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu2/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu3/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu4/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu5/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu6/sched_static_cpu_pwr_cost
-                echo 1 > /sys/devices/system/cpu/cpu7/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu0/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu1/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu2/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu3/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu4/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu5/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu6/sched_static_cpu_pwr_cost
+                echo 0 > /sys/devices/system/cpu/cpu7/sched_static_cpu_pwr_cost
 
                 #init task load, restrict wakeups to preferred cluster
                 echo 15 > /proc/sys/kernel/sched_init_task_load

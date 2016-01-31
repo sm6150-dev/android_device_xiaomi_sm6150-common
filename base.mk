@@ -165,6 +165,7 @@ CIMAX := libcimax_spi
 
 #CM
 CM :=CMFileManager
+CM += Trebuchet
 
 #CONNECTIVITY
 CONNECTIVITY := libcnefeatureconfig

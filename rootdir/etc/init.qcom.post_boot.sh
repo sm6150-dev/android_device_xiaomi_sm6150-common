@@ -1193,9 +1193,7 @@ case "$target" in
                 echo 1 > /sys/devices/system/cpu/cpu6/online
                 echo 1 > /sys/devices/system/cpu/cpu7/online
 
-                # Enable low power modes & keep L2 retention disabled
-                echo N > /sys/module/lpm_levels/system/pwr/pwr-l2-retention/idle_enabled
-                echo N > /sys/module/lpm_levels/system/perf/perf-l2-retention/idle_enabled
+                # Enable low power modes
                 echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
                 # SMP scheduler

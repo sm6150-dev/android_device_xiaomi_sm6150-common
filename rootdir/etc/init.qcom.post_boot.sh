@@ -1910,7 +1910,7 @@ case "$target" in
         #start perfd after setprop
         start perfd # start perfd on 8916 and 8939
     ;;
-    "msm8937" | "msmtitanium")
+    "msm8937" | "titanium")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
         rm /data/system/perfd/default_values
         start perfd

@@ -698,9 +698,7 @@ PRODUCT_PACKAGES := \
     SyncProvider \
     IM \
     VoiceDialer \
-    FMRadio \
     FM2 \
-    FMRadio \
     FMRecord \
     VideoEditor
 
@@ -708,11 +706,7 @@ PRODUCT_PACKAGES := \
 ifneq ($(TARGET_USES_AOSP),true)
 PRODUCT_PACKAGES += \
        BluetoothExt \
-       BTTestApp \
-       HiddTestApp \
-       BTLogKit \
        a4wpservice \
-       BTLogSave \
        wipowerservice
 endif
 

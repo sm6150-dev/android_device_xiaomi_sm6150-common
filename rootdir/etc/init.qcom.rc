@@ -320,7 +320,9 @@ on post-fs-data
     # qti-logkit data
     mkdir /data/misc/qti-logkit/ 0771 system system
     mkdir /data/misc/qti-logkit/shared-privileged/ 2770 system system
+    mkdir /data/misc/qti-logkit/shared-public/ 2770 system qcom_diag
     mkdir /data/misc/qti-logkit/socket-privileged/ 2770 system system
+    mkdir /data/misc/qti-logkit/socket-public/ 2750 system qcom_diag
     mkdir /data/misc/qti-logkit/logdata/ 2750 system shell
 
 service iop /system/bin/iop

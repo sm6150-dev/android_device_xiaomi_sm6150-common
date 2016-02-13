@@ -48,18 +48,65 @@ enable_stm_events()
     echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/curr_sink
     echo 1 > /sys/bus/coresight/devices/coresight-stm/enable
     echo 1 > /sys/kernel/debug/tracing/tracing_on
+    echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
+    # timer
+    echo 1 > /sys/kernel/debug/tracing/events/timer/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/filter
+    echo 1 > /sys/kernel/debug/tracing/events/timer/timer_cancel/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/timer_expire_entry/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/timer_expire_exit/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/timer_init/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/timer_start/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/tick_stop/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_cancel/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_expire_entry/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_expire_exit/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_init/enable
+    echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_start/enable
+    #enble FTRACE for softirq events
+    echo 1 > /sys/kernel/debug/tracing/events/irq/enable
+    echo 1 > /sys/kernel/debug/tracing/events/irq/filter
+    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_entry/enable
+    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_exit/enable
+    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_raise/enable
+    #enble FTRACE for Workqueue events
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/enable
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/filter
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_activate_work/enable
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_execute_end/enable
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_execute_start/enable
+    echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_queue_work/enable
     # schedular
+    echo 1 > /sys/kernel/debug/tracing/events/sched/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/filter
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_cpu_load/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_enq_deq_task/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_kthread_stop_ret/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_kthread_stop/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_load_balance/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_migrate_task/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_pi_setprio/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_process_exec/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_process_exit/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_process_fork/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_process_free/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_process_wait/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_stat_blocked/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_stat_iowait/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_stat_runtime/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_stat_sleep/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_stat_wait/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_switch/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_task_load/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_update_history/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_update_task_ravg/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wait_task/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup_new/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_get_busy/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_get_nr_running_avg/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_reset_all_window_stats/enable
     # sound
     echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_read/enable
     echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_write/enable
@@ -278,11 +325,11 @@ enable_dcc_config()
     esac
 }
 
-coresight_config=`getprop ro.dbg.coresight.config`
+coresight_config=`getprop persist.debug.coresight.config`
 
 enable_dcc_config
 case "$coresight_config" in
-    "stm_events")
+    "stm-events")
         echo "Enabling STM events."
         enable_stm_events
         ;;

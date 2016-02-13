@@ -1083,8 +1083,13 @@ case "$target" in
                 # Start Host based Touch processing
                 case "$hw_platform" in
                      "MTP" | "Surf" | "RCM" )
-                           start hbtp
-                           ;;
+                        #if this directory is present, it means that a
+                        #1200p panel is connected to the device.
+                        dir="/sys/bus/i2c/devices/3-0038"
+                        if [ ! -d "$dir" ]; then
+                              start hbtp
+                        fi
+                        ;;
                 esac
 
                 #scheduler settings

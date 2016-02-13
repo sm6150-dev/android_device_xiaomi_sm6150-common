@@ -377,7 +377,11 @@ endif
 ifneq ($(strip $(TARGET_NO_BOOTLOADER)),true)
 
 # Compile
+ifeq ($(strip $(TARGET_USES_UEFI)),true)
+include bootable/bootloader/edk2/AndroidBoot.mk
+else
 include bootable/bootloader/lk/AndroidBoot.mk
+endif
 
 $(INSTALLED_BOOTLOADER_MODULE): $(TARGET_EMMC_BOOTLOADER) | $(ACP)
     $(transform-prebuilt-to-target)

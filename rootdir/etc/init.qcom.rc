@@ -328,6 +328,10 @@ on post-fs-data
     mkdir /data/misc/qti-logkit/socket-public/ 2750 system qcom_diag
     mkdir /data/misc/qti-logkit/logdata/ 2750 system shell
 
+    # set aggressive read ahead for dm-0 and dm-1 during boot up
+    write /sys/block/dm-0/queue/read_ahead_kb 2048
+    write /sys/block/dm-1/queue/read_ahead_kb 2048
+
 service iop /system/bin/iop
     class main
     user root
@@ -374,6 +378,9 @@ on property:persist.sys.ssr.enable_ramdumps=0
 
 on property:sys.boot_completed=1
     write /dev/kmsg "Boot completed "
+    #Reset read ahead for dm-0 and dm-1 to 512kb
+    write /sys/block/dm-0/queue/read_ahead_kb 512
+    write /sys/block/dm-1/queue/read_ahead_kb 512
 
 on property:persist.radio.atfwd.start=false
     stop atfwd

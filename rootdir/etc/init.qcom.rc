@@ -328,6 +328,10 @@ on post-fs-data
     mkdir /data/misc/qti-logkit/socket-public/ 2750 system qcom_diag
     mkdir /data/misc/qti-logkit/logdata/ 2750 system shell
 
+    #Create SWAP related dirs
+    mkdir /data/system/swap 0770 root system
+    chmod 2770 /data/system/swap
+
 service iop /system/bin/iop
     class main
     user root
@@ -821,16 +825,9 @@ service wifi-crda /system/bin/sh /system/etc/init.crda.sh
    disabled
    oneshot
 
-service config-zram /system/bin/sh /system/etc/init.qcom.zram.sh
-   class late_start
-   user root
-   disabled
-   oneshot
-
 on property:sys.boot_completed=1
     start qcom-post-boot
     start qti-testscripts
-    start config-zram
 
 service atfwd /system/bin/ATFWD-daemon
     class late_start

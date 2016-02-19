@@ -1136,6 +1136,29 @@ case "$target" in
                 do
                     echo 40 > $gpu_bimc_io_percent
                 done
+
+		# Configure DCC module to capture critical register contents when device crashes
+		for DCC_PATH in /sys/bus/platform/devices/*.dcc*
+		do
+			echo  0 > $DCC_PATH/enable
+			echo cap >  $DCC_PATH/func_type
+			echo sram > $DCC_PATH/data_sink
+
+			# Register specifies APC CPR closed-loop settled voltage for current voltage corner
+			echo 0xb1d2c18 1 > $DCC_PATH/config
+
+			# Register specifies SW programmed open-loop voltage for current voltage corner
+			echo 0xb1d2900 1 > $DCC_PATH/config
+
+			# Register specifies APM switch settings and APM FSM state
+			echo 0xb1112b0 1 > $DCC_PATH/config
+
+			# Register specifies CPR mode change state and also #online cores input to CPR HW
+			echo 0xb018798 1 > $DCC_PATH/config
+
+			echo  1 > $DCC_PATH/enable
+		done
+
                 # disable thermal & BCL core_control to update interactive gov settings
                 echo 0 > /sys/module/msm_thermal/core_control/enabled
                 for mode in /sys/devices/soc.0/qcom,bcl.*/mode

@@ -1236,9 +1236,6 @@ case "$target" in
 
                 # Set Memory parameters
                 configure_memory_parameters
-
-                # start energy-awareness service
-                start energy-awareness
 	;;
 	esac
 	;;

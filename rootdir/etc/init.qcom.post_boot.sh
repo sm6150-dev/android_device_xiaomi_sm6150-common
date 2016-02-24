@@ -2023,6 +2023,9 @@ case "$target" in
     ;;
     "msm8937" | "titanium")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
+        echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb
+        echo 128 > /sys/block/dm-0/queue/read_ahead_kb
+        echo 128 > /sys/block/dm-1/queue/read_ahead_kb
         rm /data/system/perfd/default_values
         start perfd
     ;;

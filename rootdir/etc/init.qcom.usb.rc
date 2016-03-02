@@ -747,6 +747,33 @@ on property:sys.usb.config=rndis,diag,adb
     start adbd
     setprop sys.usb.state rndis,adb
 
+# DPL is implemented using QDSS
+on property:sys.usb.config=rndis,diag,dpl
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 05C6
+    write /sys/class/android_usb/android0/idProduct 90BF
+    write /sys/class/android_usb/android0/f_diag/clients diag
+    write /sys/class/android_usb/android0/f_qdss/debug_intf 0
+    write /sys/class/android_usb/android0/f_qdss/transports qti,bam2bam_ipa
+    write /sys/class/android_usb/android0/f_qdss/transport_names qdss_bam
+    write /sys/class/android_usb/android0/functions rndis,diag,qdss
+    write /sys/class/android_usb/android0/enable 1
+    setprop sys.usb.state rndis
+
+# DPL is implemented using QDSS
+on property:sys.usb.config=rndis,diag,dpl,adb
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 05C6
+    write /sys/class/android_usb/android0/idProduct 90C0
+    write /sys/class/android_usb/android0/f_diag/clients diag
+    write /sys/class/android_usb/android0/f_qdss/debug_intf 0
+    write /sys/class/android_usb/android0/f_qdss/transports qti,bam2bam_ipa
+    write /sys/class/android_usb/android0/f_qdss/transport_names qdss_bam
+    write /sys/class/android_usb/android0/functions rndis,diag,qdss,adb
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state rndis,adb
+
 on property:sys.usb.config=rndis,serial_smd
     write /sys/class/android_usb/android0/enable 0
     write /sys/class/android_usb/android0/idVendor 05C6

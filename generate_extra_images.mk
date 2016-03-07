@@ -249,8 +249,8 @@ define build-nand-bootimage
 	@echo "target NAND boot image: $(3)"
 	$(hide) mkdir -p $(1)
 	$(hide) $(MKBOOTIMG) $(2) --output $(3)
-endef
 	$(hide) $(call assert-max-image-size,$@,$(BOARD_BOOTIMAGE_PARTITION_SIZE),raw)
+endef
 endif
 
 # Generate system image for NAND
@@ -407,9 +407,9 @@ recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET) $(INSTALLED_4K_RECOVERYIMAGE_TA
 
 .PHONY: kernelclean
 kernelclean:
-	$(hide) make -C kernel O=../$(PRODUCT_OUT)/obj/KERNEL_OBJ/ ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  clean
-	$(hide) make -C kernel O=../$(PRODUCT_OUT)/obj/KERNEL_OBJ/ ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  mrproper
-	$(hide) make -C kernel O=../$(PRODUCT_OUT)/obj/KERNEL_OBJ/ ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  distclean
+	$(hide) make -C kernel/msm-3.18 O=../../$(PRODUCT_OUT)/obj/kernel/msm-3.18 ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  clean
+	$(hide) make -C kernel/msm-3.18 O=../../$(PRODUCT_OUT)/obj/kernel/msm-3.18 ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  mrproper
+	$(hide) make -C kernel/msm-3.18 O=../../$(PRODUCT_OUT)/obj/kernel/msm-3.18 ARCH=$(TARGET_ARCH) CROSS_COMPILE=arm-eabi-  distclean
 	$(hide) if [ -f "$(INSTALLED_BOOTIMAGE_TARGET)" ]; then  rm $(INSTALLED_BOOTIMAGE_TARGET); fi
 	$(hide) if [ -f "$(INSTALLED_SEC_BOOTIMAGE_TARGET)" ]; then rm $(INSTALLED_SEC_BOOTIMAGE_TARGET); fi
 	$(hide) if [ -f "$(INSTALLED_BOOTIMAGE_TARGET).nonsecure" ]; then  rm $(INSTALLED_BOOTIMAGE_TARGET).nonsecure; fi

@@ -1124,11 +1124,47 @@ case "$target" in
                     echo "bw_hwmon" > $devfreq_gov
                     for cpu_io_percent in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/io_percent
                     do
-                        echo 20 > $cpu_io_percent
+                        echo 34 > $cpu_io_percent
                     done
-                for cpu_guard_band in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/guard_band_mbps
+                    for cpu_guard_band in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/guard_band_mbps
                     do
-                        echo 30 > $cpu_guard_band
+                        echo 0 > $cpu_guard_band
+                    done
+                    for cpu_hist_memory in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
+                    do
+                        echo 20 > $cpu_hist_memory
+                    done
+                    for cpu_hyst_length in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
+                    do
+                        echo 10 > $cpu_hyst_length
+                    done
+                    for cpu_idle_mbps in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/idle_mbps
+                    do
+                        echo 1600 > $cpu_idle_mbps
+                    done
+                    for cpu_low_power_delay in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/low_power_delay
+                    do
+                        echo 20 > $cpu_low_power_delay
+                    done
+                    for cpu_low_power_io_percent in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/low_power_io_percent
+                    do
+                        echo 34 > $cpu_low_power_io_percent
+                    done
+                    for cpu_mbps_zones in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/mbps_zones
+                    do
+                        echo "1611 3221 5859 6445 7104" > $cpu_mbps_zones
+                    done
+                    for cpu_sample_ms in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/sample_ms
+                    do
+                        echo 4 > $cpu_sample_ms
+                    done
+                    for cpu_up_scale in /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/up_scale
+                    do
+                        echo 250 > $cpu_up_scale
+                    done
+                    for cpu_min_freq in /sys/class/devfreq/soc:qcom,cpubw/min_freq
+                    do
+                        echo 1611 > $cpu_min_freq
                     done
                 done
 

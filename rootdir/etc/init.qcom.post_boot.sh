@@ -1189,7 +1189,7 @@ case "$target" in
                 echo 1401600 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
                 echo 0 > /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
                 echo "85 1401600:80" > /sys/devices/system/cpu/cpufreq/interactive/target_loads
-                echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
+                echo 39000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
                 echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
                 echo 652800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 

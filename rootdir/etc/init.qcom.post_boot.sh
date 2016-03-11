@@ -1063,7 +1063,7 @@ case "$target" in
 esac
 
 case "$target" in
-    "titanium")
+    "msm8953")
 
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
@@ -2021,7 +2021,7 @@ case "$target" in
         #start perfd after setprop
         start perfd # start perfd on 8916 and 8939
     ;;
-    "msm8937" | "titanium")
+    "msm8937" | "msm8953")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb
         echo 128 > /sys/block/dm-0/queue/read_ahead_kb

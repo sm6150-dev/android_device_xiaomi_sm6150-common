@@ -1213,6 +1213,7 @@ case "$target" in
 			echo  0 > $DCC_PATH/enable
 			echo cap >  $DCC_PATH/func_type
 			echo sram > $DCC_PATH/data_sink
+			echo  1 > $DCC_PATH/config_reset
 
 			# Register specifies APC CPR closed-loop settled voltage for current voltage corner
 			echo 0xb1d2c18 1 > $DCC_PATH/config

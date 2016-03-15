@@ -167,6 +167,9 @@ CIMAX := libcimax_spi
 CM :=CMFileManager
 CM += Trebuchet
 
+#Default Launcher
+DELAUN := Launcher3
+
 #CONNECTIVITY
 CONNECTIVITY := libcnefeatureconfig
 CONNECTIVITY += services-ext
@@ -271,7 +274,6 @@ INIT += init.mdm.sh
 INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
 INIT += init.qcom.debug.sh
-INIT += init.qcom.zram.sh
 INIT += init.qcom.sensors.sh
 
 #IPROUTE2
@@ -726,6 +728,7 @@ PRODUCT_PACKAGES += $(C2DCC)
 PRODUCT_PACKAGES += $(CHROMIUM)
 PRODUCT_PACKAGES += $(CIMAX)
 PRODUCT_PACKAGES += $(CM)
+PRODUCT_PACKAGES += $(DELAUN)
 PRODUCT_PACKAGES += $(RCS)
 PRODUCT_PACKAGES += $(CONNECTIVITY)
 PRODUCT_PACKAGES += $(CHARGER)

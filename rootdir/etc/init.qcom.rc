@@ -303,8 +303,6 @@ on post-fs-data
     mkdir /data/misc/SelfHost/socket/ 2770 system system
 
     #Create PERFD deamon related dirs
-    mkdir /data/misc/perfd 0755 root system
-    chmod 2755 /data/misc/perfd
     mkdir /data/system/perfd 0770 root system
     chmod 2770 /data/system/perfd
 
@@ -339,6 +337,12 @@ on post-fs-data
     #Create SWAP related dirs
     mkdir /data/system/swap 0770 root system
     chmod 2770 /data/system/swap
+
+service perfd /system/vendor/bin/perfd
+   class main
+   user root
+   disabled
+   socket perfd seqpacket 0666 root system
 
 service iop /system/bin/iop
     class main

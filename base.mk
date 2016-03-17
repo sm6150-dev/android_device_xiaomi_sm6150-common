@@ -880,7 +880,20 @@ PRODUCT_COPY_FILES += \
 # source/resources etc.
 DEVICE_PACKAGE_OVERLAYS += device/qcom/common/device/overlay
 PRODUCT_PACKAGE_OVERLAYS += device/qcom/common/product/overlay
-
+# Set up flags to determine the kernel version
+ifeq ($(TARGET_KERNEL_VERSION),)
+     TARGET_KERNEL_VERSION := 3.18
+endif
+ifneq ($(KERNEL_OVERRIDE),)
+     TARGET_KERNEL_VERSION := $(KERNEL_OVERRIDE)
+endif
+ifeq ($(wildcard kernel/msm-$(TARGET_KERNEL_VERSION)),)
+     KERNEL_TO_BUILD_ROOT_OFFSET := ../
+     TARGET_KERNEL_SOURCE := kernel
+else
+     KERNEL_TO_BUILD_ROOT_OFFSET := ../../
+     TARGET_KERNEL_SOURCE := kernel/msm-$(TARGET_KERNEL_VERSION)
+endif
 # include additional build utilities
 -include device/qcom/common/utils.mk
 

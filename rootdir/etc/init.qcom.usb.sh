@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2012, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -92,6 +92,19 @@ done
 fi
 
 target=`getprop ro.board.platform`
+# set USB controller's device node
+case "$target" in
+    "msm8996")
+        setprop sys.usb.controller "6a00000.dwc3"
+	;;
+    *)
+	;;
+esac
+
+# check configfs is mounted or not
+if [ -d /config/usb_gadget ]; then
+	setprop sys.usb.configfs 1
+fi
 
 #
 # Allow USB enumeration with default PID/VID

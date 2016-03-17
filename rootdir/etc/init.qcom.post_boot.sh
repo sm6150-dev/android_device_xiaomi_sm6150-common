@@ -2099,6 +2099,7 @@ case "$target" in
         echo 128 > /sys/block/dm-1/queue/read_ahead_kb
         rm /data/system/perfd/default_values
         start perfd
+        start gamed
     ;;
     "msm8974")
         start mpdecision

@@ -308,6 +308,9 @@ then
         set_perms $file/modes system.graphics 0664
         set_perms $file/mode system.graphics 0664
         set_perms $file/msm_cmd_autorefresh_en system.graphics 0664
+        if [ -f $file/lineptr_value ]; then
+            set_perms $file/lineptr_value system.graphics 0664
+        fi
 fi
 
 boot_reason=`cat /proc/sys/kernel/boot_reason`

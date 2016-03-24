@@ -169,6 +169,9 @@ config_bt ()
            setprop ro.bluetooth.hfp.ver 1.6
        fi
        ;;
+    "msmcobalt")
+       setprop ro.bluetooth.hfp.ver 1.6
+       ;;
     *)
        ;;
   esac

@@ -1415,6 +1415,9 @@ case "$target" in
                 echo 50000 > /proc/sys/kernel/sched_freq_inc_notify
                 echo 50000 > /proc/sys/kernel/sched_freq_dec_notify
 
+                # Set rps mask
+                echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
+
                 # Enable dynamic clock gating
                 echo 1 > /sys/module/lpm_levels/lpm_workarounds/dynamic_clock_gating
                 # Enable timer migration to little cluster
@@ -1572,12 +1575,6 @@ case "$target" in
             ;;
         esac
     ;;
-esac
-
-case "$target" in
-     "gold")
-    echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
-     ;;
 esac
 
 case "$target" in

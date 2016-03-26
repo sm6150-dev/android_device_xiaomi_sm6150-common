@@ -261,6 +261,7 @@ INIT += init.qcom.wifi.sh
 INIT += vold.fstab
 INIT += init.qcom.ril.path.sh
 INIT += init.qcom.usb.rc
+INIT += init.msm.usb.configfs.rc
 INIT += init.qcom.usb.sh
 INIT += usf_post_boot.sh
 INIT += init.qcom.efs.sync.sh
@@ -311,6 +312,7 @@ KEYPAD += 8660_handset.kl
 KEYPAD += atmel_mxt_ts.kl
 KEYPAD += synaptics_rmi4_i2c.kl
 KEYPAD += synaptics_dsx.kl
+KEYPAD += synaptics_dsxv26.kl
 KEYPAD += cyttsp-i2c.kl
 KEYPAD += ft5x06_ts.kl
 KEYPAD += ffa-keypad.kl
@@ -880,7 +882,20 @@ PRODUCT_COPY_FILES += \
 # source/resources etc.
 DEVICE_PACKAGE_OVERLAYS += device/qcom/common/device/overlay
 PRODUCT_PACKAGE_OVERLAYS += device/qcom/common/product/overlay
-
+# Set up flags to determine the kernel version
+ifeq ($(TARGET_KERNEL_VERSION),)
+     TARGET_KERNEL_VERSION := 3.18
+endif
+ifneq ($(KERNEL_OVERRIDE),)
+     TARGET_KERNEL_VERSION := $(KERNEL_OVERRIDE)
+endif
+ifeq ($(wildcard kernel/msm-$(TARGET_KERNEL_VERSION)),)
+     KERNEL_TO_BUILD_ROOT_OFFSET := ../
+     TARGET_KERNEL_SOURCE := kernel
+else
+     KERNEL_TO_BUILD_ROOT_OFFSET := ../../
+     TARGET_KERNEL_SOURCE := kernel/msm-$(TARGET_KERNEL_VERSION)
+endif
 # include additional build utilities
 -include device/qcom/common/utils.mk
 

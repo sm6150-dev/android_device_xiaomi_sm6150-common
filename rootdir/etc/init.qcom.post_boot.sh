@@ -1415,6 +1415,9 @@ case "$target" in
                 echo 50000 > /proc/sys/kernel/sched_freq_inc_notify
                 echo 50000 > /proc/sys/kernel/sched_freq_dec_notify
 
+                # Set rps mask
+                echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
+
                 # Enable dynamic clock gating
                 echo 1 > /sys/module/lpm_levels/lpm_workarounds/dynamic_clock_gating
                 # Enable timer migration to little cluster
@@ -1572,12 +1575,6 @@ case "$target" in
             ;;
         esac
     ;;
-esac
-
-case "$target" in
-     "gold")
-    echo 2 > /sys/class/net/rmnet0/queues/rx-0/rps_cpus
-     ;;
 esac
 
 case "$target" in
@@ -1953,29 +1950,25 @@ case "$target" in
         done
 
 	soc_revision=`cat /sys/devices/soc0/revision`
-	if [ "$soc_revision" == "1.0" ] || [ "$soc_revision" == "2.0" ]; then
-		#Disable suspend for v1.0 and v2.0
+	if [ "$soc_revision" == "2.0" ]; then
+		#Disable suspend for v2.0
 		echo pwr_dbg > /sys/power/wake_lock
 	elif [ "$soc_revision" == "2.1" ]; then
 		# Enable C4.D4.E4.M3 LPM modes
 		# Disable D3 state
 		echo 0 > /sys/module/lpm_levels/system/pwr/pwr-l2-gdhs/idle_enabled
 		echo 0 > /sys/module/lpm_levels/system/perf/perf-l2-gdhs/idle_enabled
-		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 		# Disable DEF-FPC mode
 		echo N > /sys/module/lpm_levels/system/pwr/cpu0/fpc-def/idle_enabled
 		echo N > /sys/module/lpm_levels/system/pwr/cpu1/fpc-def/idle_enabled
 		echo N > /sys/module/lpm_levels/system/perf/cpu2/fpc-def/idle_enabled
 		echo N > /sys/module/lpm_levels/system/perf/cpu3/fpc-def/idle_enabled
-	elif [ "$soc_revision" == "3.0" ]; then
-		# Enable all LPMs by default
-		# This will enable C4, D4, D3, E4 and M3 LPMs
-		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 	else
 		# Enable all LPMs by default
 		# This will enable C4, D4, D3, E4 and M3 LPMs
 		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 	fi
+	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
         # Starting io prefetcher service
         start iop
     ;;

@@ -105,22 +105,19 @@ function configure_memory_parameters() {
         soc_id=`cat /sys/devices/system/soc/soc0/id`
     fi
 
-    # Enable swap initially only for 8917
-    case "$soc_id" in
-         "303" | "307" | "308" | "309" )
-        if [ "$MemTotal" -le "$SWAP_ENABLE_THRESHOLD" ] && [ "$swap_enable" == "true" ]; then
-            # Static swiftness
-            echo 1 > /proc/sys/vm/swap_ratio_enable
-            echo 70 > /proc/sys/vm/swap_ratio
+    # Enable swap initially only for 1 GB targets
+    if [ "$MemTotal" -le "$SWAP_ENABLE_THRESHOLD" ] && [ "$swap_enable" == "true" ]; then
+        # Static swiftness
+        echo 1 > /proc/sys/vm/swap_ratio_enable
+        echo 70 > /proc/sys/vm/swap_ratio
 
-            # Swap disk - 200MB size
-            if [ ! -f /data/system/swap/swapfile ]; then
-                dd if=/dev/zero of=/data/system/swap/swapfile bs=1m count=200
-            fi
-            mkswap /data/system/swap/swapfile
-            swapon /data/system/swap/swapfile -p 32758
+        # Swap disk - 200MB size
+        if [ ! -f /data/system/swap/swapfile ]; then
+            dd if=/dev/zero of=/data/system/swap/swapfile bs=1m count=200
         fi
-    esac
+        mkswap /data/system/swap/swapfile
+        swapon /data/system/swap/swapfile -p 32758
+    fi
 }
 
 case "$target" in

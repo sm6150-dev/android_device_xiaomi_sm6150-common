@@ -682,6 +682,7 @@ PRODUCT_PACKAGES := \
     Email \
     Gallery2 \
     LatinIME \
+    Mms \
     Music \
     Phone \
     Provision \
@@ -697,8 +698,7 @@ PRODUCT_PACKAGES := \
     VoiceDialer \
     FM2 \
     FMRecord \
-    VideoEditor \
-#    Mms \
+    VideoEditor
 
 
 ifneq ($(TARGET_USES_AOSP),true)

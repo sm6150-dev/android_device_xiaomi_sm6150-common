@@ -219,7 +219,7 @@ case "$target" in
                   ;;
         esac
         ;;
-    "msm8994" | "msm8992")
+    "msm8994" | "msm8992" | "msmcobalt")
         start_msm_irqbalance
         ;;
     "msm8996")
@@ -275,7 +275,7 @@ case "$target" in
                   ;;
        esac
         ;;
-    "titanium")
+    "msm8953")
 	start_msm_irqbalance_8939
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`

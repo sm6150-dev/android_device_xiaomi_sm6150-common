@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Copyright (c) 2012-2015, The Linux Foundation. All rights reserved
+<!--Copyright (c) 2012-2016, The Linux Foundation. All rights reserved
 
     Not a Contribution.
 
@@ -133,10 +133,6 @@
     <!-- Boolean indicating if restoring network selection should be skipped -->
     <!-- The restoring is handled by modem if it is true-->
     <bool translatable="false" name="skip_restoring_network_selection">true</bool>
-
-    <!-- When true use the linux /dev/input/event subsystem to detect the switch changes
-    on the headphone/microphone jack. When false use the older uevent framework -->
-    <bool name="config_useDevInputEventForAudioJack">true</bool>
 
     <!-- Is the device capable of hot swapping an ICC Card -->
     <bool name="config_hotswapCapable">true</bool>

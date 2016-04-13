@@ -277,6 +277,7 @@ on mmi
     start debuggerd
     start debuggerd64
     start per_mgr
+    start qcom-sh
     start ril-daemon
     start config_bluetooth
     start sensors

@@ -17,7 +17,7 @@ QCOM_BOARD_PLATFORMS += msm8992
 QCOM_BOARD_PLATFORMS += msm8996
 QCOM_BOARD_PLATFORMS += msm8952
 QCOM_BOARD_PLATFORMS += msm8937
-QCOM_BOARD_PLATFORMS += titanium
+QCOM_BOARD_PLATFORMS += msm8953
 QCOM_BOARD_PLATFORMS += msmcobalt
 
 QSD8K_BOARD_PLATFORMS := qsd8k
@@ -25,7 +25,7 @@ QSD8K_BOARD_PLATFORMS := qsd8k
 TARGET_USE_VENDOR_CAMERA_EXT := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 titanium msmcobalt
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msmcobalt
 
 #List of targets that use master side content protection
 MASTER_SIDE_CP_TARGET_LIST := msm8996
@@ -97,7 +97,7 @@ AUDIO_HARDWARE += audio.primary.msm8992
 AUDIO_HARDWARE += audio.primary.msm8996
 AUDIO_HARDWARE += audio.primary.msm8952
 AUDIO_HARDWARE += audio.primary.msm8937
-AUDIO_HARDWARE += audio.primary.titanium
+AUDIO_HARDWARE += audio.primary.msm8953
 AUDIO_HARDWARE += audio.primary.msmgold
 #
 AUDIO_POLICY := audio_policy.mpq8064
@@ -122,7 +122,7 @@ AUDIO_POLICY += audio_policy.msm8992
 AUDIO_POLICY += audio_policy.msm8996
 AUDIO_POLICY += audio_policy.msm8952
 AUDIO_POLICY += audio_policy.msm8937
-AUDIO_POLICY += audio_policy.titanium
+AUDIO_POLICY += audio_policy.msm8953
 AUDIO_POLICY += audio_policy.msmgold
 #tinyalsa test apps
 TINY_ALSA_TEST_APPS := tinyplay
@@ -165,6 +165,9 @@ CIMAX := libcimax_spi
 #CM
 CM :=CMFileManager
 #CM += Trebuchet
+
+#Default Launcher
+DELAUN := Launcher3
 
 #CONNECTIVITY
 CONNECTIVITY := libcnefeatureconfig
@@ -257,6 +260,7 @@ INIT += init.qcom.wifi.sh
 INIT += vold.fstab
 INIT += init.qcom.ril.path.sh
 INIT += init.qcom.usb.rc
+INIT += init.msm.usb.configfs.rc
 INIT += init.qcom.usb.sh
 INIT += usf_post_boot.sh
 INIT += init.qcom.efs.sync.sh
@@ -270,7 +274,6 @@ INIT += init.mdm.sh
 INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
 INIT += init.qcom.debug.sh
-INIT += init.qcom.zram.sh
 INIT += init.qcom.sensors.sh
 
 #IPROUTE2
@@ -308,6 +311,7 @@ KEYPAD += 8660_handset.kl
 KEYPAD += atmel_mxt_ts.kl
 KEYPAD += synaptics_rmi4_i2c.kl
 KEYPAD += synaptics_dsx.kl
+KEYPAD += synaptics_dsxv26.kl
 KEYPAD += cyttsp-i2c.kl
 KEYPAD += ft5x06_ts.kl
 KEYPAD += ffa-keypad.kl
@@ -350,7 +354,7 @@ LIBCAMERA += camera.msm8992
 LIBCAMERA += camera.msm8996
 LIBCAMERA += camera.msm8952
 LIBCAMERA += camera.msm8937
-LIBCAMERA += camera.titanium
+LIBCAMERA += camera.msm8953
 LIBCAMERA += libcamera
 LIBCAMERA += libmmcamera_interface
 LIBCAMERA += libmmcamera_interface2
@@ -382,7 +386,7 @@ LIBCOPYBIT += copybit.msm7627a
 LIBCOPYBIT += copybit.msm8996
 LIBCOPYBIT += copybit.msm8952
 LIBCOPYBIT += copybit.msm8937
-LIBCOPYBIT += copybit.titanium
+LIBCOPYBIT += copybit.msm8953
 
 #LIBGESTURES
 LIBGESTURES := libgestures
@@ -410,7 +414,7 @@ LIBGRALLOC += gralloc.msm7627a
 LIBGRALLOC += gralloc.msm8996
 LIBGRALLOC += gralloc.msm8952
 LIBGRALLOC += gralloc.msm8937
-LIBGRALLOC += gralloc.titanium
+LIBGRALLOC += gralloc.msm8953
 LIBGRALLOC += libmemalloc
 
 #memtrack
@@ -426,7 +430,7 @@ LIBMEMTRACK += memtrack.mpq8092
 LIBMEMTRACK += memtrack.msm8996
 LIBMEMTRACK += memtrack.msm8952
 LIBMEMTRACK += memtrack.msm8937
-LIBMEMTRACK += memtrack.titanium
+LIBMEMTRACK += memtrack.msm8953
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -448,7 +452,7 @@ LIBLIGHTS += lights.apq8084
 LIBLIGHTS += lights.msm8996
 LIBLIGHTS += lights.msm8952
 LIBLIGHTS += lights.msm8937
-LIBLIGHTS += lights.titanium
+LIBLIGHTS += lights.msm8953
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -471,7 +475,7 @@ LIBHWCOMPOSER += hwcomposer.msm7627a
 LIBHWCOMPOSER += hwcomposer.msm8996
 LIBHWCOMPOSER += hwcomposer.msm8952
 LIBHWCOMPOSER += hwcomposer.msm8937
-LIBHWCOMPOSER += hwcomposer.titanium
+LIBHWCOMPOSER += hwcomposer.msm8953
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter
@@ -663,6 +667,7 @@ CRDA += init.crda.sh
 #WLAN
 WLAN := prima_wlan.ko
 WLAN += pronto_wlan.ko
+WLAN += qca_cld_wlan.ko
 
 #FSTMAN
 FSTMAN := fstman
@@ -724,6 +729,7 @@ PRODUCT_PACKAGES += $(C2DCC)
 PRODUCT_PACKAGES += $(CHROMIUM)
 PRODUCT_PACKAGES += $(CIMAX)
 PRODUCT_PACKAGES += $(CM)
+PRODUCT_PACKAGES += $(DELAUN)
 PRODUCT_PACKAGES += $(RCS)
 PRODUCT_PACKAGES += $(CONNECTIVITY)
 PRODUCT_PACKAGES += $(CHARGER)

@@ -45,6 +45,7 @@ enable_stm_events()
         return
     fi
 
+    echo 0x2000000 > /sys/bus/coresight/devices/coresight-tmc-etr/mem_size
     echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/curr_sink
     echo 1 > /sys/bus/coresight/devices/coresight-stm/enable
     echo 1 > /sys/kernel/debug/tracing/tracing_on

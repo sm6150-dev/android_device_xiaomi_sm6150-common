@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
+# Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -326,9 +326,61 @@ enable_dcc_config()
     esac
 }
 
+enable_msmcobalt_core_hang_config()
+{
+    CORE_PATH="/sys/devices/system/cpu/hang_detect"
+    if [ ! -d $CORE_PATH ]; then
+        echo "CORE hang does not exist on this build."
+        return
+    fi
+
+    #select instruction retire as the pmu event
+    echo 0x7 > $CORE_PATH/pmu_event_sel
+
+    #set the threshold to around 0.5 second
+    echo 0x000f4240 > $CORE_PATH/threshold
+
+    #To the enable core hang detection
+    #echo 0x1 > /sys/devices/system/cpu/hang_detect/enable
+}
+
+enable_msmcobalt_gladiator_hang_config()
+{
+    GLADIATOR_PATH="/sys/devices/system/cpu/gladiator_hang_detect"
+    if [ ! -d $GLADIATOR_PATH ]; then
+        echo "Gladiator hang does not exist on this build."
+        return
+    fi
+
+    #set the threshold to around 0.5 second
+    echo 0x000f4240 > $GLADIATOR_PATH/ace_threshold
+    echo 0x000f4240 > $GLADIATOR_PATH/io_threshold
+    echo 0x000f4240 > $GLADIATOR_PATH/m1_threshold
+    echo 0x000f4240 > $GLADIATOR_PATH/m2_threshold
+    echo 0x000f4240 > $GLADIATOR_PATH/pcio_threshold
+
+    #To enable gladiator hang detection
+    #echo 0x1 > /sys/devices/system/cpu/gladiator_hang_detect/enable
+}
+
+enable_core_gladiator_hang_config()
+{
+    target=`getprop ro.board.platform`
+
+    case "$target" in
+        "msmcobalt")
+            echo "Enabling core & gladiator config for msmcobalt"
+            enable_msmcobalt_core_hang_config
+            enable_msmcobalt_gladiator_hang_config
+        ;;
+    esac
+}
+
 coresight_config=`getprop persist.debug.coresight.config`
 
 enable_dcc_config
+enable_core_gladiator_hang_config
+
 case "$coresight_config" in
     "stm-events")
         echo "Enabling STM events."

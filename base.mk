@@ -391,6 +391,7 @@ LIBCOPYBIT += copybit.msm8996
 LIBCOPYBIT += copybit.msm8952
 LIBCOPYBIT += copybit.msm8937
 LIBCOPYBIT += copybit.msm8953
+LIBCOPYBIT += copybit.msmcobalt
 
 #LIBGESTURES
 LIBGESTURES := libgestures
@@ -419,6 +420,7 @@ LIBGRALLOC += gralloc.msm8996
 LIBGRALLOC += gralloc.msm8952
 LIBGRALLOC += gralloc.msm8937
 LIBGRALLOC += gralloc.msm8953
+LIBGRALLOC += gralloc.msmcobalt
 LIBGRALLOC += libmemalloc
 
 #memtrack
@@ -435,6 +437,7 @@ LIBMEMTRACK += memtrack.msm8996
 LIBMEMTRACK += memtrack.msm8952
 LIBMEMTRACK += memtrack.msm8937
 LIBMEMTRACK += memtrack.msm8953
+LIBMEMTRACK += memtrack.msmcobalt
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -457,6 +460,7 @@ LIBLIGHTS += lights.msm8996
 LIBLIGHTS += lights.msm8952
 LIBLIGHTS += lights.msm8937
 LIBLIGHTS += lights.msm8953
+LIBLIGHTS += lights.msmcobalt
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -480,6 +484,7 @@ LIBHWCOMPOSER += hwcomposer.msm8996
 LIBHWCOMPOSER += hwcomposer.msm8952
 LIBHWCOMPOSER += hwcomposer.msm8937
 LIBHWCOMPOSER += hwcomposer.msm8953
+LIBHWCOMPOSER += hwcomposer.msmcobalt
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter

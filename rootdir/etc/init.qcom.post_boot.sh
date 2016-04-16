@@ -1324,6 +1324,17 @@ case "$target" in
         fi
 
         case "$soc_id" in
+           "313")
+                  # Start Host based Touch processing
+                  case "$hw_platform" in
+                    "MTP" | "Surf" | "RCM" )
+                        start hbtp
+                        ;;
+                  esac
+                  ;;
+        esac
+
+        case "$soc_id" in
            "303" | "307" | "308" | "309" )
 
                   # Start Host based Touch processing

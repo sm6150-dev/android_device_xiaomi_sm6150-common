@@ -52,6 +52,7 @@
 
 #define CHARGING_ENABLED_PATH   "/sys/class/power_supply/battery/charging_enabled"
 #define CHARGER_TYPE_PATH       "/sys/class/power_supply/usb/type"
+#define BMS_READY_PATH		"/sys/class/power_supply/bms/soc_reporting_ready"
 
 #define LOGE(x...) do { KLOG_ERROR("charger", x); } while (0)
 #define LOGW(x...) do { KLOG_WARNING("charger", x); } while (0)
@@ -290,11 +291,15 @@ cleanup:
         close(fd);
 }
 
+#define WAIT_BMS_READY_TIMES_MAX	200
+#define WAIT_BMS_READY_INTERVAL_USEC	200000
 void healthd_board_mode_charger_init()
 {
     int ret;
     char buff[8] = "\0";
     int charging_enabled = 0;
+    int bms_ready = 0;
+    int wait_count = 0;
     int fd;
 
     /* check the charging is enabled or not */
@@ -303,13 +308,31 @@ void healthd_board_mode_charger_init()
         return;
     ret = read(fd, buff, sizeof(buff));
     close(fd);
-    if (ret > 0 && sscanf(buff, "%d\n", &charging_enabled)) {
+    if (ret > 0) {
+	sscanf(buff, "%d\n", &charging_enabled);
+        LOGW("android charging is %s\n",
+                !!charging_enabled ? "enabled" : "disabled");
         /* if charging is disabled, reboot and exit power off charging */
-        if (charging_enabled)
-            return;
-        LOGW("android charging is disabled, exit!\n");
-        android_reboot(ANDROID_RB_RESTART, 0, 0);
+        if (!charging_enabled)
+            android_reboot(ANDROID_RB_RESTART, 0, 0);
     }
+    fd = open(BMS_READY_PATH, O_RDONLY);
+    if (fd < 0)
+            return;
+    while (1) {
+        ret = read(fd, buff, sizeof(buff));
+        if (ret >= 0)
+	    sscanf(buff, "%d\n", &bms_ready);
+	else
+	    LOGE("read soc-ready failed, ret=%d\n", ret);
+
+	if ((bms_ready > 0) || (wait_count++ > WAIT_BMS_READY_TIMES_MAX))
+	    break;
+	usleep(WAIT_BMS_READY_INTERVAL_USEC);
+	lseek(fd, 0, SEEK_SET);
+    }
+    close(fd);
+    LOGE("Checking BMS SoC ready done!\n");
 }
 
 void healthd_board_init(struct healthd_config*)

@@ -2000,6 +2000,15 @@ case "$target" in
 	echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms
 	echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster
 	echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres
+
+	# Setting b.L scheduler parameters
+	echo 1 > /proc/sys/kernel/sched_migration_fixup
+	echo 99 > /proc/sys/kernel/sched_upmigrate
+	echo 85 > /proc/sys/kernel/sched_downmigrate
+	echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
+	echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
+	echo 5 > /proc/sys/kernel/sched_spill_nr_run
+	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
     ;;
 esac
 

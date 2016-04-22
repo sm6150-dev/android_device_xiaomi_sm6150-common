@@ -99,6 +99,7 @@ AUDIO_HARDWARE += audio.primary.msm8952
 AUDIO_HARDWARE += audio.primary.msm8937
 AUDIO_HARDWARE += audio.primary.msm8953
 AUDIO_HARDWARE += audio.primary.msmgold
+AUDIO_HARDWARE += audio.primary.msmcobalt
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084

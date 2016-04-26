@@ -92,22 +92,6 @@ done
 fi
 
 target=`getprop ro.board.platform`
-# set USB controller's device node
-case "$target" in
-    "msm8996")
-        setprop sys.usb.controller "6a00000.dwc3"
-	;;
-    "msmcobalt")
-        setprop sys.usb.controller "a800000.dwc3"
-	;;
-    *)
-	;;
-esac
-
-# check configfs is mounted or not
-if [ -d /config/usb_gadget ]; then
-	setprop sys.usb.configfs 1
-fi
 
 #
 # Allow USB enumeration with default PID/VID
@@ -154,6 +138,23 @@ case "$usb_config" in
       ;;
   * ) ;; #USB persist config exists, do nothing
 esac
+
+# set USB controller's device node
+case "$target" in
+    "msm8996")
+        setprop sys.usb.controller "6a00000.dwc3"
+	;;
+    "msmcobalt")
+        setprop sys.usb.controller "a800000.dwc3"
+	;;
+    *)
+	;;
+esac
+
+# check configfs is mounted or not
+if [ -d /config/usb_gadget ]; then
+	setprop sys.usb.configfs 1
+fi
 
 #
 # Do target specific things

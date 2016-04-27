@@ -1076,7 +1076,7 @@ service LKCore-dbg /system/vendor/bin/LKCore
     oneshot
     disabled
     user root
-    group root system log qcom_diag
+    group root system log qcom_diag net_raw
 
 # service for USER
 service LKCore-rel /system/vendor/bin/LKCore

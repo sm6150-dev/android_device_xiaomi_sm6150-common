@@ -1952,6 +1952,7 @@ case "$target" in
             echo "mem_latency" > $memlat/governor
             echo 10 > $memlat/polling_interval
         done
+        echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
 	soc_revision=`cat /sys/devices/soc0/revision`
 	if [ "$soc_revision" == "2.0" ]; then

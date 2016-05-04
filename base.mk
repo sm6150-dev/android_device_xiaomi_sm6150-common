@@ -555,6 +555,23 @@ MM_VIDEO += mm-video-driver-test
 MM_VIDEO += mm-video-encdrv-test
 MM_VIDEO += ExoplayerDemo
 
+#NQ_NFC
+NQ_NFC := NQNfcNci
+NQ_NFC += libnqnfc-nci
+NQ_NFC += libnqnfc_nci_jni
+NQ_NFC += nfc_nci.nqx.default
+NQ_NFC += libp61-jcop-kit
+NQ_NFC += com.nxp.nfc.nq
+NQ_NFC += com.nxp.nfc.nq.xml
+NQ_NFC += libpn547_fw.so
+NQ_NFC += libpn548ad_fw.so
+NQ_NFC += libnfc-brcm.conf
+NQ_NFC += libnfc-nxp.conf
+NQ_NFC += nqnfcee_access.xml
+NQ_NFC += nqnfcse_access.xml
+NQ_NFC += Tag
+NQ_NFC += com.android.nfc_extras
+
 #OPENCORE
 OPENCORE := libomx_aacdec_sharedlibrary
 OPENCORE += libomx_amrdec_sharedlibrary
@@ -779,6 +796,9 @@ PRODUCT_PACKAGES += $(MEDIA_PROFILES)
 PRODUCT_PACKAGES += $(MM_AUDIO)
 PRODUCT_PACKAGES += $(MM_CORE)
 PRODUCT_PACKAGES += $(MM_VIDEO)
+ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
+PRODUCT_PACKAGES += $(NQ_NFC)
+endif
 PRODUCT_PACKAGES += $(OPENCORE)
 PRODUCT_PACKAGES += $(PPP)
 PRODUCT_PACKAGES += $(PVOMX)
@@ -880,6 +900,14 @@ PRODUCT_COPY_FILES += \
     frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
     device/qcom/common/media/media_profiles.xml:system/etc/media_profiles.xml \
     device/qcom/common/media/media_codecs.xml:system/etc/media_codecs.xml
+
+ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/com.nxp.mifare.xml:system/etc/permissions/com.nxp.mifare.xml \
+    frameworks/native/data/etc/com.android.nfc_extras.xml:system/etc/permissions/com.android.nfc_extras.xml \
+    frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml \
+    frameworks/native/data/etc/android.hardware.nfc.hce.xml:system/etc/permissions/android.hardware.nfc.hce.xml
+endif
 
 # enable overlays to use our version of
 # source/resources etc.

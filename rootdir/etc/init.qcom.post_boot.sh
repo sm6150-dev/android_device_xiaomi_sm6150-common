@@ -1337,17 +1337,6 @@ case "$target" in
         fi
 
         case "$soc_id" in
-           "313")
-                  # Start Host based Touch processing
-                  case "$hw_platform" in
-                    "MTP" | "Surf" | "RCM" )
-                        start hbtp
-                        ;;
-                  esac
-                  ;;
-        esac
-
-        case "$soc_id" in
            "303" | "307" | "308" | "309" )
 
                   # Start Host based Touch processing
@@ -1453,7 +1442,7 @@ case "$target" in
         esac
 
         case "$soc_id" in
-             "294" | "295" )
+             "294" | "295" | "313" )
 
                   # Start Host based Touch processing
                   case "$hw_platform" in
@@ -1462,7 +1451,7 @@ case "$target" in
                         ;;
                   esac
 
-                # Apply Scheduler and Governor settings for 8937
+                # Apply Scheduler and Governor settings for 8937/8940
 
                 # HMP scheduler settings
                 echo 3 > /proc/sys/kernel/sched_window_stats_policy

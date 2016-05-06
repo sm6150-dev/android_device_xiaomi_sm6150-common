@@ -221,6 +221,7 @@ GPS_HARDWARE += libgps.utils
 GPS_HARDWARE += libloc_eng
 GPS_HARDWARE += libloc_api_v02
 GPS_HARDWARE += libloc_ds_api
+GPS_HARDWARE += libgnsspps
 
 #HDMID
 HDMID := hdmid

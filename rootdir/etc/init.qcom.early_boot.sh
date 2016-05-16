@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013,2016 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -199,13 +199,13 @@ case "$target" in
                 ;;
         esac
         ;;
-    "msm8937")
+    "msm8937" | "msm8940")
         # Set ro.opengles.version based on chip id.
-        # MSM8937 variants supports OpenGLES 3.1
+        # MSM8937 and MSM8940  variants supports OpenGLES 3.1
         # 196608 is decimal for 0x30000 to report version 3.0
         # 196609 is decimal for 0x30001 to report version 3.1
         case "$soc_hwid" in
-            294|295|296|297|298)
+            294|295|296|297|298|313)
                 setprop ro.opengles.version 196609
                 ;;
             *)

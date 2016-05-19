@@ -343,6 +343,7 @@ on post-fs-data
 service perfd /system/vendor/bin/perfd
    class main
    user root
+   group root readproc
    disabled
    socket perfd seqpacket 0666 root system
 

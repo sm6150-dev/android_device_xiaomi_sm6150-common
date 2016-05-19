@@ -213,6 +213,13 @@ case "$target" in
                 ;;
         esac
         ;;
+    "msmcobalt")
+        case "$soc_hwplatform" in
+            *)
+                setprop ro.sf.lcd_density 480
+                ;;
+        esac
+        ;;
 esac
 #set default lcd density
 #Since lcd density has read only

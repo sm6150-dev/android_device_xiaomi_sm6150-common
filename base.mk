@@ -563,12 +563,9 @@ MM_VIDEO += ExoplayerDemo
 
 #OPENCORE
 OPENCORE := libomx_aacdec_sharedlibrary
-OPENCORE += libomx_amrdec_sharedlibrary
-OPENCORE += libomx_amrenc_sharedlibrary
 OPENCORE += libomx_avcdec_sharedlibrary
 OPENCORE += libomx_m4vdec_sharedlibrary
 OPENCORE += libomx_mp3dec_sharedlibrary
-OPENCORE += libomx_sharedlibrary
 OPENCORE += libopencore_author
 OPENCORE += libopencore_common
 OPENCORE += libopencore_download
@@ -579,11 +576,8 @@ OPENCORE += libopencore_net_support
 OPENCORE += libopencore_player
 OPENCORE += libopencore_rtsp
 OPENCORE += libopencore_rtspreg
-OPENCORE += libpvdecoder_gsmamr
 OPENCORE += libpvplayer_engine
-OPENCORE += libpvamrwbdecoder
 OPENCORE += libpvauthorengine
-OPENCORE += libomx_amr_component_lib
 OPENCORE += pvplayer
 OPENCORE += pvplayer_engine_test
 

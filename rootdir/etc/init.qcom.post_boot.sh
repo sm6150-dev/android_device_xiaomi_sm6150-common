@@ -1977,6 +1977,25 @@ case "$target" in
 esac
 
 case "$target" in
+    "msmcobalt")
+	soc_revision=`cat /sys/devices/soc0/revision`
+	if [ "$soc_revision" == "1.0" ]; then
+		# Disable retention low power modes
+		echo N > /sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/pwr/cpu3/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/cpu4/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled
+		#Enable all LPMs by default
+		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
+	fi
+    ;;
+esac
+
+case "$target" in
     "msm8909")
 
         if [ -f /sys/devices/soc0/soc_id ]; then

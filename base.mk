@@ -709,6 +709,7 @@ PRODUCT_PACKAGES := \
     Updater \
     CalendarProvider \
     SyncProvider \
+    SoundRecorder \
     IM \
     VoiceDialer \
     FM2 \

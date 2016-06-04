@@ -220,6 +220,8 @@ case "$target" in
                 if [ ! -e /dev/kgsl-3d0 ]; then
                     setprop persist.sys.force_sw_gles 1
                     setprop sdm.idle_time 0
+                else
+                    setprop persist.sys.force_sw_gles 0
                 fi
                 ;;
         esac

@@ -725,8 +725,10 @@ PRODUCT_PACKAGES := \
     VoiceDialer \
     FM2 \
     FMRecord \
-    VideoEditor
-
+    VideoEditor \
+    SnapdragonGallery \
+    SnapdragonLauncher \
+    SnapdragonMusic
 
 ifneq ($(TARGET_USES_AOSP),true)
 PRODUCT_PACKAGES += \

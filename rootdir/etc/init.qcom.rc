@@ -1131,6 +1131,11 @@ service qseeproxydaemon /system/vendor/bin/qseeproxydaemon
     user system
     group system
 
+service esepmdaemon /system/vendor/bin/esepmdaemon
+    class core
+    user system
+    group nfc
+
 # Seemp health service
 service seemp_healthd /system/vendor/bin/seemp_healthd
     class late_start

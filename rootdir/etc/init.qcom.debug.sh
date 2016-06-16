@@ -130,6 +130,37 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_frequency_mit/enable
 }
 
+# Function MSMCOBALT DCC configuration
+enable_msmcobalt_dcc_config()
+{
+    DCC_PATH="/sys/bus/platform/devices/10b3000.dcc"
+    if [ ! -d $DCC_PATH ]; then
+        echo "DCC don't exist on this build."
+        return
+    fi
+
+    echo  0 > $DCC_PATH/enable
+    echo cap > $DCC_PATH/func_type
+    echo sram > $DCC_PATH/data_sink
+    echo  1 > $DCC_PATH/config_reset
+
+    #OSM WDOG
+    echo 0x179C1C00 37 > $DCC_PATH/config
+    echo 0x179C3C00 37 > $DCC_PATH/config
+    #APM
+    echo 0x179D0000 1 > $DCC_PATH/config
+    echo 0x179D000C 1 > $DCC_PATH/config
+    echo 0x179D0018 1 > $DCC_PATH/config
+    #L2_SAW4_PMIC_STS
+    echo 0x17912C18 1 > $DCC_PATH/config
+    echo 0x17812C18 1 > $DCC_PATH/config
+    #CPRH_STATUS
+    echo 0x179CBAA4 1 > $DCC_PATH/config
+    echo 0x179C7AA4 1 > $DCC_PATH/config
+
+    echo  1 > $DCC_PATH/enable
+}
+
 # Function MSM8996 DCC configuration
 enable_msm8996_dcc_config()
 {
@@ -314,6 +345,11 @@ enable_dcc_config()
             echo "Enabling DCC config for 8996."
             enable_msm8996_dcc_config
             ;;
+
+	"msmcobalt")
+	    echo "Enabling DCC config for msmcobalt."
+	    enable_msmcobalt_dcc_config
+	    ;;
 
         "msm8952")
             case "$soc_id" in

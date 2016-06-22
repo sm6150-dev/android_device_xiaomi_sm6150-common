@@ -467,6 +467,7 @@ service cnd /system/bin/cnd
 service dpmd /system/bin/dpmd
     class late_start
     socket dpmd stream 660 root system
+    group system readproc
 
 service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class core

@@ -788,8 +788,8 @@ on property:wifi.ftmd.load=true
 
 service cnss_diag /system/bin/cnss_diag -q -f
     class main
-    user root
-    group root
+    user system
+    group system wifi inet net_admin sdcard_rw media_rw diag
     oneshot
 
 service cnss-daemon /system/bin/cnss-daemon -n -l

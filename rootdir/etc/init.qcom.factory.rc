@@ -32,6 +32,12 @@ service fastmmi /system/bin/mmi
     group root
     disabled
 
+on property:sys.boot_mode=ffbm
+    write -p /dev/block /dev/block/bootdevice/by-name/misc "ffbm-01"
+
+on property:sys.boot_mode=normal
+    write -p /dev/block /dev/block/bootdevice/by-name/misc "normal"
+
 # Creating a scratch storage on /data for factory testing.
 on factory-fs
     mount tmpfs tmpfs /data

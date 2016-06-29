@@ -29,6 +29,9 @@
 
 #ifndef __GPT_UTILS_H__
 #define __GPT_UTILS_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 /******************************************************************************
@@ -177,4 +180,7 @@ int gpt_utils_is_ufs_device();
 //- Once we locate sgY we call the query ioctl on /dev/sgy to switch
 //the boot lun to either LUNA or LUNB
 int gpt_utils_set_xbl_boot_partition(enum boot_chain chain);
+#ifdef __cplusplus
+}
+#endif
 #endif /* __GPT_UTILS_H__ */

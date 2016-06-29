@@ -50,7 +50,13 @@
 #include <cutils/log.h>
 #include <cutils/properties.h>
 #include "gpt-utils.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "sparse_crc32.h"
+#ifdef __cplusplus
+}
+#endif
 #include <endian.h>
 
 
@@ -659,7 +665,7 @@ int gpt_utils_set_xbl_boot_partition(enum boot_chain chain)
         ///sys/block/sdX/device/scsi_generic/
         char sg_dev_node[PATH_MAX] = {0};
         uint8_t boot_lun_id = 0;
-        char *boot_dev = NULL;
+        const char *boot_dev = NULL;
 
         if (chain == BACKUP_BOOT) {
                 boot_lun_id = BOOT_LUN_B_ID;

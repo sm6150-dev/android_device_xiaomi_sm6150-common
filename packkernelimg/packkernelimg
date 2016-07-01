@@ -37,6 +37,7 @@ def parse_cmdline():
     parser = ArgumentParser()
     parser.add_argument('--kernel', help='Path to UNCOMPRESSED kernel image',required=True)
     parser.add_argument('--dt', help='Path to device tree files', required=True)
+    parser.add_argument('--dt_list', help='List of device tree files to pick up', required=False)
     return parser.parse_args()
 
 def main():
@@ -44,6 +45,8 @@ def main():
     KERNEL_TYPE = 'UNCOMPRESSED_IMG'.encode()
     kernel = open(args.kernel, 'rb')
     str = kernel.readline()
+    if args.dt_list is not None:
+        dtb_list = args.dt_list.split()
     if str.startswith('UNCOMPRESSED_IMG'):
         print("File already patched")
         exit(0)
@@ -58,6 +61,9 @@ def main():
     for root, directories, files in os.walk(args.dt):
         for filename in files:
             if filename.endswith('.dtb'):
+                if args.dt_list is not None:
+                    if filename not in dtb_list:
+                        continue
                 print("Processing file %s" % filename)
                 filepath = os.path.join(root, filename)
                 with open(filepath) as dtb_file:

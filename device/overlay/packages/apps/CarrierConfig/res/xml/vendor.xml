@@ -53,13 +53,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="460" mnc="00">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
-        <bool name="check_mobile_data_for_cf" value="true" />
+        <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
-        <bool name="check_mobile_data_for_cf" value="true" />
+        <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
     </carrier_config>
 
@@ -70,13 +70,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="460" mnc="07">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
-        <bool name="check_mobile_data_for_cf" value="true" />
+        <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
-        <bool name="check_mobile_data_for_cf" value="true" />
+        <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
     </carrier_config>
 

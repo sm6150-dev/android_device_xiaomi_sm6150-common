@@ -49,6 +49,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_adding_apns_bool" value="true" />
         <boolean name="hide_preferred_network_type_bool" value="false" />
         <boolean name="show_cdma_choices_bool" value="true" />
+        <boolean name="allow_video_call_in_low_battery" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="00">
@@ -198,5 +199,17 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
     <carrier_config mcc="405" mnc="874">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
+    </carrier_config>
+
+    <carrier_config mcc="450" mnc="05">
+        <boolean name="allow_video_call_in_low_battery" value="false" />
+    </carrier_config>
+
+    <carrier_config mcc="450" mnc="06">
+        <boolean name="allow_video_call_in_low_battery" value="false" />
+    </carrier_config>
+
+    <carrier_config mcc="450" mnc="08">
+        <boolean name="allow_video_call_in_low_battery" value="false" />
     </carrier_config>
 </carrier_config_list>

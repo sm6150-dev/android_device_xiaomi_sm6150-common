@@ -1522,7 +1522,8 @@ case "$target" in
                 do
                     echo 40 > $gpu_bimc_io_percent
                 done
-                # disable thermal core_control to update interactive gov settings
+
+                # disable thermal core_control to update interactive gov and core_ctl settings
                 echo 0 > /sys/module/msm_thermal/core_control/enabled
 
                 # enable governor for perf cluster
@@ -1550,9 +1551,6 @@ case "$target" in
                 echo 40000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
                 echo 40000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/sampling_down_factor
                 echo 768000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-
-                # re-enable thermal core_control now
-                echo 1 > /sys/module/msm_thermal/core_control/enabled
 
                 # Bring up all cores online
                 echo 1 > /sys/devices/system/cpu/cpu1/online
@@ -1586,6 +1584,9 @@ case "$target" in
                 echo 40 > /sys/devices/system/cpu/cpu0/core_ctl/busy_down_thres
                 echo 100 > /sys/devices/system/cpu/cpu0/core_ctl/offline_delay_ms
                 echo 1 > /sys/devices/system/cpu/cpu0/core_ctl/is_big_cluster
+
+                # re-enable thermal core_control
+                echo 1 > /sys/module/msm_thermal/core_control/enabled
 
                 # Enable dynamic clock gating
                 echo 1 > /sys/module/lpm_levels/lpm_workarounds/dynamic_clock_gating

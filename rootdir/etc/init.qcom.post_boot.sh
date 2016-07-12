@@ -2005,7 +2005,8 @@ case "$target" in
     "msmcobalt")
 	soc_revision=`cat /sys/devices/soc0/revision`
 	if [ "$soc_revision" == "1.0" ]; then
-		# Disable retention low power modes
+		# Retention modes on v1.x are experimental but not PoR
+		# C2d, D2d, D2e retention modes are disbled
 		echo N > /sys/module/lpm_levels/system/pwr/cpu0/ret/idle_enabled
 		echo N > /sys/module/lpm_levels/system/pwr/cpu1/ret/idle_enabled
 		echo N > /sys/module/lpm_levels/system/pwr/cpu2/ret/idle_enabled
@@ -2014,6 +2015,10 @@ case "$target" in
 		echo N > /sys/module/lpm_levels/system/perf/cpu5/ret/idle_enabled
 		echo N > /sys/module/lpm_levels/system/perf/cpu6/ret/idle_enabled
 		echo N > /sys/module/lpm_levels/system/perf/cpu7/ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/pwr/pwr-l2-dynret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/pwr/pwr-l2-ret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled
+		echo N > /sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled
 		#Enable all LPMs by default
 		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 	fi

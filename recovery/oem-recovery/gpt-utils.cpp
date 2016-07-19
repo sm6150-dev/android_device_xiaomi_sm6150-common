@@ -195,11 +195,11 @@ static uint8_t *gpt_pentry_seek(const char *ptn_name,
 
     for (pentry_name = (char *) (pentries_start + PARTITION_NAME_OFFSET);
          pentry_name < (char *) pentries_end; pentry_name += pentry_size) {
-        char name8[MAX_GPT_NAME_SIZE / 2];
+        char name8[MAX_GPT_NAME_SIZE];
         unsigned i;
 
         /* Partition names in GPT are UTF-16 - ignoring UTF-16 2nd byte */
-        for (i = 0; i < sizeof(name8); i++)
+        for (i = 0; i < sizeof(name8) / 2; i++)
             name8[i] = pentry_name[i * 2];
         if (!strncmp(ptn_name, name8, len))
             if (name8[len] == 0 || !strcmp(&name8[len], BAK_PTN_NAME_EXT))

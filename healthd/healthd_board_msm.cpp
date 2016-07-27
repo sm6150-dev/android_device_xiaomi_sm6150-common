@@ -1,5 +1,5 @@
 /*
- *Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *Copyright (c) 2015-2016, The Linux Foundation. All rights reserved.
  *
  *Redistribution and use in source and binary forms, with or without
  *modification, are permitted provided that the following conditions are
@@ -52,16 +52,32 @@
 
 #define CHARGING_ENABLED_PATH   "/sys/class/power_supply/battery/charging_enabled"
 #define CHARGER_TYPE_PATH       "/sys/class/power_supply/usb/type"
-#define BMS_READY_PATH		"/sys/class/power_supply/bms/soc_reporting_ready"
+#define BMS_READY_PATH          "/sys/class/power_supply/bms/soc_reporting_ready"
+#define BMS_BATT_INFO_PATH      "/sys/class/power_supply/bms/battery_info"
+#define BMS_BATT_INFO_ID_PATH   "/sys/class/power_supply/bms/battery_info_id"
+#define BMS_BATT_RES_ID_PATH    "/sys/class/power_supply/bms/resistance_id"
+#define PERSIST_BATT_INFO_PATH  "/persist/bms/batt_info.txt"
 
-#define LOGE(x...) do { KLOG_ERROR("charger", x); } while (0)
-#define LOGW(x...) do { KLOG_WARNING("charger", x); } while (0)
-#define LOGV(x...) do { KLOG_DEBUG("charger", x); } while (0)
+#define CHGR_TAG                "charger"
+#define HEALTHD_TAG             "healthd_msm"
+#define LOGE(tag, x...) do { KLOG_ERROR(tag, x); } while (0)
+#define LOGW(tag, x...) do { KLOG_WARNING(tag, x); } while (0)
+#define LOGV(tag, x...) do { KLOG_DEBUG(tag, x); } while (0)
 
 enum {
     RED_LED = 0x01 << 0,
     GREEN_LED = 0x01 << 1,
     BLUE_LED = 0x01 << 2,
+};
+
+enum batt_info_params {
+    BATT_INFO_NOTIFY = 0,
+    BATT_INFO_SOC,
+    BATT_INFO_RES_ID,
+    BATT_INFO_VOLTAGE,
+    BATT_INFO_TEMP,
+    BATT_INFO_FCC,
+    BATT_INFO_MAX,
 };
 
 struct led_ctl {
@@ -87,6 +103,9 @@ struct soc_led_color_mapping soc_leds[3] = {
     {100, GREEN_LED},
 };
 
+static int batt_info_cached[BATT_INFO_MAX];
+static bool healthd_msm_err_log_once;
+
 static int write_file_int(char const* path, int value)
 {
     int fd;
@@ -105,26 +124,14 @@ static int write_file_int(char const* path, int value)
 
 static int set_tricolor_led(int on, int color)
 {
-    int fd, i;
+    int rc, i;
     char buffer[10];
 
     for (i = 0; i < (int)ARRAY_SIZE(leds); i++) {
         if ((color & leds[i].color) && (access(leds[i].path, R_OK | W_OK) == 0)) {
-            fd = open(leds[i].path, O_RDWR);
-            if (fd < 0) {
-                LOGE("Could not open red led node\n");
-                goto cleanup;
-            }
-            if (on)
-                snprintf(buffer, sizeof(int), "%d\n", 255);
-            else
-                snprintf(buffer, sizeof(int), "%d\n", 0);
-
-            if (write(fd, buffer, strlen(buffer)) < 0)
-                LOGE("Could not write to led node\n");
-cleanup:
-            if (fd >= 0)
-                close(fd);
+            rc = write_file_int(leds[i].path, on ? 255 : 0);
+            if (rc < 0)
+                return rc;
         }
     }
 
@@ -148,44 +155,32 @@ static bool is_hvdcp_inserted()
     return hvdcp;
 }
 
-static int leds_blink_for_hvdcp_allow(void)
+static int get_blink_led_for_hvdcp(void)
 {
-    int rc = 0, bytes;
+    int ret, rc = 0, bytes;
     int red_blink_fd = -1, green_blink_fd = -1, type_fd = -1;
     char buf[20];
 
-    green_blink_fd = open(GREEN_LED_BLINK_PATH, O_RDWR);
-    red_blink_fd = open(RED_LED_BLINK_PATH, O_RDWR);
-    if (red_blink_fd < 0 && green_blink_fd < 0) {
-        LOGE("Could not open red && green led blink node\n");
+    type_fd = open(CHARGER_TYPE_PATH, O_RDONLY);
+
+    if (type_fd < 0) {
+        LOGE(CHGR_TAG, "Could not open USB type node\n");
+        return rc;
     } else {
-        type_fd = open(CHARGER_TYPE_PATH, O_RDONLY);
-        if (type_fd < 0) {
-            LOGE("Could not open USB type node\n");
-            close(red_blink_fd);
-            close(green_blink_fd);
+        close(type_fd);
+        ret = write_file_int(GREEN_LED_BLINK_PATH, 0);
+        if (ret < 0) {
+            LOGE(CHGR_TAG, "Fail to write: %s\n", GREEN_LED_BLINK_PATH);
             return rc;
-        } else {
-            close(type_fd);
-            if (red_blink_fd > 0) {
-                rc |= RED_LED;
-                bytes = snprintf(buf, sizeof(buf), "%d\n", 0);
-                if (write(red_blink_fd, buf, bytes) < 0) {
-                    LOGE("Fail to write: %s\n", RED_LED_BLINK_PATH);
-                    rc = 0;
-                }
-                close(red_blink_fd);
-            }
-            if (green_blink_fd > 0) {
-                rc |= GREEN_LED;
-                bytes = snprintf(buf, sizeof(buf), "%d\n", 0);
-                if (write(green_blink_fd, buf, bytes) < 0) {
-                    LOGE("Fail to write: %s\n", GREEN_LED_BLINK_PATH);
-                    rc = 0;
-                }
-                close(green_blink_fd);
-            }
         }
+        rc |= GREEN_LED;
+
+        ret = write_file_int(RED_LED_BLINK_PATH, 0);
+        if (ret < 0) {
+            LOGE(CHGR_TAG, "Fail to write: %s\n", RED_LED_BLINK_PATH);
+            return rc;
+        }
+        rc |= RED_LED;
     }
 
     return rc;
@@ -219,7 +214,7 @@ void healthd_board_mode_charger_battery_update(
     bool blink = false;
 
     if (blink_for_hvdcp == -1)
-        blink_for_hvdcp = leds_blink_for_hvdcp_allow();
+        blink_for_hvdcp = get_blink_led_for_hvdcp();
 
     if ((blink_for_hvdcp > 0) && is_hvdcp_inserted())
         blink = true;
@@ -237,22 +232,30 @@ void healthd_board_mode_charger_battery_update(
             if (blink_for_hvdcp & RED_LED) {
                 rc = write_file_int(RED_LED_BLINK_PATH, HVDCP_BLINK_TYPE);
                 if (rc < 0) {
-                    LOGE("Fail to write: %s\n", RED_LED_BLINK_PATH);
+                    LOGE(CHGR_TAG, "Fail to write: %s\n", RED_LED_BLINK_PATH);
                     return;
                 }
             }
             if (blink_for_hvdcp & GREEN_LED) {
                 rc = write_file_int(GREEN_LED_BLINK_PATH, HVDCP_BLINK_TYPE);
                 if (rc < 0) {
-                    LOGE("Fail to write: %s\n", GREEN_LED_BLINK_PATH);
+                    LOGE(CHGR_TAG, "Fail to write: %s\n", GREEN_LED_BLINK_PATH);
                     return;
                 }
             }
         } else {
-                set_tricolor_led(0, old_color);
-                set_tricolor_led(1, color);
-                old_color = color;
-                LOGV("soc = %d, set led color 0x%x\n", soc, soc_leds[i].color);
+                rc = set_tricolor_led(0, old_color);
+                if (rc < 0)
+                    LOGE(CHGR_TAG, "Error in setting old_color on tricolor_led\n");
+
+                rc = set_tricolor_led(1, color);
+                if (rc < 0)
+                    LOGE(CHGR_TAG, "Error in setting color on tricolor_led\n");
+
+                if (!rc) {
+                    old_color = color;
+                    LOGV(CHGR_TAG, "soc = %d, set led color 0x%x\n", soc, soc_leds[i].color);
+                }
         }
     }
 }
@@ -261,34 +264,22 @@ void healthd_board_mode_charger_battery_update(
 #define BACKLIGHT_OFF_LEVEL    0
 void healthd_board_mode_charger_set_backlight(bool en)
 {
-    int fd;
-    char buffer[10];
+    int rc;
 
     if (access(BACKLIGHT_PATH, R_OK | W_OK) != 0)
     {
-        LOGW("Backlight control not support\n");
+        LOGW(CHGR_TAG, "Backlight control not support\n");
         return;
     }
 
-    memset(buffer, '\0', sizeof(buffer));
-    fd = open(BACKLIGHT_PATH, O_RDWR);
-    if (fd < 0) {
-        LOGE("Could not open backlight node : %s\n", strerror(errno));
-        goto cleanup;
+    rc = write_file_int(BACKLIGHT_PATH, en ? BACKLIGHT_ON_LEVEL :
+                BACKLIGHT_OFF_LEVEL);
+    if (rc < 0) {
+        LOGE(CHGR_TAG, "Could not write to backlight node : %s\n", strerror(errno));
+        return;
     }
-    LOGV("set backlight status to %d\n", en);
-    if (en)
-        snprintf(buffer, sizeof(buffer), "%d\n", BACKLIGHT_ON_LEVEL);
-    else
-        snprintf(buffer, sizeof(buffer), "%d\n", BACKLIGHT_OFF_LEVEL);
 
-    if (write(fd, buffer,strlen(buffer)) < 0) {
-        LOGE("Could not write to backlight node : %s\n", strerror(errno));
-        goto cleanup;
-    }
-cleanup:
-    if (fd >= 0)
-        close(fd);
+    LOGV(CHGR_TAG, "set backlight status to %d\n", en);
 }
 
 #define WAIT_BMS_READY_TIMES_MAX	200
@@ -309,8 +300,8 @@ void healthd_board_mode_charger_init()
     ret = read(fd, buff, sizeof(buff));
     close(fd);
     if (ret > 0) {
-	sscanf(buff, "%d\n", &charging_enabled);
-        LOGW("android charging is %s\n",
+        sscanf(buff, "%d\n", &charging_enabled);
+        LOGW(CHGR_TAG, "android charging is %s\n",
                 !!charging_enabled ? "enabled" : "disabled");
         /* if charging is disabled, reboot and exit power off charging */
         if (!charging_enabled)
@@ -321,28 +312,235 @@ void healthd_board_mode_charger_init()
             return;
     while (1) {
         ret = read(fd, buff, sizeof(buff));
-        if (ret >= 0)
-	    sscanf(buff, "%d\n", &bms_ready);
-	else
-	    LOGE("read soc-ready failed, ret=%d\n", ret);
+        if (ret >= 0) {
+            sscanf(buff, "%d\n", &bms_ready);
+        } else {
+            LOGE(CHGR_TAG, "read soc-ready failed, ret=%d\n", ret);
+            break;
+        }
 
-	if ((bms_ready > 0) || (wait_count++ > WAIT_BMS_READY_TIMES_MAX))
-	    break;
-	usleep(WAIT_BMS_READY_INTERVAL_USEC);
-	lseek(fd, 0, SEEK_SET);
+        if ((bms_ready > 0) || (wait_count++ > WAIT_BMS_READY_TIMES_MAX))
+            break;
+        usleep(WAIT_BMS_READY_INTERVAL_USEC);
+        lseek(fd, 0, SEEK_SET);
     }
     close(fd);
-    LOGE("Checking BMS SoC ready done!\n");
+    LOGV(CHGR_TAG, "Checking BMS SoC ready done %d!\n", bms_ready);
+}
+
+static void healthd_batt_info_notify()
+{
+    int rc, fd, id = 0;
+    int bms_ready = 0;
+    int wait_count = 0;
+    char buff[100] = "";
+    int batt_info[BATT_INFO_MAX];
+    char *ptr, *tmp, *temp_str;
+    char path_str[50] = "";
+    bool notify_bms = false;
+
+    fd = open(PERSIST_BATT_INFO_PATH, O_RDONLY);
+    if (fd < 0) {
+        LOGW(HEALTHD_TAG, "Error in opening batt_info.txt, fd=%d\n", fd);
+        fd = creat(PERSIST_BATT_INFO_PATH, S_IRWXU);
+        if (fd < 0) {
+            LOGE(HEALTHD_TAG, "Couldn't create file, fd=%d errno=%s\n", fd,
+                 strerror(errno));
+            goto out;
+        }
+        LOGV(HEALTHD_TAG, "Created file %s\n", PERSIST_BATT_INFO_PATH);
+        close(fd);
+        goto out;
+    } else {
+        LOGV(HEALTHD_TAG, "opened %s\n", PERSIST_BATT_INFO_PATH);
+    }
+
+    rc = read(fd, buff, sizeof(buff));
+    if (rc < 0) {
+        LOGE(HEALTHD_TAG, "Error in reading fd %d, rc=%d\n", fd, rc);
+        close(fd);
+        goto out;
+    }
+    close(fd);
+
+    temp_str = strtok_r(buff, ":", &ptr);
+    id = 1;
+    while (temp_str != NULL && id < BATT_INFO_MAX) {
+        batt_info[id++] = (int)strtol(temp_str, &tmp, 10);
+        temp_str = strtok_r(NULL, ":", &ptr);
+    }
+
+    if (id < BATT_INFO_MAX) {
+        LOGE(HEALTHD_TAG, "Read %d batt_info parameters\n", id);
+        goto out;
+    }
+
+    /* Send batt_info parameters to FG driver */
+    for (id = 1; id < BATT_INFO_MAX; id++) {
+        snprintf(path_str, sizeof(path_str), "%s", BMS_BATT_INFO_ID_PATH);
+        rc = write_file_int(path_str, id);
+        if (rc < 0) {
+            LOGE(HEALTHD_TAG, "Error in writing batt_info_id %d, rc=%d\n", id,
+                rc);
+            goto out;
+        }
+
+        snprintf(path_str, sizeof(path_str), "%s", BMS_BATT_INFO_PATH);
+        rc = write_file_int(path_str, batt_info[id]);
+        if (rc < 0) {
+            LOGE(HEALTHD_TAG, "Error in writing batt_info %d, rc=%d\n",
+                batt_info[id], rc);
+            goto out;
+        }
+    }
+
+    notify_bms = true;
+
+out:
+    fd = open(BMS_READY_PATH, O_RDONLY);
+    if (fd < 0) {
+        LOGE(HEALTHD_TAG, "Couldn't open %s\n", BMS_READY_PATH);
+        return;
+    }
+
+    /* Wait for soc_reporting_ready */
+    wait_count = 0;
+    memset(buff, 0, sizeof(buff));
+    while (1) {
+        rc = read(fd, buff, 1);
+        if (rc > 0) {
+            sscanf(buff, "%d\n", &bms_ready);
+        } else {
+            LOGE(HEALTHD_TAG, "read soc-ready failed, rc=%d\n", rc);
+            break;
+        }
+
+        if ((bms_ready > 0) || (wait_count++ > WAIT_BMS_READY_TIMES_MAX))
+            break;
+
+        usleep(WAIT_BMS_READY_INTERVAL_USEC);
+        lseek(fd, 0, SEEK_SET);
+    }
+    close(fd);
+
+    if (!bms_ready)
+        notify_bms = false;
+
+    if (!notify_bms) {
+        LOGE(HEALTHD_TAG, "Not notifying BMS\n");
+        return;
+    }
+
+    /* Notify FG driver */
+    snprintf(path_str, sizeof(path_str), "%s", BMS_BATT_INFO_ID_PATH);
+    rc = write_file_int(path_str, BATT_INFO_NOTIFY);
+    if (rc < 0) {
+        LOGE(HEALTHD_TAG, "Error in writing batt_info_id, rc=%d\n", rc);
+        return;
+    }
+
+    snprintf(path_str, sizeof(path_str), "%s", BMS_BATT_INFO_PATH);
+    rc = write_file_int(path_str, INT_MAX - 1);
+    if (rc < 0)
+        LOGE(HEALTHD_TAG, "Error in writing batt_info, rc=%d\n", rc);
 }
 
 void healthd_board_init(struct healthd_config*)
 {
     // use defaults
     power_off_alarm_init();
+    healthd_batt_info_notify();
 }
 
-int healthd_board_battery_update(struct android::BatteryProperties*)
+static void healthd_store_batt_props(const struct android::BatteryProperties* props)
+{
+    char buff[100];
+    int fd, rc, len, batteryId = 0;
+
+    if (!props->batteryPresent) {
+        return;
+    }
+
+    if (props->batteryLevel == 0 || props->batteryVoltage == 0) {
+        return;
+    }
+
+    memset(buff, 0, sizeof(buff));
+    fd = open(BMS_BATT_RES_ID_PATH, O_RDONLY);
+    if (fd < 0) {
+        if (!healthd_msm_err_log_once) {
+            LOGE(HEALTHD_TAG, "Couldn't open %s\n", BMS_BATT_RES_ID_PATH);
+            healthd_msm_err_log_once = true;
+        }
+    } else {
+        rc = read(fd, buff, 6);
+        if (rc > 0) {
+            sscanf(buff, "%d\n", &batteryId);
+            batteryId /= 1000;
+        } else if (!healthd_msm_err_log_once) {
+            LOGE(HEALTHD_TAG, "reading batt_res_id failed, rc=%d\n", rc);
+            healthd_msm_err_log_once = true;
+        }
+    }
+
+    if (fd >= 0)
+        close(fd);
+
+    if (props->batteryLevel == batt_info_cached[BATT_INFO_SOC] &&
+        props->batteryVoltage == batt_info_cached[BATT_INFO_VOLTAGE] &&
+        props->batteryTemperature == batt_info_cached[BATT_INFO_TEMP] &&
+        props->batteryFullCharge == batt_info_cached[BATT_INFO_FCC] &&
+        batteryId == batt_info_cached[BATT_INFO_RES_ID])
+        return;
+
+    fd = open(PERSIST_BATT_INFO_PATH, O_RDWR | O_TRUNC);
+    if (fd < 0) {
+        /*
+         * Print the error just only once as this function can be called as
+         * long as the system is running and logs should not flood the console.
+         */
+        if (!healthd_msm_err_log_once) {
+            LOGE(HEALTHD_TAG, "Error in opening batt_info.txt, fd=%d\n", fd);
+            healthd_msm_err_log_once = true;
+        }
+        return;
+    }
+
+    len = snprintf(buff, sizeof(buff), "%d:%d:%d:%d:%d", props->batteryLevel,
+                   batteryId, props->batteryVoltage,
+                   props->batteryTemperature, props->batteryFullCharge);
+    if (len < 0) {
+        if (!healthd_msm_err_log_once) {
+            LOGE(HEALTHD_TAG, "Error in printing to buff, len=%d\n", len);
+            healthd_msm_err_log_once = true;
+        }
+        goto out;
+    }
+
+    buff[len] = '\0';
+    rc = write(fd, buff, sizeof(buff));
+    if (rc < 0) {
+        if (!healthd_msm_err_log_once) {
+            LOGE(HEALTHD_TAG, "Error in writing to batt_info.txt, rc=%d\n", rc);
+            healthd_msm_err_log_once = true;
+        }
+        goto out;
+    }
+
+    batt_info_cached[BATT_INFO_SOC] = props->batteryLevel;
+    batt_info_cached[BATT_INFO_RES_ID] = batteryId;
+    batt_info_cached[BATT_INFO_VOLTAGE] = props->batteryVoltage;
+    batt_info_cached[BATT_INFO_TEMP] = props->batteryTemperature;
+    batt_info_cached[BATT_INFO_FCC] = props->batteryFullCharge;
+
+out:
+    if (fd >= 0)
+        close(fd);
+}
+
+int healthd_board_battery_update(struct android::BatteryProperties* props)
 {
     // return 0 to log periodic polled battery status to kernel log
+    healthd_store_batt_props(props);
     return 1;
 }

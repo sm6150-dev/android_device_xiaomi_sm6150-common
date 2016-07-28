@@ -2073,7 +2073,28 @@ case "$target" in
         done
 
         echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+	if [ -f /sys/devices/soc0/soc_id ]; then
+		soc_id=`cat /sys/devices/soc0/soc_id`
+	else
+		soc_id=`cat /sys/devices/system/soc/soc0/id`
+	fi
 
+	if [ -f /sys/devices/soc0/hw_platform ]; then
+		hw_platform=`cat /sys/devices/soc0/hw_platform`
+	else
+		hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+	fi
+
+	case "$soc_id" in
+		"292") #msmcobalt
+		# Start Host based Touch processing
+		case "$hw_platform" in
+		"QRD")
+			start hbtp
+			;;
+		esac
+	    ;;
+	esac
     ;;
 esac
 

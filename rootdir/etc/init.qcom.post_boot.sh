@@ -1304,8 +1304,9 @@ case "$target" in
                 echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
                 # SMP scheduler
-                echo 100 > /proc/sys/kernel/sched_upmigrate
-                echo 100 > /proc/sys/kernel/sched_downmigrate
+                echo 85 > /proc/sys/kernel/sched_upmigrate
+                echo 85 > /proc/sys/kernel/sched_downmigrate
+                echo 19 > /proc/sys/kernel/sched_upmigrate_min_nice
 
                 # Enable sched guided freq control
                 echo 1 > /sys/devices/system/cpu/cpufreq/interactive/use_sched_load
@@ -2183,27 +2184,14 @@ case "$target" in
         start mpdecision
     ;;
     "msm8916")
-        if [ -f /sys/devices/soc0/soc_id ]; then
-           soc_id=`cat /sys/devices/soc0/soc_id`
-        else
-           soc_id=`cat /sys/devices/system/soc/soc0/id`
-        fi
-        if [ $soc_id = 239 ]; then
-            setprop ro.min_freq_0 800000
-            setprop ro.min_freq_4 499200
-        else
-            setprop ro.min_freq_0 800000
-        fi
-        #start perfd after setprop
-        start perfd # start perfd on 8916 and 8939
+        setprop sys.post_boot.parsed 1
     ;;
     "msm8937" | "msm8953")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb
         echo 128 > /sys/block/dm-0/queue/read_ahead_kb
         echo 128 > /sys/block/dm-1/queue/read_ahead_kb
-        rm /data/system/perfd/default_values
-        start perfd
+        setprop sys.post_boot.parsed 1
         start gamed
     ;;
     "msm8974")
@@ -2211,10 +2199,7 @@ case "$target" in
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
     "msm8994" | "msm8992" | "msm8996" | "msmcobalt")
-        rm /data/system/perfd/default_values
-        setprop ro.min_freq_0 384000
-        setprop ro.min_freq_4 384000
-        start perfd
+        setprop sys.post_boot.parsed 1
     ;;
     "apq8084")
         rm /data/system/perfd/default_values

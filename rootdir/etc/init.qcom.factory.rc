@@ -32,12 +32,6 @@ service fastmmi /system/bin/mmi
     group root
     disabled
 
-service srvmag_ffbm /system/bin/servicemanager
-    user root
-    disabled
-    oneshot
-
-
 # Creating a scratch storage on /data for factory testing.
 on factory-fs
     mount tmpfs tmpfs /data
@@ -313,7 +307,7 @@ on mmi
     start config_bluetooth
     start sensors
     start media
-    start srvmag_ffbm
+    start servicemanager
     start surfaceflinger
     start fastmmi
     start wcnss-service

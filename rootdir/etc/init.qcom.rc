@@ -510,10 +510,11 @@ service start_hci_filter /system/bin/wcnss_filter
     group bluetooth qcom_diag system wakelock
     disabled
 
+#net_admin capability needed to write rfkill sysfs entry
 service fmhal_service /system/bin/fmhal_service
     class late_start
     user bluetooth
-    group bluetooth net_bt_admin
+    group bluetooth net_bt_admin net_admin
     disabled
 
 service config_bt_addr /system/bin/btnvtool -O

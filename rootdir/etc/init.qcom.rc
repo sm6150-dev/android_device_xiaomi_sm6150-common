@@ -800,6 +800,9 @@ service cnss-daemon /system/bin/cnss-daemon -n -l
     user system
     group system inet net_admin wifi
 
+on property:sys.shutdown.requested=*
+    stop cnss-daemon
+
 service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
     class late_start
     disabled

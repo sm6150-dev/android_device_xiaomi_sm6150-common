@@ -50,6 +50,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="hide_preferred_network_type_bool" value="false" />
         <boolean name="show_cdma_choices_bool" value="true" />
         <boolean name="allow_video_call_in_low_battery" value="true" />
+        <boolean name="config_enable_display_14digit_imei" value="false" />
     </carrier_config>
 
     <carrier_config mcc="222" mnc="01">
@@ -217,4 +218,49 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ascii_7_bit_support_for_long_message" value="true" />
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
     </carrier_config>
+
+    <carrier_config mcc="310" mnc="030">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="070">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="080">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="030">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="150">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="170">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="280">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="380">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="410">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="560">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="680">
+        <boolean name="config_enable_display_14digit_imei" value="true" />
+    </carrier_config>
+
 </carrier_config_list>

@@ -184,12 +184,18 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
+        <boolean name="config_spn_override_enabled" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="460" mnc="01">
+        <boolean name="config_spn_override_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
+        <boolean name="config_spn_override_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -197,10 +203,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
     </carrier_config>
 
+    <carrier_config mcc="460" mnc="06">
+        <boolean name="config_spn_override_enabled" value="true" />
+    </carrier_config>
+
     <carrier_config mcc="460" mnc="07">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
+        <boolean name="config_spn_override_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">

@@ -272,7 +272,7 @@ function setHDMIPermission() {
 }
 
 # check for HDMI connection
-for fb_cnt in 0 1 2
+for fb_cnt in 0 1 2 3
 do
     file=/sys/class/graphics/fb$fb_cnt/msm_fb_panel_info
     if [ -f "$file" ]

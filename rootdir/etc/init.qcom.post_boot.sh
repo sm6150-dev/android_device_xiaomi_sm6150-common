@@ -2317,3 +2317,15 @@ if [ -f /sys/devices/soc0/select_image ]; then
     echo $image_variant > /sys/devices/soc0/image_variant
     echo $oem_version > /sys/devices/soc0/image_crm_version
 fi
+
+# Change console log level as per console config property
+console_config=`getprop persist.console.silent.config`
+case "$console_config" in
+    "1")
+        echo "Enable console config to $console_config"
+        echo 0 > /proc/sys/kernel/printk
+        ;;
+    *)
+        echo "Enable console config to $console_config"
+        ;;
+esac

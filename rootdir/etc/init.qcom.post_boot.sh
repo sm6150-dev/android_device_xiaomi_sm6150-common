@@ -2053,6 +2053,10 @@ case "$target" in
 	echo 79000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis
 	echo 300000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
 	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif
+
+        # Enable input boost configuration
+        echo "0:1324800" > /sys/module/cpu_boost/parameters/input_boost_freq
+        echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
         # Enable bus-dcvs
         for cpubw in /sys/class/devfreq/*qcom,cpubw*
         do

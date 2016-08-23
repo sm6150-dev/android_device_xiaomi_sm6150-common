@@ -158,6 +158,49 @@ enable_msmcobalt_dcc_config()
     echo 0x179CBAA4 1 > $DCC_PATH/config
     echo 0x179C7AA4 1 > $DCC_PATH/config
 
+    # default configuration
+    #SPM registers
+    echo 0x17989000 > $DCC_PATH/config
+    echo 0x17989C0C > $DCC_PATH/config
+    echo 0x17988064 > $DCC_PATH/config
+    echo 0x17999000 > $DCC_PATH/config
+    echo 0x17999C0C > $DCC_PATH/config
+    echo 0x17998064 > $DCC_PATH/config
+    echo 0x179A9000 > $DCC_PATH/config
+    echo 0x179A9C0C > $DCC_PATH/config
+    echo 0x179A8064 > $DCC_PATH/config
+    echo 0x179B9000 > $DCC_PATH/config
+    echo 0x179B9C0C > $DCC_PATH/config
+    echo 0x179B8064 > $DCC_PATH/config
+    echo 0x17912000 > $DCC_PATH/config
+    echo 0x17912C0C > $DCC_PATH/config
+    echo 0x17911210 > $DCC_PATH/config
+    echo 0x17911290 > $DCC_PATH/config
+    echo 0x17911218 > $DCC_PATH/config
+    echo 0x17889000 > $DCC_PATH/config
+    echo 0x17889C0C > $DCC_PATH/config
+    echo 0x17888064 > $DCC_PATH/config
+    echo 0x17899000 > $DCC_PATH/config
+    echo 0x17899C0C > $DCC_PATH/config
+    echo 0x17898064 > $DCC_PATH/config
+    echo 0x178A9000 > $DCC_PATH/config
+    echo 0x178A9C0C > $DCC_PATH/config
+    echo 0x178A8064 > $DCC_PATH/config
+    echo 0x178B9000 > $DCC_PATH/config
+    echo 0x178B9C0C > $DCC_PATH/config
+    echo 0x178B8064 > $DCC_PATH/config
+    echo 0x17812000 > $DCC_PATH/config
+    echo 0x17812C0C > $DCC_PATH/config
+    echo 0x17811210 > $DCC_PATH/config
+    echo 0x17811290 > $DCC_PATH/config
+    echo 0x17811218 > $DCC_PATH/config
+    echo 0x179D2000 > $DCC_PATH/config
+    echo 0x179D2C0C > $DCC_PATH/config
+    echo 0x17904008 > $DCC_PATH/config
+    echo 0x1790400C > $DCC_PATH/config
+    echo 0x17904010 > $DCC_PATH/config
+    echo 0x17904014 > $DCC_PATH/config
+
     echo  1 > $DCC_PATH/enable
 }
 

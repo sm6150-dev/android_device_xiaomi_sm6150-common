@@ -229,6 +229,119 @@ enable_msm8996_dcc_config()
     echo  1 > $DCC_PATH/enable
 }
 
+# Function MSM8953 DCC configuration
+enable_msm8953_dcc_config()
+{
+    DCC_PATH="/sys/bus/platform/devices/b3000.dcc"
+    if [ ! -d $DCC_PATH ]; then
+        echo "DCC don't exist on this build."
+        return
+    fi
+
+    echo  0 > $DCC_PATH/enable
+    echo cap > $DCC_PATH/func_type
+    echo sram > $DCC_PATH/data_sink
+
+    #GCC_GPLL0
+    echo 0x1821000 0x9 > $DCC_PATH/config
+
+    #GCC_GPLL2
+    echo 0x184A000 0x1 > $DCC_PATH/config
+    echo 0x184A010 0x5 > $DCC_PATH/config
+
+    #GCC_GPLL4
+    echo 0x1824000 0x1 > $DCC_PATH/config
+    echo 0x1824010 0x5 > $DCC_PATH/config
+
+    #GCC_GPLL5
+    echo 0x1825000 0x2 > $DCC_PATH/config
+    echo 0x1825010 0x1 > $DCC_PATH/config
+    echo 0x1825018 0x2 > $DCC_PATH/config
+    echo 0x1825024 0x1 > $DCC_PATH/config
+
+    #GCC_BIMC
+    echo 0x1823000 0x2 > $DCC_PATH/config
+    echo 0x1823010 0x1 > $DCC_PATH/config
+    echo 0x1823018 0x2 > $DCC_PATH/config
+    echo 0x1823024 0x1 > $DCC_PATH/config
+
+    #GCC_GPLL6
+    echo 0x1837000 0x1 > $DCC_PATH/config
+    echo 0x1837010 0x1 > $DCC_PATH/config
+    echo 0x1837018 0x2 > $DCC_PATH/config
+    echo 0x1837024 0x1 > $DCC_PATH/config
+
+    #GCC_SYSTEM_NOC
+    echo 0x1826004 0x2 > $DCC_PATH/config
+
+    #GCC_PCNOC
+    echo 0x1827000 0x2 > $DCC_PATH/config
+
+    #GCC_SYSTEM_MMNOC
+    echo 0x183D000 0x2 > $DCC_PATH/config
+
+    #GCC_DDR
+    echo 0x1832024 0x2 > $DCC_PATH/config
+
+    #GCC_BIMC
+    echo 0x1831018 0x1 > $DCC_PATH/config
+    echo 0x1831004 0x1 > $DCC_PATH/config
+    echo 0x1831024 0x3 > $DCC_PATH/config
+
+    #GCC_Q6
+    echo 0x1838030 0x2 > $DCC_PATH/config
+
+    #GCC_APSS_TCU
+    echo 0x1838000 0x2 > $DCC_PATH/config
+
+    #GCC_APSS_AXI
+    echo 0x1838048 0x2 > $DCC_PATH/config
+
+    # OCIMEM START  #MARK the start
+    echo 0x00448560 1 > $DCC_PATH/config
+    echo 0x004485A0 1 > $DCC_PATH/config
+    echo 0x00448520 1 > $DCC_PATH/config
+    echo 0x00448450 1 > $DCC_PATH/config
+    echo 0x0044C08C 1 > $DCC_PATH/config
+    echo 0x0044C09C 1 > $DCC_PATH/config
+    echo 0x00408420 1 > $DCC_PATH/config
+    echo 0x00408424 1 > $DCC_PATH/config
+    echo 0x00408430 1 > $DCC_PATH/config
+    echo 0x00408434 1 > $DCC_PATH/config
+    echo 0x0041c100 1 > $DCC_PATH/config
+    echo 0x0041c420 1 > $DCC_PATH/config
+    echo 0x0041c424 1 > $DCC_PATH/config
+    echo 0x0041c430 1 > $DCC_PATH/config
+    echo 0x0041c434 1 > $DCC_PATH/config
+
+    echo 0x0040C420 1 > $DCC_PATH/config
+    echo 0x0040C424 1 > $DCC_PATH/config
+    echo 0x0040C430 1 > $DCC_PATH/config
+    echo 0x0040C434 1 > $DCC_PATH/config
+
+    echo 0x00414100 1 > $DCC_PATH/config
+    echo 0x00414420 1 > $DCC_PATH/config
+    echo 0x00414424 1 > $DCC_PATH/config
+    echo 0x00414430 1 > $DCC_PATH/config
+    echo 0x00414434 1 > $DCC_PATH/config
+    echo 0x00418420 1 > $DCC_PATH/config
+    echo 0x00418424 1 > $DCC_PATH/config
+    echo 0x00418430 1 > $DCC_PATH/config
+    echo 0x00418434 1 > $DCC_PATH/config
+
+    echo 0x00410420 1 > $DCC_PATH/config
+    echo 0x00410424 1 > $DCC_PATH/config
+    echo 0x00410430 1 > $DCC_PATH/config
+    echo 0x00410434 1 > $DCC_PATH/config
+
+    echo 0x00420420 1 > $DCC_PATH/config
+    echo 0x00420424 1 > $DCC_PATH/config
+    echo 0x00420430 1 > $DCC_PATH/config
+    echo 0x00420434 1 > $DCC_PATH/config
+
+    echo  1 > $DCC_PATH/enable
+}
+
 # Function MSM8976 DCC configuration
 enable_msm8976_dcc_config()
 {
@@ -350,6 +463,11 @@ enable_dcc_config()
 	    echo "Enabling DCC config for msmcobalt."
 	    enable_msmcobalt_dcc_config
 	    ;;
+
+        "msm8953")
+            echo "Enabling DCC config for 8953."
+            enable_msm8953_dcc_config
+            ;;
 
         "msm8952")
             case "$soc_id" in

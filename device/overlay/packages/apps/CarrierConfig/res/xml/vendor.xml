@@ -52,6 +52,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_video_call_in_low_battery" value="true" />
         <boolean name="config_enable_display_14digit_imei" value="false" />
         <boolean name="config_hide_preview_in_vt_confcall" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="false" />
     </carrier_config>
 
     <carrier_config mcc="222" mnc="01">
@@ -193,6 +194,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="450" mnc="05">
         <boolean name="allow_video_call_in_low_battery" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="true" />
     </carrier_config>
 
     <carrier_config mcc="450" mnc="06">
@@ -201,6 +203,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="450" mnc="08">
         <boolean name="allow_video_call_in_low_battery" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="00">

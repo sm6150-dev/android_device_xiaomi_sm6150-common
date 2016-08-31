@@ -2130,6 +2130,8 @@ case "$target" in
 	    ;;
 	esac
 	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
+	# enable LPM prediction
+	echo Y > /sys/module/lpm_levels/parameters/lpm_prediction
     ;;
 esac
 

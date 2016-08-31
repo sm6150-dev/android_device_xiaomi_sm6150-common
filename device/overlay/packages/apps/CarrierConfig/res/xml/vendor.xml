@@ -52,6 +52,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_video_call_in_low_battery" value="true" />
         <boolean name="config_enable_display_14digit_imei" value="false" />
         <boolean name="config_hide_preview_in_vt_confcall" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="false" />
     </carrier_config>
 
     <carrier_config mcc="222" mnc="01">
@@ -63,136 +64,159 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="854">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="855">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="856">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="857">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="858">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="859">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="860">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="861">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="862">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="863">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="864">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="865">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="866">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="867">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="868">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="869">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="870">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="871">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="872">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="873">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="874">
         <boolean name="config_display_wfc_mode" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
         <boolean name="config_hide_preview_in_vt_confcall" value="true" />
+        <boolean name="config_carrier_specific_network_type_display" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="450" mnc="05">
         <boolean name="allow_video_call_in_low_battery" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="true" />
     </carrier_config>
 
     <carrier_config mcc="450" mnc="06">
@@ -201,6 +225,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="450" mnc="08">
         <boolean name="allow_video_call_in_low_battery" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="00">
@@ -208,10 +233,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
         <boolean name="config_spn_override_enabled" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -219,15 +246,26 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
         <boolean name="ascii_7_bit_support_for_long_message" value="true" />
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+    </carrier_config>
+
+    <carrier_config mcc="460" mnc="04">
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+    </carrier_config>
+
+    <carrier_config mcc="460" mnc="05">
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="06">
         <boolean name="config_spn_override_enabled" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -235,22 +273,34 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+    </carrier_config>
+
+    <carrier_config mcc="460" mnc="09">
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+    </carrier_config>
+
+    <carrier_config mcc="460" mnc="10">
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="11">
         <boolean name="ascii_7_bit_support_for_long_message" value="true" />
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
         <boolean name="ascii_7_bit_support_for_long_message" value="true" />
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
+        <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">

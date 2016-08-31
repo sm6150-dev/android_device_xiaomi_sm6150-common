@@ -134,7 +134,7 @@ case "$usb_config" in
 		  ;;
 	          "msm8937")
 			case "$soc_id" in
-				"313")
+				"313" | "320")
 				   setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
 				;;
 				*)
@@ -204,7 +204,7 @@ case "$target" in
     ;;
     "msm8937")
 	case "$soc_id" in
-		"313")
+		"313" | "320")
 		   echo BAM2BAM_IPA > /sys/class/android_usb/android0/f_rndis_qc/rndis_transports
 		;;
 	esac

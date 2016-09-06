@@ -1381,6 +1381,9 @@ case "$target" in
                 echo 0 > /sys/devices/system/cpu/cpu2/sched_prefer_idle
                 echo 0 > /sys/devices/system/cpu/cpu3/sched_prefer_idle
 
+		# core_ctl is not needed for 8917. Disable it.
+		echo 1 > /sys/devices/system/cpu/cpu0/core_ctl/disable
+
                 for devfreq_gov in /sys/class/devfreq/qcom,mincpubw*/governor
                 do
                     echo "cpufreq" > $devfreq_gov

@@ -32,3 +32,4 @@
          count are put into the overflow menu. -->
     <integer name="call_card_max_buttons">6</integer>
 </resources>
+

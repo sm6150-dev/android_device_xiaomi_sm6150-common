@@ -20,13 +20,14 @@ QCOM_BOARD_PLATFORMS += msm8937
 QCOM_BOARD_PLATFORMS += msm8953
 QCOM_BOARD_PLATFORMS += msmcobalt
 QCOM_BOARD_PLATFORMS += msmfalcon
+QCOM_BOARD_PLATFORMS += msmskunk
 
 QSD8K_BOARD_PLATFORMS := qsd8k
 
 TARGET_USE_VENDOR_CAMERA_EXT := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msmcobalt msmfalcon
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msmcobalt msmfalcon msmskunk
 
 #List of targets that use master side content protection
 MASTER_SIDE_CP_TARGET_LIST := msm8996 msmcobalt

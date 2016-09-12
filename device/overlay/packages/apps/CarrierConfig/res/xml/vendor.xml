@@ -330,6 +330,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <boolean name="config_disable_clir_over_ut" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -343,6 +344,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <boolean name="config_disable_clir_over_ut" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -371,6 +373,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="config_spn_override_enabled" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <boolean name="config_disable_clir_over_ut" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -378,6 +381,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <boolean name="config_enable_callbarring_over_ims" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <boolean name="config_disable_clir_over_ut" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">

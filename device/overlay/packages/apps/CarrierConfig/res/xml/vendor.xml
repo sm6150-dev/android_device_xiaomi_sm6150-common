@@ -404,46 +404,129 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="030">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="070">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="080">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="150">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="170">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="280">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="380">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="410">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="560">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="680">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="260">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="160">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="200">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="210">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="220">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="230">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="240">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="250">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="270">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="300">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="310">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="490">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="530">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="580">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="590">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="640">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="660">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="310" mnc="800">
+        <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
 </carrier_config_list>

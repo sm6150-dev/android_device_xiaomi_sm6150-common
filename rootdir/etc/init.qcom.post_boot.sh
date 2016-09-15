@@ -2027,7 +2027,6 @@ case "$target" in
 		echo N > /sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled
 		echo N > /sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled
 		#Enable all LPMs by default
-		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 	fi
 
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
@@ -2127,6 +2126,7 @@ case "$target" in
 		esac
 	    ;;
 	esac
+	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
     ;;
 esac
 

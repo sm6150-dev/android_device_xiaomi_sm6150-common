@@ -52,7 +52,7 @@ static int saved_interactive_mode = -1;
 static int display_hint_sent;
 static int video_encode_hint_sent;
 
-//static void process_video_encode_hint(void *metadata);
+static void process_video_encode_hint(void *metadata);
 
 int  power_hint_override(struct power_module *module, power_hint_t hint,
         void *data)
@@ -63,7 +63,7 @@ int  power_hint_override(struct power_module *module, power_hint_t hint,
             break;
         case POWER_HINT_VIDEO_ENCODE:
         {
-            //process_video_encode_hint(data);
+            process_video_encode_hint(data);
             return HINT_HANDLED;
         }
     }
@@ -117,7 +117,7 @@ int  set_interactive_override(struct power_module *module, int on)
     saved_interactive_mode = !!on;
     return HINT_HANDLED;
 }
-#if 0
+
 /* Video Encode Hint */
 static void process_video_encode_hint(void *metadata)
 {
@@ -135,7 +135,7 @@ static void process_video_encode_hint(void *metadata)
                             if (get_scaling_governor_check_cores(governor,
                                 sizeof(governor),CPU3) == -1) {
                                     ALOGE("Can't obtain scaling governor.");
-                                    return HINT_HANDLED;
+                                    return;
                             }
                     }
             }
@@ -192,4 +192,4 @@ static void process_video_encode_hint(void *metadata)
     }
     return;
 }
-#endif
+

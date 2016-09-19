@@ -1165,3 +1165,6 @@ service logdumpd /system/bin/logcat -b all -v threadtime -D -w /dev/block/bootde
 # Logdumpd is enabled only for userdebug non-perf build
 on property:ro.logdumpd.enabled=1
     start logdumpd
+
+on property:vold.decrypt=trigger_restart_min_framework
+    start time_daemon

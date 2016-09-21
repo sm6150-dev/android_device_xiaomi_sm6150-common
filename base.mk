@@ -552,7 +552,6 @@ MM_VIDEO := ast-mm-vdec-omx-test
 MM_VIDEO += liblasic
 MM_VIDEO += libOmxVdec
 MM_VIDEO += libOmxVdecHevc
-MM_VIDEO += libOmxVdpp
 MM_VIDEO += libOmxVenc
 MM_VIDEO += libOmxVidEnc
 MM_VIDEO += libOmxSwVdec

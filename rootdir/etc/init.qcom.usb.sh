@@ -114,44 +114,51 @@ case "$usb_config" in
               setprop persist.sys.usb.config diag,diag_mdm,serial_cdev,rmnet_qti_ether,mass_storage,adb
           ;;
           *)
-	  case "$soc_hwplatform" in
-	      "Dragon" | "SBC")
+	  case "$baseband" in
+	      "apq")
 	          setprop persist.sys.usb.config diag,adb
 	      ;;
-              *)
-	      case "$target" in
-                  "msm8916")
-		      setprop persist.sys.usb.config diag,serial_smd,rmnet_bam,adb
-		  ;;
-	          "msm8994" | "msm8992")
-	              setprop persist.sys.usb.config diag,serial_smd,serial_tty,rmnet_ipa,mass_storage,adb
-		  ;;
-	          "msm8996")
-	              setprop persist.sys.usb.config diag,serial_cdev,serial_tty,rmnet_ipa,mass_storage,adb
-		  ;;
-	          "msm8909")
-		      setprop persist.sys.usb.config diag,serial_smd,rmnet_qti_bam,adb
-		  ;;
-	          "msm8937")
-			case "$soc_id" in
-				"313" | "320")
-				   setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
-				;;
-				*)
-				   setprop persist.sys.usb.config diag,serial_smd,rmnet_qti_bam,adb
-				;;
-			esac
-		  ;;
-	          "msm8952" | "msm8953")
-		      setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
-		  ;;
-	          "msmcobalt")
-		      setprop persist.sys.usb.config diag,serial_cdev,rmnet_gsi,adb
-		  ;;
-	          *)
-		      setprop persist.sys.usb.config diag,adb
-		  ;;
-              esac
+	      *)
+	      case "$soc_hwplatform" in
+	          "Dragon" | "SBC")
+	              setprop persist.sys.usb.config diag,adb
+	          ;;
+                  *)
+	          case "$target" in
+                      "msm8916")
+		          setprop persist.sys.usb.config diag,serial_smd,rmnet_bam,adb
+		      ;;
+	              "msm8994" | "msm8992")
+	                  setprop persist.sys.usb.config diag,serial_smd,serial_tty,rmnet_ipa,mass_storage,adb
+		      ;;
+	              "msm8996")
+	                  setprop persist.sys.usb.config diag,serial_cdev,serial_tty,rmnet_ipa,mass_storage,adb
+		      ;;
+	              "msm8909")
+		          setprop persist.sys.usb.config diag,serial_smd,rmnet_qti_bam,adb
+		      ;;
+	              "msm8937")
+			    case "$soc_id" in
+				    "313" | "320")
+				       setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
+				    ;;
+				    *)
+				       setprop persist.sys.usb.config diag,serial_smd,rmnet_qti_bam,adb
+				    ;;
+			    esac
+		      ;;
+	              "msm8952" | "msm8953")
+		          setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
+		      ;;
+	              "msmcobalt")
+		          setprop persist.sys.usb.config diag,serial_cdev,rmnet_gsi,adb
+		      ;;
+	              *)
+		          setprop persist.sys.usb.config diag,adb
+		      ;;
+                  esac
+	          ;;
+	      esac
 	      ;;
 	  esac
 	  ;;

@@ -46,6 +46,9 @@
 #include <dirent.h>
 #include <linux/kernel.h>
 #include <asm/byteorder.h>
+#include <map>
+#include <vector>
+#include <string>
 #define LOG_TAG "gpt-utils"
 #include <cutils/log.h>
 #include <cutils/properties.h>
@@ -113,7 +116,7 @@ extern "C" {
 /******************************************************************************
  * TYPES
  ******************************************************************************/
-
+using namespace std;
 enum gpt_state {
     GPT_OK = 0,
     GPT_BAD_SIGNATURE,
@@ -1074,17 +1077,10 @@ static int get_dev_path_from_partition_name(const char *partname,
                                 BOOT_DEV_DIR,
                                 partname);
                 if (stat(path, &st)) {
-                        ALOGE("%s: Unable to find (%s) : %s",
-                                        __func__,
-                                        path,
-                                        strerror(errno));
                         goto error;
                 }
                 if (readlink(path, buf, buflen) < 0)
                 {
-                        ALOGE("%s: readlink error :%s",
-                                        __func__,
-                                        strerror(errno));
                         goto error;
                 } else {
                         buf[PATH_TRUNCATE_LOC] = '\0';
@@ -1094,6 +1090,43 @@ static int get_dev_path_from_partition_name(const char *partname,
         }
         return 0;
 
+error:
+        return -1;
+}
+
+int gpt_utils_get_partition_map(vector<string>& ptn_list,
+                map<string, vector<string>>& partition_map) {
+        char devpath[PATH_MAX] = {'\0'};
+        map<string, vector<string>>::iterator it;
+        if (ptn_list.size() < 1) {
+                fprintf(stderr, "%s: Invalid ptn list\n", __func__);
+                goto error;
+        }
+        //Go through the passed in list
+        for (uint32_t i = 0; i < ptn_list.size(); i++)
+        {
+                //Key in the map is the path to the device that holds the
+                //partition
+                if (get_dev_path_from_partition_name(ptn_list[i].c_str(),
+                                devpath,
+                                sizeof(devpath))) {
+                        //Not necessarily an error. The partition may just
+                        //not be present.
+                        continue;
+                }
+                string path = devpath;
+                it = partition_map.find(path);
+                if (it != partition_map.end()) {
+                        it->second.push_back(ptn_list[i]);
+                } else {
+                        vector<string> str_vec;
+                        str_vec.push_back( ptn_list[i]);
+                        partition_map.insert(pair<string, vector<string>>
+                                        (path, str_vec));
+                }
+                memset(devpath, '\0', sizeof(devpath));
+        }
+        return 0;
 error:
         return -1;
 }
@@ -1491,21 +1524,21 @@ int gpt_disk_commit(struct gpt_disk *disk)
                                 __func__);
                 goto error;
         }
-        //Write back the secondary header
-        if(gpt_set_header(disk->hdr_bak, fd, SECONDARY_GPT) != 0) {
-                ALOGE("%s: Failed to update primary GPT header",
+        //Write back the primary partition array
+        if (gpt_set_pentry_arr(disk->hdr, fd, disk->pentry_arr)) {
+                ALOGE("%s: Failed to write primary GPT partition arr",
                                 __func__);
                 goto error;
         }
-        //Write back the primary partition array
-        if (gpt_set_pentry_arr(disk->hdr, fd, disk->pentry_arr)) {
-                ALOGE("%s: Failed to write GPT partition arr to storage",
+        //Write back the secondary header
+        if(gpt_set_header(disk->hdr_bak, fd, SECONDARY_GPT) != 0) {
+                ALOGE("%s: Failed to update secondary GPT header",
                                 __func__);
                 goto error;
         }
         //Write back the secondary partition array
         if (gpt_set_pentry_arr(disk->hdr_bak, fd, disk->pentry_arr_bak)) {
-                ALOGE("%s: Failed to write GPT partition arr to storage",
+                ALOGE("%s: Failed to write secondary GPT partition arr",
                                 __func__);
                 goto error;
         }

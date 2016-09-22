@@ -29,6 +29,9 @@
 
 #ifndef __GPT_UTILS_H__
 #define __GPT_UTILS_H__
+#include <vector>
+#include <string>
+#include <map>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,13 +79,8 @@ extern "C" {
 #define AB_SLOT_A_SUFFIX                "_a"
 #define AB_SLOT_B_SUFFIX                "_b"
 #define PTN_XBL                         "xbl"
-//This is a list or boot critical partitions that if present on the device
-//would have a backup version to facilitate a failsafe update of themselves.
-#define PTN_SWAP_LIST                   PTN_XBL, "sbl1", "rpm", "tz", "aboot", "hyp", "lksecapp", "keymaster", "cmnlib", "cmnlib64", "pmic", "xbl"
-//This list is more specific to the A/B update feature and represents all the
-//parititions that have A/B versions. In addition to the entried listed in the
-//partiiton swap list this also includes some Android partitions.
-#define AB_PTN_LIST PTN_SWAP_LIST, "boot", "system", "vendor"
+#define PTN_SWAP_LIST                   PTN_XBL, "sbl1", "rpm", "tz", "aboot", "hyp", "lksecapp", "keymaster", "cmnlib", "cmnlib32", "cmnlib64", "pmic", "apdp", "devcfg", "hosd", "keystore", "msadp", "abl", "mdtpsecapp"
+#define AB_PTN_LIST PTN_SWAP_LIST, "boot", "system", "vendor", "modem", "bluetooth"
 #define BOOT_DEV_DIR    "/dev/block/bootdevice/by-name"
 
 /******************************************************************************
@@ -180,6 +178,14 @@ int gpt_utils_is_ufs_device();
 //- Once we locate sgY we call the query ioctl on /dev/sgy to switch
 //the boot lun to either LUNA or LUNB
 int gpt_utils_set_xbl_boot_partition(enum boot_chain chain);
+
+//Given a vector of partition names as a input and a reference to a map,
+//populate the map to indicate which physical disk each of the partitions
+//sits on. The key in the map is the path to the block device where the
+//partiton lies and the value is a vector of strings indicating which of
+//the passed in partiton names sits on that device.
+int gpt_utils_get_partition_map(std::vector<std::string>& partition_list,
+                std::map<std::string,std::vector<std::string>>& partition_map);
 #ifdef __cplusplus
 }
 #endif

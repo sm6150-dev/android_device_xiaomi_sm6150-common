@@ -583,6 +583,7 @@ NQ_NFC += libnfc-nxp_default.conf
 NQ_NFC += nqnfcee_access.xml
 NQ_NFC += nqnfcse_access.xml
 NQ_NFC += Tag
+NQ_NFC += nqnfcinfo
 NQ_NFC += com.android.nfc_extras
 
 #OPENCORE

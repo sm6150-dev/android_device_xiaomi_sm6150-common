@@ -52,3 +52,4 @@ add_lunch_combo msmcobalt-userdebug
 add_lunch_combo msmcobalt_32-userdebug
 add_lunch_combo msmfalcon_64-userdebug
 add_lunch_combo msmfalcon_32-userdebug
+add_lunch_combo msmskunk-userdebug

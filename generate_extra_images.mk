@@ -21,6 +21,37 @@ recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
 INSTALLED_USBIMAGE_TARGET := $(PRODUCT_OUT)/usbdisk.img
 endif
 
+#For A/B builds we need to create the mount points at compile time
+ifeq ($(BOARD_BUILD_SYSTEM_ROOT_IMAGE), true)
+FIRMWARE_MOUNT_POINT := $(TARGET_ROOT_OUT)/firmware
+BT_FIRMWARE_MOUNT_POINT := $(TARGET_ROOT_OUT)/bt_firmware
+DSP_MOUNT_POINT := $(TARGET_ROOT_OUT)/dsp
+PERSIST_MOUNT_POINT := $(TARGET_ROOT_OUT)/persist
+ALL_DEFAULT_INSTALLED_MODULES += $(FIRMWARE_MOUNT_POINT) \
+				 $(BT_FIRMWARE_MOUNT_POINT) \
+				 $(DSP_MOUNT_POINT) \
+				 $(PERSIST_MOUNT_POINT)
+$(FIRMWARE_MOUNT_POINT):
+	@echo "Creating $(FIRMWARE_MOUNT_POINT)"
+	@mkdir -p $(TARGET_ROOT_OUT)/firmware
+	@mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/firmware
+
+$(BT_FIRMWARE_MOUNT_POINT):
+	@echo "Creating $(BT_FIRMWARE_MOUNT_POINT)"
+	@mkdir -p $(TARGET_ROOT_OUT)/bt_firmware
+	@mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/bt_firmware
+
+$(DSP_MOUNT_POINT):
+	@echo "Creating $(DSP_MOUNT_POINT)"
+	@mkdir -p $(TARGET_ROOT_OUT)/dsp
+	@mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/dsp
+
+$(PERSIST_MOUNT_POINT):
+	@echo "Creating $(PERSIST_MOUNT_POINT)"
+	@mkdir -p $(TARGET_ROOT_OUT)/persist
+	@mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/persist
+endif
+
 #----------------------------------------------------------------------
 # Generate secure boot image
 #----------------------------------------------------------------------

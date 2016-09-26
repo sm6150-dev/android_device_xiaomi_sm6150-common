@@ -171,16 +171,16 @@ static int get_blink_led_for_hvdcp(void)
         ret = write_file_int(GREEN_LED_BLINK_PATH, 0);
         if (ret < 0) {
             LOGE(CHGR_TAG, "Fail to write: %s\n", GREEN_LED_BLINK_PATH);
-            return rc;
-        }
-        rc |= GREEN_LED;
+        } else {
+            rc |= GREEN_LED;
+	}
 
         ret = write_file_int(RED_LED_BLINK_PATH, 0);
         if (ret < 0) {
             LOGE(CHGR_TAG, "Fail to write: %s\n", RED_LED_BLINK_PATH);
-            return rc;
-        }
-        rc |= RED_LED;
+        } else {
+            rc |= RED_LED;
+	}
     }
 
     return rc;

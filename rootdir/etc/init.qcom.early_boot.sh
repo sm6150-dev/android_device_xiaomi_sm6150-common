@@ -336,3 +336,9 @@ if [ "$boot_reason" = "3" ] || [ "$reboot_reason" = "true" ]; then
 else
     setprop ro.alarm_boot false
 fi
+
+# copy GPU frequencies to system property
+if [ -f /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies ]; then
+    gpu_freq=`cat /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies` 2> /dev/null
+    setprop ro.gpu.available_frequencies "$gpu_freq"
+fi

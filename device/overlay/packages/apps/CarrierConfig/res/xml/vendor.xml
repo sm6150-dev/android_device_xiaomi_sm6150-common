@@ -62,11 +62,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
              TRUE - remove modify call capabilities which will hide modify call button -->
         <boolean name="remove_modify_call_capability" value="false" />
         <!-- Config to show/hide Video quality toast -->
-        <bool name="show_video_quality_toast">true</bool>
+        <boolean name="show_video_quality_toast" value="true"/>
         <!-- Config to show/hide call session event toast like player start/stop -->
-        <bool name="show_call_session_event_toast">true</bool>
+        <boolean name="show_call_session_event_toast" value="true"/>
         <!-- Config to show/hide data usage toast -->
-        <bool name="show_data_usage_toast">true</bool>
+        <boolean name="show_data_usage_toast" value="true"/>
 
     </carrier_config>
 

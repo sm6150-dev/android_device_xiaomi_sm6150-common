@@ -525,20 +525,24 @@ enable_dcc_config()
 
 enable_msmcobalt_core_hang_config()
 {
-    CORE_PATH="/sys/devices/system/cpu/hang_detect"
+    CORE_PATH_SILVER="/sys/devices/system/cpu/hang_detect_silver"
+    CORE_PATH_GOLD="/sys/devices/system/cpu/hang_detect_gold"
     if [ ! -d $CORE_PATH ]; then
         echo "CORE hang does not exist on this build."
         return
     fi
 
     #select instruction retire as the pmu event
-    echo 0x7 > $CORE_PATH/pmu_event_sel
+    echo 0x7 > $CORE_PATH_SILVER/pmu_event_sel
+    echo 0xA > $CORE_PATH_GOLD/pmu_event_sel
 
-    #set the threshold to around 0.5 second
-    echo 0x000f4240 > $CORE_PATH/threshold
+    #set the threshold to around 9ms
+    echo 0x2a300 > $CORE_PATH_SILVER/threshold
+    echo 0x2a300 > $CORE_PATH_GOLD/threshold
 
     #To the enable core hang detection
-    #echo 0x1 > /sys/devices/system/cpu/hang_detect/enable
+    #echo 0x1 > /sys/devices/system/cpu/hang_detect_silver/enable
+    #echo 0x1 > /sys/devices/system/cpu/hang_detect_gold/enable
 }
 
 enable_msmcobalt_gladiator_hang_config()

@@ -281,7 +281,6 @@ INIT += enable_swap.sh
 INIT += init.mdm.sh
 INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
-INIT += init.qcom.debug.sh
 INIT += init.qcom.sensors.sh
 
 #IPROUTE2
@@ -863,6 +862,7 @@ PRODUCT_PACKAGES_DEBUG := init.qcom.testscripts.sh
 
 #Add init.qcom.test.rc to PRODUCT_PACKAGES_DEBUG list
 PRODUCT_PACKAGES_DEBUG += init.qcom.test.rc
+PRODUCT_PACKAGES_DEBUG += init.qcom.debug.sh
 
 #NANOPB_LIBRARY_NAME := libnanopb-c-2.8.0
 

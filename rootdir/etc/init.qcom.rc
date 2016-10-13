@@ -1107,27 +1107,6 @@ service LKCore-rel /system/vendor/bin/LKCore
     user system
     group system log qcom_diag
 
-# Coresight early boot service
-service cs-early-boot /system/bin/sh /persist/coresight/qdss.agent.sh early-boot /system/etc/init.qcom.debug.sh
-    class core
-    user root
-    oneshot
-
-# Coresight post boot servive
-service cs-post-boot /system/bin/sh /persist/coresight/qdss.agent.sh
-    user root
-    disabled
-    oneshot
-
-on property:sys.boot_completed=1
-    start cs-post-boot
-
-on property:sys.dbg.coresight.enable=1
-    write /persist/coresight/enable 1
-
-on property:sys.dbg.coresight.enable=0
-    write /persist/coresight/enable 0
-
 service qseeproxydaemon /system/vendor/bin/qseeproxydaemon
     class late_start
     user system

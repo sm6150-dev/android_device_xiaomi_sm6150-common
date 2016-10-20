@@ -605,6 +605,8 @@ OPENCORE += pvplayer_engine_test
 #PPP
 PPP := ip-up-vpn
 
+PROTOBUF := libprotobuf-cpp-full
+
 #PVOMX
 PVOMX := libqcomm_omx
 PVOMX += 01_qcomm_omx
@@ -808,6 +810,7 @@ PRODUCT_PACKAGES += $(NQ_NFC)
 endif
 PRODUCT_PACKAGES += $(OPENCORE)
 PRODUCT_PACKAGES += $(PPP)
+PRODUCT_PACKAGES += $(PROTOBUF)
 PRODUCT_PACKAGES += $(PVOMX)
 PRODUCT_PACKAGES += $(RF4CE)
 PRODUCT_PACKAGES += $(SENSORS_HARDWARE)

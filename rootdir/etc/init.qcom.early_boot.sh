@@ -273,6 +273,7 @@ function setHDMIPermission() {
    set_perms $file/pa system.graphics 0664
    set_perms $file/cec/wr_msg system.graphics 0600
    set_perms $file/hdcp/tp system.graphics 0664
+   set_perms $file/hdmi_audio_cb audioserver.audio 0600
    ln -s $dev_file $dev_gfx_hdmi
 }
 

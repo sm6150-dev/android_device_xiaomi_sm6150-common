@@ -267,3 +267,4 @@
 /dev/block/platform/soc/7824900.sdhci/by-name/config    0600   system     system
 /dev/block/platform/soc/7464900.sdhci/by-name/frp       0600   system     system
 /dev/block/platform/soc/624000.ufshc/by-name/frp        0600   system     system
+/dev/block/platform/soc/1da4000.ufshc/by-name/frp       0600   system     system

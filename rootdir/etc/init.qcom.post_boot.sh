@@ -2114,8 +2114,6 @@ case "$target" in
 	echo N > /sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled
 	echo N > /sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled
 	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
-	# enable LPM prediction
-	echo Y > /sys/module/lpm_levels/parameters/lpm_prediction
     ;;
 esac
 

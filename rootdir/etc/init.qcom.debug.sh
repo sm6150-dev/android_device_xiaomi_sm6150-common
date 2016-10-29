@@ -536,7 +536,7 @@ enable_msmcobalt_core_hang_config()
     echo 0x7 > $CORE_PATH_SILVER/pmu_event_sel
     echo 0xA > $CORE_PATH_GOLD/pmu_event_sel
 
-    #set the threshold to around 9ms
+    #set the threshold to around 9 milli-second
     echo 0x2a300 > $CORE_PATH_SILVER/threshold
     echo 0x2a300 > $CORE_PATH_GOLD/threshold
 
@@ -559,12 +559,12 @@ enable_msmcobalt_gladiator_hang_config()
         return
     fi
 
-    #set the threshold to around 0.5 second
-    echo 0x000f4240 > $GLADIATOR_PATH/ace_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/io_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/m1_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/m2_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/pcio_threshold
+    #set the threshold to around 9 milli-second
+    echo 0x0002a300 > $GLADIATOR_PATH/ace_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/io_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/m1_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/m2_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/pcio_threshold
 
     #To enable gladiator hang detection
     #echo 0x1 > /sys/devices/system/cpu/gladiator_hang_detect/enable

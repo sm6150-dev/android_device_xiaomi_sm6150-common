@@ -596,6 +596,14 @@ enable_core_gladiator_hang_config()
 }
 
 coresight_config=`getprop persist.debug.coresight.config`
+coresight_stm_cfg_done=`getprop ro.dbg.coresight.stm_cfg_done`
+
+#Android turns off tracing by default. Make sure tracing is turned on after boot is done
+if [ ! -z $coresight_stm_cfg_done ]
+then
+    echo 1 > /sys/kernel/debug/tracing/tracing_on
+    exit
+fi
 
 enable_dcc_config
 enable_core_gladiator_hang_config
@@ -605,6 +613,7 @@ case "$coresight_config" in
     "stm-events")
         echo "Enabling STM events."
         enable_stm_events
+        setprop ro.dbg.coresight.stm_cfg_done 1
         ;;
     *)
         echo "Skipping coresight configuration."

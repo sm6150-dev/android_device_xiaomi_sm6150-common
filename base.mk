@@ -845,9 +845,6 @@ PRODUCT_PACKAGES += \
 # Qcril configuration file
 PRODUCT_PACKAGES += qcril.db
 
-# Flatland
-PRODUCT_PACKAGES += flatland
-
 # MSM updater library
 PRODUCT_PACKAGES += librecovery_updater_msm
 

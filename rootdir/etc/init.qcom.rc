@@ -338,6 +338,10 @@ on post-fs-data
     chown radio radio /data/misc/radio/copy_complete
     chmod 0660 /data/misc/radio/copy_complete
 
+    # copy prebuilt qcril.db files always
+    copy /system/vendor/qcril.db /data/misc/radio/qcril_prebuilt.db
+    chown radio radio /data/misc/radio/qcril_prebuilt.db
+    chmod 0660 /data/misc/radio/qcril_prebuilt.db
     # File flags for prebuilt ril db file
     write /data/misc/radio/prebuilt_db_support 1
     chown radio radio /data/misc/radio/prebuilt_db_support
@@ -458,6 +462,12 @@ on property:bluetooth.startbtsnoop=true
 on property:bluetooth.startbtsnoop=false
     stop btsnoop
 
+on property:bluetooth.startbtlogger=true
+    start bt_logger
+
+on property:bluetooth.startbtlogger=false
+    stop bt_logger
+
 service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
     class core
     user root
@@ -576,6 +586,13 @@ service bt-sap /system/bin/sapd 15
     oneshot
 
 service btsnoop /system/bin/btsnoop
+   user bluetooth
+   group bluetooth net_bt_admin sdcard_rw sdcard_r media_rw
+   class late_start
+   disabled
+   oneshot
+
+service bt_logger /system/bin/bt_logger
    user bluetooth
    group bluetooth net_bt_admin sdcard_rw sdcard_r media_rw
    class late_start
@@ -1106,27 +1123,6 @@ service LKCore-rel /system/vendor/bin/LKCore
     disabled
     user system
     group system log qcom_diag
-
-# Coresight early boot service
-service cs-early-boot /system/bin/sh /persist/coresight/qdss.agent.sh early-boot /system/etc/init.qcom.debug.sh
-    class core
-    user root
-    oneshot
-
-# Coresight post boot servive
-service cs-post-boot /system/bin/sh /persist/coresight/qdss.agent.sh
-    user root
-    disabled
-    oneshot
-
-on property:sys.boot_completed=1
-    start cs-post-boot
-
-on property:sys.dbg.coresight.enable=1
-    write /persist/coresight/enable 1
-
-on property:sys.dbg.coresight.enable=0
-    write /persist/coresight/enable 0
 
 service qseeproxydaemon /system/vendor/bin/qseeproxydaemon
     class late_start

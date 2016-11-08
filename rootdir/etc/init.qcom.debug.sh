@@ -536,13 +536,19 @@ enable_msmcobalt_core_hang_config()
     echo 0x7 > $CORE_PATH_SILVER/pmu_event_sel
     echo 0xA > $CORE_PATH_GOLD/pmu_event_sel
 
-    #set the threshold to around 9ms
+    #set the threshold to around 9 milli-second
     echo 0x2a300 > $CORE_PATH_SILVER/threshold
     echo 0x2a300 > $CORE_PATH_GOLD/threshold
 
     #To the enable core hang detection
     #echo 0x1 > /sys/devices/system/cpu/hang_detect_silver/enable
     #echo 0x1 > /sys/devices/system/cpu/hang_detect_gold/enable
+}
+
+enable_msmcobalt_osm_wdog_status_config()
+{
+    echo 1 > /sys/kernel/debug/osm/pwrcl_clk/wdog_trace_enable
+    echo 1 > /sys/kernel/debug/osm/perfcl_clk/wdog_trace_enable
 }
 
 enable_msmcobalt_gladiator_hang_config()
@@ -553,15 +559,27 @@ enable_msmcobalt_gladiator_hang_config()
         return
     fi
 
-    #set the threshold to around 0.5 second
-    echo 0x000f4240 > $GLADIATOR_PATH/ace_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/io_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/m1_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/m2_threshold
-    echo 0x000f4240 > $GLADIATOR_PATH/pcio_threshold
+    #set the threshold to around 9 milli-second
+    echo 0x0002a300 > $GLADIATOR_PATH/ace_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/io_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/m1_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/m2_threshold
+    echo 0x0002a300 > $GLADIATOR_PATH/pcio_threshold
 
     #To enable gladiator hang detection
     #echo 0x1 > /sys/devices/system/cpu/gladiator_hang_detect/enable
+}
+
+enable_osm_wdog_status_config()
+{
+    target=`getprop ro.board.platform`
+
+    case "$target" in
+        "msmcobalt")
+            echo "Enabling OSM WDOG status registers for msmcobalt"
+            enable_msmcobalt_osm_wdog_status_config
+        ;;
+    esac
 }
 
 enable_core_gladiator_hang_config()
@@ -578,14 +596,24 @@ enable_core_gladiator_hang_config()
 }
 
 coresight_config=`getprop persist.debug.coresight.config`
+coresight_stm_cfg_done=`getprop ro.dbg.coresight.stm_cfg_done`
+
+#Android turns off tracing by default. Make sure tracing is turned on after boot is done
+if [ ! -z $coresight_stm_cfg_done ]
+then
+    echo 1 > /sys/kernel/debug/tracing/tracing_on
+    exit
+fi
 
 enable_dcc_config
 enable_core_gladiator_hang_config
+enable_osm_wdog_status_config
 
 case "$coresight_config" in
     "stm-events")
         echo "Enabling STM events."
         enable_stm_events
+        setprop ro.dbg.coresight.stm_cfg_done 1
         ;;
     *)
         echo "Skipping coresight configuration."

@@ -219,7 +219,7 @@ case "$target" in
                   ;;
         esac
         ;;
-    "msm8994" | "msm8992" | "msmcobalt")
+    "msm8994" | "msm8992" | "msm8998")
         start_msm_irqbalance
         ;;
     "msm8996")

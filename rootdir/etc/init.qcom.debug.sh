@@ -131,7 +131,7 @@ enable_stm_events()
 }
 
 # Function MSMCOBALT DCC configuration
-enable_msmcobalt_dcc_config()
+enable_msm8998_dcc_config()
 {
     DCC_PATH="/sys/bus/platform/devices/10b3000.dcc"
     if [ ! -d $DCC_PATH ]; then
@@ -502,9 +502,9 @@ enable_dcc_config()
             enable_msm8996_dcc_config
             ;;
 
-	"msmcobalt")
-	    echo "Enabling DCC config for msmcobalt."
-	    enable_msmcobalt_dcc_config
+	"msm8998")
+	    echo "Enabling DCC config for msm8998."
+	    enable_msm8998_dcc_config
 	    ;;
 
         "msm8953")
@@ -523,7 +523,7 @@ enable_dcc_config()
     esac
 }
 
-enable_msmcobalt_core_hang_config()
+enable_msm8998_core_hang_config()
 {
     CORE_PATH_SILVER="/sys/devices/system/cpu/hang_detect_silver"
     CORE_PATH_GOLD="/sys/devices/system/cpu/hang_detect_gold"
@@ -545,13 +545,13 @@ enable_msmcobalt_core_hang_config()
     #echo 0x1 > /sys/devices/system/cpu/hang_detect_gold/enable
 }
 
-enable_msmcobalt_osm_wdog_status_config()
+enable_msm8998_osm_wdog_status_config()
 {
     echo 1 > /sys/kernel/debug/osm/pwrcl_clk/wdog_trace_enable
     echo 1 > /sys/kernel/debug/osm/perfcl_clk/wdog_trace_enable
 }
 
-enable_msmcobalt_gladiator_hang_config()
+enable_msm8998_gladiator_hang_config()
 {
     GLADIATOR_PATH="/sys/devices/system/cpu/gladiator_hang_detect"
     if [ ! -d $GLADIATOR_PATH ]; then
@@ -575,9 +575,9 @@ enable_osm_wdog_status_config()
     target=`getprop ro.board.platform`
 
     case "$target" in
-        "msmcobalt")
-            echo "Enabling OSM WDOG status registers for msmcobalt"
-            enable_msmcobalt_osm_wdog_status_config
+        "msm8998")
+            echo "Enabling OSM WDOG status registers for msm8998"
+            enable_msm8998_osm_wdog_status_config
         ;;
     esac
 }
@@ -587,10 +587,10 @@ enable_core_gladiator_hang_config()
     target=`getprop ro.board.platform`
 
     case "$target" in
-        "msmcobalt")
-            echo "Enabling core & gladiator config for msmcobalt"
-            enable_msmcobalt_core_hang_config
-            enable_msmcobalt_gladiator_hang_config
+        "msm8998")
+            echo "Enabling core & gladiator config for msm8998"
+            enable_msm8998_core_hang_config
+            enable_msm8998_gladiator_hang_config
         ;;
     esac
 }

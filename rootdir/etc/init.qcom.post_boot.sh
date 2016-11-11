@@ -2001,7 +2001,7 @@ case "$target" in
 esac
 
 case "$target" in
-    "msmcobalt")
+    "msm8998")
 
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
 	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
@@ -2102,7 +2102,7 @@ case "$target" in
 	fi
 
 	case "$soc_id" in
-		"292") #msmcobalt
+		"292") #msm8998
 		# Start Host based Touch processing
 		case "$hw_platform" in
 		"QRD")
@@ -2239,7 +2239,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msmcobalt")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998")
         setprop sys.post_boot.parsed 1
     ;;
     "apq8084")

@@ -190,6 +190,11 @@ esac
 
 # check configfs is mounted or not
 if [ -d /config/usb_gadget ]; then
+	msm_serial=`cat /sys/devices/soc0/serial_number`;
+	msm_serial_hex=`printf %08X $msm_serial`
+	machine_type=`cat /sys/devices/soc0/machine`
+	product_string="$machine_type-$soc_hwplatform _SN:$msm_serial_hex"
+	echo "$product_string" > /config/usb_gadget/g1/strings/0x409/product
 	setprop sys.usb.configfs 1
 fi
 

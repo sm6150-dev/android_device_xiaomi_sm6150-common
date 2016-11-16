@@ -151,7 +151,7 @@ case "$usb_config" in
 		          setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
 		      ;;
 	              "msm8998")
-		          setprop persist.sys.usb.config diag,serial_cdev,rmnet_gsi,adb
+		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,adb
 		      ;;
 	              *)
 		          setprop persist.sys.usb.config diag,adb
@@ -172,13 +172,16 @@ case "$target" in
     "msm8996")
         setprop sys.usb.controller "6a00000.dwc3"
         setprop sys.usb.rndis.func.name "rndis_bam"
+	setprop sys.usb.rmnet.func.name "rmnet_bam"
 	;;
     "msm8998")
         setprop sys.usb.controller "a800000.dwc3"
         setprop sys.usb.rndis.func.name "gsi"
+	setprop sys.usb.rmnet.func.name "gsi"
 	;;
     "msmfalcon")
-        setprop sys.usb.controller "a800000.dwc3"
+	setprop sys.usb.controller "a800000.dwc3"
+	setprop sys.usb.rmnet.func.name "rmnet_bam"
         setprop sys.usb.rndis.func.name "rndis_bam"
         ;;
     *)

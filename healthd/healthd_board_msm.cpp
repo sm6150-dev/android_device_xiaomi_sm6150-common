@@ -186,6 +186,7 @@ static int get_blink_led_for_hvdcp(void)
     return rc;
 }
 
+#if QTI_BSP
 #define STR_LEN 8
 void healthd_board_mode_charger_draw_battery(
                 struct android::BatteryProperties *batt_prop)
@@ -204,6 +205,7 @@ void healthd_board_mode_charger_draw_battery(
     gr_color(0xa4, 0xc6, 0x39, 255);
     gr_text(x, y, cap_str, 0);
 }
+#endif
 
 void healthd_board_mode_charger_battery_update(
                 struct android::BatteryProperties *batt_prop)
@@ -448,7 +450,9 @@ out:
 void healthd_board_init(struct healthd_config*)
 {
     // use defaults
+#if QTI_BSP
     power_off_alarm_init();
+#endif
     healthd_batt_info_notify();
 }
 

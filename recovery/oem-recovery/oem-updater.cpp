@@ -36,18 +36,18 @@
 
 Value* DecryptFn(const char* name, State* state, int argc, Expr* argv[]) {
     int rc = -1;
-    char *src_file, *dst_file;
 
     if (argc != 2)
         return ErrorAbort(state, "%s expects 2 args, got %d", name, argc);
 
-    if (ReadArgs(state, argv, 2, &src_file, &dst_file))
+    std::vector<std::string> args;
+    if (ReadArgs(state, 2, argv, &args))
         return NULL;
 
-    rc = decrypt_image(src_file, dst_file);
+    const std::string& src_file = args[0];
+    const std::string& dst_file = args[1];
 
-    free(src_file);
-    free(dst_file);
+    rc = decrypt_image(src_file.c_str(), dst_file.c_str());
 
     return StringValue(strdup(rc >= 0 ? "t" : ""));
 }
@@ -55,27 +55,27 @@ Value* DecryptFn(const char* name, State* state, int argc, Expr* argv[]) {
 Value* BootUpdateFn(const char* name, State* state, int argc, Expr* argv[])
 {
     int rc = 0;
-    char *stageStr;
     enum boot_update_stage stage;
 
     if (argc != 1)
         return ErrorAbort(state, "%s() expects 1 args, got %d", name, argc);
 
-    if (ReadArgs(state, argv, 1, &stageStr))
+    std::vector<std::string> args;
+    if (ReadArgs(state, 1, argv, &args))
         return NULL;
 
-    if (!strcmp(stageStr, "main"))
+    const std::string& stageStr = args[0];
+
+    if (!strcmp(stageStr.c_str(), "main"))
         stage = UPDATE_MAIN;
-    else if (!strcmp(stageStr, "backup"))
+    else if (!strcmp(stageStr.c_str(), "backup"))
         stage = UPDATE_BACKUP;
-    else if (!strcmp(stageStr, "finalize"))
+    else if (!strcmp(stageStr.c_str(), "finalize"))
         stage = UPDATE_FINALIZE;
     else {
         fprintf(stderr, "Unrecognized boot update stage, exitting\n");
         rc = -1;
     }
-
-    free(stageStr);
 
     if (!rc)
         rc = prepare_boot_update(stage);

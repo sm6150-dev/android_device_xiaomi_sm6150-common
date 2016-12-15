@@ -1595,3 +1595,24 @@ on property:sys.usb.config=diag,adb,uac2
     write /sys/class/android_usb/android0/enable 1
     start adbd
     setprop sys.usb.state ${sys.usb.config}
+
+on property:sys.usb.config=diag,adb,video && property:sys.usb.configfs=0
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 05C6
+    write /sys/class/android_usb/android0/idProduct 90CB
+    write /sys/class/android_usb/android0/f_diag/clients diag
+    write /sys/class/android_usb/android0/functions diag,adb,video
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state ${sys.usb.config}
+
+on property:sys.usb.config=diag,adb,uac2,video && property:sys.usb.configfs=0
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 05C6
+    write /sys/class/android_usb/android0/idProduct 90CC
+    write /sys/class/android_usb/android0/f_diag/clients diag
+    write /sys/class/android_usb/android0/functions diag,adb,uac2_func,video
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state ${sys.usb.config}
+

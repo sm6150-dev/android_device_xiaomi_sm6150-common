@@ -284,6 +284,7 @@ function setHDMIPermission() {
    set_perms $file/s3d_mode system.graphics 0664
    set_perms $file/dynamic_fps system.graphics 0664
    set_perms $file/msm_fb_dfps_mode system.graphics 0664
+   set_perms $file/hdr_stream system.graphics 0664
    set_perms $file/cec/enable system.graphics 0664
    set_perms $file/cec/logical_addr system.graphics 0664
    set_perms $file/cec/rd_msg system.graphics 0664

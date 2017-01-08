@@ -33,8 +33,7 @@ LOCAL_CFLAGS += \
 
 ## Includes
 LOCAL_C_INCLUDES := \
-    $(TARGET_OUT_HEADERS)/qmi-framework/inc \
-    $(TARGET_OUT_HEADERS)/qmi/inc
+
 LOCAL_HEADER_LIBRARIES := \
     libloc_core_headers \
     libgps.utils_headers \

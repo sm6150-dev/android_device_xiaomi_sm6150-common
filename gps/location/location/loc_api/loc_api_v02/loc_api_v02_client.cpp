@@ -33,13 +33,10 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "qmi_client.h"
-#include "qmi_idl_lib.h"
-#include "qmi_cci_target_ext.h"
+#include "../include/qmi_client.h"
+#include "../include/qmi_idl_lib.h"
 
 #if defined( _ANDROID_)
-#include "qmi_cci_target.h"
-#include "qmi_cci_common.h"
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_api_v02"
 #endif //_ANDROID_

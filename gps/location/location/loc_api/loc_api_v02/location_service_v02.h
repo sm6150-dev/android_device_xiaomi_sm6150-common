@@ -75,8 +75,7 @@
 /** @defgroup loc_qmi_version Constant values for versioning information */
 
 #include <stdint.h>
-#include "qmi_idl_lib.h"
-#include "common_v01.h"
+#include "../include/qmi_idl_lib.h"
 
 
 #ifdef __cplusplus

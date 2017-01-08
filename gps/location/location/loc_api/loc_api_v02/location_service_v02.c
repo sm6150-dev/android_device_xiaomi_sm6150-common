@@ -34,10 +34,8 @@
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
-#include "qmi_idl_lib_internal.h"
+#include "../include/qmi_client.h"
 #include "location_service_v02.h"
-#include "common_v01.h"
-
 
 /*Type Definitions*/
 static const uint8_t qmiLocApplicationIdStructT_data_v02[] = {

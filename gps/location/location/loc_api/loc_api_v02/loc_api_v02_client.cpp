@@ -1883,14 +1883,8 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
     locClientCallbackDataType *pLocClientCbData,
     int instanceId)
 {
-  qmi_client_type clnt, notifier;
-  bool notifierInitFlag = false;
+  qmi_client_type clnt;
   locClientStatusEnumType status = eLOC_CLIENT_SUCCESS;
-  // os_params must stay in the same scope as notifier
-  // because when notifier is initialized, the pointer
-  // of os_params is retained in QMI framework, and it
-  // used when notifier is released.
-  qmi_client_os_params os_params;
   // instances of this service
   qmi_service_info serviceInfo;
 
@@ -1911,20 +1905,7 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
        break;
     }
 
-    // register for service notification
-    rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
-    notifierInitFlag = (NULL != notifier);
-
-    if (rc != QMI_NO_ERR) {
-        LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
-                 __func__, __LINE__, rc);
-        status = eLOC_CLIENT_FAILURE_INTERNAL;
-        break;
-    }
-
     while (1) {
-        QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
-
         if (instanceId >= 0) {
             // use instance-specific lookup
             rc = qmi_client_get_service_instance(locClientServiceObject, instanceId, &serviceInfo);
@@ -1938,8 +1919,6 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
 
         if(rc == QMI_NO_ERR)
             break;
-
-        QMI_CCI_OS_SIGNAL_WAIT(&os_params, 0);
     }
 
     LOC_LOGV("%s:%d]: passing the pointer %p to qmi_client_init \n",
@@ -1986,12 +1965,6 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
     status = eLOC_CLIENT_SUCCESS;
 
   } while(0);
-
-  /* release the notifier handle */
-  if(true == notifierInitFlag)
-  {
-    qmi_client_release(notifier);
-  }
 
   return status;
 }

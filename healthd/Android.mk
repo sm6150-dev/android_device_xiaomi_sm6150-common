@@ -7,7 +7,8 @@ LOCAL_CFLAGS := -Werror
 LOCAL_C_INCLUDES := \
     system/core/healthd/include/healthd/ \
     system/core/base/include \
-    bootable/recovery
+    bootable/recovery \
+    bootable/recovery/minui/include
 ifneq ($(TARGET_USES_AOSP),true)
 LOCAL_SRC_FILES += healthd_msm_alarm.cpp
 LOCAL_CFLAGS    += -DQTI_BSP=1

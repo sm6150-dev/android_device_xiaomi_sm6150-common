@@ -1,4 +1,10 @@
+ifeq ($(AB_OTA_UPDATER), true)
+BUILD_OEM_UPDATER := true
+endif
 ifneq ($(filter librecovery_updater_msm,$(TARGET_RECOVERY_UPDATER_LIBS)),)
+BUILD_OEM_UPDATER := true
+endif
+ifeq ($(BUILD_OEM_UPDATER), true)
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional

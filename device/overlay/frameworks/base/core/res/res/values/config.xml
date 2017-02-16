@@ -261,8 +261,10 @@
     <!-- Is the device capable of supporting digital pen 
     <bool name="config_digitalPenCapable">true</bool> -->
 
-    <!-- Flag specifying whether VoLTE & VT is availasble on device -->
+    <!-- Flag specifying whether VoLTE, VT and WFC is available on device -->
     <bool name="config_device_volte_available">true</bool>
+    <bool name="config_device_vt_available">true</bool>
+    <bool name="config_device_wfc_ims_available">true</bool>
 
     <!-- Flag specifying whether VoLTE & VT should be available for carrier: independent of
          carrier provisioning. If false: hard disabled. If true: then depends on carrier

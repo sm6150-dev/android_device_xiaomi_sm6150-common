@@ -429,23 +429,23 @@ enable_msm8998_dcc_config()
     echo 0x17811218 > $DCC_PATH/config
     echo 0x179D2000 > $DCC_PATH/config
     echo 0x179D2C0C > $DCC_PATH/config
-    echo 0x17904008 > $DCC_PATH/config
-    echo 0x1790400C > $DCC_PATH/config
-    echo 0x17904010 > $DCC_PATH/config
-    echo 0x17904014 > $DCC_PATH/config
+    echo 0x7ba4008 > $DCC_PATH/config
+    echo 0x7ba400C > $DCC_PATH/config
+    echo 0x7ba4010 > $DCC_PATH/config
+    echo 0x7ba4014 > $DCC_PATH/config
 
     # CCI ACE / Stalled Transaction
-    echo 0x179082B0 > $DCC_PATH/config
+    echo 0x7ba82B0 > $DCC_PATH/config
 
     # 8 times, same register
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
+    echo 0x7ba1000 > $DCC_PATH/config
 
     #SCMO STATUS
     echo 0x01030560  1 > $DCC_PATH/config

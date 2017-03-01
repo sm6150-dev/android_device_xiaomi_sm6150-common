@@ -223,10 +223,12 @@ FM += fmhal_service
 GPS_HARDWARE := gps.conf
 GPS_HARDWARE += gps.default
 GPS_HARDWARE += libgps.utils
-GPS_HARDWARE += libloc_eng
 GPS_HARDWARE += libloc_api_v02
 GPS_HARDWARE += libloc_ds_api
 GPS_HARDWARE += libgnsspps
+GPS_HARDWARE += libgnss
+GPS_HARDWARE += liblocation_api
+GPS_HARDWARE += android.hardware.gnss@1.0-impl-qti
 
 #HDMID
 HDMID := hdmid

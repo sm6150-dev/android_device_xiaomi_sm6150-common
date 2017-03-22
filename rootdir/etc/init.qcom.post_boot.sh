@@ -2001,6 +2001,36 @@ case "$target" in
 esac
 
 case "$target" in
+    "sdm845")
+	# Core control parameters
+	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
+	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
+	echo 30 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres
+	echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms
+	echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster
+	echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres
+
+	# Setting b.L scheduler parameters
+	echo 95 > /proc/sys/kernel/sched_upmigrate
+	echo 90 > /proc/sys/kernel/sched_downmigrate
+	echo 100 > /proc/sys/kernel/sched_group_upmigrate
+	echo 95 > /proc/sys/kernel/sched_group_downmigrate
+	echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
+	echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
+	echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
+	echo 5 > /proc/sys/kernel/sched_spill_nr_run
+	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
+
+	# cpuset parameters
+        echo 0 > /dev/cpuset/background/cpus
+        echo 0-2 > /dev/cpuset/system-background/cpus
+
+	# Turn off scheduler boost at the end
+        echo 0 > /proc/sys/kernel/sched_boost
+    ;;
+esac
+
+case "$target" in
     "msm8998")
 
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus

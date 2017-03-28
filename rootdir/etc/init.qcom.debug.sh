@@ -41,11 +41,6 @@ enable_stm_events()
     then
         return
     fi
-    #bail out if coresight-stm device node isn't present
-    if [ ! -e /dev/coresight-stm ]
-    then
-        return
-    fi
     # bail out if ftrace events aren't present
     if [ ! -d /sys/kernel/debug/tracing/events ]
     then
@@ -53,8 +48,8 @@ enable_stm_events()
     fi
 
     echo 0x2000000 > /sys/bus/coresight/devices/coresight-tmc-etr/mem_size
-    echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/curr_sink
-    echo 1 > /sys/bus/coresight/devices/coresight-stm/enable
+    echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/$sinkenable
+    echo 1 > /sys/bus/coresight/devices/coresight-stm/$srcenable
     echo 1 > /sys/kernel/debug/tracing/tracing_on
     echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
     # timer
@@ -135,6 +130,28 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_core_online/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_pre_frequency_mit/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_frequency_mit/enable
+}
+
+# Function SDM845 DCC configuration
+enable_sdm845_dcc_config()
+{
+    DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
+
+    if [ ! -d $DCC_PATH ]; then
+        echo "DCC does not exist on this build."
+        return
+    fi
+
+    echo 0 > $DCC_PATH/enable
+    echo cap > $DCC_PATH/func_type
+    echo sram > $DCC_PATH/data_sink
+    echo 1 > $DCC_PATH/config_reset
+    echo 2 > $DCC_PATH/curr_list
+
+    #configuration start
+
+    #Apply configuration and enable DCC
+    echo  1 > $DCC_PATH/enable
 }
 
 # Function MSMCOBALT DCC configuration
@@ -1235,6 +1252,11 @@ enable_dcc_config()
                      ;;
             esac
             ;;
+
+        "sdm845")
+            echo "Enabling DCC config for sdm845."
+            enable_sdm845_dcc_config
+            ;;
     esac
 }
 
@@ -1312,6 +1334,8 @@ enable_core_gladiator_hang_config()
 
 coresight_config=`getprop persist.debug.coresight.config`
 coresight_stm_cfg_done=`getprop ro.dbg.coresight.stm_cfg_done`
+srcenable="enable"
+sinkenable="curr_sink"
 
 #Android turns off tracing by default. Make sure tracing is turned on after boot is done
 if [ ! -z $coresight_stm_cfg_done ]
@@ -1326,13 +1350,19 @@ enable_osm_wdog_status_config
 
 case "$coresight_config" in
     "stm-events")
-        if [ $target == "sdm660" ]; then
-        echo "Enabling STM/Debug events for SDM660"
-        enable_sdm660_debug
+        if [ $target == "sdm660" ];
+        then
+            echo "Enabling STM/Debug events for SDM660"
+            enable_sdm660_debug
         else
-        echo "Enabling STM events."
-        enable_stm_events
-        setprop ro.dbg.coresight.stm_cfg_done 1
+            if [ $target == "sdm845" ];
+            then
+                srcenable="enable_source"
+                sinkenable="enable_sink"
+            fi
+            echo "Enabling STM events."
+            enable_stm_events
+            setprop ro.dbg.coresight.stm_cfg_done 1
         fi
         ;;
     *)

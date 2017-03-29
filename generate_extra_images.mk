@@ -504,3 +504,11 @@ kernelclean:
 	$(hide) if [ -f "$(INSTALLED_2K_BOOTIMAGE_TARGET)" ]; then rm  $(INSTALLED_2K_BOOTIMAGE_TARGET); fi
 	$(hide) if [ -f "$(INSTALLED_BCHECC_BOOTIMAGE_TARGET)" ]; then rm  $(INSTALLED_BCHECC_BOOTIMAGE_TARGET); fi
 	@echo "kernel cleanup done"
+
+# Set correct dependency for kernel modules
+ifneq ($(BOARD_VENDOR_KERNEL_MODULES),)
+$(BOARD_VENDOR_KERNEL_MODULES): $(INSTALLED_BOOTIMAGE_TARGET)
+endif
+ifneq ($(BOARD_RECOVERY_KERNEL_MODULES),)
+$(BOARD_RECOVERY_KERNEL_MODULES): $(INSTALLED_BOOTIMAGE_TARGET)
+endif

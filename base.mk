@@ -840,6 +840,8 @@ PRODUCT_PACKAGES += $(WLAN)
 PRODUCT_PACKAGES += $(IPACM)
 PRODUCT_PACKAGES += $(FSTMAN)
 PRODUCT_PACKAGES += $(IMS_EXT)
+# Temp workarround for b/36603742
+PRODUCT_PACKAGES += android.hidl.manager@1.0-java
 
 # Live Wallpapers
 PRODUCT_PACKAGES += \

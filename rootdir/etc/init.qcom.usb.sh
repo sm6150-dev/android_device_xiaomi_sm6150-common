@@ -184,6 +184,11 @@ case "$target" in
 	setprop sys.usb.rmnet.func.name "rmnet_bam"
         setprop sys.usb.rndis.func.name "rndis_bam"
         ;;
+    "msmskunk")
+        setprop sys.usb.controller "a600000.dwc3"
+        setprop sys.usb.rndis.func.name "gsi"
+        setprop sys.usb.rmnet.func.name "gsi"
+        ;;
     *)
 	;;
 esac

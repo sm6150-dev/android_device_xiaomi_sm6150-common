@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -212,6 +212,12 @@ static void power_hint(struct power_module *module, power_hint_t hint,
     switch(hint) {
         case POWER_HINT_VSYNC:
         break;
+        case POWER_HINT_SUSTAINED_PERFORMANCE:
+            ALOGI("Sustained perf power hint not handled in power_hint_override");
+            break;
+        case POWER_HINT_VR_MODE:
+            ALOGI("VR mode power hint not handled in power_hint_override");
+            break;
         case POWER_HINT_INTERACTION:
         {
             int resources[] = {0x702, 0x20F, 0x30F};

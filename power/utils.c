@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013,2015-2017, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -198,6 +198,12 @@ int get_scaling_governor_check_cores(char governor[], int size,int core_num)
     return 0;
 }
 
+int is_interactive_governor(char* governor) {
+   if (strncmp(governor, INTERACTIVE_GOVERNOR, (strlen(INTERACTIVE_GOVERNOR)+1)) == 0)
+      return 1;
+   return 0;
+}
+
 void interaction(int duration, int num_args, int opt_list[])
 {
 #ifdef INTERACTION_BOOST
@@ -214,6 +220,26 @@ void interaction(int duration, int num_args, int opt_list[])
         }
     }
 #endif
+}
+
+int interaction_with_handle(int lock_handle, int duration, int num_args, int opt_list[])
+{
+    if (duration < 0 || num_args < 1 || opt_list[0] == NULL)
+        return 0;
+
+    if (qcopt_handle) {
+        if (perf_lock_acq) {
+            lock_handle = perf_lock_acq(lock_handle, duration, opt_list, num_args);
+            if (lock_handle == -1)
+                ALOGE("Failed to acquire lock.");
+        }
+    }
+    return lock_handle;
+}
+
+void release_request(int lock_handle) {
+    if (qcopt_handle && perf_lock_rel)
+        perf_lock_rel(lock_handle);
 }
 
 void perform_hint_action(int hint_id, int resource_values[], int num_resources)

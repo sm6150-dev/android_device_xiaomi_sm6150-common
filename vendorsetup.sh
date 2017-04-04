@@ -52,4 +52,4 @@ add_lunch_combo msm8998-userdebug
 add_lunch_combo msm8998_32-userdebug
 add_lunch_combo sdm660_64-userdebug
 add_lunch_combo sdm660_32-userdebug
-add_lunch_combo msmskunk-userdebug
+add_lunch_combo sdm845-userdebug

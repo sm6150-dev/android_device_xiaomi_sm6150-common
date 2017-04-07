@@ -30,7 +30,7 @@ TARGET_USE_VENDOR_CAMERA_EXT := true
 MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 sdm660 sdm845
 
 #List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998
+MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660
 
 # Below projects/packages with LOCAL_MODULEs will be used by
 # PRODUCT_PACKAGES to build LOCAL_MODULEs that are tagged with
@@ -102,6 +102,7 @@ AUDIO_HARDWARE += audio.primary.msm8937
 AUDIO_HARDWARE += audio.primary.msm8953
 AUDIO_HARDWARE += audio.primary.msmgold
 AUDIO_HARDWARE += audio.primary.msm8998
+AUDIO_HARDWARE += audio.primary.sdm660
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084
@@ -402,6 +403,9 @@ LIBCOPYBIT += copybit.msm8952
 LIBCOPYBIT += copybit.msm8937
 LIBCOPYBIT += copybit.msm8953
 LIBCOPYBIT += copybit.msm8998
+LIBCOPYBIT += copybit.sdm630
+LIBCOPYBIT += copybit.sdm660
+LIBCOPYBIT += copybit.sda630
 
 #LIBGESTURES
 LIBGESTURES := libgestures
@@ -432,6 +436,8 @@ LIBGRALLOC += gralloc.msm8937
 LIBGRALLOC += gralloc.msm8953
 LIBGRALLOC += gralloc.msm8998
 LIBGRALLOC += libmemalloc
+LIBGRALLOC += gralloc.sdm630
+LIBGRALLOC += gralloc.sdm660
 
 #memtrack
 LIBMEMTRACK := memtrack.default
@@ -448,6 +454,7 @@ LIBMEMTRACK += memtrack.msm8952
 LIBMEMTRACK += memtrack.msm8937
 LIBMEMTRACK += memtrack.msm8953
 LIBMEMTRACK += memtrack.msm8998
+LIBMEMTRACK += memtrack.sdm660
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -471,6 +478,7 @@ LIBLIGHTS += lights.msm8952
 LIBLIGHTS += lights.msm8937
 LIBLIGHTS += lights.msm8953
 LIBLIGHTS += lights.msm8998
+LIBLIGHTS += lights.sdm660
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -495,6 +503,7 @@ LIBHWCOMPOSER += hwcomposer.msm8952
 LIBHWCOMPOSER += hwcomposer.msm8937
 LIBHWCOMPOSER += hwcomposer.msm8953
 LIBHWCOMPOSER += hwcomposer.msm8998
+LIBHWCOMPOSER += hwcomposer.sdm660
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter

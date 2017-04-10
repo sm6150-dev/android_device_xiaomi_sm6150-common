@@ -28,6 +28,10 @@ else
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/config
 endif
 
+# whitelisted app
+PRODUCT_COPY_FILES += \
+    device/qcom/common/qti_whitelist.xml:system/etc/sysconfig/qti_whitelist.xml
+
 PRODUCT_PRIVATE_KEY := device/qcom/common/qcom.key
 PRODUCT_PACKAGES += qcril.db
 

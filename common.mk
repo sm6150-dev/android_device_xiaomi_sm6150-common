@@ -15,8 +15,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.extension_library=libqti-perfd-client.so \
     persist.radio.apm_sim_not_pwdn=1 \
     persist.radio.custom_ecc=1 \
-    persist.radio.sib16_support=1 \
-    persist.radio.multisim.config=dsds
+    persist.radio.sib16_support=1
+
+ifeq ($(TARGET_USES_QCOM_BSP_ATEL),true)
+    PRODUCT_PROPERTY_OVERRIDES += persist.radio.multisim.config=dsds
+endif
 
 ifneq ($(BOARD_FRP_PARTITION_NAME),)
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/$(BOARD_FRP_PARTITION_NAME)

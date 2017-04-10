@@ -126,6 +126,35 @@ ALL_MODULES.$(LOCAL_MODULE).INSTALLED += $(INSTALLED_PERSISTIMAGE_TARGET)
 endif
 
 #----------------------------------------------------------------------
+# Generate device tree overlay image (dtbo.img)
+#----------------------------------------------------------------------
+ifneq ($(strip $(TARGET_NO_KERNEL)),true)
+ifeq ($(strip $(BOARD_KERNEL_SEPARATED_DTBO)),true)
+
+MKDTIMG := $(HOST_OUT_EXECUTABLES)/mkdtimg$(HOST_EXECUTABLE_SUFFIX)
+
+INSTALLED_DTBOIMAGE_TARGET := $(PRODUCT_OUT)/dtbo.img
+
+# Most specific paths must come first in possible_dtbo_dirs
+possible_dtbo_dirs = $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts $(KERNEL_OUT)/arch/arm/boot/dts
+dtbo_dir = $(firstword $(wildcard $(possible_dtbo_dirs)))
+dtbo_objs = $(shell find $(dtbo_dir) -name \*.dtbo)
+
+define build-dtboimage-target
+    $(call pretty,"Target dtbo image: $(INSTALLED_DTBOIMAGE_TARGET)")
+    $(hide) $(MKDTIMG) create $@ --page_size=$(BOARD_KERNEL_PAGESIZE) $(dtbo_objs)
+    $(hide) chmod a+r $@
+endef
+
+$(INSTALLED_DTBOIMAGE_TARGET): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET)
+	$(build-dtboimage-target)
+
+ALL_DEFAULT_INSTALLED_MODULES += $(INSTALLED_DTBOIMAGE_TARGET)
+ALL_MODULES.$(LOCAL_MODULE).INSTALLED += $(INSTALLED_DTBOIMAGE_TARGET)
+endif
+endif
+
+#----------------------------------------------------------------------
 # Generate device tree image (dt.img)
 #----------------------------------------------------------------------
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
@@ -454,7 +483,10 @@ aboot: $(INSTALLED_BOOTLOADER_MODULE)
 endif
 
 .PHONY: kernel
-kernel: $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_SEC_BOOTIMAGE_TARGET) $(INSTALLED_4K_BOOTIMAGE_TARGET)
+kernel: $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_SEC_BOOTIMAGE_TARGET) $(INSTALLED_4K_BOOTIMAGE_TARGET) $(INSTALLED_DTBOIMAGE_TARGET)
+
+.PHONY: dtboimage
+dtboimage: $(INSTALLED_DTBOIMAGE_TARGET)
 
 .PHONY: recoveryimage
 recoveryimage: $(INSTALLED_RECOVERYIMAGE_TARGET) $(INSTALLED_4K_RECOVERYIMAGE_TARGET)

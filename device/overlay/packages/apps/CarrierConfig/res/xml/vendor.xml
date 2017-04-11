@@ -702,6 +702,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </string-array>
         <boolean name="config_show_srvcc_toast" value="true" />
         <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -743,6 +747,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </string-array>
         <boolean name="config_show_srvcc_toast" value="true" />
         <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -811,6 +819,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </string-array>
         <boolean name="config_show_srvcc_toast" value="true" />
         <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -838,6 +850,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </string-array>
         <boolean name="config_show_srvcc_toast" value="true" />
         <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">

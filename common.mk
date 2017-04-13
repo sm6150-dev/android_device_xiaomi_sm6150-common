@@ -1,3 +1,4 @@
+TARGET_USES_QCOM_BSP_ATEL := true
 $(call inherit-product, device/qcom/common/base.mk)
 
 # For PRODUCT_COPY_FILES, the first instance takes precedence.

@@ -655,7 +655,7 @@ service qti /system/vendor/bin/qti
     group radio net_raw diag usb net_admin
     disabled
 
-service sensors /system/bin/sensors.qcom
+service sensors /vendor/bin/sensors.qcom
     class core
     user root
     group root

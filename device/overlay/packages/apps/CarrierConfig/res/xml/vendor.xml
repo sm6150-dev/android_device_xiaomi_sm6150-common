@@ -82,6 +82,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vowifi_call_quality" value="false" />
         <boolean name="config_carrier_ims_call_deflect" value="false" />
 
+        <!-- Config for RTT feature support -->
+        <boolean name="carrier_rtt_supported" value="false" />
+
     </carrier_config>
 
     <carrier_config mcc="204" mnc="04">
@@ -997,6 +1000,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
+    <carrier_config mcc="310" mnc="00">
+        <boolean name="carrier_rtt_supported" value="true" />
+        <boolean name="carrier_rtt_supported_on_vtcalls" value="true"/>
+        <boolean name="carrier_rtt_upgrade_supported" value="true"/>
+    </carrier_config>
+
     <carrier_config mcc="310" mnc="030">
         <boolean name="config_enable_display_14digit_imei" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
@@ -1062,6 +1071,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="260">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="carrier_rtt_supported" value="true" />
+        <boolean name="carrier_rtt_supported_on_vtcalls" value="true"/>
+        <boolean name="carrier_rtt_upgrade_supported" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="160">
@@ -1074,6 +1086,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="210">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="carrier_rtt_supported" value="true" />
+        <boolean name="carrier_rtt_supported_on_vtcalls" value="true"/>
+        <boolean name="carrier_rtt_upgrade_supported" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="220">
@@ -1134,6 +1149,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="311" mnc="480">
         <boolean name="support_video_conference_call_bool" value="false"/>
+        <boolean name="carrier_rtt_supported" value="true" />
+        <boolean name="carrier_rtt_supported_on_vtcalls" value="false"/>
+        <boolean name="carrier_rtt_upgrade_supported" value="false"/>
     </carrier_config>
 
 </carrier_config_list>

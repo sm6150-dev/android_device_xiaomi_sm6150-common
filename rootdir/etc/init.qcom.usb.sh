@@ -223,6 +223,15 @@ if [ -d /config/usb_gadget ]; then
 	fi
 	echo $serialno > /config/usb_gadget/g1/strings/0x409/serialnumber
 
+	persist_comp=`getprop persist.sys.usb.config`
+	comp=`getprop sys.usb.config`
+	echo $persist_comp
+	echo $comp
+	if [ "$comp" != "$persist_comp" ]; then
+		echo "setting sys.usb.config"
+		setprop sys.usb.config $persist_comp
+	fi
+
 	setprop sys.usb.configfs 1
 fi
 

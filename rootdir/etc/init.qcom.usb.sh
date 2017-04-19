@@ -162,7 +162,7 @@ case "$usb_config" in
 	              "msm8952" | "msm8953")
 		          setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
 		      ;;
-	              "msm8998" | "msmfalcon")
+	              "msm8998" | "sdm660")
 		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,adb
 		      ;;
 	              *)
@@ -193,10 +193,10 @@ case "$target" in
         setprop sys.usb.rndis.func.name "gsi"
 	setprop sys.usb.rmnet.func.name "gsi"
 	;;
-    "msmfalcon")
-	setprop sys.usb.controller "a800000.dwc3"
-	setprop sys.usb.rmnet.func.name "rmnet_bam"
+    "sdm660")
+        setprop sys.usb.controller "a800000.dwc3"
         setprop sys.usb.rndis.func.name "rndis_bam"
+	setprop sys.usb.rmnet.func.name "rmnet_bam"
         ;;
     "sdm845")
         setprop sys.usb.controller "a600000.dwc3"

@@ -69,6 +69,16 @@ typedef enum {
     LOC_NET_WWAN_CALL_EVT_MAX
 } LocNetWwanCallEvent;
 
+/* Connectivity State */
+typedef enum {
+    LOC_NET_CONN_STATE_INVALID = 0,
+    LOC_NET_CONN_STATE_ENABLED,
+    LOC_NET_CONN_STATE_DISABLED,
+    LOC_NET_CONN_STATE_CONNECTED,
+    LOC_NET_CONN_STATE_DISCONNECTED,
+    LOC_NET_CONN_STATE_MAX
+} LocNetConnState;
+
 /* WWAN call status callback
  * apn and apnIpType values are valid based on event. */
 typedef void (*LocWwanCallStatusCb)(

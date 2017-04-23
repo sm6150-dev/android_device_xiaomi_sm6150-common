@@ -67,6 +67,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_call_session_event_toast" value="true"/>
         <!-- Config to show/hide data usage toast -->
         <boolean name="show_data_usage_toast" value="true"/>
+        <boolean name="show_apn_setting_cdma_bool" value="true" />
 
     </carrier_config>
 

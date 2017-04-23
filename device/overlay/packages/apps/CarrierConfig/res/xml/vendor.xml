@@ -87,6 +87,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="854">
@@ -101,6 +109,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="855">
@@ -115,6 +131,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="856">
@@ -129,6 +153,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="857">
@@ -143,6 +175,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="858">
@@ -157,6 +197,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="859">
@@ -171,6 +219,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="860">
@@ -185,6 +241,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="861">
@@ -199,6 +263,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="862">
@@ -213,6 +285,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="863">
@@ -227,6 +307,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="864">
@@ -241,6 +329,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="865">
@@ -255,6 +351,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="866">
@@ -269,6 +373,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="867">
@@ -283,6 +395,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="868">
@@ -297,6 +417,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="869">
@@ -311,6 +439,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="870">
@@ -325,6 +461,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="871">
@@ -339,6 +483,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="872">
@@ -353,6 +505,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="873">
@@ -367,6 +527,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="874">
@@ -381,6 +549,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
+            <item value="type"/>
+            <item value="ims,emergency"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="450" mnc="05">
@@ -397,6 +573,28 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_carrier_cs_retry_available" value="true" />
     </carrier_config>
 
+    <carrier_config mcc="455" mnc="02">
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,mms,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
+    </carrier_config>
+
+    <carrier_config mcc="455" mnc="07">
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,mms,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
+    </carrier_config>
+
     <carrier_config mcc="460" mnc="00">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
@@ -407,11 +605,27 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="fota,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
         <boolean name="config_spn_override_enabled" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -424,26 +638,54 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="fota,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
         <boolean name="ascii_7_bit_support_for_long_message" value="true" />
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,mms,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="05">
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="06">
         <boolean name="config_spn_override_enabled" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -456,6 +698,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="fota,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -467,14 +717,30 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="fota,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="10">
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="11">
@@ -482,6 +748,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,mms,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
@@ -489,6 +763,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="cdma_cw_cf_enabled_bool" value="true" />
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
+        <string-array name="apn_hide_rule_strings_array" num="2">
+            <item value="type"/>
+            <item value="supl,mms,ims"/>
+        </string-array>
+        <map name="apn_default_values_strings_array">
+            <string name="protocol">IPV4V6</string>
+            <string name="roaming_protocol">IPV4V6</string>
+        </map>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">

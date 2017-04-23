@@ -2391,6 +2391,22 @@ case "$target" in
             echo 1600 > $cpubw/bw_hwmon/idle_mbps
         done
 
+	#Enable mem_latency governor for DDR scaling
+        for memlat in /sys/class/devfreq/*qcom,memlat-cpu*
+        do
+	echo "mem_latency" > $memlat/governor
+            echo 10 > $memlat/polling_interval
+            echo 400 > $memlat/mem_latency/ratio_ceil
+        done
+
+	#Enable mem_latency governor for L3 scaling
+        for memlat in /sys/class/devfreq/*qcom,l3-cpu*
+        do
+            echo "mem_latency" > $memlat/governor
+            echo 10 > $memlat/polling_interval
+            echo 400 > $memlat/mem_latency/ratio_ceil
+        done
+
 	# cpuset parameters
         echo 0 > /dev/cpuset/background/cpus
         echo 0-2 > /dev/cpuset/system-background/cpus

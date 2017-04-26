@@ -34,7 +34,7 @@ sgltecsfb=`getprop persist.radio.sglte_csfb`
 datamode=`getprop persist.data.mode`
 
 case "$baseband" in
-    "apq")
+    "apq" | "sda" )
     setprop ro.radio.noril yes
     stop ril-daemon
 esac
@@ -42,6 +42,10 @@ esac
 case "$baseband" in
     "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3")
     start qmuxd
+esac
+
+case "$baseband" in
+    "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3" | "sdm" | "sdx")
     start ipacm-diag
     start ipacm
     case "$baseband" in

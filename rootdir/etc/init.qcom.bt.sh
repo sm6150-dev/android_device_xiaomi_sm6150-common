@@ -72,7 +72,7 @@ config_bt ()
   btsoc=`getprop qcom.bluetooth.soc`
 
   case $baseband in
-    "apq")
+    "apq" | "sdc")
         setprop ro.qualcomm.bluetooth.opp true
         setprop ro.qualcomm.bluetooth.ftp true
         setprop ro.qualcomm.bluetooth.nap false
@@ -113,7 +113,7 @@ config_bt ()
               ;;
         esac
         ;;
-    "msm")
+    "msm" | "sdm")
         setprop ro.qualcomm.bluetooth.opp true
         setprop ro.qualcomm.bluetooth.hfp true
         setprop ro.qualcomm.bluetooth.hsp true

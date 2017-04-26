@@ -162,7 +162,7 @@ case "$usb_config" in
 	              "msm8952" | "msm8953")
 		          setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
 		      ;;
-	              "msm8998" | "msmfalcon")
+	              "msm8998" | "sdm660")
 		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,adb
 		      ;;
 	              *)
@@ -193,12 +193,12 @@ case "$target" in
         setprop sys.usb.rndis.func.name "gsi"
 	setprop sys.usb.rmnet.func.name "gsi"
 	;;
-    "msmfalcon")
-	setprop sys.usb.controller "a800000.dwc3"
-	setprop sys.usb.rmnet.func.name "rmnet_bam"
+    "sdm660")
+        setprop sys.usb.controller "a800000.dwc3"
         setprop sys.usb.rndis.func.name "rndis_bam"
+	setprop sys.usb.rmnet.func.name "rmnet_bam"
         ;;
-    "msmskunk")
+    "sdm845")
         setprop sys.usb.controller "a600000.dwc3"
         setprop sys.usb.rndis.func.name "gsi"
         setprop sys.usb.rmnet.func.name "gsi"
@@ -222,6 +222,15 @@ if [ -d /config/usb_gadget ]; then
 	    serialno=1234567
 	fi
 	echo $serialno > /config/usb_gadget/g1/strings/0x409/serialnumber
+
+	persist_comp=`getprop persist.sys.usb.config`
+	comp=`getprop sys.usb.config`
+	echo $persist_comp
+	echo $comp
+	if [ "$comp" != "$persist_comp" ]; then
+		echo "setting sys.usb.config"
+		setprop sys.usb.config $persist_comp
+	fi
 
 	setprop sys.usb.configfs 1
 fi

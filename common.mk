@@ -1,3 +1,4 @@
+TARGET_USES_QCOM_BSP_ATEL := true
 $(call inherit-product, device/qcom/common/base.mk)
 
 # For PRODUCT_COPY_FILES, the first instance takes precedence.
@@ -26,6 +27,10 @@ ifneq ($(BOARD_FRP_PARTITION_NAME),)
 else
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/config
 endif
+
+# whitelisted app
+PRODUCT_COPY_FILES += \
+    device/qcom/common/qti_whitelist.xml:system/etc/sysconfig/qti_whitelist.xml
 
 PRODUCT_PRIVATE_KEY := device/qcom/common/qcom.key
 PRODUCT_PACKAGES += qcril.db

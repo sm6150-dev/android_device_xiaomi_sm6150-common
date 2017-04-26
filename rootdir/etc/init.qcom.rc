@@ -58,6 +58,7 @@ on early-boot
     setrlimit 8 67108864 67108864
     # Allow subsystem (modem etc) debugging
     write /sys/kernel/boot_adsp/boot 1
+    write /sys/kernel/boot_cdsp/boot 1
     write /sys/kernel/boot_slpi/boot 1
     exec u:r:qti_init_shell:s0 -- /init.qcom.early_boot.sh
 
@@ -655,7 +656,7 @@ service qti /system/vendor/bin/qti
     group radio net_raw diag usb net_admin
     disabled
 
-service sensors /system/bin/sensors.qcom
+service sensors /vendor/bin/sensors.qcom
     class core
     user root
     group root
@@ -916,12 +917,12 @@ on property:sys.boot_completed=1
     start qcom-post-boot
     start qti-testscripts
 
-service atfwd /system/bin/ATFWD-daemon
+service atfwd /vendor/bin/ATFWD-daemon
     class late_start
     user system
     group system radio
 
-service hostapd /system/bin/hostapd -dd /data/misc/wifi/hostapd.conf
+service hostapd /vendor/bin/hostapd -dd /data/misc/wifi/hostapd.conf
     class late_start
     user root
     group root

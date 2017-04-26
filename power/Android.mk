@@ -53,6 +53,10 @@ ifeq ($(call is-board-platform-in-list,msm8998), true)
 LOCAL_SRC_FILES += power-8998.c
 endif
 
+ifeq ($(call is-board-platform-in-list,sdm660), true)
+LOCAL_SRC_FILES += power-660.c
+endif
+
 ifeq ($(TARGET_USES_INTERACTION_BOOST),true)
     LOCAL_CFLAGS += -DINTERACTION_BOOST
 endif

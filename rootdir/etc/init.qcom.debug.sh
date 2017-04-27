@@ -201,6 +201,19 @@ enable_msm8998_dcc_config()
     echo 0x17904010 > $DCC_PATH/config
     echo 0x17904014 > $DCC_PATH/config
 
+    # CCI ACE / Stalled Transaction
+    echo 0x179082B0 > $DCC_PATH/config
+
+    # 8 times, same register
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+    echo 0x17901000 > $DCC_PATH/config
+
     echo  1 > $DCC_PATH/enable
 }
 

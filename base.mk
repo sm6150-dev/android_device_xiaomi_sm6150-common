@@ -289,6 +289,8 @@ INIT += init.mdm.sh
 INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
 INIT += init.qcom.sensors.sh
+INIT += init.qcom.vendor.rc
+INIT += init.target.vendor.rc
 
 #IPROUTE2
 IPROUTE2 := ip

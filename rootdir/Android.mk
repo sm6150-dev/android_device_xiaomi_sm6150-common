@@ -221,6 +221,13 @@ LOCAL_SRC_FILES    := etc/init.qcom.debug.sh
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE       := init.qcom.debug-sdm660.sh
+LOCAL_MODULE_TAGS  := debug
+LOCAL_MODULE_CLASS := ETC
+LOCAL_SRC_FILES    := etc/init.qcom.debug-sdm660.sh
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE       := init.qcom.testscripts.sh
 LOCAL_MODULE_TAGS  := optional eng
 LOCAL_MODULE_CLASS := ETC
@@ -251,3 +258,11 @@ ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
     LOCAL_MODULE_PATH  := $(TARGET_ROOT_OUT)
     include $(BUILD_PREBUILT)
 endif
+
+include $(CLEAR_VARS)
+LOCAL_MODULE       := init.qcom.crashdata.sh
+LOCAL_MODULE_TAGS  := optional eng
+LOCAL_MODULE_CLASS := ETC
+LOCAL_SRC_FILES    := etc/init.qcom.crashdata.sh
+LOCAL_MODULE_PATH  := $(TARGET_ROOT_OUT)
+include $(BUILD_PREBUILT)

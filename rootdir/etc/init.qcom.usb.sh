@@ -162,7 +162,7 @@ case "$usb_config" in
 	              "msm8952" | "msm8953")
 		          setprop persist.sys.usb.config diag,serial_smd,rmnet_ipa,adb
 		      ;;
-	              "msm8998" | "sdm660")
+	              "msm8998" | "sdm660" | "sdm845")
 		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,adb
 		      ;;
 	              *)

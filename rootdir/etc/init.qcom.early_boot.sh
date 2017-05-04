@@ -226,7 +226,7 @@ case "$target" in
                 ;;
         esac
         ;;
-    "msm8998")
+    "msm8998" | "apq8098_latv")
         case "$soc_hwplatform" in
             *)
                 setprop ro.sf.lcd_density 560

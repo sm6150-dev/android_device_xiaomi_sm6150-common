@@ -178,7 +178,7 @@ config_bt ()
            setprop ro.bluetooth.hfp.ver 1.7
        fi
        ;;
-    "msm8998")
+    "msm8998" | "apq8098_latv")
        setprop ro.bluetooth.hfp.ver 1.6
        ;;
     *)

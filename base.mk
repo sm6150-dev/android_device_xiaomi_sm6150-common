@@ -732,6 +732,7 @@ PRODUCT_PACKAGES := \
     DeskClock \
     AlarmProvider \
     Bluetooth \
+    BluetoothExt \
     Calculator \
     Calendar \
     Camera \
@@ -765,7 +766,6 @@ PRODUCT_PACKAGES := \
 
 ifneq ($(TARGET_USES_AOSP),true)
 PRODUCT_PACKAGES += \
-       BluetoothExt \
        a4wpservice \
        wipowerservice
 endif

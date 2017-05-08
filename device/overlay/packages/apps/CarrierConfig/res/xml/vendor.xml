@@ -71,6 +71,17 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     </carrier_config>
 
+    <carrier_config mcc="204" mnc="04">
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="898603,898611,8985231,8985302,8985307"/>
+            <item value="type"/>
+            <item value="ims"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
+    </carrier_config>
+
     <carrier_config mcc="222" mnc="01">
         <boolean name="editable_wfc_mode_bool" value="false" />
         <int name="carrier_default_wfc_ims_mode_int" value="2" />
@@ -572,6 +583,50 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
     <carrier_config mcc="450" mnc="08">
         <boolean name="allow_video_call_in_low_battery" value="false" />
         <boolean name="config_carrier_cs_retry_available" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="454" mnc="00">
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="8985231"/>
+            <item value="type"/>
+            <item value="ims"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
+    </carrier_config>
+
+    <carrier_config mcc="454" mnc="03">
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="898603,898611,8985231,8985302,8985307"/>
+            <item value="type"/>
+            <item value="ims"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
+    </carrier_config>
+
+    <carrier_config mcc="454" mnc="04">
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="898603,898611,8985231,8985302,8985307"/>
+            <item value="type"/>
+            <item value="ims"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
+    </carrier_config>
+
+    <carrier_config mcc="454" mnc="31">
+        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
+            <item value="iccid"/>
+            <item value="898603,898611,8985231,8985302,8985307"/>
+            <item value="type"/>
+            <item value="ims"/>
+            <item value="include_common_rules"/>
+            <item value="false"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="455" mnc="02">

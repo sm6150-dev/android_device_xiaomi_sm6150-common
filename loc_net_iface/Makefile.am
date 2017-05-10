@@ -8,7 +8,7 @@ AM_CFLAGS = \
      $(QMI_CFLAGS) \
      $(DATA_CFLAGS) \
      $(DSUTILS_CFLAGS) \
-     -I$(WORKSPACE)/gps/framework/native/lcp/data-items/inc
+     $(DATAITEMS_CFLAGS)
 
 ACLOCAL_AMFLAGS = -I m4
 

@@ -48,11 +48,17 @@ on post-fs
 on post-fs-data
     # Add on post-fs-data events here
 
+    # Create directory used by display clients
+    mkdir /data/vendor/display 0770 system graphics
+
 on early-boot
     # Add on early-boot events here
 
 on boot
     # Add on boot events here
+
+    # Create directory used for display
+    mkdir /persist/display 0770 system graphics
 
 
 # Add Vendor service definitions, triggers from here on.

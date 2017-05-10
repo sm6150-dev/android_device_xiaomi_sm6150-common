@@ -614,6 +614,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <string-array name="carrier_metered_apn_types_strings" num="4">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+            <item value="fota" />
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -647,6 +653,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <string-array name="carrier_metered_apn_types_strings" num="4">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+            <item value="fota" />
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -707,6 +719,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <string-array name="carrier_metered_apn_types_strings" num="4">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+            <item value="fota" />
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -726,6 +744,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <string-array name="carrier_metered_apn_types_strings" num="4">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+            <item value="fota" />
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">

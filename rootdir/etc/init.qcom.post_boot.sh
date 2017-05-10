@@ -2325,6 +2325,17 @@ esac
 
 case "$target" in
     "sdm845")
+	if [ -f /sys/devices/soc0/soc_id ]; then
+                soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+                soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+	case "$soc_id" in
+		"321") #sdm845
+		start hbtp
+		;;
+	esac
 	# Core control parameters
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
 	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres

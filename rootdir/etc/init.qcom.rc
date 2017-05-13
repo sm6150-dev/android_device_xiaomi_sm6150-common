@@ -481,7 +481,7 @@ on property:bluetooth.startbtlogger=true
 on property:bluetooth.startbtlogger=false
     stop bt_logger
 
-service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
+service qcom-c_core-sh /vendor/bin/sh /vendor/bin/init.qcom.class_core.sh
     class core
     user root
     oneshot

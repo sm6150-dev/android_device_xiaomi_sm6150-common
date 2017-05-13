@@ -28,14 +28,14 @@
 write /proc/sys/kernel/kptr_restrict 0
 
 # Coresight early boot service
-service cs-early-boot /system/bin/sh /persist/coresight/qdss.agent.sh early-boot /system/etc/init.qcom.debug.sh
+service cs-early-boot /vendor/bin/sh /persist/coresight/qdss.agent.sh early-boot /vendor/bin/init.qcom.debug.sh
     class core
     user root
     oneshot
     seclabel u:r:qti-testscripts:s0
 
 # Coresight post boot servive
-service cs-post-boot /system/bin/sh /persist/coresight/qdss.agent.sh post-boot /system/etc/init.qcom.debug.sh
+service cs-post-boot /vendor/bin/sh /persist/coresight/qdss.agent.sh post-boot /vendor/bin/init.qcom.debug.sh
     user root
     disabled
     oneshot

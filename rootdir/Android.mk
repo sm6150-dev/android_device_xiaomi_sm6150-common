@@ -184,6 +184,7 @@ LOCAL_MODULE       := init.qcom.debug.sh
 LOCAL_MODULE_TAGS  := debug
 LOCAL_MODULE_CLASS := ETC
 LOCAL_SRC_FILES    := etc/init.qcom.debug.sh
+LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_EXECUTABLES)
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)

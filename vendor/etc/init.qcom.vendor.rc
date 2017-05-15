@@ -60,6 +60,9 @@ on boot
     # Create directory used for display
     mkdir /persist/display 0770 system graphics
 
-
 # Add Vendor service definitions, triggers from here on.
 
+service dpmQmiMgr /vendor/bin/dpmQmiMgr
+    class main
+    user system
+    group system qcom_diag

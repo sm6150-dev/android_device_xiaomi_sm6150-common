@@ -387,16 +387,16 @@ service iop /system/bin/iop
     disabled
     socket iop seqpacket 0666 root system
 
-service qcomsysd /system/bin/qcom-system-daemon
+service qcomsysd /system/vendor/bin/qcom-system-daemon
     class main
     user root
     group root diag
 
-service ssr_setup /system/bin/ssr_setup
+service ssr_setup /system/vendor/bin/ssr_setup
     oneshot
     disabled
 
-service ss_ramdump /system/bin/subsystem_ramdump
+service ss_ramdump /system/vendor/bin/subsystem_ramdump
     class main
     user system
     group system
@@ -1006,7 +1006,7 @@ service charger /charger
     group system graphics
     seclabel u:r:healthd:s0
 
-service ssr_diag /system/bin/ssr_diag
+service ssr_diag /system/vendor/bin/ssr_diag
     class late_start
     user system
     group system

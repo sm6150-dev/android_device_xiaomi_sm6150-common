@@ -51,6 +51,9 @@ on post-fs-data
     # Create directory used by display clients
     mkdir /data/vendor/display 0770 system graphics
 
+    # Create directory used by media clients
+    mkdir /data/vendor/media 0700 media media
+
 on early-boot
     # Add on early-boot events here
 

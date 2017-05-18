@@ -144,10 +144,16 @@ define build-dtboimage-target
     $(call pretty,"Target dtbo image: $(INSTALLED_DTBOIMAGE_TARGET)")
     $(hide) $(MKDTIMG) create $@ --page_size=$(BOARD_KERNEL_PAGESIZE) $(dtbo_objs)
     $(hide) chmod a+r $@
+    $(hide) $(AVBTOOL) add_hash_footer \
+	    --image $@ \
+	    --partition_size $(BOARD_DTBOIMAGE_PARTITION_SIZE) \
+	    --partition_name dtbo $(INTERNAL_AVB_SIGNING_ARGS)
 endef
 
-$(INSTALLED_DTBOIMAGE_TARGET): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET)
+ifeq ($(BOARD_AVB_ENABLE),true)
+$(INSTALLED_DTBOIMAGE_TARGET): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET) $(AVBTOOL)
 	$(build-dtboimage-target)
+endif
 
 ALL_DEFAULT_INSTALLED_MODULES += $(INSTALLED_DTBOIMAGE_TARGET)
 ALL_MODULES.$(LOCAL_MODULE).INSTALLED += $(INSTALLED_DTBOIMAGE_TARGET)

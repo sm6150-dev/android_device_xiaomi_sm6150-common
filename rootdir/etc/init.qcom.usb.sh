@@ -217,11 +217,11 @@ if [ -d /config/usb_gadget ]; then
 	echo "$product_string" > /config/usb_gadget/g1/strings/0x409/product
 
 	# ADB requires valid iSerialNumber; if ro.serialno is missing, use dummy
-	serialno=`getprop ro.serialno`
-	if [ "$serialno" == "" ]; then
-	    serialno=1234567
+	serialnumber=`cat /config/usb_gadget/g1/strings/0x409/serialnumber` 2> /dev/null
+	if [ "$serialnumber" == "" ]; then
+		serialno=1234567
+		echo $serialno > /config/usb_gadget/g1/strings/0x409/serialnumber
 	fi
-	echo $serialno > /config/usb_gadget/g1/strings/0x409/serialnumber
 
 	persist_comp=`getprop persist.sys.usb.config`
 	comp=`getprop sys.usb.config`

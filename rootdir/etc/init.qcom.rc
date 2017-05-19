@@ -387,7 +387,7 @@ service perfd /system/vendor/bin/perfd
    disabled
    socket perfd seqpacket 0666 root system
 
-service iop /system/bin/iop
+service iop /system/vendor/bin/iop
     class main
     user root
     group root
@@ -514,7 +514,7 @@ service irsc_util /system/bin/irsc_util "/etc/sec_config"
     user root
     oneshot
 
-service rmt_storage /system/bin/rmt_storage
+service rmt_storage /vendor/bin/rmt_storage
     class core
     user root
 
@@ -1100,7 +1100,7 @@ service logdumpd /system/bin/logcat -b all -v threadtime -D -w /dev/block/bootde
 on property:ro.logdumpd.enabled=1
     start logdumpd
 
-service time_daemon /system/bin/time_daemon
+service time_daemon /system/vendor/bin/time_daemon
     class main
     user root
     group root

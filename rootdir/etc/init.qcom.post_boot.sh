@@ -2399,6 +2399,8 @@ case "$target" in
             echo 400 > $memlat/mem_latency/ratio_ceil
         done
 
+	echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+
 	# cpuset parameters
         echo 0 > /dev/cpuset/background/cpus
         echo 0-2 > /dev/cpuset/system-background/cpus

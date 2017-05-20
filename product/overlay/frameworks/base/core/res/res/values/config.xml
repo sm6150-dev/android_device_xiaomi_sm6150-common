@@ -43,6 +43,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- Screen brightness when dozing. -->
     <integer name="config_screenBrightnessDoze">17</integer>
     <bool name="config_powerDecoupleInteractiveModeFromDisplay">true</bool>
+    <bool name="config_setColorTransformAccelerated">true</bool>
 
     <!-- List of regexpressions describing the interface (if any) that represent tetherable
          Wifi interfaces.  If the device doesn't want to support tethering over Wifi this

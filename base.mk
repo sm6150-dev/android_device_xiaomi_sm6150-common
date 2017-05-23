@@ -19,6 +19,7 @@ QCOM_BOARD_PLATFORMS += msm8952
 QCOM_BOARD_PLATFORMS += msm8937
 QCOM_BOARD_PLATFORMS += msm8953
 QCOM_BOARD_PLATFORMS += msm8998
+QCOM_BOARD_PLATFORMS += apq8098_latv
 QCOM_BOARD_PLATFORMS += sdm660
 QCOM_BOARD_PLATFORMS += sdm845
 
@@ -27,10 +28,10 @@ QSD8K_BOARD_PLATFORMS := qsd8k
 TARGET_USE_VENDOR_CAMERA_EXT := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 sdm660 sdm845
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845
 
 #List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660
+MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv
 
 # Below projects/packages with LOCAL_MODULEs will be used by
 # PRODUCT_PACKAGES to build LOCAL_MODULEs that are tagged with
@@ -103,6 +104,8 @@ AUDIO_HARDWARE += audio.primary.msm8953
 AUDIO_HARDWARE += audio.primary.msmgold
 AUDIO_HARDWARE += audio.primary.msm8998
 AUDIO_HARDWARE += audio.primary.sdm660
+AUDIO_HARDWARE += audio.primary.sdm845
+AUDIO_HARDWARE += audio.primary.apq8098_latv
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084
@@ -157,6 +160,7 @@ BT += libbt-vendor
 BT += libbthost_if
 BT += libbt-logClient
 BT += bt_logger
+BT += libbt-hidlclient
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/qcom/common
 
 #C2DColorConvert
@@ -289,6 +293,8 @@ INIT += init.mdm.sh
 INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
 INIT += init.qcom.sensors.sh
+INIT += init.qcom.vendor.rc
+INIT += init.target.vendor.rc
 
 #IPROUTE2
 IPROUTE2 := ip
@@ -367,6 +373,7 @@ LIBCAMERA += camera.msm8994
 LIBCAMERA += camera.msm8992
 LIBCAMERA += camera.msm8996
 LIBCAMERA += camera.msm8998
+LIBCAMERA += camera.apq8098_latv
 LIBCAMERA += camera.sdm660
 LIBCAMERA += camera.msm8952
 LIBCAMERA += camera.msm8937
@@ -407,6 +414,7 @@ LIBCOPYBIT += copybit.msm8998
 LIBCOPYBIT += copybit.sdm630
 LIBCOPYBIT += copybit.sdm660
 LIBCOPYBIT += copybit.sda630
+LIBCOPYBIT += copybit.apq8098_latv
 
 #LIBGESTURES
 LIBGESTURES := libgestures
@@ -436,6 +444,8 @@ LIBGRALLOC += gralloc.msm8952
 LIBGRALLOC += gralloc.msm8937
 LIBGRALLOC += gralloc.msm8953
 LIBGRALLOC += gralloc.msm8998
+LIBGRALLOC += gralloc.sdm845
+LIBGRALLOC += gralloc.apq8098_latv
 LIBGRALLOC += libmemalloc
 LIBGRALLOC += gralloc.sdm630
 LIBGRALLOC += gralloc.sdm660
@@ -456,6 +466,8 @@ LIBMEMTRACK += memtrack.msm8937
 LIBMEMTRACK += memtrack.msm8953
 LIBMEMTRACK += memtrack.msm8998
 LIBMEMTRACK += memtrack.sdm660
+LIBMEMTRACK += memtrack.sdm845
+LIBMEMTRACK += memtrack.apq8098_latv
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -480,6 +492,8 @@ LIBLIGHTS += lights.msm8937
 LIBLIGHTS += lights.msm8953
 LIBLIGHTS += lights.msm8998
 LIBLIGHTS += lights.sdm660
+LIBLIGHTS += lights.sdm845
+LIBLIGHTS += lights.apq8098_latv
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -505,6 +519,8 @@ LIBHWCOMPOSER += hwcomposer.msm8937
 LIBHWCOMPOSER += hwcomposer.msm8953
 LIBHWCOMPOSER += hwcomposer.msm8998
 LIBHWCOMPOSER += hwcomposer.sdm660
+LIBHWCOMPOSER += hwcomposer.sdm845
+LIBHWCOMPOSER += hwcomposer.apq8098_latv
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter
@@ -533,6 +549,7 @@ LIBQDUTILS := libqdutils
 
 #LIBQDMETADATA
 LIBQDMETADATA := libqdMetaData
+LIBQDMETADATA += libqdMetaData.system
 
 #LIBPOWER
 LIBPOWER := power.qcom
@@ -725,6 +742,7 @@ PRODUCT_PACKAGES := \
     DeskClock \
     AlarmProvider \
     Bluetooth \
+    BluetoothExt \
     Calculator \
     Calendar \
     Camera \
@@ -758,7 +776,6 @@ PRODUCT_PACKAGES := \
 
 ifneq ($(TARGET_USES_AOSP),true)
 PRODUCT_PACKAGES += \
-       BluetoothExt \
        a4wpservice \
        wipowerservice
 endif
@@ -926,12 +943,13 @@ PRODUCT_COPY_FILES := \
 PRODUCT_COPY_FILES += \
     device/qcom/common/sec_config:system/etc/sec_config
 
+#copy codecs_xxx.xml to (TARGET_COPY_OUT_VENDOR)/etc/
 PRODUCT_COPY_FILES += \
-    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
-    device/qcom/common/media/media_profiles.xml:system/etc/media_profiles.xml \
-    device/qcom/common/media/media_codecs.xml:system/etc/media_codecs.xml
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_telephony.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_video.xml \
+    device/qcom/common/media/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml \
+    device/qcom/common/media/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml
 
 ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
 PRODUCT_COPY_FILES += \

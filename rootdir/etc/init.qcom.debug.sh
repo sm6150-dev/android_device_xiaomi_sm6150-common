@@ -1209,6 +1209,11 @@ enable_dcc_config()
             enable_sdm660_dcc_config
             ;;
 
+        "apq8098_latv")
+            echo "Enabling DCC config for apq8098_latv."
+            enable_msm8998_dcc_config
+            ;;
+
         "msm8953")
             echo "Enabling DCC config for 8953."
             enable_msm8953_dcc_config
@@ -1281,6 +1286,10 @@ enable_osm_wdog_status_config()
             echo "Enabling OSM WDOG status registers for msm8998"
             enable_msm8998_osm_wdog_status_config
         ;;
+        "apq8098_latv")
+            echo "Enabling OSM WDOG status registers for apq8098_latv"
+            enable_msm8998_osm_wdog_status_config
+        ;;
     esac
 }
 
@@ -1291,6 +1300,11 @@ enable_core_gladiator_hang_config()
     case "$target" in
         "msm8998")
             echo "Enabling core & gladiator config for msm8998"
+            enable_msm8998_core_hang_config
+            enable_msm8998_gladiator_hang_config
+        ;;
+        "apq8098_latv")
+            echo "Enabling core & gladiator config for apq8098_latv"
             enable_msm8998_core_hang_config
             enable_msm8998_gladiator_hang_config
         ;;

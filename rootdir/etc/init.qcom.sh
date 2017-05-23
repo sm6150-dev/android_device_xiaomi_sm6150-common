@@ -252,7 +252,7 @@ case "$target" in
                   ;;
         esac
         ;;
-    "msm8994" | "msm8992" | "msm8998")
+    "msm8994" | "msm8992" | "msm8998" | "apq8098_latv" | "sdm845")
         start_msm_irqbalance
         ;;
     "msm8996")
@@ -331,6 +331,9 @@ case "$target" in
                                     setprop qemu.hw.mainkeys 0
                                     ;;
                        "RCM")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "QRD")
                                     setprop qemu.hw.mainkeys 0
                                     ;;
                   esac

@@ -2325,6 +2325,17 @@ esac
 
 case "$target" in
     "sdm845")
+	if [ -f /sys/devices/soc0/soc_id ]; then
+                soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+                soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+	case "$soc_id" in
+		"321") #sdm845
+		start hbtp
+		;;
+	esac
 	# Core control parameters
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
 	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
@@ -2345,33 +2356,14 @@ case "$target" in
 	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
 
 	# configure governor settings for little cluster
-	echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load
-	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif
-	echo 19000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
-	echo 90 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
-	echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
-	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
-	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
-	echo "83 1440000:95" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
-	echo 19000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
-	echo 79000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis
-	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif
+	echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+	echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rate_limit_us
+	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
+
 	# configure governor settings for big cluster
-	echo "interactive" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load
-	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif
-	echo 19000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
-	echo 90 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
-	echo 20000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
-	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
-	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
-	echo "83 1728000:90 1881600:95" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
-	echo 19000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
-	echo 79000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis
-	echo 300000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif
+	echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/rate_limit_us
+	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
 
         # Enable bus-dcvs
         for cpubw in /sys/class/devfreq/*qcom,cpubw*
@@ -2417,7 +2409,7 @@ case "$target" in
 esac
 
 case "$target" in
-    "msm8998")
+    "msm8998" | "apq8098_latv")
 
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
 	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
@@ -2518,7 +2510,7 @@ case "$target" in
 	fi
 
 	case "$soc_id" in
-		"292") #msm8998
+		"292") #msm8998 apq8098_latv
 		# Start Host based Touch processing
 		case "$hw_platform" in
 		"QRD")
@@ -2541,6 +2533,9 @@ case "$target" in
 	echo N > /sys/module/lpm_levels/system/perf/perf-l2-dynret/idle_enabled
 	echo N > /sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled
 	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
+
+        echo 0-3 > /dev/cpuset/background/cpus
+        echo 0-3 > /dev/cpuset/system-background/cpus
     ;;
 esac
 
@@ -2655,7 +2650,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv")
         setprop sys.post_boot.parsed 1
     ;;
     "apq8084")

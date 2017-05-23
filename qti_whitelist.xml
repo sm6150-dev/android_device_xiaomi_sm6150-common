@@ -40,4 +40,5 @@
     <allow-in-power-save package="com.qualcomm.simcontacts" />
     <allow-in-power-save package="com.qualcomm.qti.autoregistration" />
     <allow-in-power-save package="com.qualcomm.qti.server.wigigapp" />
+    <allow-in-power-save package="com.qualcomm.qti.StatsPollManager" />
 </config>

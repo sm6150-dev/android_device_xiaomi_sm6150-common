@@ -772,13 +772,9 @@ PRODUCT_PACKAGES := \
     VideoEditor \
     SnapdragonGallery \
     SnapdragonLauncher \
-    SnapdragonMusic
-
-ifneq ($(TARGET_USES_AOSP),true)
-PRODUCT_PACKAGES += \
-       a4wpservice \
-       wipowerservice
-endif
+    SnapdragonMusic \
+    a4wpservice \
+    wipowerservice
 
 PRODUCT_PACKAGES += $(ALSA_HARDWARE)
 PRODUCT_PACKAGES += $(ALSA_UCM)

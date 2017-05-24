@@ -231,12 +231,12 @@ on post-fs-data
     chown dhcp dhcp /data/misc/dhcp
 
     #create port-bridge log dir
-    mkdir /data/misc/port_bridge 0770 radio radio
-    chmod 0770 /data/misc/port_bridge
+    mkdir /data/vendor/misc/port_bridge 0770 radio radio
+    chmod 0770 /data/vendor/misc/port_bridge
 
     #create netmgr log dir
-    mkdir /data/misc/netmgr 0770 radio radio
-    chmod 0770 /data/misc/netmgr
+    mkdir /data/vendor/misc/netmgr 0770 radio radio
+    chmod 0770 /data/vendor/misc/netmgr
 
     # Create the directories used by CnE subsystem
     mkdir /data/connectivity 0771 system system
@@ -496,7 +496,7 @@ on property:vold.decrypt=trigger_restart_framework
 on property:persist.env.fastdorm.enabled=true
     setprop persist.radio.data_no_toggle 1
 
-service cnd /system/bin/cnd
+service cnd /system/vendor/bin/cnd
     class main
     socket cnd stream 660 root inet
 
@@ -608,13 +608,7 @@ service ftmd /system/bin/logwrapper /system/bin/ftmdaemon
     disabled
     oneshot
 
-service bridgemgrd /system/bin/bridgemgrd
-    class late_start
-    user radio
-    group radio diag
-    disabled
-
-service port-bridge /system/bin/port-bridge
+service port-bridge /system/vendor/bin/port-bridge
     class main
     user radio system
     group radio system inet
@@ -628,13 +622,13 @@ service qmiproxy /system/bin/qmiproxy
     disabled
 
 # QMUX must be in multiple groups to support external process connections
-service qmuxd /system/bin/qmuxd
+service qmuxd /system/vendor/bin/qmuxd
     class main
     user root
     group radio audio bluetooth gps nfc diag
     disabled
 
-service netmgrd /system/bin/netmgrd
+service netmgrd /system/vendor/bin/netmgrd
     class main
     disabled
 

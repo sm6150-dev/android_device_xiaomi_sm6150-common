@@ -859,7 +859,7 @@ service wifi-sdio-on /system/bin/sh /system/etc/init.qcom.sdio.sh
     disabled
     oneshot
 
-service wifi-crda /system/bin/sh /system/etc/init.crda.sh
+service wifi-crda /vendor/bin/init.crda.sh
    class late_start
    user root
    disabled

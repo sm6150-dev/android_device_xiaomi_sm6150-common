@@ -853,7 +853,7 @@ service qti-testscripts /system/bin/sh /system/etc/init.qcom.testscripts.sh
     oneshot
     seclabel u:r:qti-testscripts:s0
 
-service wifi-sdio-on /system/bin/sh /system/etc/init.qcom.sdio.sh
+service wifi-sdio-on /vendor/bin/init.qcom.sdio.sh
     class late_start
     group wifi inet
     disabled

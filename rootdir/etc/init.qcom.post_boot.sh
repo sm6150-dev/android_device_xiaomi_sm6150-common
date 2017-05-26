@@ -2580,14 +2580,17 @@ case "$target" in
 
         # Bring up all cores online
         echo 1 > /sys/devices/system/cpu/cpu1/online
-	echo 1 > /sys/devices/system/cpu/cpu2/online
-	echo 1 > /sys/devices/system/cpu/cpu3/online
-	echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+        echo 1 > /sys/devices/system/cpu/cpu2/online
+        echo 1 > /sys/devices/system/cpu/cpu3/online
+        echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
-	for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
-	do
-		echo "bw_hwmon" > $devfreq_gov
-	done
+        for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
+        do
+            echo "bw_hwmon" > $devfreq_gov
+        done
+
+        # Set Memory parameters
+        configure_memory_parameters
 	;;
 esac
 

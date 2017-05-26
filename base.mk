@@ -937,7 +937,7 @@ PRODUCT_COPY_FILES := \
 
 # gps/location secuity configuration file
 PRODUCT_COPY_FILES += \
-    device/qcom/common/sec_config:system/etc/sec_config
+    device/qcom/common/sec_config:vendor/etc/sec_config
 
 #copy codecs_xxx.xml to (TARGET_COPY_OUT_VENDOR)/etc/
 PRODUCT_COPY_FILES += \

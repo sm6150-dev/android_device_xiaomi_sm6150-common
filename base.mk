@@ -368,6 +368,7 @@ LIBCAMERA += camera.msm8660
 LIBCAMERA += camera.msm7630_surf
 LIBCAMERA += camera.msm7630_fusion
 LIBCAMERA += camera.msm7627a
+LIBCAMERA += camera.msm8909
 LIBCAMERA += camera.msm8916
 LIBCAMERA += camera.msm8994
 LIBCAMERA += camera.msm8992

@@ -532,23 +532,10 @@ on property:wc_transport.start_hci=true
 on property:wc_transport.start_hci=false
     stop start_hci_filter
 
-on property:wc_transport.start_fmhci=true
-    start fmhal_service
-
-on property:wc_transport.start_fmhci=false
-    stop fmhal_service
-
 service start_hci_filter /system/vendor/bin/wcnss_filter
     class late_start
     user bluetooth
     group bluetooth diag system wakelock
-    disabled
-
-#net_admin capability needed to write rfkill sysfs entry
-service fmhal_service /system/bin/fmhal_service
-    class late_start
-    user bluetooth
-    group bluetooth net_bt_admin net_admin
     disabled
 
 service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh "onboot"
@@ -852,13 +839,6 @@ service loc_launcher /vendor/bin/loc_launcher
     #loc_launcher will start as root and set its uid to gps
     class late_start
     group gps inet diag wifi
-
-service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
-    class late_start
-    user system
-    group system
-    disabled
-    oneshot
 
 on property:crypto.driver.load=1
      insmod /system/lib/modules/qce.ko

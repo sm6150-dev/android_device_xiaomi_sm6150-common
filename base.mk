@@ -221,7 +221,6 @@ FM += libqcomfm_jni
 FM += libfmjni
 FM += fm_helium
 FM += libfm-hci
-FM += fmhal_service
 
 #GPS
 GPS_HARDWARE := gps.conf
@@ -261,7 +260,6 @@ INIT += init.qcom.sensor.sh
 INIT += init.target.rc
 INIT += init.qti.ims.sh
 INIT += init.qcom.coex.sh
-INIT += init.qcom.fm.sh
 INIT += init.qcom.early_boot.sh
 INIT += init.qcom.post_boot.sh
 INIT += init.qcom.syspart_fixup.sh

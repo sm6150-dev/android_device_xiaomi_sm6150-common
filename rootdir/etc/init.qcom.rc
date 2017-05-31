@@ -874,13 +874,6 @@ service atfwd /vendor/bin/ATFWD-daemon
     user system
     group system radio
 
-service hostapd /vendor/bin/hostapd -dd /data/misc/wifi/hostapd.conf
-    class late_start
-    user root
-    group root
-    oneshot
-    disabled
-
 service ds_fmc_appd /system/bin/ds_fmc_appd -p "rmnet0" -D
     class late_start
     group radio wifi inet

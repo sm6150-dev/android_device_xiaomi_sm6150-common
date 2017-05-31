@@ -749,6 +749,7 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Mms \
     Music \
+    netutils-wrapper-1.0 \
     Phone \
     Provision \
     Protips \

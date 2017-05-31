@@ -68,6 +68,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <!-- Config to show/hide data usage toast -->
         <boolean name="show_data_usage_toast" value="true"/>
         <boolean name="show_apn_setting_cdma_bool" value="true" />
+        <!-- Config to enable video conference call support -->
+        <boolean name="support_video_conference_call_bool" value="true"/>
         <boolean name="show_video_quality_ui" value="false" />
 
     </carrier_config>
@@ -1009,6 +1011,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="800">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="311" mnc="480">
+        <boolean name="support_video_conference_call_bool" value="false"/>
     </carrier_config>
 
 </carrier_config_list>

@@ -720,6 +720,7 @@ IMS_SETTINGS := imssettings
 
 #IMS Extension module for Android Telephony
 IMS_EXT := ims-ext-common
+IMS_EXT += ConfURIDialer
 
 #CRDA
 CRDA := crda
@@ -772,13 +773,9 @@ PRODUCT_PACKAGES := \
     VideoEditor \
     SnapdragonGallery \
     SnapdragonLauncher \
-    SnapdragonMusic
-
-ifneq ($(TARGET_USES_AOSP),true)
-PRODUCT_PACKAGES += \
-       a4wpservice \
-       wipowerservice
-endif
+    SnapdragonMusic \
+    a4wpservice \
+    wipowerservice
 
 PRODUCT_PACKAGES += $(ALSA_HARDWARE)
 PRODUCT_PACKAGES += $(ALSA_UCM)
@@ -1004,4 +1001,9 @@ SKIP_BOOT_JARS_CHECK := true
 ifeq ($(TARGET_BUILD_VARIANT),user)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
     ro.adb.secure=1
+endif
+
+#Camera QC extends API
+ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
+PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 endif

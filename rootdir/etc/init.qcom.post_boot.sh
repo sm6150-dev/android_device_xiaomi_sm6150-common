@@ -2399,12 +2399,16 @@ case "$target" in
             echo 400 > $memlat/mem_latency/ratio_ceil
         done
 
+	echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+
 	# cpuset parameters
         echo 0 > /dev/cpuset/background/cpus
         echo 0-2 > /dev/cpuset/system-background/cpus
 
 	# Turn off scheduler boost at the end
         echo 0 > /proc/sys/kernel/sched_boost
+        # Turn on sleep modes.
+        echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
     ;;
 esac
 
@@ -2422,6 +2426,8 @@ case "$target" in
 	echo 1 > /proc/sys/kernel/sched_migration_fixup
 	echo 95 > /proc/sys/kernel/sched_upmigrate
 	echo 90 > /proc/sys/kernel/sched_downmigrate
+	echo 100 > /proc/sys/kernel/sched_group_upmigrate
+	echo 95 > /proc/sys/kernel/sched_group_downmigrate
 	echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
 	echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
 	echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
@@ -2509,12 +2515,27 @@ case "$target" in
 		hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
 	fi
 
+	if [ -f /sys/devices/soc0/platform_version ]; then
+		platform_version=`cat /sys/devices/soc0/platform_version`
+		platform_major_version=$((10#${platform_version}>>16))
+	fi
+
 	case "$soc_id" in
 		"292") #msm8998 apq8098_latv
 		# Start Host based Touch processing
 		case "$hw_platform" in
 		"QRD")
-			start hbtp
+			case "$platform_subtype_id" in
+				"0")
+					start hbtp
+					;;
+				"16")
+					if [ $platform_major_version -lt 6 ]; then
+						start hbtp
+					fi
+					;;
+			esac
+
 			;;
 		esac
 	    ;;
@@ -2578,14 +2599,17 @@ case "$target" in
 
         # Bring up all cores online
         echo 1 > /sys/devices/system/cpu/cpu1/online
-	echo 1 > /sys/devices/system/cpu/cpu2/online
-	echo 1 > /sys/devices/system/cpu/cpu3/online
-	echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+        echo 1 > /sys/devices/system/cpu/cpu2/online
+        echo 1 > /sys/devices/system/cpu/cpu3/online
+        echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
-	for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
-	do
-		echo "bw_hwmon" > $devfreq_gov
-	done
+        for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
+        do
+            echo "bw_hwmon" > $devfreq_gov
+        done
+
+        # Set Memory parameters
+        configure_memory_parameters
 	;;
 esac
 

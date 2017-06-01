@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2012-2013,2016 The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013,2016-2017 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -315,10 +315,10 @@ done
 
 
 # check for mdp caps
-setprop debug.gralloc.gfx_ubwc_disable 1
 file=/sys/class/graphics/fb0/mdp/caps
 if [ -f "$file" ]
 then
+    setprop debug.gralloc.gfx_ubwc_disable 1
     cat $file | while read line; do
       case "$line" in
                 *"ubwc"*)

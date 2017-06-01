@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, 2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -105,6 +105,9 @@ static const loc_name_val_s_type loc_v02_event_name[] =
     NAME_VAL(QMI_LOC_GET_LOW_POWER_MODE_REQ_V02),
     NAME_VAL(QMI_LOC_GET_LOW_POWER_MODE_RESP_V02),
     NAME_VAL(QMI_LOC_GET_LOW_POWER_MODE_IND_V02),
+    NAME_VAL(QMI_LOC_REGISTER_MASTER_CLIENT_REQ_V02),
+    NAME_VAL(QMI_LOC_REGISTER_MASTER_CLIENT_RESP_V02),
+    NAME_VAL(QMI_LOC_REGISTER_MASTER_CLIENT_IND_V02),
     NAME_VAL(QMI_LOC_SET_SERVER_REQ_V02),
     NAME_VAL(QMI_LOC_SET_SERVER_RESP_V02),
     NAME_VAL(QMI_LOC_SET_SERVER_IND_V02),
@@ -453,10 +456,28 @@ static const loc_name_val_s_type loc_v02_qmi_status_name[] =
     NAME_VAL(eQMI_LOC_TIMEOUT_V02),
     NAME_VAL(eQMI_LOC_CONFIG_NOT_SUPPORTED_V02),
     NAME_VAL(eQMI_LOC_INSUFFICIENT_MEMORY_V02),
+    NAME_VAL(eQMI_LOC_MAX_GEOFENCE_PROGRAMMED_V02),
+    NAME_VAL(eQMI_LOC_XTRA_VERSION_CHECK_FAILURE_V02),
+    NAME_VAL(eQMI_LOC_GNSS_DISABLED_V02),
 };
 static const int loc_v02_qmi_status_num = sizeof(loc_v02_qmi_status_name) / sizeof(loc_name_val_s_type);
 
 const char* loc_get_v02_qmi_status_name(qmiLocStatusEnumT_v02 status)
 {
     return loc_get_name_from_val(loc_v02_qmi_status_name, loc_v02_qmi_status_num, (long) status);
+}
+
+
+static const loc_name_val_s_type loc_v02_qmi_reg_mk_status_name[] =
+{
+    NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_SUCCESS_V02),
+    NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_INVALID_KEY_V02),
+    NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_ALREADY_HAVE_MASTER_CLIENT_V02),
+    NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_INTERNAL_FAILURE_V02),
+};
+static const int loc_v02_qmi_reg_mk_status_num = sizeof(loc_v02_qmi_reg_mk_status_name) / sizeof(loc_name_val_s_type);
+
+const char* loc_get_v02_qmi_reg_mk_status_name(qmiLocRegisterMasterClientStatusEnumT_v02 status)
+{
+    return loc_get_name_from_val(loc_v02_qmi_reg_mk_status_name, loc_v02_qmi_reg_mk_status_num, (long)status);
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -77,12 +77,16 @@ private:
   bool mEngineOn;
   bool mMeasurementsStarted;
   std::vector<Resender> mResenders;
+  bool mIsMasterRegistered;
 
   /* Convert event mask from loc eng to loc_api_v02 format */
   static locClientEventMaskType convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
 
-  /* Convert GPS LOCK mask */
-  static qmiLocLockEnumT_v02 convertGpsLockMask(GnssConfigGpsLock lock);
+  /* Convert GPS LOCK from LocationAPI format to QMI format */
+  static qmiLocLockEnumT_v02 convertGpsLockFromAPItoQMI(GnssConfigGpsLock lock);
+
+  /* Convert GPS LOCK from QMI format to LocationAPI format */
+  static GnssConfigGpsLock convertGpsLockFromQMItoAPI(qmiLocLockEnumT_v02 lock);
 
   /* Convert error from loc_api_v02 to loc eng format*/
   static enum loc_api_adapter_err convertErr(locClientStatusEnumType status);
@@ -176,6 +180,19 @@ private:
   bool registerEventMask(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
   bool cacheGnssMeasurementSupport();
+  void registerMasterClient();
+  int getGpsLock(uint8_t subType);
+
+  inline bool checkRegisterMaster() {
+      if (!mIsMasterRegistered) {
+          if (true == isMaster()) {
+              registerMasterClient();
+              mIsMasterRegistered = true;
+              return true;
+          }
+      }
+      return false;
+  }
 
   /* Convert get blacklist sv info to GnssSvIdConfig */
   void reportGnssSvIdConfig
@@ -276,11 +293,10 @@ public:
   virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
 
   /*
-    Returns
-    Current value of GPS Lock on success
-    -1 on failure
+  Returns
+  Current value of GPS Lock on success
+  -1 on failure
   */
-  virtual int getGpsLock(void);
   virtual int setSvMeasurementConstellation(const locClientEventMaskType mask);
   virtual LocationError setXtraVersionCheckSync(uint32_t check);
   virtual void installAGpsCert(const LocDerEncodedCertificate* pData,

@@ -1353,7 +1353,7 @@ sinkenable="curr_sink"
 #Android turns off tracing by default. Make sure tracing is turned on after boot is done
 if [ ! -z $coresight_stm_cfg_done ]
 then
-    echo 1 > /sys/kernel/debug/tracing/tracing_on
+    #echo 1 > /sys/kernel/debug/tracing/tracing_on
     exit
 fi
 
@@ -1373,8 +1373,8 @@ case "$coresight_config" in
                 srcenable="enable_source"
                 sinkenable="enable_sink"
             fi
-            echo "Enabling STM events."
-            enable_stm_events
+            #echo "Enabling STM events."
+            #enable_stm_events
             setprop ro.dbg.coresight.stm_cfg_done 1
         fi
         ;;

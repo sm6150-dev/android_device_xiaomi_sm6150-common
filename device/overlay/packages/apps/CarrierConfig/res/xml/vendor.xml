@@ -698,6 +698,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -737,6 +739,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -803,6 +807,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -828,6 +834,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">

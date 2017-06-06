@@ -238,6 +238,39 @@ enable_msm8998_dcc_config()
     echo 0x17901000 > $DCC_PATH/config
     echo 0x17901000 > $DCC_PATH/config
 
+    #SCMO STATUS
+    echo 0x01030560  1 > $DCC_PATH/config
+    echo 0x010305A0  1 > $DCC_PATH/config
+    echo 0x0103C560  1 > $DCC_PATH/config
+    echo 0x0103C5A0  1 > $DCC_PATH/config
+
+    #DPE STATUS
+    echo 0x0103409C 1 > $DCC_PATH/config
+    echo 0x0104009C 1 > $DCC_PATH/config
+
+    # DDR registers Masterport status
+    echo 0x01008400 38 > $DCC_PATH/config
+    echo 0x0101C400 38 > $DCC_PATH/config
+    echo 0x01014400 38 > $DCC_PATH/config
+    echo 0x01010400 38 > $DCC_PATH/config
+    echo 0x01018400 38 > $DCC_PATH/config
+
+    #SWAY
+    echo 0x01048400 16 > $DCC_PATH/config
+    echo 0x01050400 16 > $DCC_PATH/config
+    echo 0x01058400 16 > $DCC_PATH/config
+
+    #ARB
+    echo 0x01049800  1 > $DCC_PATH/config
+    echo 0x01051800  1 > $DCC_PATH/config
+    echo 0x01059800  1 > $DCC_PATH/config
+
+    #DRAM Status
+    echo 0x01035074 1 > $DCC_PATH/config
+    echo 0x01041074 1 > $DCC_PATH/config
+    echo 0x01030450 1 > $DCC_PATH/config
+    echo 0x0103C450 1 > $DCC_PATH/config
+
     echo  1 > $DCC_PATH/enable
 }
 

@@ -521,16 +521,11 @@ service irsc_util /system/bin/irsc_util "/etc/sec_config"
     user root
     oneshot
 
-service rmt_storage /system/bin/rmt_storage
+service rmt_storage /vendor/bin/rmt_storage
     class core
     user root
 
-service rfs_access /system/bin/rfs_access
-   class core
-   user root
-   group system net_raw
-
-service tftp_server /system/bin/tftp_server
+service tftp_server /vendor/bin/tftp_server
    class core
    user root
 

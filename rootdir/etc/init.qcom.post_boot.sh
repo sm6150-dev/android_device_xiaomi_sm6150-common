@@ -2673,6 +2673,9 @@ case "$target" in
     "msm8916")
         setprop sys.post_boot.parsed 1
     ;;
+    "msm8909")
+        setprop sys.post_boot.parsed 1
+    ;;
     "msm8937" | "msm8953")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb

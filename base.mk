@@ -283,7 +283,6 @@ INIT += qca6234-service.sh
 INIT += ssr_setup
 INIT += enable_swap.sh
 INIT += init.mdm.sh
-INIT += init.qcom.uicc.sh
 INIT += fstab.qcom
 INIT += init.qcom.sensors.sh
 INIT += init.qcom.vendor.rc

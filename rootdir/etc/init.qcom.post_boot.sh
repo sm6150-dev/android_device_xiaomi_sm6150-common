@@ -2539,6 +2539,10 @@ case "$target" in
 		platform_major_version=$((10#${platform_version}>>16))
 	fi
 
+	if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+		platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+	fi
+
 	case "$soc_id" in
 		"292") #msm8998 apq8098_latv
 		# Start Host based Touch processing

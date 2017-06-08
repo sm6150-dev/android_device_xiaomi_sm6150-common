@@ -1071,13 +1071,6 @@ service seemp_healthd /system/vendor/bin/seemp_healthd
 on charger
     setprop persist.sys.usb.config charging
 
-#add poweroffhandler
-service poweroffhandler /system/bin/poweroffhandler
-    class core
-    user media
-    group graphics audio
-    disabled
-    oneshot
 
 # Logcat dump daemon, dumps logs to logdump partition
 service logdumpd /system/bin/logcat -b all -v threadtime -D -w /dev/block/bootdevice/by-name/logdump

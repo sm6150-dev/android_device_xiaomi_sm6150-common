@@ -280,7 +280,6 @@ INIT += usf_post_boot.sh
 INIT += init.qcom.efs.sync.sh
 INIT += ueventd.qcom.rc
 INIT += qca6234-service.sh
-INIT += init.qcom.audio.sh
 INIT += ssr_setup
 INIT += enable_swap.sh
 INIT += init.mdm.sh

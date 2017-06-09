@@ -482,7 +482,7 @@ on property:bluetooth.startbtlogger=true
 on property:bluetooth.startbtlogger=false
     stop bt_logger
 
-service qcom-c_core-sh /vendor/bin/sh /vendor/bin/init.qcom.class_core.sh
+service qcom-c_core-sh  /vendor/bin/init.qcom.class_core.sh
     class core
     user root
     oneshot
@@ -510,7 +510,6 @@ service dpmd /system/bin/dpmd
     group system readproc
 
 service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
-    seclabel u:r:qti_init_shell:s0
     class core
     user root
     oneshot

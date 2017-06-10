@@ -523,7 +523,7 @@ service rfs_access /system/bin/rfs_access
    user root
    group system net_raw
 
-service tftp_server /system/bin/tftp_server
+service tftp_server /system/vendor/bin/tftp_server
    class core
    user root
 
@@ -1082,7 +1082,7 @@ on charger
     setprop persist.sys.usb.config charging
 
 #add poweroffhandler
-service poweroffhandler /system/bin/poweroffhandler
+service poweroffhandler /system/vendor/bin/poweroffhandler
     class core
     user media
     group graphics audio

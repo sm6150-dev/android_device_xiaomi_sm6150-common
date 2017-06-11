@@ -509,7 +509,8 @@ service dpmd /system/bin/dpmd
     socket dpmd stream 660 root system
     group system readproc
 
-service irsc_util /system/bin/irsc_util "/etc/sec_config"
+service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
+    seclabel u:r:qti_init_shell:s0
     class core
     user root
     oneshot

@@ -1050,7 +1050,7 @@ service seemp_healthd /system/vendor/bin/seemp_healthd
     group system
 
 on charger
-    setprop persist.sys.usb.config charging
+    setprop persist.sys.usb.config mass_storage
     load_system_props
     start qcom-post-boot
 

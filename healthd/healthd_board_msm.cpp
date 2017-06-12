@@ -450,9 +450,7 @@ out:
 void healthd_board_init(struct healthd_config*)
 {
     // use defaults
-#if QTI_BSP
     power_off_alarm_init();
-#endif
     healthd_batt_info_notify();
 }
 

@@ -24,14 +24,14 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <cutils/android_reboot.h>
+#include <sys/syscall.h>
+#include <sys/reboot.h>
+#include <sys/ioctl.h>
 #include <cutils/klog.h>
 #include <cutils/misc.h>
 #include <cutils/uevent.h>
 #include <cutils/properties.h>
-
 #include <pthread.h>
-#include <linux/android_alarm.h>
 #include <linux/rtc.h>
 #include <linux/time.h>
 #include <sys/epoll.h>
@@ -46,12 +46,6 @@ enum alarm_time_type {
     ALARM_TIME,
     RTC_TIME,
 };
-
-/*
- * shouldn't be changed after
- * reading from alarm register
- */
-static time_t alm_secs;
 
 static int alarm_get_time(enum alarm_time_type time_type,
                           time_t *secs)
@@ -101,18 +95,11 @@ err:
     return -1;
 }
 
-#define ERR_SECS 2
-static int alarm_is_alm_expired()
+static void alarm_reboot(void)
 {
-    int rc;
-    time_t rtc_secs;
-
-    rc = alarm_get_time(RTC_TIME, &rtc_secs);
-    if (rc < 0)
-        return 0;
-
-    return (alm_secs >= rtc_secs - ERR_SECS &&
-            alm_secs <= rtc_secs + ERR_SECS) ? 1 : 0;
+    LOGI("alarm time is up, reboot the phone!\n");
+    syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+            LINUX_REBOOT_CMD_RESTART2, "rtc");
 }
 
 static int alarm_set_reboot_time_and_wait(time_t secs)
@@ -136,6 +123,7 @@ static int alarm_set_reboot_time_and_wait(time_t secs)
     }
 
     event.events = EPOLLIN | EPOLLWAKEUP;
+    event.data.ptr = (void *)alarm_reboot;
     rc = epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
     if (rc < 0) {
         LOGE("epoll_ctl(EPOLL_CTL_ADD) failed \n");
@@ -154,13 +142,13 @@ static int alarm_set_reboot_time_and_wait(time_t secs)
         goto err;
     }
 
-    do {
-         nevents = epoll_wait(epollfd, events, 1, -1);
-    } while ((nevents < 0) || !alarm_is_alm_expired());
+    nevents = epoll_wait(epollfd, events, 1, -1);
 
     if (nevents <= 0) {
         LOGE("Unable to wait on alarm\n");
         goto err;
+    } else {
+        (*(void (*)())events[0].data.ptr)();
     }
 
     close(epollfd);
@@ -176,10 +164,19 @@ err:
     return -1;
 }
 
+/*
+ * 10s the estimated time from timestamp of alarm thread start
+ * to timestamp of android boot completed.
+ */
+#define TIME_DELTA 10
+
+/* seconds of 1 minute*/
+#define ONE_MINUTE 60
 static void *alarm_thread(void *)
 {
-    time_t rtc_secs, rb_secs;
+    time_t rtc_secs, alarm_secs;
     int rc;
+    timespec ts;
 
     /*
      * to support power off alarm, the time
@@ -188,16 +185,38 @@ static void *alarm_thread(void *)
      * earlier than the actual alarm time
      * set by user
      */
-    rc = alarm_get_time(ALARM_TIME, &alm_secs);
-    if (rc < 0 || !alm_secs)
+    rc = alarm_get_time(ALARM_TIME, &alarm_secs);
+    if (rc < 0 || !alarm_secs)
         goto err;
 
-    rc = alarm_set_reboot_time_and_wait(alm_secs);
+    rc = alarm_get_time(RTC_TIME, &rtc_secs);
+    if (rc < 0 || !rtc_secs)
+        goto err;
+    LOGI("alarm time in rtc is %ld, rtc time is %ld\n", alarm_secs, rtc_secs);
+
+    if (alarm_secs <= rtc_secs) {
+        clock_gettime(CLOCK_BOOTTIME, &ts);
+
+        /*
+         * It is possible that last power off alarm time is up at this point.
+         * (alarm_secs + ONE_MINUTE) is the final alarm time to fire.
+         * (rtc_secs + ts.tv_sec + TIME_DELTA) is the estimated time of next
+         * boot completed to fire alarm.
+         * If the final alarm time is less than the estimated time of next boot
+         * completed to fire, that means it is not able to fire the last power
+         * off alarm at the right time, so just miss it.
+         */
+        if (alarm_secs + ONE_MINUTE < rtc_secs + ts.tv_sec + TIME_DELTA) {
+            LOGE("alarm is missed\n");
+            goto err;
+        }
+
+        alarm_reboot();
+    }
+
+    rc = alarm_set_reboot_time_and_wait(alarm_secs);
     if (rc < 0)
         goto err;
-
-    LOGI("Exit from power off charging, reboot the phone!\n");
-    android_reboot(ANDROID_RB_RESTART2, 0, (char *)"rtc");
 
 err:
     LOGE("Exit from alarm thread\n");

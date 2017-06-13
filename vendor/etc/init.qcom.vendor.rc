@@ -62,7 +62,3 @@ on boot
 
 # Add Vendor service definitions, triggers from here on.
 
-service dpmQmiMgr /vendor/bin/dpmQmiMgr
-    class main
-    user system
-    group system qcom_diag

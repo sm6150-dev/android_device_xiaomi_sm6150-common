@@ -155,7 +155,6 @@ BSON := libbson
 #BT
 BT := javax.btobex
 BT += libattrib_static
-BT += hcidump.sh
 BT += libbt-vendor
 BT += libbthost_if
 BT += libbt-logClient
@@ -222,7 +221,6 @@ FM += libqcomfm_jni
 FM += libfmjni
 FM += fm_helium
 FM += libfm-hci
-FM += fmhal_service
 
 #GPS
 GPS_HARDWARE := gps.conf
@@ -261,10 +259,7 @@ INIT += init.qcom.modem_links.sh
 INIT += init.qcom.sensor.sh
 INIT += init.target.rc
 INIT += init.qti.ims.sh
-INIT += init.qcom.bt.sh
-INIT += hsic.control.bt.sh
 INIT += init.qcom.coex.sh
-INIT += init.qcom.fm.sh
 INIT += init.qcom.early_boot.sh
 INIT += init.qcom.post_boot.sh
 INIT += init.qcom.syspart_fixup.sh
@@ -284,9 +279,7 @@ INIT += init.qcom.usb.sh
 INIT += usf_post_boot.sh
 INIT += init.qcom.efs.sync.sh
 INIT += ueventd.qcom.rc
-INIT += init.ath3k.bt.sh
 INIT += qca6234-service.sh
-INIT += init.qcom.audio.sh
 INIT += ssr_setup
 INIT += enable_swap.sh
 INIT += init.mdm.sh
@@ -368,6 +361,7 @@ LIBCAMERA += camera.msm8660
 LIBCAMERA += camera.msm7630_surf
 LIBCAMERA += camera.msm7630_fusion
 LIBCAMERA += camera.msm7627a
+LIBCAMERA += camera.msm8909
 LIBCAMERA += camera.msm8916
 LIBCAMERA += camera.msm8994
 LIBCAMERA += camera.msm8992
@@ -617,6 +611,10 @@ NQ_NFC += nqnfcse_access.xml
 NQ_NFC += Tag
 NQ_NFC += nqnfcinfo
 NQ_NFC += com.android.nfc_extras
+NQ_NFC += vendor.nxp.hardware.nfc@1.0-impl
+NQ_NFC += android.hardware.nfc@1.0-impl
+NQ_NFC += vendor.nxp.hardware.nfc@1.0-service
+PRODUCT_PROPERTY_OVERRIDES += ro.hardware.nfc_nci=nqx.default
 
 #OPENCORE
 OPENCORE := libomx_aacdec_sharedlibrary
@@ -755,6 +753,7 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Mms \
     Music \
+    netutils-wrapper-1.0 \
     Phone \
     Provision \
     Protips \

@@ -68,6 +68,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <!-- Config to show/hide data usage toast -->
         <boolean name="show_data_usage_toast" value="true"/>
         <boolean name="show_apn_setting_cdma_bool" value="true" />
+        <!-- Config to enable video conference call support -->
+        <boolean name="support_video_conference_call_bool" value="true"/>
+        <!-- Config that controls whether to stop video preview video and show static image
+             in video preview or not -->
+        <boolean name="transmit_static_image" value="false"/>
+        <boolean name="show_video_quality_ui" value="false" />
 
     </carrier_config>
 
@@ -107,6 +113,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="854">
@@ -129,6 +136,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="855">
@@ -151,6 +159,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="856">
@@ -173,6 +182,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="857">
@@ -195,6 +205,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="858">
@@ -217,6 +228,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="859">
@@ -239,6 +251,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="860">
@@ -261,6 +274,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="861">
@@ -283,6 +297,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="862">
@@ -305,6 +320,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="863">
@@ -327,6 +343,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="864">
@@ -349,6 +366,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="865">
@@ -371,6 +389,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="866">
@@ -393,6 +412,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="867">
@@ -415,6 +435,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="868">
@@ -437,6 +458,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="869">
@@ -459,6 +481,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="870">
@@ -481,6 +504,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="871">
@@ -503,6 +527,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="872">
@@ -525,6 +550,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="873">
@@ -547,6 +573,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="405" mnc="874">
@@ -569,6 +596,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="include_common_rules"/>
             <item value="false"/>
         </string-array>
+        <boolean name="show_video_quality_ui" value="true" />
     </carrier_config>
 
     <carrier_config mcc="450" mnc="05">
@@ -675,6 +703,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -714,6 +748,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -728,6 +768,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
@@ -740,7 +781,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="460" mnc="05">
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
-        <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
@@ -780,6 +820,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -805,6 +851,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <item value="supl" />
             <item value="fota" />
         </string-array>
+        <boolean name="config_show_srvcc_toast" value="true" />
+        <boolean name="ims_call_type_enabled" value="true" />
+        <boolean name="config_enable_conference_dialer" value="true" />
+        <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="add_multi_participants_enabled" value="true" />
+        <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">
@@ -860,6 +912,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="070">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
@@ -875,36 +928,43 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="150">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="170">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="280">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="380">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="410">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="560">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="680">
         <boolean name="config_enable_display_14digit_imei" value="true" />
+        <boolean name="transmit_static_image" value="true"/>
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
     </carrier_config>
 
@@ -978,6 +1038,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
     <carrier_config mcc="310" mnc="800">
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="311" mnc="480">
+        <boolean name="support_video_conference_call_bool" value="false"/>
     </carrier_config>
 
 </carrier_config_list>

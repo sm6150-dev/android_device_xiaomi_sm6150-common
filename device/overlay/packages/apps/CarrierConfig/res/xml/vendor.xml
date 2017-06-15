@@ -707,6 +707,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ims_call_type_enabled" value="true" />
         <boolean name="config_enable_conference_dialer" value="true" />
         <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="add_multi_participants_enabled" value="true" />
         <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
@@ -722,6 +723,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -752,6 +754,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ims_call_type_enabled" value="true" />
         <boolean name="config_enable_conference_dialer" value="true" />
         <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="add_multi_participants_enabled" value="true" />
         <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
@@ -769,6 +772,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="roaming_protocol">IPV4V6</string>
         </map>
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
@@ -785,6 +789,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="06">
@@ -794,6 +799,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -824,6 +830,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ims_call_type_enabled" value="true" />
         <boolean name="config_enable_conference_dialer" value="true" />
         <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="add_multi_participants_enabled" value="true" />
         <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
@@ -855,6 +862,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ims_call_type_enabled" value="true" />
         <boolean name="config_enable_conference_dialer" value="true" />
         <boolean name="config_conference_call_show_participant_status" value="true" />
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="add_multi_participants_enabled" value="true" />
         <boolean name="add_participant_only_in_conference" value="true" />
     </carrier_config>
@@ -865,6 +873,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="10">
@@ -888,6 +897,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
@@ -903,6 +913,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
             <string name="protocol">IPV4V6</string>
             <string name="roaming_protocol">IPV4V6</string>
         </map>
+        <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">

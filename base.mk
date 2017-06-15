@@ -937,7 +937,7 @@ PRODUCT_COPY_FILES := \
 
 # gps/location secuity configuration file
 PRODUCT_COPY_FILES += \
-    device/qcom/common/sec_config:system/etc/sec_config
+    device/qcom/common/sec_config:vendor/etc/sec_config
 
 #copy codecs_xxx.xml to (TARGET_COPY_OUT_VENDOR)/etc/
 PRODUCT_COPY_FILES += \
@@ -1006,3 +1006,22 @@ endif
 ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
 PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 endif
+
+PRODUCT_PACKAGES += \
+    android.hardware.renderscript@1.0.vndk-sp\
+    android.hardware.graphics.allocator@2.0.vndk-sp\
+    android.hardware.graphics.mapper@2.0.vndk-sp\
+    android.hardware.graphics.common@1.0.vndk-sp\
+    android.hidl.base@1.0.vndk-sp\
+    libhwbinder.vndk-sp\
+    libbase.vndk-sp\
+    libcutils.vndk-sp\
+    libhardware.vndk-sp\
+    libhidlbase.vndk-sp\
+    libhidltransport.vndk-sp\
+    libutils.vndk-sp\
+    libc++.vndk-sp\
+    libsync.vndk-sp\
+    libbacktrace.vndk-sp\
+    libunwind.vndk-sp\
+    liblzma.vndk-sp\

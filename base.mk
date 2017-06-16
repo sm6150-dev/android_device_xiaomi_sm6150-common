@@ -920,6 +920,8 @@ PRODUCT_COPY_FILES := \
     frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
     frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
     frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
+    frameworks/native/data/etc/android.hardware.wifi.aware.xml:system/etc/permissions/android.hardware.wifi.aware.xml \
+
 
 # Bluetooth configuration files
 #PRODUCT_COPY_FILES += \

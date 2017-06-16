@@ -27,5 +27,6 @@ LOCAL_SHARED_LIBRARIES += liblog libsparse libcutils
 LOCAL_MODULE := librecovery_updater_msm
 LOCAL_COPY_HEADERS_TO := gpt-utils/inc
 LOCAL_COPY_HEADERS := gpt-utils.h
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_SHARED_LIBRARY)
 endif

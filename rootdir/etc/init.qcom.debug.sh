@@ -1,4 +1,5 @@
-#!/system/bin/sh
+#! /vendor/bin/sh
+
 # Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -948,19 +949,6 @@ enable_sdm660_dcc_config()
     echo 0x17BF0200 > $DCC_PATH/config
     echo 0x17BF0100 > $DCC_PATH/config
 
-    # CCI ACE / Stalled Transaction
-    echo 0x179082B0 > $DCC_PATH/config
-
-    # 8 times, same register
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-    echo 0x17901000 > $DCC_PATH/config
-
     echo  1 > $DCC_PATH/enable
 }
 
@@ -1271,6 +1259,7 @@ enable_dcc_config()
             echo "Enabling DCC config for sdm660."
             enable_sdm660_dcc_config
             ;;
+
         "apq8098_latv")
             echo "Enabling DCC config for apq8098_latv."
             enable_msm8998_dcc_config

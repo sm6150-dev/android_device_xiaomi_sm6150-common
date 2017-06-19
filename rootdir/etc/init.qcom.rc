@@ -494,7 +494,8 @@ on property:persist.env.fastdorm.enabled=true
 
 service cnd /system/vendor/bin/cnd
     class main
-    socket cnd stream 660 root inet
+    user system
+    group system wifi inet radio wakelock net_admin
 
 service dpmd /system/bin/dpmd
     class late_start

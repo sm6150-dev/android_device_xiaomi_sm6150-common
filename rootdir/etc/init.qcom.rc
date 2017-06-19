@@ -1040,6 +1040,8 @@ service seemp_healthd /system/vendor/bin/seemp_healthd
 
 on charger
     setprop persist.sys.usb.config charging
+    load_system_props
+    start qcom-post-boot
 
 #add poweroffhandler
 service poweroffhandler /system/bin/poweroffhandler

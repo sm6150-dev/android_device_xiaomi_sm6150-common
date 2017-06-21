@@ -1005,3 +1005,7 @@ endif
 ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
 PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 endif
+
+ifeq ($(TARGET_USES_QCOM_BSP_ATEL),true)
+    PRODUCT_PROPERTY_OVERRIDES += persist.radio.multisim.config=dsds
+endif

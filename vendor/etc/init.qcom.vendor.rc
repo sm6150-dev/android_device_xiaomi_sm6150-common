@@ -52,7 +52,7 @@ on post-fs-data
     mkdir /data/vendor/display 0770 system graphics
 
     # Create directory used by media clients
-    mkdir /data/vendor/media 0700 media media
+    mkdir /data/vendor/media 0770 mediacodec media
 
 on early-boot
     # Add on early-boot events here

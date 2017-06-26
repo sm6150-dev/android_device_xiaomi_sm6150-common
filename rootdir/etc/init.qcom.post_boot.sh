@@ -136,6 +136,15 @@ else
 fi
 }
 
+function start_hbtp()
+{
+        # Start the Host based Touch processing but not in the power off mode.
+        bootmode=`getprop ro.bootmode`
+        if [ "charger" != $bootmode ]; then
+                start hbtp
+        fi
+}
+
 case "$target" in
     "msm7201a_ffa" | "msm7201a_surf" | "msm7627_ffa" | "msm7627_6x" | "msm7627a"  | "msm7627_surf" | \
     "qsd8250_surf" | "qsd8250_ffa" | "msm7630_surf" | "msm7630_1x" | "msm7630_fusion" | "qsd8650a_st1x")
@@ -473,14 +482,14 @@ case "$target" in
                         "Surf")
                             case "$platform_subtype_id" in
                                 "1")
-                                    start hbtp
+                                    start_hbtp
                                 ;;
                             esac
                         ;;
                         "MTP")
                             case "$platform_subtype_id" in
                                 "3")
-                                    start hbtp
+                                    start_hbtp
                                 ;;
                             esac
                         ;;
@@ -1131,7 +1140,7 @@ case "$target" in
                         #1200p panel is connected to the device.
                         dir="/sys/bus/i2c/devices/3-0038"
                         if [ ! -d "$dir" ]; then
-                              start hbtp
+                              start_hbtp
                         fi
                         ;;
                 esac
@@ -1343,7 +1352,7 @@ case "$target" in
                   # Start Host based Touch processing
                   case "$hw_platform" in
                     "MTP" | "Surf" | "RCM" )
-                        start hbtp
+                        start_hbtp
                         ;;
                   esac
                 # Apply Scheduler and Governor settings for 8917 / 8920
@@ -1456,7 +1465,7 @@ case "$target" in
                   # Start Host based Touch processing
                   case "$hw_platform" in
                     "MTP" | "Surf" | "RCM" )
-                        start hbtp
+                        start_hbtp
                         ;;
                   esac
 
@@ -1766,7 +1775,7 @@ case "$target" in
             # Start Host based Touch processing
                 case "$hw_platform" in
                         "MTP" | "Surf" | "RCM" | "QRD" )
-                        start hbtp
+                        start_hbtp
                         ;;
                 esac
             ;;
@@ -1778,7 +1787,7 @@ case "$target" in
             # Start Host based Touch processing
             case "$hw_platform" in
                 "MTP" | "Surf" | "RCM" | "QRD" )
-                start hbtp
+                start_hbtp
                 ;;
             esac
 
@@ -2345,7 +2354,7 @@ case "$target" in
 
 	case "$soc_id" in
 		"321") #sdm845
-		start hbtp
+		start_hbtp
 		;;
 	esac
 	# Core control parameters
@@ -2532,6 +2541,10 @@ case "$target" in
 		platform_major_version=$((10#${platform_version}>>16))
 	fi
 
+	if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+		platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+	fi
+
 	case "$soc_id" in
 		"292") #msm8998 apq8098_latv
 		# Start Host based Touch processing
@@ -2539,11 +2552,11 @@ case "$target" in
 		"QRD")
 			case "$platform_subtype_id" in
 				"0")
-					start hbtp
+					start_hbtp
 					;;
 				"16")
 					if [ $platform_major_version -lt 6 ]; then
-						start hbtp
+						start_hbtp
 					fi
 					;;
 			esac

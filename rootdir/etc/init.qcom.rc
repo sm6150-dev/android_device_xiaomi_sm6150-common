@@ -188,9 +188,15 @@ on boot
     chown system system /sys/class/sensors/MPU6050-gyro/enable
     chown system system /sys/class/sensors/MPU6050-gyro/poll_delay
 
+    # Create directory used for display
+    mkdir /persist/display 0770 system graphics
+
 # msm specific files that need to be created on /data
 on post-fs-data
     mkdir /data/vendor/misc 0770 system system
+
+    # Create directory used by display clients
+    mkdir /data/vendor/display 0770 system graphics
 
     #Create directories for Fingerprint
     mkdir /data/vendor/misc/qti_fp 0770 system system

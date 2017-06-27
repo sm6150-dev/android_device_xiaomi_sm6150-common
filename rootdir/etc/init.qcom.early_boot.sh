@@ -52,6 +52,14 @@ fi
 
 log -t BOOT -p i "MSM target '$1', SoC '$soc_hwplatform', HwID '$soc_hwid', SoC ver '$soc_hwver'"
 
+#For drm based display driver
+vbfile=/sys/module/drm/parameters/vblankoffdelay
+if [ -w $vbfile ]; then
+    echo -1 >  $vbfile
+else
+    log -t DRM_BOOT -p w "file: '$vbfile' or perms doesn't exist"
+fi
+
 function set_density_by_fb() {
     #put default density based on width
     if [ -z $fb_width ]; then

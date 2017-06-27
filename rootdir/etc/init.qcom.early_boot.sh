@@ -344,9 +344,12 @@ fi
 # set lineptr permissions for all displays
 for fb_cnt in 0 1 2 3
 do
-    file=/sys/class/graphics/fb$fb_cnt/lineptr_value
-    if [ -f "$file" ]; then
-        set_perms $file system.graphics 0664
+    file=/sys/class/graphics/fb$fb_cnt
+    if [ -f "$file/lineptr_value" ]; then
+        set_perms $file/lineptr_value system.graphics 0664
+    fi
+    if [ -f "$file/msm_fb_persist_mode" ]; then
+        set_perms $file/msm_fb_persist_mode system.graphics 0664
     fi
 done
 

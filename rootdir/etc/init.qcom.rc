@@ -499,8 +499,6 @@ service dpmd /system/bin/dpmd
 
 service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
-    user system
-    group system
 
 service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class core

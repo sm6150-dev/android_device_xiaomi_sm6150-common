@@ -2390,17 +2390,34 @@ case "$target" in
         do
             echo "bw_hwmon" > $cpubw/governor
             echo 50 > $cpubw/polling_interval
-            echo "1720 2929 4943 5931 6881" > $cpubw/bw_hwmon/mbps_zones
+            echo "2288 4577 6500 8132 9155 10681" > $cpubw/bw_hwmon/mbps_zones
             echo 4 > $cpubw/bw_hwmon/sample_ms
-            echo 68 > $cpubw/bw_hwmon/io_percent
+            echo 34 > $cpubw/bw_hwmon/io_percent
             echo 20 > $cpubw/bw_hwmon/hist_memory
             echo 10 > $cpubw/bw_hwmon/hyst_length
             echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-            echo 68 > $cpubw/bw_hwmon/low_power_io_percent
+            echo 34 > $cpubw/bw_hwmon/low_power_io_percent
             echo 20 > $cpubw/bw_hwmon/low_power_delay
             echo 0 > $cpubw/bw_hwmon/guard_band_mbps
             echo 250 > $cpubw/bw_hwmon/up_scale
             echo 1600 > $cpubw/bw_hwmon/idle_mbps
+        done
+
+        for llccbw in /sys/class/devfreq/*qcom,llccbw*
+        do
+            echo "bw_hwmon" > $llccbw/governor
+            echo 50 > $llccbw/polling_interval
+            echo "1720 2929 4943 5931 6881" > $llccbw/bw_hwmon/mbps_zones
+            echo 4 > $llccbw/bw_hwmon/sample_ms
+            echo 68 > $llccbw/bw_hwmon/io_percent
+            echo 20 > $llccbw/bw_hwmon/hist_memory
+            echo 10 > $llccbw/bw_hwmon/hyst_length
+            echo 0 > $llccbw/bw_hwmon/low_power_ceil_mbps
+            echo 68 > $llccbw/bw_hwmon/low_power_io_percent
+            echo 20 > $llccbw/bw_hwmon/low_power_delay
+            echo 0 > $llccbw/bw_hwmon/guard_band_mbps
+            echo 250 > $llccbw/bw_hwmon/up_scale
+            echo 1600 > $llccbw/bw_hwmon/idle_mbps
         done
 
 	#Enable mem_latency governor for DDR scaling

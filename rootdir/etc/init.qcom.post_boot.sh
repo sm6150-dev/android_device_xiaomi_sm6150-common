@@ -1130,7 +1130,7 @@ case "$target" in
         fi
 
         case "$soc_id" in
-            "293" | "304" )
+            "293" | "304" | "338" )
 
                 # Start Host based Touch processing
                 case "$hw_platform" in

@@ -204,6 +204,10 @@ on post-fs-data
     mkdir /data/vendor/misc/qti_fp/calib_test 0770 system system
     mkdir /data/vendor/misc/qti_fp/database 0770 system system
 
+    # create QDMA dropbox
+    mkdir /data/vendor/qdmastats 0700 system system
+    mkdir /data/vendor/qdma 0770 system system
+
     # Create directory for TZ Apps
     mkdir /data/misc/qsee 0770 system system
 
@@ -1081,3 +1085,8 @@ service time_daemon /system/vendor/bin/time_daemon
     class main
     user root
     group root
+
+service qdmastatsd /system/vendor/bin/qdmastatsd
+    class late_start
+    user system
+    group system

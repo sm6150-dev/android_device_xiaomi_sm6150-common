@@ -80,6 +80,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_ui" value="false" />
         <!-- Config to control the voWiFi call quality indication. -->
         <boolean name="vowifi_call_quality" value="false" />
+        <boolean name="config_carrier_ims_call_deflect" value="false" />
+
     </carrier_config>
 
     <carrier_config mcc="204" mnc="04">
@@ -668,6 +670,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </string-array>
         <boolean name="show_video_quality_ui" value="true" />
         <boolean name="vowifi_call_quality" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="440" mnc="50">
+        <boolean name="config_carrier_ims_call_deflect" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="440" mnc="51">
+        <boolean name="config_carrier_ims_call_deflect" value="true" />
     </carrier_config>
 
     <carrier_config mcc="450" mnc="05">

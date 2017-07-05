@@ -53,6 +53,14 @@ fi
 
 log -t BOOT -p i "MSM target '$1', SoC '$soc_hwplatform', HwID '$soc_hwid', SoC ver '$soc_hwver'"
 
+#For drm based display driver
+vbfile=/sys/module/drm/parameters/vblankoffdelay
+if [ -w $vbfile ]; then
+    echo -1 >  $vbfile
+else
+    log -t DRM_BOOT -p w "file: '$vbfile' or perms doesn't exist"
+fi
+
 function set_density_by_fb() {
     #put default density based on width
     if [ -z $fb_width ]; then
@@ -227,6 +235,13 @@ case "$target" in
                 ;;
         esac
         ;;
+    "msm8909")
+        case "$soc_hwplatform" in
+            *)
+                setprop persist.graphics.vulkan.disable true
+                ;;
+        esac
+        ;;
     "msm8998" | "apq8098_latv")
         case "$soc_hwplatform" in
             *)
@@ -296,62 +311,65 @@ function setHDMIPermission() {
    ln -s $dev_file $dev_gfx_hdmi
 }
 
-# check for HDMI connection
-for fb_cnt in 0 1 2 3
-do
-    file=/sys/class/graphics/fb$fb_cnt/msm_fb_panel_info
+# check for the type of driver FB or DRM
+fb_driver=/sys/class/graphics/fb0
+if [ -e "$fb_driver" ]
+then
+    # check for HDMI connection
+    for fb_cnt in 0 1 2 3
+    do
+        file=/sys/class/graphics/fb$fb_cnt/msm_fb_panel_info
+        if [ -f "$file" ]
+        then
+          cat $file | while read line; do
+            case "$line" in
+                *"is_pluggable"*)
+                 case "$line" in
+                      *"1"*)
+                      setHDMIPermission $fb_cnt
+                 esac
+            esac
+          done
+        fi
+    done
+
+    # check for mdp caps
+    file=/sys/class/graphics/fb0/mdp/caps
     if [ -f "$file" ]
     then
-      cat $file | while read line; do
-        case "$line" in
-            *"is_pluggable"*)
-             case "$line" in
-                  *"1"*)
-                  setHDMIPermission $fb_cnt
-             esac
-        esac
-      done
+        setprop debug.gralloc.gfx_ubwc_disable 1
+        cat $file | while read line; do
+          case "$line" in
+                    *"ubwc"*)
+                    setprop debug.gralloc.enable_fb_ubwc 1
+                    setprop debug.gralloc.gfx_ubwc_disable 0
+                esac
+        done
     fi
-done
 
+    file=/sys/class/graphics/fb0
+    if [ -d "$file" ]
+    then
+            set_perms $file/idle_time system.graphics 0664
+            set_perms $file/dynamic_fps system.graphics 0664
+            set_perms $file/dyn_pu system.graphics 0664
+            set_perms $file/modes system.graphics 0664
+            set_perms $file/mode system.graphics 0664
+            set_perms $file/msm_cmd_autorefresh_en system.graphics 0664
+    fi
 
-
-# check for mdp caps
-file=/sys/class/graphics/fb0/mdp/caps
-if [ -f "$file" ]
-then
-    setprop debug.gralloc.gfx_ubwc_disable 1
-    cat $file | while read line; do
-      case "$line" in
-                *"ubwc"*)
-                setprop debug.gralloc.enable_fb_ubwc 1
-                setprop debug.gralloc.gfx_ubwc_disable 0
-            esac
+    # set lineptr permissions for all displays
+    for fb_cnt in 0 1 2 3
+    do
+        file=/sys/class/graphics/fb$fb_cnt
+        if [ -f "$file/lineptr_value" ]; then
+            set_perms $file/lineptr_value system.graphics 0664
+        fi
+        if [ -f "$file/msm_fb_persist_mode" ]; then
+            set_perms $file/msm_fb_persist_mode system.graphics 0664
+        fi
     done
 fi
-
-file=/sys/class/graphics/fb0
-if [ -d "$file" ]
-then
-        set_perms $file/idle_time system.graphics 0664
-        set_perms $file/dynamic_fps system.graphics 0664
-        set_perms $file/dyn_pu system.graphics 0664
-        set_perms $file/modes system.graphics 0664
-        set_perms $file/mode system.graphics 0664
-        set_perms $file/msm_cmd_autorefresh_en system.graphics 0664
-fi
-
-# set lineptr permissions for all displays
-for fb_cnt in 0 1 2 3
-do
-    file=/sys/class/graphics/fb$fb_cnt
-    if [ -f "$file/lineptr_value" ]; then
-        set_perms $file/lineptr_value system.graphics 0664
-    fi
-    if [ -f "$file/msm_fb_persist_mode" ]; then
-        set_perms $file/msm_fb_persist_mode system.graphics 0664
-    fi
-done
 
 boot_reason=`cat /proc/sys/kernel/boot_reason`
 reboot_reason=`getprop ro.boot.alarmboot`

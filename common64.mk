@@ -1,4 +1,3 @@
-TARGET_USES_QCOM_BSP_ATEL := true
 $(call inherit-product, device/qcom/common/base.mk)
 
 # For PRODUCT_COPY_FILES, the first instance takes precedence.
@@ -19,10 +18,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.sib16_support=1 \
     persist.radio.custom_ecc=1 \
     persist.vendor.radio.rat_on=combine
-
-ifeq ($(TARGET_USES_QCOM_BSP_ATEL),true)
-    PRODUCT_PROPERTY_OVERRIDES += persist.radio.multisim.config=dsds
-endif
 
 ifneq ($(BOARD_FRP_PARTITION_NAME),)
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/$(BOARD_FRP_PARTITION_NAME)

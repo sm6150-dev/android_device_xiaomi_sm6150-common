@@ -192,6 +192,9 @@ on boot
     # Create directory used for display
     mkdir /persist/display 0770 system graphics
 
+    # Create vpp directory
+    mkdir /persist/vpp 0770 media media
+
 # msm specific files that need to be created on /data
 on post-fs-data
     mkdir /data/vendor/misc 0770 system system
@@ -379,6 +382,9 @@ on post-fs-data
     # set aggressive read ahead for dm-0 and dm-1 during boot up
     write /sys/block/dm-0/queue/read_ahead_kb 2048
     write /sys/block/dm-1/queue/read_ahead_kb 2048
+
+    # Create vpp directory
+    mkdir /data/vendor/vpp 0770 media media
 
 service nqnfcinfo /system/vendor/bin/nqnfcinfo
     class late_start
@@ -1079,3 +1085,9 @@ service qdmastatsd /system/vendor/bin/qdmastatsd
     class late_start
     user system
     group system net_bw_stats radio
+
+service vppservice /vendor/bin/vppservice
+    class main
+    user media
+    group camera
+

@@ -519,7 +519,9 @@ service cnd /system/vendor/bin/cnd
 service dpmd /system/bin/dpmd
     class late_start
     socket dpmd stream 660 root system
-    group system readproc
+    socket tcm  stream 660 root inet
+    socket dpmwrapper stream 660 root inet
+    group system readproc inet
 
 service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main

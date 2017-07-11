@@ -1035,3 +1035,7 @@ PRODUCT_PACKAGES += \
     libbacktrace.vndk-sp\
     libunwind.vndk-sp\
     liblzma.vndk-sp\
+
+ifeq ($(TARGET_USES_QCOM_BSP_ATEL),true)
+    PRODUCT_PROPERTY_OVERRIDES += persist.radio.multisim.config=dsds
+endif

@@ -480,6 +480,18 @@ enable_msm8998_dcc_config()
     echo 0x01030450 1 > $DCC_PATH/config
     echo 0x0103C450 1 > $DCC_PATH/config
 
+    # APCS_ALIAS0_CPU_PWR_CTL
+    echo 0x17988004 2 > $DCC_PATH/config
+    echo 0x17998004 2 > $DCC_PATH/config
+    echo 0x179A8004 2 > $DCC_PATH/config
+    echo 0x179B8004 2 > $DCC_PATH/config
+    echo 0x17888004 2 > $DCC_PATH/config
+    echo 0x17898004 2 > $DCC_PATH/config
+    echo 0x178A8004 2 > $DCC_PATH/config
+    echo 0x178B8004 2 > $DCC_PATH/config
+    echo 0x17911014 2 > $DCC_PATH/config
+    echo 0x17811014 2 > $DCC_PATH/config
+
     echo  1 > $DCC_PATH/enable
 }
 

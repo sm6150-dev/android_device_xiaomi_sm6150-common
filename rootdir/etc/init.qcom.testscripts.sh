@@ -1,4 +1,4 @@
-#! /vendor/bin/sh
+#! /system/bin/sh
 
 # Copyright (c) 2015, The Linux Foundation. All rights reserved.
 #

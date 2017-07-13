@@ -1017,6 +1017,10 @@ ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
 PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 endif
 
+# OEM Unlock reporting
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    ro.oem_unlock_supported=true
+
 PRODUCT_PACKAGES += \
     android.hardware.renderscript@1.0.vndk-sp\
     android.hardware.graphics.allocator@2.0.vndk-sp\

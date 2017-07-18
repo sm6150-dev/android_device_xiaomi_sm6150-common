@@ -325,15 +325,6 @@ on post-fs-data
     mkdir /data/misc/fm 0770 system system
     chmod 0770 /data/misc/fm
 
-    # RIDL data
-    mkdir /data/misc/SelfHost/ 0710 system shell
-    mkdir /data/misc/SelfHost/QCLogs/ 2750 system shell
-    mkdir /data/misc/SelfHost/QCLogs/temp/ 0700 system shell
-    mkdir /data/misc/SelfHost/storage/ 0700 system shell
-    mkdir /data/misc/SelfHost/Running/ 2750 system shell
-    mkdir /data/misc/SelfHost/socket/ 2770 system system
-    mkdir /data/misc/OTA/ 0750 system system
-
     #Create PERFD deamon related dirs
     mkdir /data/system/perfd 0770 root system
     chmod 2770 /data/system/perfd
@@ -365,12 +356,12 @@ on post-fs-data
     chmod 0660 /data/vendor/radio/db_check_done
 
     # qti-logkit data
-    mkdir /data/misc/qti-logkit/ 0771 system system
-    mkdir /data/misc/qti-logkit/shared-privileged/ 2770 system system
-    mkdir /data/misc/qti-logkit/shared-public/ 2770 system diag
-    mkdir /data/misc/qti-logkit/socket-privileged/ 2770 system system
-    mkdir /data/misc/qti-logkit/socket-public/ 2750 system diag
-    mkdir /data/misc/qti-logkit/logdata/ 2750 system shell
+    mkdir /data/vendor/qti-logkit/ 0771 system system
+    mkdir /data/vendor/qti-logkit/shared-privileged/ 2770 system system
+    mkdir /data/vendor/qti-logkit/shared-public/ 2770 system diag
+    mkdir /data/vendor/qti-logkit/socket-privileged/ 2770 system system
+    mkdir /data/vendor/qti-logkit/socket-public/ 2750 system diag
+    mkdir /data/vendor/qti-logkit/logdata/ 2750 system shell
 
     #Create SWAP related dirs
     mkdir /data/system/swap 0770 root system
@@ -1007,16 +998,8 @@ service msm_irqbalance /vendor/bin/msm_irqbalance -f /system/vendor/etc/msm_irqb
     disabled
 
 
-service RIDL /system/vendor/bin/RIDLClient.exe
-    class late_start
-    oneshot
-    user system
-    group system inet log sdcard_r sdcard_rw diag
-    # removed for security team - misc bluetooth radio gps wifi diag media_rw
-    # limited to 12 groups.  Unused: audio usb net_bt_admin net_bt_stac net_raw net_admin
-
 # service for USERDEBUG
-service LKCore-dbg /system/vendor/bin/LKCore
+service vendor.LKCore-dbg /vendor/bin/LKCore
     class late_start
     oneshot
     disabled
@@ -1024,7 +1007,7 @@ service LKCore-dbg /system/vendor/bin/LKCore
     group root system log diag net_raw
 
 # service for USER
-service LKCore-rel /system/vendor/bin/LKCore
+service vendor.LKCore-rel /vendor/bin/LKCore
     class late_start
     oneshot
     disabled

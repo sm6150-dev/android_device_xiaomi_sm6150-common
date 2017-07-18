@@ -287,6 +287,7 @@ INIT += fstab.qcom
 INIT += init.qcom.sensors.sh
 INIT += init.qcom.vendor.rc
 INIT += init.target.vendor.rc
+INIT += init.qti.fm.sh
 
 #IPROUTE2
 IPROUTE2 := ip

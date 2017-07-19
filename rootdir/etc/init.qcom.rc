@@ -1070,7 +1070,7 @@ service time_daemon /system/vendor/bin/time_daemon
 service qdmastatsd /system/vendor/bin/qdmastatsd
     class late_start
     user system
-    group system net_bw_stats radio
+    group readproc system net_bw_stats radio
 
 service vppservice /vendor/bin/vppservice
     class main

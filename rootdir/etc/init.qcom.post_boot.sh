@@ -1663,8 +1663,8 @@ case "$target" in
             # Setting b.L scheduler parameters
             echo 96 > /proc/sys/kernel/sched_upmigrate
             echo 90 > /proc/sys/kernel/sched_downmigrate
-            echo 200 > /proc/sys/kernel/sched_group_upmigrate
-            echo 180 > /proc/sys/kernel/sched_group_downmigrate
+            echo 140 > /proc/sys/kernel/sched_group_upmigrate
+            echo 120 > /proc/sys/kernel/sched_group_downmigrate
             echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
             echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
             echo 400000 > /proc/sys/kernel/sched_freq_dec_notify

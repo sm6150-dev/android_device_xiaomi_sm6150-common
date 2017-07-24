@@ -43,9 +43,9 @@
 /dev/smd6                 0660   system     system
 /dev/smd7                 0660   bluetooth  bluetooth
 /dev/ccid_bridge          0660   system     system
-/dev/ipa                  0660   system     net_admin
-/dev/wwan_ioctl           0660   system     net_admin
-/dev/ipaNatTable          0660   net_admin  net_admin
+/dev/ipa                  0660   radio      radio
+/dev/wwan_ioctl           0660   radio      radio
+/dev/ipaNatTable          0660   radio      radio
 /dev/rmnet_ctrl           0660   usb        usb
 /dev/dpl_ctrl             0660   usb        usb
 
@@ -118,6 +118,7 @@
 /dev/media*               0660   system     camera
 /dev/v4l-subdev*          0660   system     camera
 /dev/qseecom              0660   system     drmrpc
+/dev/smcinvoke            0660   system     system
 /dev/qsee_ipc_irq_spss    0660   system     drmrpc
 /dev/seemplog             0660   system     system
 /dev/pft                  0660   system     drmrpc
@@ -245,6 +246,13 @@
 /dev/wcnss_ctrl           0660   system     system
 /sys/devices/soc/600000.qcom,pcie/pci0000:00/0000:00:00.0/0000:01:00.0/net/wlan0/queues/rx-* rps_cpus 0660 system system
 /sys/devices/soc/600000.qcom,pcie/pci0000:00/0000:00:00.0/0000:01:00.0/net/p2p0/queues/rx-* rps_cpus 0660 system system
+
+# wigig
+/sys/bus/pci/drivers/wil6210* 0000:01:00.0/wil6210/fst_link_loss 0660 wifi wifi
+/sys/bus/pci/drivers/wil6210* 0000:01:00.0/wil6210/thermal_throttling 0660 system system
+/sys/bus/pci/drivers/wil6210* 0000:01:00.0/net/wigig0/queues/rx-0/rps_cpus 0660 system system
+/sys/bus/pci/drivers/wil6210* 0000:01:00.0/net/wigig0/gro_flush_timeout 0660 system system
+/sys/devices/virtual/net/bond0 queues/rx-0/rps_cpus 0660 system system
 
 #nfc permissions
 /dev/nfc-nci              0660    nfc         nfc

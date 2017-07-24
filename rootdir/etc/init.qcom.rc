@@ -194,6 +194,12 @@ on boot
     # Create directory used for display
     mkdir /persist/display 0770 system graphics
 
+    # Create vpp directory
+    mkdir /persist/vpp 0770 media media
+
+    # load WIGIG platform driver
+    insmod /vendor/lib/modules/msm_11ad_proxy.ko
+
 # msm specific files that need to be created on /data
 on post-fs-data
     mkdir /data/vendor/misc 0770 system system
@@ -223,7 +229,8 @@ on post-fs-data
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
 
-    mkdir /data/misc/ipa 0700 net_admin net_admin
+    mkdir /data/vendor/misc 0770 root radio
+    mkdir /data/vendor/misc/ipa 0770 root radio
 
     mkdir /data/vendor/ramdump 0771 root system
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
@@ -233,8 +240,10 @@ on post-fs-data
     # Create the directories used by the Wireless subsystem
     mkdir /data/vendor/wifi 0770 wifi wifi
     mkdir /data/vendor/wifi/sockets 0770 wifi wifi
+    mkdir /data/vendor/wifi/hostapd 0770 wifi wifi
     mkdir /data/vendor/wifi/hostapd/ctrl 0770 wifi wifi
     mkdir /data/vendor/wifi/wpa_supplicant 0770 wifi wifi
+    mkdir /data/vendor/wifi/wigig_hostapd 0770 wifi wifi
     mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
@@ -372,6 +381,9 @@ on post-fs-data
     # set aggressive read ahead for dm-0 and dm-1 during boot up
     write /sys/block/dm-0/queue/read_ahead_kb 2048
     write /sys/block/dm-1/queue/read_ahead_kb 2048
+
+    # Create vpp directory
+    mkdir /data/vendor/vpp 0770 media media
 
 service nqnfcinfo /system/vendor/bin/nqnfcinfo
     class late_start
@@ -603,17 +615,17 @@ service netmgrd /system/vendor/bin/netmgrd
     class main
     disabled
 
-service ipacm-diag /system/bin/ipacm-diag
+service ipacm-diag /system/vendor/bin/ipacm-diag
     class main
-    user system
-    socket ipacm_log_file dgram 660 system net_admin
-    group net_admin diag
+    user radio
+    socket ipacm_log_file dgram 660 radio radio
+    group diag
     disabled
 
-service ipacm /system/bin/ipacm
+service ipacm /system/vendor/bin/ipacm
     class main
-    user net_admin
-    group net_admin inet
+    user radio
+    group inet
     disabled
 
 service qti /system/vendor/bin/qti
@@ -674,11 +686,12 @@ service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     disabled
     oneshot
 
-service wigig_supplicant /vendor/bin/hw/wpa_supplicant \
-    -iwigig0 -Dnl80211 -c/data/misc/wifi/wigig_supplicant.conf \
-    -m/data/misc/wifi/wigig_p2p_supplicant.conf \
-    -O/data/misc/wifi/wigig_sockets -dd \
-    -e/data/misc/wifi/wigig_entropy.bin -g@android:wpa_wigig0
+service vendor.wigig_supplicant /vendor/bin/hw/wpa_supplicant \
+    -iwigig0 -Dnl80211 -c/data/vendor/wifi/wigig_supplicant.conf \
+    -m/data/vendor/wifi/wigig_p2p_supplicant.conf \
+    -O/data/vendor/wifi/wigig_sockets -dd \
+    -e/data/vendor/wifi/wigig_entropy.bin -g@android:wpa_wigig0 \
+    -S wigigsvc
     #   we will start as root and wpa_supplicant will switch to user wifi
     #   after setting up the capabilities required for WEXT
     #   user wifi
@@ -689,7 +702,7 @@ service wigig_supplicant /vendor/bin/hw/wpa_supplicant \
     oneshot
 
 # FST Manager with hostapd (softap) - all settings inside ini file
-service fstman /system/vendor/bin/fstman -B -ddd -c /data/misc/wifi/fstman.ini
+service fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini
     user wifi
     group wifi net_admin net_raw
     class main
@@ -697,7 +710,7 @@ service fstman /system/vendor/bin/fstman -B -ddd -c /data/misc/wifi/fstman.ini
     oneshot
 
 # FST Manager with supplicant - connect to supplicant socket
-service fstman_wlan0 /system/vendor/bin/fstman -B -ddd -c /data/misc/wifi/fstman.ini @android:wpa_wlan0
+service fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini @android:wpa_wlan0
     user wifi
     group wifi net_admin net_raw
     class main
@@ -709,6 +722,16 @@ on property:netd.fstman.start=true
 
 on property:netd.fstman.start=false
     stop fstman
+
+service wigighalsvc /vendor/bin/wigighalsvc
+    class main
+    user system
+    group wifi
+    disabled
+
+on property:persist.vendor.wigig.enable=1
+    insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
+    start wigighalsvc
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG
     class late_start
@@ -887,6 +910,20 @@ service atfwd /vendor/bin/ATFWD-daemon
     user system
     group system radio
 
+service hostapd_fst /vendor/bin/hostapd -dd -g /data/vendor/wifi/hostapd/global /data/vendor/wifi/hostapd.conf
+    class late_start
+    user wifi
+    group wifi inet keystore net_admin net_raw
+    oneshot
+    disabled
+
+service vendor.wigig_hostapd /vendor/bin/hostapd -dd /data/vendor/wifi/wigig_hostapd.conf
+    class late_start
+    user wifi
+    group wifi inet keystore net_admin net_raw
+    oneshot
+    disabled
+
 service ims_regmanager /system/vendor/bin/exe-ims-regmanagerprocessnative
     class late_start
     group net_bt_admin inet radio wifi
@@ -1059,3 +1096,9 @@ service qdmastatsd /system/vendor/bin/qdmastatsd
     class late_start
     user system
     group readproc system net_bw_stats radio
+
+service vppservice /vendor/bin/vppservice
+    class main
+    user media
+    group camera
+

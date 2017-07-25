@@ -26,7 +26,6 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
 target=`getprop ro.board.platform`
 
 function configure_zram_parameters() {
@@ -134,6 +133,22 @@ else
         swapon /data/system/swap/swapfile -p 32758
     fi
 fi
+}
+
+function enable_memory_features()
+{
+    MemTotalStr=`cat /proc/meminfo | grep MemTotal`
+    MemTotal=${MemTotalStr:16:8}
+
+    if [ $MemTotal -le 2097152 ]; then
+        #Enable B service adj transition for 2GB or less memory
+        setprop ro.vendor.qti.sys.fw.bservice_enable true
+        setprop ro.vendor.qti.sys.fw.bservice_limit 5
+        setprop ro.vendor.qti.sys.fw.bservice_age 5000
+
+        #Enable Delay Service Restart
+        setprop ro.vendor.qti.am.reschedule_service true
+    fi
 }
 
 function start_hbtp()
@@ -736,16 +751,6 @@ esac
 case "$target" in
     "msm8952")
 
-        #Enable adaptive LMK and set vmpressure_file_min
-        ProductName=`getprop ro.product.name`
-        if [ "$ProductName" == "msm8952_32" ] || [ "$ProductName" == "msm8952_32_LMT" ]; then
-            echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
-            echo 53059 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
-        elif [ "$ProductName" == "msm8952_64" ] || [ "$ProductName" == "msm8952_64_LMT" ]; then
-            echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
-            echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
-        fi
-
         if [ -f /sys/devices/soc0/soc_id ]; then
             soc_id=`cat /sys/devices/soc0/soc_id`
         else
@@ -789,19 +794,19 @@ case "$target" in
                 echo 0 > /sys/devices/system/cpu/cpu6/sched_prefer_idle
                 echo 0 > /sys/devices/system/cpu/cpu7/sched_prefer_idle
 
-                for devfreq_gov in /sys/class/devfreq/qcom,mincpubw*/governor
+                for devfreq_gov in /sys/class/devfreq/*qcom,mincpubw*/governor
                 do
                     echo "cpufreq" > $devfreq_gov
                 done
 
-                for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
+                for devfreq_gov in /sys/class/devfreq/*qcom,cpubw*/governor
                 do
                     echo "bw_hwmon" > $devfreq_gov
-                    for cpu_io_percent in /sys/class/devfreq/qcom,cpubw*/bw_hwmon/io_percent
+                    for cpu_io_percent in /sys/class/devfreq/*qcom,cpubw*/bw_hwmon/io_percent
                     do
                         echo 20 > $cpu_io_percent
                     done
-                    for cpu_guard_band in /sys/class/devfreq/qcom,cpubw*/bw_hwmon/guard_band_mbps
+                    for cpu_guard_band in /sys/class/devfreq/*qcom,cpubw*/bw_hwmon/guard_band_mbps
                     do
                         echo 30 > $cpu_guard_band
                     done
@@ -912,6 +917,10 @@ case "$target" in
                 echo 1 > /sys/module/lpm_levels/lpm_workarounds/dynamic_clock_gating
                 # Enable timer migration to little cluster
                 echo 1 > /proc/sys/kernel/power_aware_timer_migration
+
+                # Set Memory parameters
+                configure_memory_parameters
+
             ;;
             *)
                 panel=`cat /sys/class/graphics/fb0/modes`
@@ -954,19 +963,19 @@ case "$target" in
                 echo 3 > /sys/devices/system/cpu/cpu6/sched_mostly_idle_nr_run
                 echo 3 > /sys/devices/system/cpu/cpu7/sched_mostly_idle_nr_run
 
-                for devfreq_gov in /sys/class/devfreq/qcom,mincpubw*/governor
+                for devfreq_gov in /sys/class/devfreq/*qcom,mincpubw*/governor
                 do
                     echo "cpufreq" > $devfreq_gov
                 done
 
-                for devfreq_gov in /sys/class/devfreq/qcom,cpubw*/governor
+                for devfreq_gov in /sys/class/devfreq/*qcom,cpubw*/governor
                 do
                     echo "bw_hwmon" > $devfreq_gov
-                    for cpu_io_percent in /sys/class/devfreq/qcom,cpubw*/bw_hwmon/io_percent
+                    for cpu_io_percent in /sys/class/devfreq/*qcom,cpubw*/bw_hwmon/io_percent
                     do
                         echo 20 > $cpu_io_percent
                     done
-                    for cpu_guard_band in /sys/class/devfreq/qcom,cpubw*/bw_hwmon/guard_band_mbps
+                    for cpu_guard_band in /sys/class/devfreq/*qcom,cpubw*/bw_hwmon/guard_band_mbps
                     do
                         echo 30 > $cpu_guard_band
                     done
@@ -1110,8 +1119,14 @@ case "$target" in
 
                 # Enable timer migration to little cluster
                 echo 1 > /proc/sys/kernel/power_aware_timer_migration
+
+                # Set Memory parameters
+                configure_memory_parameters
+
             ;;
         esac
+        #Enable Memory Features
+        enable_memory_features
     ;;
 esac
 
@@ -2457,7 +2472,10 @@ case "$target" in
 	# Turn off scheduler boost at the end
         echo 0 > /proc/sys/kernel/sched_boost
         # Turn on sleep modes.
-        echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
+        echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+	#Disable CX PC
+	echo 49 385 > /d/regulator/soc:rpmh-regulator-cxlvl-pm8998_s9_level/voltage
+        echo 1 > /d/regulator/soc:rpmh-regulator-cxlvl-pm8998_s9_level/enable
     ;;
 esac
 
@@ -2717,6 +2735,9 @@ case "$target" in
         setprop sys.post_boot.parsed 1
     ;;
     "msm8909")
+        setprop sys.post_boot.parsed 1
+    ;;
+    "msm8952")
         setprop sys.post_boot.parsed 1
     ;;
     "msm8937" | "msm8953")

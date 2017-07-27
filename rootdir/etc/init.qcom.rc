@@ -385,6 +385,9 @@ on post-fs-data
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
 
+    #Create FTM_AP dir for factory test
+    mkdir /data/FTM_AP 0775 system system
+
 service nqnfcinfo /system/vendor/bin/nqnfcinfo
     class late_start
     group nfc

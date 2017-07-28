@@ -512,13 +512,6 @@ service cnd /system/vendor/bin/cnd
     user system
     group system wifi inet radio wakelock net_admin
 
-service dpmd /system/bin/dpmd
-    class late_start
-    socket dpmd stream 660 root system
-    socket tcm  stream 660 root inet
-    socket dpmwrapper stream 660 root inet
-    group system readproc inet
-
 service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
 

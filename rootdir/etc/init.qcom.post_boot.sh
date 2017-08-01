@@ -2866,3 +2866,9 @@ case "$console_config" in
         echo "Enable console config to $console_config"
         ;;
 esac
+
+# Parse misc partition path and set property
+misc_link=$(ls -l /dev/block/bootdevice/by-name/misc)
+real_path=${misc_link##*>}
+setprop persist.mmi.misc_dev_path $real_path
+

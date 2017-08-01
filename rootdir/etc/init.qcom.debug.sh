@@ -29,33 +29,9 @@
 
 HERE=/system/etc
 source $HERE/init.qcom.debug-sdm660.sh
-# function to enable ftrace events to CoreSight STM
-enable_stm_events()
+enable_tracing_events()
 {
-    # bail out if its perf config
-    if [ ! -d /sys/module/msm_rtb ]
-    then
-        return
-    fi
-    # bail out if coresight isn't present
-    if [ ! -d /sys/bus/coresight ]
-    then
-        return
-    fi
-    # bail out if ftrace events aren't present
-    if [ ! -d /sys/kernel/debug/tracing/events ]
-    then
-        return
-    fi
-
-    echo 0x2000000 > /sys/bus/coresight/devices/coresight-tmc-etr/mem_size
-    echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/$sinkenable
-    echo 1 > /sys/bus/coresight/devices/coresight-stm/$srcenable
-    echo 1 > /sys/kernel/debug/tracing/tracing_on
-    echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
     # timer
-    echo 1 > /sys/kernel/debug/tracing/events/timer/enable
-    echo 1 > /sys/kernel/debug/tracing/events/timer/filter
     echo 1 > /sys/kernel/debug/tracing/events/timer/timer_cancel/enable
     echo 1 > /sys/kernel/debug/tracing/events/timer/timer_expire_entry/enable
     echo 1 > /sys/kernel/debug/tracing/events/timer/timer_expire_exit/enable
@@ -68,21 +44,15 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_init/enable
     echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_start/enable
     #enble FTRACE for softirq events
-    echo 1 > /sys/kernel/debug/tracing/events/irq/enable
-    echo 1 > /sys/kernel/debug/tracing/events/irq/filter
     echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_entry/enable
     echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_exit/enable
     echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_raise/enable
     #enble FTRACE for Workqueue events
-    echo 1 > /sys/kernel/debug/tracing/events/workqueue/enable
-    echo 1 > /sys/kernel/debug/tracing/events/workqueue/filter
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_activate_work/enable
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_execute_end/enable
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_execute_start/enable
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_queue_work/enable
     # schedular
-    echo 1 > /sys/kernel/debug/tracing/events/sched/enable
-    echo 1 > /sys/kernel/debug/tracing/events/sched/filter
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_cpu_hotplug/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_cpu_load/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_enq_deq_task/enable
@@ -131,6 +101,53 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_core_online/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_pre_frequency_mit/enable
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_frequency_mit/enable
+
+    echo 1 > /sys/kernel/debug/tracing/tracing_on
+}
+
+# function to enable ftrace events
+enable_ftrace_event_tracing()
+{
+    # bail out if its perf config
+    if [ ! -d /sys/module/msm_rtb ]
+    then
+        return
+    fi
+
+    # bail out if ftrace events aren't present
+    if [ ! -d /sys/kernel/debug/tracing/events ]
+    then
+        return
+    fi
+
+    enable_tracing_events
+}
+
+# function to enable ftrace event transfer to CoreSight STM
+enable_stm_events()
+{
+    # bail out if its perf config
+    if [ ! -d /sys/module/msm_rtb ]
+    then
+        return
+    fi
+    # bail out if coresight isn't present
+    if [ ! -d /sys/bus/coresight ]
+    then
+        return
+    fi
+    # bail out if ftrace events aren't present
+    if [ ! -d /sys/kernel/debug/tracing/events ]
+    then
+        return
+    fi
+
+    echo 0x2000000 > /sys/bus/coresight/devices/coresight-tmc-etr/mem_size
+    echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/$sinkenable
+    echo 1 > /sys/bus/coresight/devices/coresight-stm/$srcenable
+    echo 1 > /sys/kernel/debug/tracing/tracing_on
+    echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
+    enable_tracing_events
 }
 
 # Function sdm670 DCC configuration
@@ -2042,6 +2059,7 @@ enable_core_gladiator_hang_config()
 
 coresight_config=`getprop persist.debug.coresight.config`
 coresight_stm_cfg_done=`getprop ro.dbg.coresight.stm_cfg_done`
+ftrace_disable=`getprop persist.debug.ftrace_events_disable`
 srcenable="enable"
 sinkenable="curr_sink"
 
@@ -2055,6 +2073,10 @@ fi
 enable_dcc_config
 enable_core_gladiator_hang_config
 enable_osm_wdog_status_config
+
+if [ "$ftrace_disable" != "Yes" ]; then
+    enable_ftrace_event_tracing
+fi
 
 case "$coresight_config" in
     "stm-events")

@@ -18,7 +18,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.sib16_support=1 \
     persist.radio.custom_ecc=1 \
     persist.vendor.radio.rat_on=combine \
-    sys.vendor.shutdown.waittime=500
+    sys.vendor.shutdown.waittime=500 \
+    ro.build.shutdown_timeout=0
 
 ifneq ($(BOARD_FRP_PARTITION_NAME),)
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/$(BOARD_FRP_PARTITION_NAME)

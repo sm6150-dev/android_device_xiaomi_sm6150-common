@@ -725,9 +725,19 @@ service wigighalsvc /vendor/bin/wigighalsvc
     group wifi
     disabled
 
+service wigignpt /vendor/bin/wigignpt
+    class main
+    socket wigignpt stream 660 system wifi
+    user system
+    group wifi net_admin
+    disabled
+
 on property:persist.vendor.wigig.enable=1
     insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
     start wigighalsvc
+
+on property:persist.vendor.wigig.npt.enable=1
+    start wigignpt
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG
     class late_start

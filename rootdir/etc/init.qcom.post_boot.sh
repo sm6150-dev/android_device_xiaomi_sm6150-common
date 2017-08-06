@@ -26,6 +26,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 target=`getprop ro.board.platform`
 
 function configure_zram_parameters() {
@@ -2473,9 +2474,6 @@ case "$target" in
         echo 0 > /proc/sys/kernel/sched_boost
         # Turn on sleep modes.
         echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
-	#Disable CX PC
-	echo 49 385 > /d/regulator/soc:rpmh-regulator-cxlvl-pm8998_s9_level/voltage
-        echo 1 > /d/regulator/soc:rpmh-regulator-cxlvl-pm8998_s9_level/enable
     ;;
 esac
 

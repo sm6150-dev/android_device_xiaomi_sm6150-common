@@ -1464,6 +1464,9 @@ typedef union
 
     const qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02 *pQueryOTBAccumulatedDistanceInd;
     /*QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02*/
+
+    const qmiLocInjectXtraDataIndMsgT_v02 *pInjectXtraDataInd;
+    /*QMI_LOC_INJECT_XTRA_DATA_IND_V02*/
 }locClientRespIndUnionType;
 
 /** @} */ /* end_addtogroup data_types */

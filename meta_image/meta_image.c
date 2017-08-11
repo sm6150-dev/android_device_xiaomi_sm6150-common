@@ -36,7 +36,7 @@
 #include <sys/stat.h>
 #include "meta_format.h"
 
-#define MAX_IMAGES 16
+#define MAX_IMAGES 32
 
 meta_header_t meta_header;
 img_header_entry_t  img_header[MAX_IMAGES];
@@ -58,14 +58,14 @@ void usage()
     printf("eg: meta_image sbl1 sbl1.mbn rpm rpm.mbn tz tz.mbn hyp hyp.mbn aboot emmc_appsboot.mbn -o bootloader.img -v M8916AAAAAULGD21210017.1\n");
 }
 
-int read_devinfo ()
+void read_devinfo ()
 {
     FILE *fin = fopen("devinfo.bin", "rb");
     fread(&di, sizeof(di), 1, fin);
     fclose(fin);
 }
 
-int write_devinfo ()
+void write_devinfo ()
 {
     FILE *fout;
     /* If image exists, just update it */

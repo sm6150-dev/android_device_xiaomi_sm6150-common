@@ -45,6 +45,11 @@ on property:sys.boot_mode=normal
 on factory-fs
     mount tmpfs tmpfs /data
 
+on post-fs-data
+    setprop persist.sys.usb.ffbm-00.func diag
+    setprop persist.sys.usb.ffbm-01.func diag
+    setprop persist.sys.usb.ffbm-02.func diag
+
 on mmi
     # ========================================================
     #              This is FFBM only settings.

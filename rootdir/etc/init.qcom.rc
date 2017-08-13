@@ -535,6 +535,7 @@ service rmt_storage /vendor/bin/rmt_storage
     class core
     user root
     shutdown critical
+    ioprio rt 0
 
 service tftp_server /vendor/bin/tftp_server
    class core

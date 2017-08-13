@@ -84,7 +84,7 @@ start_msm_irqbalance_8939()
 	if [ -f /system/vendor/bin/msm_irqbalance ]; then
 		case "$platformid" in
 		    "239" | "293" | "294" | "295" | "304" | "313")
-			start msm_irqbalance;;
+			start vendor.msm_irqbalance;;
 		esac
 	fi
 }
@@ -92,7 +92,12 @@ start_msm_irqbalance_8939()
 start_msm_irqbalance()
 {
 	if [ -f /vendor/bin/msm_irqbalance ]; then
-		start msm_irqbalance
+		case "$platformid" in
+		    "317" | "324" | "325" | "326")
+			start vendor.msm_irqbalance;;
+		    "318" | "327")
+			start vendor.msm_irqbl_sdm630;;
+		esac
 	fi
 }
 

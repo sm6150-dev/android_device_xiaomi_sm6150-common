@@ -2412,6 +2412,8 @@ case "$target" in
 	echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
 	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/rate_limit_us
 	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
+	echo "0:1324800" > /sys/module/cpu_boost/parameters/input_boost_freq
+	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 
         # Enable bus-dcvs
         for cpubw in /sys/class/devfreq/*qcom,cpubw*

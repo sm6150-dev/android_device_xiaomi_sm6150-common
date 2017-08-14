@@ -665,8 +665,6 @@ STMLOG := libstm-log
 
 #THERMAL_HAL
 THERMAL_HAL := thermal.msm8998
-THERMAL_HAL += android.hardware.thermal@1.0-impl
-THERMAL_HAL += android.hardware.thermal@1.0-service
 
 #TSLIB_EXTERNAL
 TSLIB_EXTERNAL := corgi
@@ -684,8 +682,6 @@ TSLIB_EXTERNAL += ts
 
 #VR_HAL
 VR_HAL := vr.msm8998
-VR_HAL += android.hardware.vr@1.0-impl
-VR_HAL += android.hardware.vr@1.0-service
 
 #QRGND
 QRGND := qrngd

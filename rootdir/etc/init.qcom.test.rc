@@ -49,3 +49,10 @@ on property:sys.dbg.coresight.enable=1
 
 on property:sys.dbg.coresight.enable=0
     write /persist/coresight/enable 0
+
+service DiagDaemon /system/vendor/bin/diag_socket_log -f /sdcard/ipaddress.txt
+    class late_start
+    oneshot
+    disabled
+    user root
+    group root system log qcom_diag net_raw

@@ -190,6 +190,10 @@ on boot
     chown system system /sys/class/sensors/MPU6050-accel/poll_delay
     chown system system /sys/class/sensors/MPU6050-gyro/enable
     chown system system /sys/class/sensors/MPU6050-gyro/poll_delay
+    chown system system /sys/class/sensors/apds9930-light/enable
+    chown system system /sys/class/sensors/apds9930-light/poll_delay
+    chown system system /sys/class/sensors/apds9930-proximity/enable
+    chown system system /sys/class/sensors/apds9930-proximity/poll_delay
 
     # Create directory used for display
     mkdir /persist/display 0770 system graphics

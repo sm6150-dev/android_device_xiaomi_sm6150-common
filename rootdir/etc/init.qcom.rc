@@ -865,6 +865,12 @@ service ssgqmigd /vendor/bin/ssgqmigd
     group radio
     socket ssgqmig seqpacket 0660 radio inet
 
+service ssgtzd /vendor/bin/ssgtzd
+    class late_start
+    user system
+    group system
+    socket ssgtzd stream 0660 system inet
+
 service mlid /vendor/bin/mlid
     class late_start
     user gps

@@ -36,11 +36,11 @@
 #include <platform_lib_macros.h>
 #include <unistd.h>
 
+using namespace izat_manager;
 
 /* LocNetIface singleton instance
  * Used for QCMAP registration */
 LocNetIface* LocNetIface::sLocNetIfaceInstance = NULL;
-
 
 void LocNetIface::subscribe (
         const std::list<DataItemId>& itemListToSubscribe) {
@@ -496,13 +496,13 @@ void LocNetIface::notifyObserverForWlanStatus (bool isWlanEnabled) {
 
     /* Create a wifi hardware status item */
     WifiHardwareStateDataItem wifiStateDataItem;
-    IDataItem *dataItem = NULL;
+    IDataItemCore *dataItem = NULL;
 
     wifiStateDataItem.mEnabled = isWlanEnabled;
     dataItem = &wifiStateDataItem;
 
     // Create a list and push data item, since that's what observer expects
-    std::list<IDataItem *> dataItemList;
+    std::list<IDataItemCore *> dataItemList;
     dataItemList.push_back(dataItem);
 
     /* Notify back to client */
@@ -523,7 +523,7 @@ void LocNetIface::notifyObserverForNetworkInfo (
 
     // Create a network data item
     NetworkInfoDataItem networkInfoDataItem;
-    IDataItem *dataItem = NULL;
+    IDataItemCore *dataItem = NULL;
 
     networkInfoDataItem.mType = (int32)connType;
     networkInfoDataItem.mConnected = isConnected;
@@ -531,7 +531,7 @@ void LocNetIface::notifyObserverForNetworkInfo (
     dataItem = &networkInfoDataItem;
 
     // Create a list and push data item, since that's what observer expects
-    std::list<IDataItem *> dataItemList;
+    std::list<IDataItemCore *> dataItemList;
     dataItemList.push_back(dataItem);
 
     /* Notify back to client */

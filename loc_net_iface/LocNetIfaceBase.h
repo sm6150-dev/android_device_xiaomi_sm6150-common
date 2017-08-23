@@ -28,14 +28,14 @@
 #ifndef LOC_NET_IFACE_BASE_H
 #define LOC_NET_IFACE_BASE_H
 
-#include <IDataItem.h>
+#include <IDataItemCore.h>
 #include <loc_gps.h>
 #include <algorithm>
 #include <vector>
 #include <list>
 #include <string.h>
 
-using namespace izat_manager;
+using namespace loc_core;
 
 /* Connectivity Type Enum
  *
@@ -77,7 +77,7 @@ typedef void (*LocWwanCallStatusCb)(
 
 /* DataItem Notification callback */
 typedef void (*LocNetStatusChangeCb)(
-        void* userDataPtr, std::list<IDataItem*>& itemList);
+        void* userDataPtr, std::list<IDataItemCore*>& itemList);
 
 /* Maximum length of APN Name config items */
 #define APN_NAME_MAX_LEN 255

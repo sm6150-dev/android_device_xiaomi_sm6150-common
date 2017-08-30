@@ -39,9 +39,10 @@ LocNetAgpsState LocNetIfaceAgps::sAgpsStateSupl = LOC_NET_AGPS_STATE_CLOSED;
 LocAgpsOpenResultCb LocNetIfaceAgps::sAgpsOpenResultCb = NULL;
 LocAgpsCloseResultCb LocNetIfaceAgps::sAgpsCloseResultCb = NULL;
 void* LocNetIfaceAgps::sUserDataPtr = NULL;
+AgpsCbInfo LocNetIfaceAgps::sAgpsCbInfo = {};
 
 /* Method accessed from HAL */
-agps_status_extended LocNetIfaceAgps_getStatusCb(
+AgpsCbInfo& LocNetIfaceAgps_getAgpsCbInfo(
         LocAgpsOpenResultCb openResultCb,
         LocAgpsCloseResultCb closeResultCb, void* userDataPtr) {
 
@@ -76,10 +77,11 @@ agps_status_extended LocNetIfaceAgps_getStatusCb(
     }
 
     /* Return our callback */
-    return LocNetIfaceAgps::agpsStatusCb;
+    LocNetIfaceAgps::sAgpsCbInfo.statusV4Cb = (void*)LocNetIfaceAgps::agpsStatusCb;
+    return LocNetIfaceAgps::sAgpsCbInfo;
 }
 
-void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
+void LocNetIfaceAgps::agpsStatusCb(AGnssExtStatusIpV4 status){
 
     ENTRY_LOG();
 
@@ -88,14 +90,10 @@ void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
         LOC_LOGE("Not init'd");
         return;
     }
-    if (status == NULL) {
-        LOC_LOGE("NULL status");
-        return;
-    }
 
-    if (status->status == LOC_GPS_REQUEST_AGPS_DATA_CONN) {
+    if (status.status == LOC_GPS_REQUEST_AGPS_DATA_CONN) {
 
-        if (status->type == LOC_AGPS_TYPE_SUPL) {
+        if (status.type == LOC_AGPS_TYPE_SUPL) {
 
             LOC_LOGV("REQUEST LOC_AGPS_TYPE_SUPL");
             sAgpsStateSupl = LOC_NET_AGPS_STATE_OPEN_PENDING;
@@ -107,7 +105,7 @@ void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
                         NULL, LOC_NET_CONN_IP_TYPE_INVALID);
                 sAgpsStateSupl = LOC_NET_AGPS_STATE_CLOSED;
             }
-        } else if (status->type == LOC_AGPS_TYPE_WWAN_ANY) {
+        } else if (status.type == LOC_AGPS_TYPE_WWAN_ANY) {
 
             LOC_LOGV("REQUEST LOC_AGPS_TYPE_WWAN_ANY");
             sAgpsStateInternet = LOC_NET_AGPS_STATE_OPEN_PENDING;
@@ -121,12 +119,12 @@ void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
             }
         } else {
 
-            LOC_LOGE("Unsupported AGPS type %d", status->type);
+            LOC_LOGE("Unsupported AGPS type %d", status.type);
         }
     }
-    else if (status->status == LOC_GPS_RELEASE_AGPS_DATA_CONN) {
+    else if (status.status == LOC_GPS_RELEASE_AGPS_DATA_CONN) {
 
-        if (status->type == LOC_AGPS_TYPE_SUPL) {
+        if (status.type == LOC_AGPS_TYPE_SUPL) {
 
             LOC_LOGV("RELEASE LOC_AGPS_TYPE_SUPL");
             sAgpsStateSupl = LOC_NET_AGPS_STATE_CLOSE_PENDING;
@@ -138,7 +136,7 @@ void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
                         NULL, LOC_NET_CONN_IP_TYPE_INVALID);
                 sAgpsStateSupl = LOC_NET_AGPS_STATE_CLOSED;
             }
-        } else if (status->type == LOC_AGPS_TYPE_WWAN_ANY) {
+        } else if (status.type == LOC_AGPS_TYPE_WWAN_ANY) {
 
             LOC_LOGV("RELEASE LOC_AGPS_TYPE_WWAN_ANY");
             sAgpsStateInternet = LOC_NET_AGPS_STATE_CLOSE_PENDING;
@@ -152,11 +150,11 @@ void LocNetIfaceAgps::agpsStatusCb(AGpsExtStatus* status){
             }
         } else {
 
-            LOC_LOGE("Unsupported AGPS type %d", status->type);
+            LOC_LOGE("Unsupported AGPS type %d", status.type);
         }
     }
     else {
-        LOC_LOGE("Unsupported AGPS action %d", status->status);
+        LOC_LOGE("Unsupported AGPS action %d", status.status);
     }
 }
 

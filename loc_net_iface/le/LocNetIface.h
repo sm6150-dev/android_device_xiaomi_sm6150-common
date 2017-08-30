@@ -31,6 +31,9 @@
 #include <LocNetIfaceBase.h>
 #include <dsi_netctrl.h>
 #include <QCMAP_Client.h>
+#include <mutex>
+
+using namespace std;
 
 /*--------------------------------------------------------------------
  *  LE platform specific implementation for LocNetIface
@@ -40,11 +43,14 @@ class LocNetIface : public LocNetIfaceBase {
 public:
     /* Constructor */
     LocNetIface(LocNetConnType connType) :
-        LocNetIfaceBase(connType),
-        mQcmapClientPtr(NULL), mConnectBackhaulSent(false),
+        LocNetIfaceBase(connType), mQcmapClientPtr(NULL),
+        mConnectReqRecvCount(0), mIsConnectReqSent(false),
         mIsConnectBackhaulPending(false), mIsDisconnectBackhaulPending(false),
+        mLocNetWlanState(LOC_NET_CONN_STATE_INVALID),
+        mLocNetWwanState(LOC_NET_CONN_STATE_INVALID),
         mIsDsiInitDone(false), mDsiHandle(NULL), mIsDsiCallUp(false),
-        mIsDsiStartCallPending(false), mIsDsiStopCallPending(false) {}
+        mIsDsiStartCallPending(false), mIsDsiStopCallPending(false),
+        mMutex() {}
     LocNetIface() : LocNetIface(LOC_NET_CONN_TYPE_WWAN_INTERNET) {}
 
     /* Override base class pure virtual methods */
@@ -65,13 +71,16 @@ public:
     bool isWlanConnected();
     bool isWwanConnected();
 
+    recursive_mutex& getMutex(){ return mMutex; }
+
 private:
     /* QCMAP client handle
      * This will be set only for static sQcmapInstance. */
     QCMAP_Client* mQcmapClientPtr;
 
     /* Flag to track whether we've setup QCMAP backhaul */
-    bool mConnectBackhaulSent;
+    int mConnectReqRecvCount;
+    bool mIsConnectReqSent;
     bool mIsConnectBackhaulPending;
     bool mIsDisconnectBackhaulPending;
 
@@ -79,6 +88,10 @@ private:
      * QCMAP does NOT support passing in/out a void user data pointer,
      * Hence we need to track the instance used internally. */
     static LocNetIface* sLocNetIfaceInstance;
+
+    /* Current connection status */
+    LocNetConnState mLocNetWlanState;
+    LocNetConnState mLocNetWwanState;
 
     /* Private APIs to interact with QCMAP module */
     void subscribeWithQcmap();
@@ -95,8 +108,8 @@ private:
             qcmap_msgr_tear_down_wwan_ind_msg_v01 &teardownWwanIndData);
     void notifyObserverForWlanStatus(bool isWlanEnabled);
     void notifyObserverForNetworkInfo(boolean isConnected, LocNetConnType connType);
-    void notifyCurrentNetworkInfo();
-    void notifyCurrentWifiHardwareState();
+    void notifyCurrentNetworkInfo(bool queryQcmap);
+    void notifyCurrentWifiHardwareState(bool queryQcmap);
 
     /* Callback registered with QCMAP */
     static void qcmapClientCallback
@@ -120,6 +133,9 @@ private:
             dsi_hndl_t dsiHandle, void* userDataPtr, dsi_net_evt_t event,
             dsi_evt_payload_t* eventPayloadPtr);
     void handleDSCallback(dsi_hndl_t dsiHandle, bool isNetConnected);
+
+    /* Mutex for synchronization */
+    recursive_mutex mMutex;
 };
 
 #endif /* #ifndef LOC_NET_IFACE_H */

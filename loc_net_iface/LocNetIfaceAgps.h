@@ -40,6 +40,16 @@ typedef void (*LocAgpsOpenResultCb)(
 typedef void (*LocAgpsCloseResultCb)(
         bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
+/* AGPS state Enum */
+typedef enum {
+    LOC_NET_AGPS_STATE_INVALID,
+    LOC_NET_AGPS_STATE_OPEN_PENDING,
+    LOC_NET_AGPS_STATE_OPENED,
+    LOC_NET_AGPS_STATE_CLOSE_PENDING,
+    LOC_NET_AGPS_STATE_CLOSED,
+    LOC_NET_AGPS_STATE_MAX
+} LocNetAgpsState;
+
 /*--------------------------------------------------------------------
  * CLASS LocNetIfaceAgps
  *
@@ -60,6 +70,10 @@ public:
     /* LocNetIface instances for different clients */
     static LocNetIface* sLocNetIfaceAgpsInternet;
     static LocNetIface* sLocNetIfaceAgpsSupl;
+
+    /* AGPS states */
+    static LocNetAgpsState sAgpsStateInternet;
+    static LocNetAgpsState sAgpsStateSupl;
 
     /* AGPS interface methods to be invoked on call setup/failure */
     static LocAgpsOpenResultCb sAgpsOpenResultCb;

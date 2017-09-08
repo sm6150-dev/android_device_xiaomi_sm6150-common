@@ -1844,6 +1844,24 @@ enable_dcc_config()
     esac
 }
 
+enable_sdm845_core_hang_config()
+{
+    CORE_PATH_SILVER="/sys/devices/system/cpu/hang_detect_silver"
+    CORE_PATH_GOLD="/sys/devices/system/cpu/hang_detect_gold"
+    if [ ! -d $CORE_PATH ]; then
+        echo "CORE hang does not exist on this build."
+        return
+    fi
+
+    #set the threshold to around 100 milli-second
+    echo 0x1d4c01 > $CORE_PATH_SILVER/threshold
+    echo 0x1d4c01 > $CORE_PATH_GOLD/threshold
+
+    #To the enable core hang detection
+    echo 0x1 > $CORE_PATH_SILVER/enable
+    echo 0x1 > $CORE_PATH_GOLD/enable
+}
+
 enable_msm8998_core_hang_config()
 {
     CORE_PATH_SILVER="/sys/devices/system/cpu/hang_detect_silver"
@@ -1912,6 +1930,10 @@ enable_core_gladiator_hang_config()
     target=`getprop ro.board.platform`
 
     case "$target" in
+        "sdm845")
+            echo "Enabling core & gladiator config for sdm845"
+            enable_sdm845_core_hang_config
+        ;;
         "msm8998")
             echo "Enabling core & gladiator config for msm8998"
             enable_msm8998_core_hang_config

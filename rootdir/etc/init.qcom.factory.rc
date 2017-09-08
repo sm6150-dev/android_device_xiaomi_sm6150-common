@@ -33,13 +33,13 @@ service fastmmi /vendor/bin/mmi
     disabled
 
 on property:sys.boot_mode=ffbm
-    write ${persist.mmi.misc_dev_path} "ffbm-01"
+    write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"
 
 on property:sys.boot_mode=qmmi
-    write ${persist.mmi.misc_dev_path} "ffbm-02"
+    write ${persist.vendor.mmi.misc_dev_path} "ffbm-02"
 
 on property:sys.boot_mode=normal
-    write ${persist.mmi.misc_dev_path} "normal"
+    write ${persist.vendor.mmi.misc_dev_path} "normal"
 
 # Creating a scratch storage on /data for factory testing.
 on factory-fs

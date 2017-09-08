@@ -697,6 +697,10 @@ enable_sdm845_dcc_config()
     echo 0x12C2088 1 > $DCC_PATH/config
     echo 0x12C208C 1 > $DCC_PATH/config
 
+    #CX and MX voltage
+    echo 0x0C201244 1 > $DCC_PATH/config
+    echo 0x0C202244 1 > $DCC_PATH/config
+
     #Apply configuration and enable DCC
     echo  1 > $DCC_PATH/enable
 }

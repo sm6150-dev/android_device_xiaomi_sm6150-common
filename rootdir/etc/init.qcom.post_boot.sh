@@ -2380,7 +2380,7 @@ case "$target" in
         fi
 
 	case "$soc_id" in
-		"321") #sdm845
+		"321" | "341") #sdm845
 		start_hbtp
 		;;
 	esac

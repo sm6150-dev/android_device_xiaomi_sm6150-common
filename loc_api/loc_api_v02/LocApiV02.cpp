@@ -260,7 +260,7 @@ enum loc_api_adapter_err
 LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 {
   enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
-  LOC_API_ADAPTER_EVENT_MASK_T newMask = mMask | (mask & ~mExcludedMask);
+  LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = convertMask(newMask);
   LOC_LOGD("%s:%d]: %p Enter mMask: %x; mask: %x; newMask: %x \
           mQmiMask: %" PRIu64 " qmiMask: %" PRIu64,

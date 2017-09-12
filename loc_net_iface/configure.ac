@@ -57,6 +57,10 @@ PKG_CHECK_MODULES([DSUTILS], [dsutils])
 AC_SUBST([DSUTILS_CFLAGS])
 AC_SUBST([DSUTILS_LIBS])
 
+PKG_CHECK_MODULES([DATAITEMS], [data-items])
+AC_SUBST([DATAITEMS_CFLAGS])
+AC_SUBST([DATAITEMS_LIBS])
+
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))

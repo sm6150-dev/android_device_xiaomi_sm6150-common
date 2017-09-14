@@ -27,8 +27,9 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-HERE=/system/etc
+HERE=/vendor/bin
 source $HERE/init.qcom.debug-sdm660.sh
+source $HERE/init.qcom.debug-sdm670.sh
 enable_tracing_events()
 {
     # timer
@@ -119,26 +120,6 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/tracing_on
     echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
     enable_tracing_events
-}
-
-# Function sdm670 DCC configuration
-enable_sdm670_dcc_config()
-{
-    DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
-
-    if [ ! -d $DCC_PATH ]; then
-        echo "DCC does not exist on this build."
-        return
-    fi
-
-    echo 0 > $DCC_PATH/enable
-    echo cap > $DCC_PATH/func_type
-    echo sram > $DCC_PATH/data_sink
-    echo 1 > $DCC_PATH/config_reset
-    echo 2 > $DCC_PATH/curr_list
-
-    #Apply configuration and enable DCC
-    echo  1 > $DCC_PATH/enable
 }
 
 # Function SDM845 DCC configuration
@@ -1845,11 +1826,6 @@ enable_dcc_config()
             echo "Enabling DCC config for sdm845."
             enable_sdm845_dcc_config
             ;;
-
-        "sdm670")
-            echo "Enabling DCC config for sdm670."
-            enable_sdm670_dcc_config
-            ;;
     esac
 }
 
@@ -1973,26 +1949,32 @@ enable_dcc_config
 enable_core_gladiator_hang_config
 enable_osm_wdog_status_config
 
-if [ "$ftrace_disable" != "Yes" ]; then
-    enable_ftrace_event_tracing
-fi
-
 case "$coresight_config" in
     "stm-events")
-        if [ $target == "sdm660" ];
-        then
-            echo "Enabling STM/Debug events for SDM660"
-            enable_sdm660_debug
-        else
-            if [ $target == "sdm845" ];
-            then
+        case "$target" in
+            "sdm660")
+                echo "Enabling STM/Debug events for SDM660"
+                enable_sdm660_debug
+            ;;
+            "sdm670")
+                echo "Enabling DCC/STM/Debug events for SDM670"
+                enable_sdm670_debug
+                setprop ro.dbg.coresight.stm_cfg_done 1
+            ;;
+            "sdm845")
                 srcenable="enable_source"
                 sinkenable="enable_sink"
-            fi
-            echo "Enabling STM events."
-            enable_stm_events
-            setprop ro.dbg.coresight.stm_cfg_done 1
-        fi
+                #echo "Enabling STM events."
+                #enable_stm_events
+                if [ "$ftrace_disable" != "Yes" ]; then
+                    enable_ftrace_event_tracing
+                fi
+                setprop ro.dbg.coresight.stm_cfg_done 1
+            ;;
+            *)
+                echo "Invalid target"
+            ;;
+        esac
         ;;
     *)
         echo "Skipping coresight configuration."

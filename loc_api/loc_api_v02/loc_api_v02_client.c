@@ -641,6 +641,10 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
    { QMI_LOC_INJECT_SRN_AP_DATA_IND_V02,
      sizeof(qmiLocInjectSrnApDataIndMsgT_v02) },
 
+  // for Fusion CSM
+   { QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_IND_V02,
+     sizeof(qmiLocCrowdSourceManagerControlIndMsgT_v02) },
+
    //xtra config data
    { QMI_LOC_QUERY_XTRA_INFO_IND_V02,
      sizeof(qmiLocQueryXtraInfoIndMsgT_v02) },
@@ -1580,6 +1584,19 @@ static bool validateRequest(
         *pOutLen = sizeof(qmiLocInjectSrnApDataReqMsgT_v02);
         break;
     }
+
+    case QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocCrowdSourceManagerControlReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_CROWDSOURCE_MANAGER_READ_DATA_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocCrowdSourceManagerReadDataReqMsgT_v02);
+        break;
+    }
+
     // Query Xtra config data
     case QMI_LOC_QUERY_XTRA_INFO_REQ_V02 :
     {

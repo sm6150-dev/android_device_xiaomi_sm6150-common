@@ -728,8 +728,13 @@ typedef union
     const qmiLocInjectSrnApDataReqMsgT_v02 *pInjectSrnApDataReq;
     /*QMI_LOC_INJECT_SRN_AP_DATA_REQ_V02*/
 
-    const qmiLocQueryXtraInfoReqMsgT_v02   *pQueryXtraInfoReq;
+    const qmiLocCrowdSourceManagerControlReqMsgT_v02 *pCrowdSourceManagerControlReq;
+    /*QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_REQ*/
 
+    const qmiLocCrowdSourceManagerReadDataReqMsgT_v02 *pCrowdSourceManagerReadDataReq;
+    /*QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_REQ*/
+
+    const qmiLocQueryXtraInfoReqMsgT_v02   *pQueryXtraInfoReq;
     /*QMI_LOC_QUERY_XTRA_INFO_REQ_V02*/
     const qmiLocStartOutdoorTripBatchingReqMsgT_v02 *pStartOutdoorTripBatchingReq;
     /*QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ_V02*/
@@ -1458,6 +1463,9 @@ typedef union
 
     const qmiLocInjectSrnApDataIndMsgT_v02 *pInjectSrnApDataInd;
     /*QMI_LOC_INJECT_SRN_AP_DATA_IND_V02*/
+
+    const qmiLocCrowdSourceManagerControlIndMsgT_v02 *pCrowdSourceManagerControlInd;
+    /* QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_IND_V02*/
 
     const qmiLocStartOutdoorTripBatchingIndMsgT_v02 *pStartOutdoorTripBatchingInd;
     /*QMI_LOC_START_OUTDOOR_TRIP_BATCHING_IND_V02*/

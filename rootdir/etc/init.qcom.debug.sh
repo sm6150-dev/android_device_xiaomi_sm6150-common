@@ -172,6 +172,8 @@ enable_sdm670_dcc_config()
 enable_sdm845_dcc_config()
 {
     DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
+    soc_version=`cat /sys/devices/soc0/revision`
+    soc_version=${soc_version/./}
 
     if [ ! -d $DCC_PATH ]; then
         echo "DCC does not exist on this build."
@@ -183,6 +185,20 @@ enable_sdm845_dcc_config()
     echo sram > $DCC_PATH/data_sink
     echo 1 > $DCC_PATH/config_reset
     echo 2 > $DCC_PATH/curr_list
+
+    #Use for address change between V1 vs V2
+    if [ "$soc_version" -eq 20 ]
+    then
+        #V2
+        echo 0x17D41920  > $DCC_PATH/config
+        echo 0x17D43920  > $DCC_PATH/config
+        echo 0x17D46120  > $DCC_PATH/config
+    else
+        #V1
+        echo 0x17D41780 1 > $DCC_PATH/config
+        echo 0x17D43780 1 > $DCC_PATH/config
+        echo 0x17D45F80 1 > $DCC_PATH/config
+    fi
 
     echo 0x01740300 6 > $DCC_PATH/config
     echo 0x01620500 4 > $DCC_PATH/config
@@ -308,7 +324,7 @@ enable_sdm845_dcc_config()
     echo 0x17D45F14 1 > $DCC_PATH/config
     echo 0x17D45F18 1 > $DCC_PATH/config
     echo 0x17D45F1C 1 > $DCC_PATH/config
-    echo 0x17D45F80 1 > $DCC_PATH/config
+    echo 0x17D47414 1 > $DCC_PATH/config
     echo 0x17D47418 1 > $DCC_PATH/config
     echo 0x17D47570 1 > $DCC_PATH/config
     echo 0x17D47588 1 > $DCC_PATH/config
@@ -319,7 +335,7 @@ enable_sdm845_dcc_config()
     echo 0x17D43714 1 > $DCC_PATH/config
     echo 0x17D43718 1 > $DCC_PATH/config
     echo 0x17D4371C 1 > $DCC_PATH/config
-    echo 0x17D43780 1 > $DCC_PATH/config
+    echo 0x17D44C14 1 > $DCC_PATH/config
     echo 0x17D44C18 1 > $DCC_PATH/config
     echo 0x17D44D70 1 > $DCC_PATH/config
     echo 0x17D44D88 1 > $DCC_PATH/config
@@ -330,7 +346,7 @@ enable_sdm845_dcc_config()
     echo 0x17D41714 1 > $DCC_PATH/config
     echo 0x17D41718 1 > $DCC_PATH/config
     echo 0x17D4171C 1 > $DCC_PATH/config
-    echo 0x17D41780 1 > $DCC_PATH/config
+    echo 0x17D42C14 1 > $DCC_PATH/config
     echo 0x17D42C18 1 > $DCC_PATH/config
     echo 0x17D42D70 1 > $DCC_PATH/config
     echo 0x17D42D88 1 > $DCC_PATH/config

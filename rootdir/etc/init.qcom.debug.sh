@@ -133,6 +133,26 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_frequency_mit/enable
 }
 
+# Function msmpeafowl DCC configuration
+enable_msmpeafowl_dcc_config()
+{
+    DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
+
+    if [ ! -d $DCC_PATH ]; then
+        echo "DCC does not exist on this build."
+        return
+    fi
+
+    echo 0 > $DCC_PATH/enable
+    echo cap > $DCC_PATH/func_type
+    echo sram > $DCC_PATH/data_sink
+    echo 1 > $DCC_PATH/config_reset
+    echo 2 > $DCC_PATH/curr_list
+
+    #Apply configuration and enable DCC
+    echo  1 > $DCC_PATH/enable
+}
+
 # Function SDM845 DCC configuration
 enable_sdm845_dcc_config()
 {
@@ -1844,6 +1864,11 @@ enable_dcc_config()
         "sdm845")
             echo "Enabling DCC config for sdm845."
             enable_sdm845_dcc_config
+            ;;
+
+        "msmpeafowl")
+            echo "Enabling DCC config for msmpeafowl."
+            enable_msmpeafowl_dcc_config
             ;;
     esac
 }

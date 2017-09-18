@@ -108,7 +108,8 @@ private:
             qcmap_msgr_tear_down_wwan_ind_msg_v01 &teardownWwanIndData);
     void notifyObserverForWlanStatus(bool isWlanEnabled);
     void notifyObserverForNetworkInfo(boolean isConnected, LocNetConnType connType);
-    void notifyCurrentNetworkInfo(bool queryQcmap);
+    void notifyCurrentNetworkInfo(bool queryQcmap,
+            LocNetConnType connType = LOC_NET_CONN_TYPE_INVALID);
     void notifyCurrentWifiHardwareState(bool queryQcmap);
 
     /* Callback registered with QCMAP */

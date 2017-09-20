@@ -133,8 +133,8 @@ enable_stm_events()
     echo 1 > /sys/kernel/debug/tracing/events/thermal/thermal_post_frequency_mit/enable
 }
 
-# Function msmpeafowl DCC configuration
-enable_msmpeafowl_dcc_config()
+# Function sdm670 DCC configuration
+enable_sdm670_dcc_config()
 {
     DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
 
@@ -1866,9 +1866,9 @@ enable_dcc_config()
             enable_sdm845_dcc_config
             ;;
 
-        "msmpeafowl")
-            echo "Enabling DCC config for msmpeafowl."
-            enable_msmpeafowl_dcc_config
+        "sdm670")
+            echo "Enabling DCC config for sdm670."
+            enable_sdm670_dcc_config
             ;;
     esac
 }

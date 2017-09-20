@@ -717,6 +717,70 @@ enable_sdm845_dcc_config()
     echo 0x12C2088 1 > $DCC_PATH/config
     echo 0x12C208C 1 > $DCC_PATH/config
 
+    #LLCC ACT/ALLOCATION STATUS
+    echo 0x01301000 1 > $DCC_PATH/config
+    echo 0x01301004 1 > $DCC_PATH/config
+    echo 0x01302000 1 > $DCC_PATH/config
+    echo 0x01302004 1 > $DCC_PATH/config
+    echo 0x01303000 1 > $DCC_PATH/config
+    echo 0x01303004 1 > $DCC_PATH/config
+    echo 0x01304000 1 > $DCC_PATH/config
+    echo 0x01304004 1 > $DCC_PATH/config
+    echo 0x01305000 1 > $DCC_PATH/config
+    echo 0x01305004 1 > $DCC_PATH/config
+    echo 0x01306000 1 > $DCC_PATH/config
+    echo 0x01306004 1 > $DCC_PATH/config
+    echo 0x01307000 1 > $DCC_PATH/config
+    echo 0x01307004 1 > $DCC_PATH/config
+    echo 0x01308000 1 > $DCC_PATH/config
+    echo 0x01308004 1 > $DCC_PATH/config
+    echo 0x01309000 1 > $DCC_PATH/config
+    echo 0x01309004 1 > $DCC_PATH/config
+    echo 0x0130A000 1 > $DCC_PATH/config
+    echo 0x0130A004 1 > $DCC_PATH/config
+    echo 0x0130B000 1 > $DCC_PATH/config
+    echo 0x0130B004 1 > $DCC_PATH/config
+    echo 0x0130C000 1 > $DCC_PATH/config
+    echo 0x0130C004 1 > $DCC_PATH/config
+    echo 0x0130D000 1 > $DCC_PATH/config
+    echo 0x0130D004 1 > $DCC_PATH/config
+    echo 0x0130E000 1 > $DCC_PATH/config
+    echo 0x0130E004 1 > $DCC_PATH/config
+    echo 0x0130F000 1 > $DCC_PATH/config
+    echo 0x0130F004 1 > $DCC_PATH/config
+    echo 0x01310000 1 > $DCC_PATH/config
+    echo 0x01310004 1 > $DCC_PATH/config
+    echo 0x01311000 1 > $DCC_PATH/config
+    echo 0x01311004 1 > $DCC_PATH/config
+    echo 0x01312000 1 > $DCC_PATH/config
+    echo 0x01312004 1 > $DCC_PATH/config
+    echo 0x01313000 1 > $DCC_PATH/config
+    echo 0x01313004 1 > $DCC_PATH/config
+    echo 0x01314000 1 > $DCC_PATH/config
+    echo 0x01314004 1 > $DCC_PATH/config
+    echo 0x01315000 1 > $DCC_PATH/config
+    echo 0x01315004 1 > $DCC_PATH/config
+    echo 0x01316000 1 > $DCC_PATH/config
+    echo 0x01316004 1 > $DCC_PATH/config
+    echo 0x01317000 1 > $DCC_PATH/config
+    echo 0x01317004 1 > $DCC_PATH/config
+    echo 0x01318000 1 > $DCC_PATH/config
+    echo 0x01318004 1 > $DCC_PATH/config
+    echo 0x01319000 1 > $DCC_PATH/config
+    echo 0x01319004 1 > $DCC_PATH/config
+    echo 0x0131A000 1 > $DCC_PATH/config
+    echo 0x0131A004 1 > $DCC_PATH/config
+    echo 0x0131B000 1 > $DCC_PATH/config
+    echo 0x0131B004 1 > $DCC_PATH/config
+    echo 0x0131C000 1 > $DCC_PATH/config
+    echo 0x0131C004 1 > $DCC_PATH/config
+    echo 0x0131D000 1 > $DCC_PATH/config
+    echo 0x0131D004 1 > $DCC_PATH/config
+    echo 0x0131E000 1 > $DCC_PATH/config
+    echo 0x0131E004 1 > $DCC_PATH/config
+    echo 0x0131F000 1 > $DCC_PATH/config
+    echo 0x0131F004 1 > $DCC_PATH/config
+
     #CX and MX voltage
     echo 0x0C201244 1 > $DCC_PATH/config
     echo 0x0C202244 1 > $DCC_PATH/config

@@ -54,5 +54,5 @@ add_lunch_combo sdm660_64-userdebug
 add_lunch_combo sdm660_32-userdebug
 add_lunch_combo sdm845-userdebug
 add_lunch_combo apq8098_latv-userdebug
-add_lunch_combo msmpeafowl-userdebug
+add_lunch_combo sdm670-userdebug
 add_lunch_combo msmnile-userdebug

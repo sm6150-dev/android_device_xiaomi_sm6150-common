@@ -22,18 +22,18 @@ QCOM_BOARD_PLATFORMS += msm8998
 QCOM_BOARD_PLATFORMS += apq8098_latv
 QCOM_BOARD_PLATFORMS += sdm660
 QCOM_BOARD_PLATFORMS += sdm845
-QCOM_BOARD_PLATFORMS += msmpeafowl
 QCOM_BOARD_PLATFORMS += msmnile
+QCOM_BOARD_PLATFORMS += sdm670
 
 QSD8K_BOARD_PLATFORMS := qsd8k
 
 TARGET_USE_VENDOR_CAMERA_EXT := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 msmpeafowl msmnile
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm670 msmnile
 
 #List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv msmpeafowl
+MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv sdm670
 
 # Below projects/packages with LOCAL_MODULEs will be used by
 # PRODUCT_PACKAGES to build LOCAL_MODULEs that are tagged with
@@ -108,7 +108,7 @@ AUDIO_HARDWARE += audio.primary.msm8998
 AUDIO_HARDWARE += audio.primary.sdm660
 AUDIO_HARDWARE += audio.primary.sdm845
 AUDIO_HARDWARE += audio.primary.apq8098_latv
-AUDIO_HARDWARE += audio.primary.msmpeafowl
+AUDIO_HARDWARE += audio.primary.sdm670
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084
@@ -411,7 +411,7 @@ LIBCOPYBIT += copybit.sdm630
 LIBCOPYBIT += copybit.sdm660
 LIBCOPYBIT += copybit.sda630
 LIBCOPYBIT += copybit.apq8098_latv
-LIBCOPYBIT += copybit.msmpeafowl
+LIBCOPYBIT += copybit.sdm670
 
 #LIBGESTURES
 LIBGESTURES := libgestures
@@ -446,7 +446,7 @@ LIBGRALLOC += gralloc.apq8098_latv
 LIBGRALLOC += libmemalloc
 LIBGRALLOC += gralloc.sdm630
 LIBGRALLOC += gralloc.sdm660
-LIBGRALLOC += gralloc.msmpeafowl
+LIBGRALLOC += gralloc.sdm670
 
 #memtrack
 LIBMEMTRACK := memtrack.default
@@ -466,7 +466,7 @@ LIBMEMTRACK += memtrack.msm8998
 LIBMEMTRACK += memtrack.sdm660
 LIBMEMTRACK += memtrack.sdm845
 LIBMEMTRACK += memtrack.apq8098_latv
-LIBMEMTRACK += memtrack.msmpeafowl
+LIBMEMTRACK += memtrack.sdm670
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -493,7 +493,7 @@ LIBLIGHTS += lights.msm8998
 LIBLIGHTS += lights.sdm660
 LIBLIGHTS += lights.sdm845
 LIBLIGHTS += lights.apq8098_latv
-LIBLIGHTS += lights.msmpeafowl
+LIBLIGHTS += lights.sdm670
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -521,7 +521,7 @@ LIBHWCOMPOSER += hwcomposer.msm8998
 LIBHWCOMPOSER += hwcomposer.sdm660
 LIBHWCOMPOSER += hwcomposer.sdm845
 LIBHWCOMPOSER += hwcomposer.apq8098_latv
-LIBHWCOMPOSER += hwcomposer.msmpeafowl
+LIBHWCOMPOSER += hwcomposer.sdm670
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter

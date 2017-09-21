@@ -2466,6 +2466,9 @@ case "$target" in
             echo 400 > $memlat/mem_latency/ratio_ceil
         done
 
+	#Gold L3 ratio ceil
+        echo 4000 > /sys/class/devfreq/soc:qcom,l3-cpu4/mem_latency/ratio_ceil
+
 	echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
 	# cpuset parameters

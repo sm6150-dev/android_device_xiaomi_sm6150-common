@@ -49,6 +49,12 @@
 #include <map>
 #include <vector>
 #include <string>
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
+#include <inttypes.h>
+
+
 #define LOG_TAG "gpt-utils"
 #include <cutils/log.h>
 #include <cutils/properties.h>
@@ -152,7 +158,7 @@ static int blk_rw(int fd, int rw, int64_t offset, uint8_t *buf, unsigned len)
     int r;
 
     if (lseek64(fd, offset, SEEK_SET) < 0) {
-        fprintf(stderr, "block dev lseek64 %lld failed: %s\n", offset,
+        fprintf(stderr, "block dev lseek64 %" PRIi64 " failed: %s\n", offset,
                 strerror(errno));
         return -1;
     }
@@ -193,20 +199,24 @@ static uint8_t *gpt_pentry_seek(const char *ptn_name,
                                 const uint8_t *pentries_end,
                                 uint32_t pentry_size)
 {
-    char *pentry_name;
-    unsigned len = strlen(ptn_name);
+    char     *pentry_name;
+    unsigned  len = strlen(ptn_name);
+    unsigned  i;
+    char      name8[MAX_GPT_NAME_SIZE];
 
     for (pentry_name = (char *) (pentries_start + PARTITION_NAME_OFFSET);
-         pentry_name < (char *) pentries_end; pentry_name += pentry_size) {
-        char name8[MAX_GPT_NAME_SIZE];
-        unsigned i;
+         pentry_name < (char *) pentries_end;
+         pentry_name += pentry_size) {
 
         /* Partition names in GPT are UTF-16 - ignoring UTF-16 2nd byte */
         for (i = 0; i < sizeof(name8) / 2; i++)
             name8[i] = pentry_name[i * 2];
-        if (!strncmp(ptn_name, name8, len))
+        name8[i] = '\0';
+
+        if (!strncmp(ptn_name, name8, len)) {
             if (name8[len] == 0 || !strcmp(&name8[len], BAK_PTN_NAME_EXT))
                 return (uint8_t *) (pentry_name - PARTITION_NAME_OFFSET);
+        }
     }
 
     return NULL;

@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Mon Jul 31 2017 (Spin 0)
+   It was generated on: Tue Sep 19 2017 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -474,7 +474,7 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
 #define QMI_LOC_EVENT_MASK_INJECT_SRN_AP_DATA_REQ_V02 ((qmiLocEventRegMaskT_v02)0x200000000ull) /**<  The control point must enable this mask to receive asynchronous events for
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.  */
 #define QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x400000000ull) /**<  The control point must enable this mask to receive the position report
-       event indications which contain GNSS only position.  */
+       event indications that contain a GNSS only position.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -581,7 +581,7 @@ typedef struct {
       - QMI_LOC_EVENT_MASK_INJECT_SRN_AP_DATA_REQ (0x200000000) --  The control point must enable this mask to receive asynchronous events for
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.
       - QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT (0x400000000) --  The control point must enable this mask to receive the position report
-       event indications which contain GNSS only position.
+       event indications that contain a GNSS only position.
 
  Multiple events can be registered by ORing the individual masks and
  sending them in this TLV. All unused bits in this mask must be set to 0.
@@ -796,11 +796,10 @@ typedef struct {
   /*  Report GNSS Only Position */
   uint8_t reportGnssOnlyPosition_valid;  /**< Must be set to true if reportGnssOnlyPosition is being passed */
   uint8_t reportGnssOnlyPosition;
-  /**<   Request the GPS engine to report positions that could be GNSS only or
-       combined with other technologies such as Sensors.
-       defaults to FALSE.
-       - 0x00 (FALSE) -- Report GNSS only positions is disabled.
-       - 0x01 (TRUE)  -- Report GNSS only positions is enabled.
+  /**<   Requests the GPS engine to report positions that could be GNSS only or
+       combined with other technologies, such as Sensors. Values: \n
+       - 0x00 (FALSE) -- Report GNSS only positions is disabled (default) \n
+       - 0x01 (TRUE)  -- Report GNSS only positions is enabled
   */
 }qmiLocStartReqMsgT_v02;  /* Message */
 /**
@@ -1030,9 +1029,9 @@ typedef uint64_t qmiLocNavSolutionMaskT_v02;
 #define QMI_LOC_NAV_MASK_SBAS_CORRECTION_LONG_V02 ((qmiLocNavSolutionMaskT_v02)0x00000004ull) /**<  Bitmask to specify whether SBAS long-tem correction is used  */
 #define QMI_LOC_NAV_MASK_SBAS_INTEGRITY_V02 ((qmiLocNavSolutionMaskT_v02)0x00000008ull) /**<  Bitmask to specify whether SBAS integrity information is used  */
 typedef uint32_t qmiLocSensorSubTechnologyMaskT_v02;
-#define QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000001) /**<  Bitmask to specify whether PDR is enable or disabled  */
-#define QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000002) /**<  Bitmask to specify whether pedometer was used. */
-#define QMI_LOC_SENSOR_SUB_MASK_VEHICULAR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000004) /**<  Bitmask to specify whether vehicular sensor assistance is enable or disabled  */
+#define QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000001) /**<  Bitmask to specify whether PDR is enabled or disabled  */
+#define QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000002) /**<  Bitmask to specify whether a pedometer was used  */
+#define QMI_LOC_SENSOR_SUB_MASK_VEHICULAR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000004) /**<  Bitmask to specify whether vehicular sensor assistance is enabled or disabled  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -1381,24 +1380,24 @@ typedef struct {
  */
 
   /* Optional */
-  /*  Sensor Sub-Technology Inforamtion */
+  /*  Sensor Subtechnology Information */
   uint8_t sensorSubTechnologyMask_valid;  /**< Must be set to true if sensorSubTechnologyMask is being passed */
   qmiLocSensorSubTechnologyMaskT_v02 sensorSubTechnologyMask;
-  /**<   Sensor Sub-Technology Inforamtion.
- Valid bitmasks:
-      - QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED (0x00000001) --  Bitmask to specify whether PDR is enable or disabled
-      - QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED (0x00000002) --  Bitmask to specify whether pedometer was used.
-      - QMI_LOC_SENSOR_SUB_MASK_VEHICULAR_ENABLED (0x00000004) --  Bitmask to specify whether vehicular sensor assistance is enable or disabled
+  /**<   Sensor subtechnology information.
+ Valid bitmasks: \n
+      - QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED (0x00000001) --  Bitmask to specify whether PDR is enabled or disabled
+      - QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED (0x00000002) --  Bitmask to specify whether a pedometer was used
+      - QMI_LOC_SENSOR_SUB_MASK_VEHICULAR_ENABLED (0x00000004) --  Bitmask to specify whether vehicular sensor assistance is enabled or disabled
  */
 
   /* Optional */
-  /*  GNSS only Position Report */
+  /*  GNSS Only Position Report */
   uint8_t gnssOnlyPosition_valid;  /**< Must be set to true if gnssOnlyPosition is being passed */
   uint8_t gnssOnlyPosition;
-  /**<   Indicates if this position report is generated from GNSS only technology,
-       defaults to FALSE.
-       - 0x00 (FALSE) -- Position is generated with other technologies.
-       - 0x01 (TRUE)  -- Position is generated from GNSS technology only.
+  /**<   Indicates if this position report is generated from GNSS only technology.
+       Values: \n
+       - 0x00 (FALSE) -- Position is generated with other technologies (default) \n
+       - 0x01 (TRUE)  -- Position is generated from GNSS technology only
   */
 
   /* Optional */
@@ -3890,7 +3889,7 @@ typedef enum {
   eQMI_LOC_INSUFFICIENT_MEMORY_V02 = 8, /**<  Request failed because the engine could not allocate sufficient memory for the request \n  */
   eQMI_LOC_MAX_GEOFENCE_PROGRAMMED_V02 = 9, /**<  Request failed because the maximum number of Geofences are already programmed \n  */
   eQMI_LOC_XTRA_VERSION_CHECK_FAILURE_V02 = 10, /**<  Location service failed because of an XTRA version-based file format check failure  */
-  eQMI_LOC_GNSS_DISABLED_V02 = 11, /**<  Request failed because location service is disabled   */
+  eQMI_LOC_GNSS_DISABLED_V02 = 11, /**<  Request failed because the location service is disabled   */
   QMILOCSTATUSENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocStatusEnumT_v02;
 /**
@@ -3933,7 +3932,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocEventGdtDownloadEndReqIndMsgT_v02;  /* Message */
 /**
@@ -3978,7 +3977,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -4069,7 +4068,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -4274,7 +4273,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocNiUserRespIndMsgT_v02;  /* Message */
 /**
@@ -4361,7 +4360,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -4413,7 +4412,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -4490,7 +4489,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -4547,7 +4546,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectUtcTimeIndMsgT_v02;  /* Message */
 /**
@@ -4917,7 +4916,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectPositionIndMsgT_v02;  /* Message */
 /**
@@ -4984,7 +4983,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetEngineLockIndMsgT_v02;  /* Message */
 /**
@@ -5029,7 +5028,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -5091,7 +5090,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetSbasConfigIndMsgT_v02;  /* Message */
 /**
@@ -5136,7 +5135,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -5231,7 +5230,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetNmeaTypesIndMsgT_v02;  /* Message */
 /**
@@ -5276,7 +5275,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -5350,7 +5349,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetLowPowerModeIndMsgT_v02;  /* Message */
 /**
@@ -5395,7 +5394,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -5493,7 +5492,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetServerIndMsgT_v02;  /* Message */
 /**
@@ -5559,7 +5558,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -5929,7 +5928,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocDeleteAssistDataIndMsgT_v02;  /* Message */
 /**
@@ -5976,7 +5975,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetXtraTSessionControlIndMsgT_v02;  /* Message */
 /**
@@ -6023,7 +6022,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -6253,7 +6252,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectWifiPositionIndMsgT_v02;  /* Message */
 /**
@@ -6316,7 +6315,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocNotifyWifiStatusIndMsgT_v02;  /* Message */
 /**
@@ -6363,7 +6362,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -6466,7 +6465,7 @@ typedef struct {
       - QMI_LOC_EVENT_MASK_INJECT_SRN_AP_DATA_REQ (0x200000000) --  The control point must enable this mask to receive asynchronous events for
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.
       - QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT (0x400000000) --  The control point must enable this mask to receive the position report
-       event indications which contain GNSS only position.
+       event indications that contain a GNSS only position.
  */
 }qmiLocGetRegisteredEventsIndMsgT_v02;  /* Message */
 /**
@@ -6553,7 +6552,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetOperationModeIndMsgT_v02;  /* Message */
 /**
@@ -6598,7 +6597,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -6673,7 +6672,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetSpiStatusIndMsgT_v02;  /* Message */
 /**
@@ -6931,7 +6930,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -7044,7 +7043,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectTimeSyncDataIndMsgT_v02;  /* Message */
 /**
@@ -7105,7 +7104,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -7184,7 +7183,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetCradleMountConfigIndMsgT_v02;  /* Message */
 /**
@@ -7245,7 +7244,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -7340,7 +7339,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetExternalPowerConfigIndMsgT_v02;  /* Message */
 /**
@@ -7475,7 +7474,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInformLocationServerConnStatusIndMsgT_v02;  /* Message */
 /**
@@ -7756,7 +7755,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -7838,7 +7837,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -8073,7 +8072,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetSensorControlConfigIndMsgT_v02;  /* Message */
 /**
@@ -8118,7 +8117,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -8358,7 +8357,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Failed Set Sensor Properties */
@@ -8440,7 +8439,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -8736,7 +8735,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -8801,7 +8800,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -8938,7 +8937,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectSuplCertificateIndMsgT_v02;  /* Message */
 /**
@@ -8988,7 +8987,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocDeleteSuplCertificateIndMsgT_v02;  /* Message */
 /**
@@ -9101,7 +9100,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -9177,7 +9176,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -9483,7 +9482,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -9551,7 +9550,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -9643,7 +9642,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -9919,7 +9918,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Transaction ID */
@@ -9973,7 +9972,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Transaction ID */
@@ -10126,7 +10125,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Geofence ID */
@@ -10181,7 +10180,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocEventGetTimeZoneReqIndMsgT_v02;  /* Message */
 /**
     @}
@@ -10246,7 +10245,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectTimeZoneInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -10293,7 +10292,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Transaction ID */
@@ -10733,7 +10732,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectMotionDataIndMsgT_v02;  /* Message */
 /**
@@ -10781,7 +10780,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Transaction ID */
@@ -10880,7 +10879,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectGSMCellInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -10983,7 +10982,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectWCDMACellInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -11068,7 +11067,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectTDSCDMACellInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -11119,7 +11118,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectSubscriberIDIndMsgT_v02;  /* Message */
 /**
     @}
@@ -11188,7 +11187,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectNetworkInitiatedMessageIndMsgT_v02;  /* Message */
 /**
     @}
@@ -11234,7 +11233,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocWWANOutOfServiceNotificationIndMsgT_v02;  /* Message */
 /**
@@ -11334,7 +11333,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocPedometerReportIndMsgT_v02;  /* Message */
 /**
@@ -11346,7 +11345,7 @@ typedef struct {
   */
 typedef enum {
   QMILOCBATCHINGTYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
-  eQMI_LOC_LOCATION_BATCHING_V02 = 1, /**<  Location batching  */
+  eQMI_LOC_LOCATION_BATCHING_V02 = 1, /**<  Location batching (default)  */
   eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02 = 2, /**<  Outdoor trip batching  */
   QMILOCBATCHINGTYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocBatchingTypeEnumT_v02;
@@ -11375,10 +11374,10 @@ typedef struct {
   /*  Batching Type */
   uint8_t batchType_valid;  /**< Must be set to true if batchType is being passed */
   qmiLocBatchingTypeEnumT_v02 batchType;
-  /**<   Identifies the batching type, defaults to the location batching.
+  /**<   Identifies the batching type.
 
  Valid values: \n
-      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching
+      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching (default)
       - eQMI_LOC_OUTDOOR_TRIP_BATCHING (2) --  Outdoor trip batching
  */
 }qmiLocGetBatchSizeReqMsgT_v02;  /* Message */
@@ -11409,7 +11408,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -11532,7 +11531,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -11566,15 +11565,15 @@ typedef struct {
   /*  Batching Type */
   uint8_t batchType_valid;  /**< Must be set to true if batchType is being passed */
   qmiLocBatchingTypeEnumT_v02 batchType;
-  /**<   Identifies the batching type, defaults to the location batching.
+  /**<   Identifies the batching type.
 
  Valid values: \n
-      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching
+      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching (default)
       - eQMI_LOC_OUTDOOR_TRIP_BATCHING (2) --  Outdoor trip batching
  */
 
   /* Optional */
-  /*  The Accumulated OTB Distance */
+  /*  Accumulated OTB (Outdoor Trip Batching) Distance */
   uint8_t accumulatedDistance_valid;  /**< Must be set to true if accumulatedDistance is being passed */
   uint32_t accumulatedDistance;
   /**<   The accumulated distance if the batchType is Outdoor Trip. \n
@@ -11582,11 +11581,11 @@ typedef struct {
   */
 
   /* Optional */
-  /*  The Amount of Batched Position Reports */
+  /*  Number of Batched Position Reports */
   uint8_t batchedPosition_valid;  /**< Must be set to true if batchedPosition is being passed */
   uint32_t batchedPosition;
-  /**<   The amount of the position reports have been batched from the last
-       QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ. \n
+  /**<   The number of position reports that have been batched from the last
+       QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ.
   */
 }qmiLocEventBatchFullIndMsgT_v02;  /* Message */
 /**
@@ -11774,10 +11773,10 @@ typedef struct {
   /*  Batching Type */
   uint8_t batchType_valid;  /**< Must be set to true if batchType is being passed */
   qmiLocBatchingTypeEnumT_v02 batchType;
-  /**<   Identifies the batching type, defaults to the location batching.
+  /**<   Identifies the batching type.
 
  Valid values: \n
-      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching
+      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching (default)
       - eQMI_LOC_OUTDOOR_TRIP_BATCHING (2) --  Outdoor trip batching
  */
 }qmiLocReadFromBatchReqMsgT_v02;  /* Message */
@@ -11808,7 +11807,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -11852,17 +11851,18 @@ typedef struct {
   uint32_t requestId;
   /**<   Identifies the location batching request that must be stopped.
        A location batching client can start multiple batching requests. \n
-       Valid Values 0x01 - 0xFFFFFFFF
+       Valid values: \n
+       - 0x01 -- 0xFFFFFFFF
   */
 
   /* Optional */
   /*  Batching Type */
   uint8_t batchType_valid;  /**< Must be set to true if batchType is being passed */
   qmiLocBatchingTypeEnumT_v02 batchType;
-  /**<   Identifies the batching type, defaults to the location batching.
+  /**<   Identifies the batching type.
 
  Valid values: \n
-      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching
+      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching (default)
       - eQMI_LOC_OUTDOOR_TRIP_BATCHING (2) --  Outdoor trip batching
  */
 }qmiLocStopBatchingReqMsgT_v02;  /* Message */
@@ -11893,7 +11893,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -11908,7 +11908,8 @@ typedef struct {
   uint32_t requestId;
   /**<   Identifies the location batching request that was stopped.
        A location batching client can start multiple batching requests. \n
-       Valid Values 0x01 - 0xFFFFFFFF
+       Valid values: \n
+       - 0x01 -- 0xFFFFFFFF
   */
 }qmiLocStopBatchingIndMsgT_v02;  /* Message */
 /**
@@ -11930,10 +11931,10 @@ typedef struct {
   /*  Batching Type */
   uint8_t batchType_valid;  /**< Must be set to true if batchType is being passed */
   qmiLocBatchingTypeEnumT_v02 batchType;
-  /**<   Identifies the batching type, defaults to the location batching.
+  /**<   Identifies the batching type.
 
  Valid values: \n
-      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching
+      - eQMI_LOC_LOCATION_BATCHING (1) --  Location batching (default)
       - eQMI_LOC_OUTDOOR_TRIP_BATCHING (2) --  Outdoor trip batching
  */
 }qmiLocReleaseBatchReqMsgT_v02;  /* Message */
@@ -11964,7 +11965,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -12257,7 +12258,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectWifiApDataIndMsgT_v02;  /* Message */
 /**
     @}
@@ -12334,7 +12335,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocNotifyWifiAttachmentStatusIndMsgT_v02;  /* Message */
 /**
     @}
@@ -12395,7 +12396,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocNotifyWifiEnabledStatusIndMsgT_v02;  /* Message */
 /**
     @}
@@ -12596,7 +12597,7 @@ typedef struct {
   uint32_t distanceTravelledBase;
   /**<   Distance traveled base. \n
         - Units of accumulated distance: Meters \n
-        - Range: Over 4,000,0000 kilometers \vspace{0.06in} \n
+        - Range: Over 4,000,000 kilometers \vspace{0.06in} \n
 
         Distance travelled (odometry) is to be reported in a continuously
         accumulating way from device power up. It may be incremental distance
@@ -12611,7 +12612,7 @@ typedef struct {
 
         Distance travelled errors are expected to be primarily due to the
         scale factor, with some allowance for noise due to minor slippage
-        events (e.g., gravel.)
+        events (e.g., gravel).
         Major wheel slippage events that affect odometry
         must be flagged -- see the flags field.
 
@@ -12703,7 +12704,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectVehicleSensorDataIndMsgT_v02;  /* Message */
 /**
     @}
@@ -12750,7 +12751,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 
   /* Optional */
   /*  Transaction ID */
@@ -13029,7 +13030,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocSetPremiumServicesCfgIndMsgT_v02;  /* Message */
 /**
     @}
@@ -13099,7 +13100,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocSetXtraVersionCheckIndMsgT_v02;  /* Message */
 /**
     @}
@@ -13170,7 +13171,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetGNSSConstRepConfigIndMsgT_v02;  /* Message */
 /**
@@ -14112,7 +14113,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -14197,7 +14198,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -14263,7 +14264,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -14331,7 +14332,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectGtpClientDownloadedDataIndMsgT_v02;  /* Message */
 /**
@@ -14394,7 +14395,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtUploadBeginStatusIndMsgT_v02;  /* Message */
 /**
@@ -14473,7 +14474,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtUploadEndIndMsgT_v02;  /* Message */
 /**
@@ -14583,7 +14584,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -14708,7 +14709,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtDownloadBeginStatusIndMsgT_v02;  /* Message */
 /**
@@ -14751,7 +14752,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -14789,7 +14790,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtDownloadReadyStatusIndMsgT_v02;  /* Message */
 /**
@@ -14832,7 +14833,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocGdtReceiveDoneStatusReqMsgT_v02;  /* Message */
 /**
     @}
@@ -14860,7 +14861,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtReceiveDoneStatusIndMsgT_v02;  /* Message */
 /**
@@ -14903,7 +14904,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocGdtDownloadEndStatusReqMsgT_v02;  /* Message */
 /**
     @}
@@ -14931,7 +14932,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocGdtDownloadEndStatusIndMsgT_v02;  /* Message */
 /**
@@ -15062,7 +15063,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -15116,7 +15117,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -15938,7 +15939,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -16076,7 +16077,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocInjectApDoNotCacheDataIndMsgT_v02;  /* Message */
 /**
@@ -16165,7 +16166,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -16378,7 +16379,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocDeleteGNSSServiceDataIndMsgT_v02;  /* Message */
 /**
@@ -16464,7 +16465,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Optional */
@@ -16530,7 +16531,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectXtraPcidIndMsgT_v02;  /* Message */
 /**
     @}
@@ -16588,7 +16589,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
@@ -16652,7 +16653,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocSetInternalStatusConfigIndMsgT_v02;  /* Message */
 /**
@@ -16909,7 +16910,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled   */
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled   */
 }qmiLocInjectSrnApDataIndMsgT_v02;  /* Message */
 /**
     @}
@@ -17049,8 +17050,8 @@ typedef struct {
   /**<   Indicates whether on-demand crowd sourcing is supported.
        If supported, GNSS, sensors, and Wi-Fi measurements are requested
        on demand. This directly affects power consumption. \n
-       Values:
-       - 0x01 (TRUE)  -- On-demand crowd sourcing is supported
+       Values: \n
+       - 0x01 (TRUE)  -- On-demand crowd sourcing is supported \n
        - 0x00 (FALSE) -- On-demand crowd sourcing is not supported (default)
   */
 
@@ -17059,8 +17060,8 @@ typedef struct {
        If supported, Wi-Fi crowd sourcing may be done upon receipt of a GNSS fix.
        No power is spent requesting a GNSS fix, but power may be spent
        requesting a Wi-Fi scan. \n
-       Values:
-       - 0x01 (TRUE)  -- Crowd sourcing of unsolicited GNSS fixes is supported
+       Values: \n
+       - 0x01 (TRUE)  -- Crowd sourcing of unsolicited GNSS fixes is supported \n
        - 0x00 (FALSE) -- Crowd sourcing of unsolicited GNSS fixes is not supported (default)
   */
 
@@ -17112,7 +17113,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
 
  The status eQMI_LOC_GENERAL_FAILURE indicates that the
  control point does not support fusion crowd sourcing.
@@ -17171,11 +17172,11 @@ typedef struct {
 typedef uint32_t qmiLocXtraConfigMaskT_v02;
 #define QMI_LOC_XTRA_CONFIG_DISABLE_AUTO_DOWNLOAD_TIMER_V02 ((qmiLocXtraConfigMaskT_v02)0x00000001) /**<  Ask the engine to disable the XTRA auto download timer  */
 typedef uint32_t qmiLocXtraInfoMaskT_v02;
-#define QMI_LOC_XTRA_INFO_MASK_ABS_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000001) /**<  How many hours that the current XTRA information is valid  */
+#define QMI_LOC_XTRA_INFO_MASK_ABS_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000001) /**<  Number of hours for which the current XTRA information is valid  */
 #define QMI_LOC_XTRA_INFO_MASK_REL_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000002) /**<  Last XTRA data download time  */
 #define QMI_LOC_XTRA_INFO_MASK_XTRA_SERVER_V02 ((qmiLocXtraInfoMaskT_v02)0x00000004) /**<  XTRA server URLs  */
-#define QMI_LOC_XTRA_INFO_MASK_NTP_SERVER_V02 ((qmiLocXtraInfoMaskT_v02)0x00000008) /**<  Network Time Protocol(NTP) server URLs  */
-#define QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST_V02 ((qmiLocXtraInfoMaskT_v02)0x00000010) /**<  Indicates if the control point shall send QMI_LOC_INJECT_UTC_TIME_REQ
+#define QMI_LOC_XTRA_INFO_MASK_NTP_SERVER_V02 ((qmiLocXtraInfoMaskT_v02)0x00000008) /**<  Network Time Protocol (NTP) server URLs  */
+#define QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST_V02 ((qmiLocXtraInfoMaskT_v02)0x00000010) /**<  Requests the control point to send QMI_LOC_INJECT_UTC_TIME_REQ
        to the engine  */
 #define QMI_LOC_XTRA_INFO_MASK_PREF_VALID_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000020) /**<  Preferred valid age  */
 /** @addtogroup loc_qmi_aggregates
@@ -17185,16 +17186,17 @@ typedef struct {
 
   qmiLocXtraInfoMaskT_v02 reportMask;
   /**<   Bitmask indicating which of the fields in this TLV are reported. \n
-      - QMI_LOC_XTRA_INFO_MASK_ABS_AGE (0x00000001) --  How many hours that the current XTRA information is valid
+ Valid values: \n
+      - QMI_LOC_XTRA_INFO_MASK_ABS_AGE (0x00000001) --  Number of hours for which the current XTRA information is valid
       - QMI_LOC_XTRA_INFO_MASK_REL_AGE (0x00000002) --  Last XTRA data download time
       - QMI_LOC_XTRA_INFO_MASK_XTRA_SERVER (0x00000004) --  XTRA server URLs
-      - QMI_LOC_XTRA_INFO_MASK_NTP_SERVER (0x00000008) --  Network Time Protocol(NTP) server URLs
-      - QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST (0x00000010) --  Indicates if the control point shall send QMI_LOC_INJECT_UTC_TIME_REQ
+      - QMI_LOC_XTRA_INFO_MASK_NTP_SERVER (0x00000008) --  Network Time Protocol (NTP) server URLs
+      - QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST (0x00000010) --  Requests the control point to send QMI_LOC_INJECT_UTC_TIME_REQ
        to the engine
       - QMI_LOC_XTRA_INFO_MASK_PREF_VALID_AGE (0x00000020) --  Preferred valid age  */
 
   uint16_t absAgeHrs;
-  /**<   How many hours that the current XTRA information is valid \n
+  /**<   Number of hours for which the current XTRA information is valid \n
        - Units: Hours */
 
   uint64_t relAgeInUTC;
@@ -17202,7 +17204,7 @@ typedef struct {
        - Units: Milliseconds */
 
   qmiLocPredictedOrbitsServerListStructT_v02 xtraServerInfo;
-  /**<   Contains information about the XTRA servers that can be used by control
+  /**<   Contains information about the XTRA servers that can be used by the control
        point to download XTRA data. */
 
   qmiLocTimeServerListStructT_v02 ntpServerInfo;
@@ -17210,13 +17212,13 @@ typedef struct {
        location service for the UTC time. */
 
   uint8_t timeRequest;
-  /**<    Indicates if the control point shall send QMI_LOC_INJECT_UTC_TIME_REQ
-        to the engine \n
+  /**<    Requests the control point to send QMI_LOC_INJECT_UTC_TIME_REQ
+        to the engine. \n
        - 0x00 (FALSE) -- The engine has the UTC time \n
-       - 0x01 (TRUE) -- Control point shall inject UTC time to the engine \n */
+       - 0x01 (TRUE) -- Requests the control point to inject the UTC time to the engine */
 
   uint16_t preferedValidAgeHrs;
-  /**<   Preferred valid age \n
+  /**<   Preferred valid age. \n
        - Units: Hours */
 }qmiLocXtraInfoStructT_v02;  /* Type */
 /**
@@ -17248,7 +17250,7 @@ typedef struct {
 typedef struct {
 
   /* Mandatory */
-  /*  Query Xtra Info Status */
+  /*  Query XTRA Info Status */
   qmiLocStatusEnumT_v02 status;
   /**<   Status of the query XTRA information.
  Valid values: \n
@@ -17263,11 +17265,11 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
-  /*  Xtra Info */
+  /*  XTRA Info */
   qmiLocXtraInfoStructT_v02 xtraInfo;
   /**<   The XTRA information returned from the engine. */
 }qmiLocQueryXtraInfoIndMsgT_v02;  /* Message */
@@ -17282,11 +17284,11 @@ typedef struct {
 typedef struct {
 
   /* Mandatory */
-  /*  The Batch Distance */
+  /*  Batch Distance */
   uint32_t batchDistance;
-  /**<   The trip distance from the start of outdoor trip batching
+  /**<   The trip distance from the start of outdoor trip batching,
        which triggers the QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_IND message
-       be reported to the control point. \n
+       to be reported to the control point. \n
        - Units: Meters
   */
 
@@ -17295,7 +17297,7 @@ typedef struct {
   uint32_t minTimeInterval;
   /**<   Minimum time interval, specified by the control point, that must elapse between
        position reports. \n
-       - Units: milliseconds
+       - Units: Milliseconds
   */
 
   /* Optional */
@@ -17315,7 +17317,7 @@ typedef struct {
        - TRUE -- All positions that are available must be batched. For example,
               if any other type of positioning is active (such as 1 Hz tracking), all
               positions computed for that use case are also batched. This may
-              result in the BATCH_FULL indication getting generated earlier. \n
+              result in the BATCH_FULL indication being generated earlier. \n
        - FALSE -- Only positions that meet the time and/or distance criteria are batched
                   (default).
   */
@@ -17331,7 +17333,7 @@ typedef struct {
 typedef struct {
 
   /* Mandatory */
-  /*  Start Distance Based Batching Session Status */
+  /*  Start Distance-Based Batching Session Status */
   qmiLocStatusEnumT_v02 status;
   /**<   Status of the outdoor distance batching session start request.
 
@@ -17347,7 +17349,7 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 }qmiLocStartOutdoorTripBatchingIndMsgT_v02;  /* Message */
 /**
@@ -17380,7 +17382,7 @@ typedef struct {
   /* Mandatory */
   /*  Query Outdoor Trip Batching Session Accumulated Distance Status */
   qmiLocStatusEnumT_v02 status;
-  /**<   Status of the OTB Session accumulated distance request.
+  /**<   Status of the OTB session accumulated distance request.
 
  Valid values: \n
       - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
@@ -17394,21 +17396,21 @@ typedef struct {
       - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
       - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
       - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
-      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because location service is disabled
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
  */
 
   /* Mandatory */
-  /*  The Accumulated OTB Distance */
+  /*  Accumulated OTB Distance */
   uint32_t accumulatedDistance;
   /**<   The accumulated distance from the last QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ. \n
        - Units: Meters
   */
 
   /* Mandatory */
-  /*  The Amount of Batched Position Reports */
+  /*  Number of Batched Position Reports */
   uint32_t batchedPosition;
-  /**<   The amount of the position reports have been batched from the last
-       QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ. \n
+  /**<   The number of the position reports that have been batched from the last
+       QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ.
   */
 }qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02;  /* Message */
 /**

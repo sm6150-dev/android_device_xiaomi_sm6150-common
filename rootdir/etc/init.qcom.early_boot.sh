@@ -295,6 +295,16 @@ case "$target" in
             esac
         fi
         ;;
+    "sdm670" | "msmpeafowl")
+        case "$soc_hwplatform" in
+            *)
+                sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
+                if [ $sku_ver -eq 1 ]; then
+                    setprop media.sdm670.version 1
+                fi
+                ;;
+        esac
+        ;;
 esac
 #set default lcd density
 #Since lcd density has read only

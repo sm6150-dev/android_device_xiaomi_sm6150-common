@@ -107,7 +107,7 @@ AUDIO_HARDWARE += audio.primary.msm8998
 AUDIO_HARDWARE += audio.primary.sdm660
 AUDIO_HARDWARE += audio.primary.sdm845
 AUDIO_HARDWARE += audio.primary.apq8098_latv
-AUDIO_HARDWARE += audio.primary.msmpeafowl
+AUDIO_HARDWARE += audio.primary.sdm670
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084

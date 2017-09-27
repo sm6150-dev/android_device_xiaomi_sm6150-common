@@ -32,6 +32,11 @@ service fastmmi /vendor/bin/mmi
     group root
     disabled
 
+service mmid /vendor/bin/mmid
+    user root
+    group root
+    disabled
+
 on property:sys.boot_mode=ffbm
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"
 

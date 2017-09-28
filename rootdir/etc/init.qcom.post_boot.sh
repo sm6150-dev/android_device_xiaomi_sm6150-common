@@ -2424,11 +2424,11 @@ case "$target" in
             echo 50 > $cpubw/polling_interval
             echo "2288 4577 6500 8132 9155 10681" > $cpubw/bw_hwmon/mbps_zones
             echo 4 > $cpubw/bw_hwmon/sample_ms
-            echo 34 > $cpubw/bw_hwmon/io_percent
+            echo 40 > $cpubw/bw_hwmon/io_percent
             echo 20 > $cpubw/bw_hwmon/hist_memory
             echo 10 > $cpubw/bw_hwmon/hyst_length
             echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-            echo 34 > $cpubw/bw_hwmon/low_power_io_percent
+            echo 40 > $cpubw/bw_hwmon/low_power_io_percent
             echo 20 > $cpubw/bw_hwmon/low_power_delay
             echo 0 > $cpubw/bw_hwmon/guard_band_mbps
             echo 250 > $cpubw/bw_hwmon/up_scale
@@ -2441,11 +2441,11 @@ case "$target" in
             echo 50 > $llccbw/polling_interval
             echo "1720 2929 4943 5931 6881" > $llccbw/bw_hwmon/mbps_zones
             echo 4 > $llccbw/bw_hwmon/sample_ms
-            echo 68 > $llccbw/bw_hwmon/io_percent
+            echo 80 > $llccbw/bw_hwmon/io_percent
             echo 20 > $llccbw/bw_hwmon/hist_memory
             echo 10 > $llccbw/bw_hwmon/hyst_length
             echo 0 > $llccbw/bw_hwmon/low_power_ceil_mbps
-            echo 68 > $llccbw/bw_hwmon/low_power_io_percent
+            echo 80 > $llccbw/bw_hwmon/low_power_io_percent
             echo 20 > $llccbw/bw_hwmon/low_power_delay
             echo 0 > $llccbw/bw_hwmon/guard_band_mbps
             echo 250 > $llccbw/bw_hwmon/up_scale

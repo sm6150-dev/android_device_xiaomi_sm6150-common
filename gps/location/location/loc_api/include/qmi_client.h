@@ -3,7 +3,7 @@
 
 #include "qmi_idl_lib.h"
 
-extern qmi_client_error_type qmi_client_message_decode(
+qmi_client_error_type (*qmi_client_message_decode)(
     qmi_client_type user_handle,
     qmi_idl_message_type message_type,
     unsigned int msg_id,
@@ -13,13 +13,13 @@ extern qmi_client_error_type qmi_client_message_decode(
     size_t indSize
 );
 
-extern qmi_client_error_type qmi_client_get_service_instance(
+qmi_client_error_type (*qmi_client_get_service_instance)(
     qmi_idl_service_object_type service_object,
     int instanceId,
     qmi_service_info *serviceInfo
 );
 
-extern qmi_client_error_type qmi_client_get_any_service(
+qmi_client_error_type (*qmi_client_get_any_service)(
     qmi_idl_service_object_type service_object,
     qmi_service_info *serviceInfo
 );
@@ -32,7 +32,7 @@ typedef void (*locClientIndCbType)(
     void *ind_cb_data
 );
 
-extern qmi_client_error_type qmi_client_init(
+qmi_client_error_type (*qmi_client_init)(
     qmi_service_info *serviceInfo,
     qmi_idl_service_object_type service_object,
     locClientIndCbType init_callback,
@@ -47,20 +47,20 @@ typedef void (*qmi_client_error_cb_type)(
     void *err_cb_data
 );
 
-extern qmi_client_error_type qmi_client_register_error_cb(
+qmi_client_error_type (*qmi_client_register_error_cb)(
     qmi_client_type user_handle,
     qmi_client_error_cb_type error_cb,
     void *cb_data
 );
 
-extern qmi_client_error_type qmi_client_get_service_list(
+qmi_client_error_type (*qmi_client_get_service_list)(
     qmi_idl_service_object_type ds_client,
     qmi_service_info *service_info,
     uint32_t *num_entries,
     uint32_t *num_services
 );
 
-extern qmi_client_error_type qmi_client_send_msg_sync(
+qmi_client_error_type (*qmi_client_send_msg_sync)(
     qmi_client_type client_handle,
     uint32_t req_id,
     void *list_req,
@@ -70,6 +70,6 @@ extern qmi_client_error_type qmi_client_send_msg_sync(
     uint32_t timeout
 );
 
-extern int qmi_client_release ();
+int (*qmi_client_release) ();
 
 #endif /* QMI_CLIENT_H */

@@ -53,7 +53,7 @@ typedef enum
   DSI_EVT_MAX
 } dsi_net_evt_t;
 
-qmi_idl_service_object_type wds_get_service_object_internal_v01
+qmi_idl_service_object_type (*wds_get_service_object_internal_v01)
  ( int32_t idl_maj_version, int32_t idl_min_version, int32_t library_version );
 
 /** This macro should be used to get the service object */
@@ -129,11 +129,11 @@ typedef void (*net_ev_cb_type)(
 );
 
 /* Functions */
-extern int dsi_init();
-extern int dsi_start_data_call(dsi_hndl_t handle);
-extern int dsi_stop_data_call(dsi_hndl_t handle);
-extern int dsi_set_data_call_param(dsi_hndl_t handle, uint8_t call_info, dsi_call_param_value_t *param_info);
-extern int dsi_rel_data_srvc_hndl(dsi_hndl_t handle);
-extern dsi_hndl_t *dsi_get_data_srvc_hndl(net_ev_cb_type callback, void *cb_data);
+int (*dsi_init)();
+int (*dsi_start_data_call)(dsi_hndl_t handle);
+int (*dsi_stop_data_call)(dsi_hndl_t handle);
+int (*dsi_set_data_call_param)(dsi_hndl_t handle, uint8_t call_info, dsi_call_param_value_t *param_info);
+int (*dsi_rel_data_srvc_hndl)(dsi_hndl_t handle);
+dsi_hndl_t (*dsi_get_data_srvc_hndl)(net_ev_cb_type callback, void *cb_data);
 
 #endif /* DSI_NETCTRL_H */

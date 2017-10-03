@@ -60,14 +60,11 @@ class LocationUpdaterBase : public IzatNotifier {
 protected:
     static OutCard* getLocSubscriptionCard(const char* name, uint32_t streamType);
 public:
-    std::string mName;
-    inline LocationUpdaterBase(const std::string sName,
-                           const OutCard* sSubscriptionCard,
-                           const remoteClientInfo *pClientInfo,
-                           const void* clientData) :
-                           IzatNotifier(sName.c_str(), sSubscriptionCard),
-                           mClientInfo(pClientInfo), mClientData(clientData), mName(sName) {}
-
+    const char* const mName;
+    LocationUpdaterBase(const char* const name,
+                        const OutCard* sSubscriptionCard,
+                        const remoteClientInfo *pClientInfo,
+                        const void* clientData);
     virtual inline ~LocationUpdaterBase() {}
     virtual void handleMsg(qc_loc_fw::InPostcard * const in_card) final;
 };
@@ -101,7 +98,7 @@ class SstpUpdater : public IzatNotifier {
     static const char* const sUncConfTag;
 
 protected:
-    inline SstpUpdater() : IzatNotifier(sName, nullptr) {}
+    SstpUpdater();
     virtual inline ~SstpUpdater() {}
 public:
     static const char sName[];
@@ -121,13 +118,11 @@ protected:
     static OutCard* getSvInfoSubscriptionCard(const char* name,
                                               uint32_t streamType);
 public:
-    std::string mName;
-    inline SvInfoUpdaterBase(const std::string sName,
-                             const OutCard* sSubscriptionCard,
-                             remoteClientInfo *pClientInfo,
-                             const void* clientData) :
-                             IzatNotifier(sName.c_str(), sSubscriptionCard),
-                             mClientInfo(pClientInfo), mClientData(clientData), mName(sName) {}
+    const char* const mName;
+    SvInfoUpdaterBase(const char* const name,
+                      const OutCard* sSubscriptionCard,
+                      remoteClientInfo *pClientInfo,
+                      const void* clientData);
 
     virtual inline ~SvInfoUpdaterBase() {}
     virtual void handleMsg(qc_loc_fw::InPostcard * const in_card) final;

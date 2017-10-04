@@ -3500,29 +3500,25 @@ void LocApiV02 :: reportGnssMeasurementData(
                   __func__, __LINE__,
                   svMeasurement_len,
                   measurementsNotify.count);
-    } else {
-        LOC_LOGE ("%s:%d]: there is no valid SV measurements\n",
-                  __func__, __LINE__);
-    }
+        if (svMeasurement_len != 0) {
+            // the array of measurements
+            LOC_LOGV("%s:%d]: Measurements received for GNSS system %d",
+                __func__, __LINE__, gnss_measurement_report_ptr.system);
 
-    if (svMeasurement_len != 0) {
-        // the array of measurements
-        LOC_LOGV("%s:%d]: Measurements received for GNSS system %d",
-            __func__, __LINE__, gnss_measurement_report_ptr.system);
-
-        for (int index = 0; index < svMeasurement_len; index++) {
-            LOC_LOGV("%s:%d]: index=%d meas_index=%d",
-                __func__, __LINE__, index, meas_index);
-            convertGnssMeasurements(measurementsNotify.measurements[meas_index],
-                gnss_measurement_report_ptr,
-                index);
-            meas_index++;
+            for (int index = 0; index < svMeasurement_len; index++) {
+                LOC_LOGV("%s:%d]: index=%d meas_index=%d",
+                    __func__, __LINE__, index, meas_index);
+                convertGnssMeasurements(measurementsNotify.measurements[meas_index],
+                    gnss_measurement_report_ptr,
+                    index);
+                meas_index++;
+            }
         }
+    } else {
+        LOC_LOGV ("%s:%d]: there is no valid GNSS measurement for system %d",
+                  __func__, __LINE__, gnss_measurement_report_ptr.system);
     }
-    else {
-        LOC_LOGE("%s:%d]: There is no GNSS measurement.\n",
-            __func__, __LINE__);
-    }
+
     // the GPS clock time reading
     if (eQMI_LOC_SV_SYSTEM_GPS_V02 == gnss_measurement_report_ptr.system) {
         bGPSreceived = true;

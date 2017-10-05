@@ -286,6 +286,23 @@ enable_sdm845_dcc_config()
     echo 0x179E1000 1 > $DCC_PATH/config
     echo 0x179E1004 1 > $DCC_PATH/config
 
+    echo 0x179E1A5C 1 > $DCC_PATH/config
+    echo 0x179E1A70 1 > $DCC_PATH/config
+    echo 0x179E1A84 1 > $DCC_PATH/config
+    echo 0x179E1A98 1 > $DCC_PATH/config
+    echo 0x179E1AAC 1 > $DCC_PATH/config
+    echo 0x179E1AC0 1 > $DCC_PATH/config
+    echo 0x179E1AD4 1 > $DCC_PATH/config
+    echo 0x179E1AE8 1 > $DCC_PATH/config
+    echo 0x179E1AFC 1 > $DCC_PATH/config
+    echo 0x179E1B10 1 > $DCC_PATH/config
+    echo 0x179E1B24 1 > $DCC_PATH/config
+    echo 0x179E1B38 1 > $DCC_PATH/config
+    echo 0x179E1B4C 1 > $DCC_PATH/config
+    echo 0x179E1B60 1 > $DCC_PATH/config
+    echo 0x179E1B74 1 > $DCC_PATH/config
+    echo 0x179E1B88 1 > $DCC_PATH/config
+
     echo 0x17D45F00 1 > $DCC_PATH/config
     echo 0x17D45F08 1 > $DCC_PATH/config
     echo 0x17D45F0C 1 > $DCC_PATH/config

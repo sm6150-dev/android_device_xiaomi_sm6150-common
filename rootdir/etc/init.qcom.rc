@@ -231,6 +231,9 @@ on post-fs-data
     # Create directory for TZ Apps
     mkdir /data/misc/qsee 0770 system system
 
+    # Create /data/vendor/tzstorage directory for SFS listener
+    mkdir /data/vendor/tzstorage 0770 system system
+
     # Create directory for apps access via QTEEConnector
     mkdir /data/vendor/qtee 0770 system system
 

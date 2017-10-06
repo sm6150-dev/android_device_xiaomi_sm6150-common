@@ -1632,6 +1632,36 @@ case "$target" in
 esac
 
 case "$target" in
+    "sdm670")
+
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+            hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+            hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+
+        case "$soc_id" in
+           "336" | "337" )
+
+                  # Start Host based Touch processing
+                  case "$hw_platform" in
+                    "MTP" | "Surf" | "RCM" )
+                        start_hbtp
+                        ;;
+                  esac
+           ;;
+       esac
+    ;;
+esac
+
+
+case "$target" in
     "sdm660")
 
         # Set the default IRQ affinity to the primary cluster. When a

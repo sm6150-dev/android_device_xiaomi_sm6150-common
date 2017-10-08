@@ -1631,7 +1631,6 @@ case "$target" in
     ;;
 esac
 
-
 case "$target" in
     "sdm660")
 
@@ -1994,7 +1993,7 @@ case "$target" in
 
             # Start Host based Touch processing
             case "$hw_platform" in
-              "MTP" | "Surf" | "RCM" )
+              "MTP" | "Surf" | "RCM" | "QRD" )
                   start_hbtp
                   ;;
             esac

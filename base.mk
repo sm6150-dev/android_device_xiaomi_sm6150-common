@@ -681,6 +681,7 @@ STMLOG := libstm-log
 
 #THERMAL_HAL
 THERMAL_HAL := thermal.msm8998
+THERMAL_HAL += thermal.sdm845
 
 #TSLIB_EXTERNAL
 TSLIB_EXTERNAL := corgi
@@ -698,6 +699,7 @@ TSLIB_EXTERNAL += ts
 
 #VR_HAL
 VR_HAL := vr.msm8998
+VR_HAL += vr.sdm845
 
 #QRGND
 QRGND := qrngd

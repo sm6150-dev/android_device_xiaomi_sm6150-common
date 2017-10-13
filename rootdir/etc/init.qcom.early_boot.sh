@@ -66,7 +66,9 @@ function set_density_by_fb() {
     if [ -z $fb_width ]; then
         setprop ro.sf.lcd_density 320
     else
-        if [ $fb_width -ge 1080 ]; then
+        if [ $fb_width -ge 1440 ]; then
+           setprop ro.sf.lcd_density 560
+        elif [ $fb_width -ge 1080 ]; then
            setprop ro.sf.lcd_density 480
         elif [ $fb_width -ge 720 ]; then
            setprop ro.sf.lcd_density 320 #for 720X1280 resolution
@@ -298,6 +300,7 @@ case "$target" in
     "sdm670" | "msmpeafowl")
         case "$soc_hwplatform" in
             *)
+                setprop ro.sf.lcd_density 560
                 sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
                 if [ $sku_ver -eq 1 ]; then
                     setprop media.sdm670.version 1

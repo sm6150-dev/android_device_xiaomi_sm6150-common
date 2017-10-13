@@ -713,6 +713,10 @@ THERMAL_HAL := thermal.msm8998
 THERMAL_HAL += thermal.sdm845
 THERMAL_HAL += thermal.sdm710
 THERMAL_HAL += thermal.qcs605
+THERMAL_HAL += thermal.sdm660
+THERMAL_HAL += thermal.msm8996
+THERMAL_HAL += thermal.msm8953
+THERMAL_HAL += thermal.msm8937
 
 #TSLIB_EXTERNAL
 TSLIB_EXTERNAL := corgi

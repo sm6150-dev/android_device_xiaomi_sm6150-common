@@ -868,7 +868,7 @@ service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
 service ssgqmigd /vendor/bin/ssgqmigd
     class late_start
     user radio
-    group radio
+    group radio gps
     socket ssgqmig seqpacket 0660 radio inet
 
 service ssgtzd /vendor/bin/ssgtzd

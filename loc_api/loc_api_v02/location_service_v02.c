@@ -30,7 +30,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Sep 19 2017 (Spin 0)
+   It was generated on: Tue Oct 17 2017 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
@@ -1337,6 +1337,62 @@ static const uint8_t qmiLocXtraInfoStructT_data_v02[] = {
 
   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_GENERIC_2_BYTE,
   QMI_IDL_OFFSET16ARRAY(qmiLocXtraInfoStructT_v02, preferedValidAgeHrs),
+
+  QMI_IDL_FLAG_END_VALUE
+};
+
+static const uint8_t qmiLocFdclCellIdStructT_data_v02[] = {
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellIdStructT_v02, airInterfaceType),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellIdStructT_v02, id1),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellIdStructT_v02, id2),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellIdStructT_v02, id3),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellIdStructT_v02, id4),
+
+  QMI_IDL_FLAG_END_VALUE
+};
+
+static const uint8_t qmiLocFdclCellPosStructT_data_v02[] = {
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, validMask),
+
+  QMI_IDL_AGGREGATE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, cellId),
+  QMI_IDL_TYPE88(0, 75),
+  QMI_IDL_GENERIC_8_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, latitude),
+
+  QMI_IDL_GENERIC_8_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, longitude),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, horCoverageRadius),
+
+  QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, horConfidence),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, horReliability),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, altitude),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, altUnc),
+
+  QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, altConfidence),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocFdclCellPosStructT_v02, altReliability),
 
   QMI_IDL_FLAG_END_VALUE
 };
@@ -5865,6 +5921,76 @@ static const uint8_t qmiLocQueryOTBAccumulatedDistanceIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02, batchedPosition)
 };
 
+/*
+ * qmiLocEventFdclServiceReqIndMsgT is empty
+ * static const uint8_t qmiLocEventFdclServiceReqIndMsgT_data_v02[] = {
+ * };
+ */
+
+static const uint8_t qmiLocGetFdclBsListReqMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, expireInDays) - QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, expireInDays_valid)),
+  0x10,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, expireInDays),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, timestampUtc) - QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, timestampUtc_valid)),
+  0x11,
+   QMI_IDL_GENERIC_8_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGetFdclBsListReqMsgT_v02, timestampUtc)
+};
+
+static const uint8_t qmiLocGetFdclBsListIndMsgT_data_v02[] = {
+  0x01,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGetFdclBsListIndMsgT_v02, status),
+
+  0x02,
+  QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN |  QMI_IDL_AGGREGATE,
+  QMI_IDL_OFFSET8(qmiLocGetFdclBsListIndMsgT_v02, BsList),
+  QMI_LOC_FDCL_BS_LIST_MAX_SIZE_V02,
+  QMI_IDL_OFFSET8(qmiLocGetFdclBsListIndMsgT_v02, BsList) - QMI_IDL_OFFSET8(qmiLocGetFdclBsListIndMsgT_v02, BsList_len),
+  QMI_IDL_TYPE88(0, 75),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocGetFdclBsListIndMsgT_v02, moreBsAvailable) - QMI_IDL_OFFSET16RELATIVE(qmiLocGetFdclBsListIndMsgT_v02, moreBsAvailable_valid)),
+  0x10,
+   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET16ARRAY(qmiLocGetFdclBsListIndMsgT_v02, moreBsAvailable)
+};
+
+static const uint8_t qmiLocInjectFdclDataReqMsgT_data_v02[] = {
+  0x01,
+  QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN |  QMI_IDL_AGGREGATE,
+  QMI_IDL_OFFSET8(qmiLocInjectFdclDataReqMsgT_v02, cellPosList),
+  QMI_LOC_FDCL_CELL_POS_LIST_LENGTH_V02,
+  QMI_IDL_OFFSET8(qmiLocInjectFdclDataReqMsgT_v02, cellPosList) - QMI_IDL_OFFSET8(qmiLocInjectFdclDataReqMsgT_v02, cellPosList_len),
+  QMI_IDL_TYPE88(0, 76),
+
+  0x02,
+   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET16ARRAY(qmiLocInjectFdclDataReqMsgT_v02, daysValid),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocInjectFdclDataReqMsgT_v02, timestampUtc) - QMI_IDL_OFFSET16RELATIVE(qmiLocInjectFdclDataReqMsgT_v02, timestampUtc_valid)),
+  0x10,
+   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_GENERIC_8_BYTE,
+  QMI_IDL_OFFSET16ARRAY(qmiLocInjectFdclDataReqMsgT_v02, timestampUtc)
+};
+
+static const uint8_t qmiLocInjectFdclDataIndMsgT_data_v02[] = {
+  0x01,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectFdclDataIndMsgT_v02, status),
+
+  0x02,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectFdclDataIndMsgT_v02, inject_status),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectFdclDataIndMsgT_v02, errorMsg) - QMI_IDL_OFFSET8(qmiLocInjectFdclDataIndMsgT_v02, errorMsg_valid)),
+  0x10,
+  QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN |  QMI_IDL_STRING,
+  QMI_IDL_OFFSET8(qmiLocInjectFdclDataIndMsgT_v02, errorMsg),
+  QMI_LOC_INJECT_FDCL_DATA_ERROR_MSG_LEN_V02
+};
+
 /* Type Table */
 static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocApplicationIdStructT_v02), qmiLocApplicationIdStructT_data_v02},
@@ -5941,7 +6067,9 @@ static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocSrnBtleApDeviceDataStructT_v02), qmiLocSrnBtleApDeviceDataStructT_data_v02},
   {sizeof(qmiLocWifiCrowdSourcingLocalConfigStructT_v02), qmiLocWifiCrowdSourcingLocalConfigStructT_data_v02},
   {sizeof(qmiLocWifiCrowdSourcingCapabilityStructT_v02), qmiLocWifiCrowdSourcingCapabilityStructT_data_v02},
-  {sizeof(qmiLocXtraInfoStructT_v02), qmiLocXtraInfoStructT_data_v02}
+  {sizeof(qmiLocXtraInfoStructT_v02), qmiLocXtraInfoStructT_data_v02},
+  {sizeof(qmiLocFdclCellIdStructT_v02), qmiLocFdclCellIdStructT_data_v02},
+  {sizeof(qmiLocFdclCellPosStructT_v02), qmiLocFdclCellPosStructT_data_v02}
 };
 
 /* Message Table */
@@ -6196,7 +6324,12 @@ static const qmi_idl_message_table_entry loc_message_table_v02[] = {
   {sizeof(qmiLocStartOutdoorTripBatchingReqMsgT_v02), qmiLocStartOutdoorTripBatchingReqMsgT_data_v02},
   {sizeof(qmiLocStartOutdoorTripBatchingIndMsgT_v02), qmiLocStartOutdoorTripBatchingIndMsgT_data_v02},
   {sizeof(qmiLocQueryOTBAccumulatedDistanceReqMsgT_v02), 0},
-  {sizeof(qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02), qmiLocQueryOTBAccumulatedDistanceIndMsgT_data_v02}
+  {sizeof(qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02), qmiLocQueryOTBAccumulatedDistanceIndMsgT_data_v02},
+  {sizeof(qmiLocEventFdclServiceReqIndMsgT_v02), 0},
+  {sizeof(qmiLocGetFdclBsListReqMsgT_v02), qmiLocGetFdclBsListReqMsgT_data_v02},
+  {sizeof(qmiLocGetFdclBsListIndMsgT_v02), qmiLocGetFdclBsListIndMsgT_data_v02},
+  {sizeof(qmiLocInjectFdclDataReqMsgT_v02), qmiLocInjectFdclDataReqMsgT_data_v02},
+  {sizeof(qmiLocInjectFdclDataIndMsgT_v02), qmiLocInjectFdclDataIndMsgT_data_v02}
 };
 
 /* Range Table */
@@ -6331,7 +6464,9 @@ static const qmi_idl_service_message_table_entry loc_service_command_messages_v0
   {QMI_LOC_CROWDSOURCE_MANAGER_READ_DATA_REQ_V02, QMI_IDL_TYPE16(0, 244), 7},
   {QMI_LOC_QUERY_XTRA_INFO_REQ_V02, QMI_IDL_TYPE16(0, 245), 7},
   {QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ_V02, QMI_IDL_TYPE16(0, 247), 25},
-  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02, QMI_IDL_TYPE16(0, 249), 0}
+  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02, QMI_IDL_TYPE16(0, 249), 0},
+  {QMI_LOC_GET_FDCL_BS_LIST_REQ_V02, QMI_IDL_TYPE16(0, 252), 18},
+  {QMI_LOC_INJECT_FDCL_DATA_REQ_V02, QMI_IDL_TYPE16(0, 254), 1262}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_response_messages_v02[] = {
@@ -6444,7 +6579,9 @@ static const qmi_idl_service_message_table_entry loc_service_response_messages_v
   {QMI_LOC_CROWDSOURCE_MANAGER_READ_DATA_RESP_V02, QMI_IDL_TYPE16(0, 0), 7},
   {QMI_LOC_QUERY_XTRA_INFO_RESP_V02, QMI_IDL_TYPE16(0, 0), 7},
   {QMI_LOC_START_OUTDOOR_TRIP_BATCHING_RESP_V02, QMI_IDL_TYPE16(0, 0), 7},
-  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_RESP_V02, QMI_IDL_TYPE16(0, 0), 7}
+  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_RESP_V02, QMI_IDL_TYPE16(0, 0), 7},
+  {QMI_LOC_GET_FDCL_BS_LIST_RESP_V02, QMI_IDL_TYPE16(0, 0), 7},
+  {QMI_LOC_INJECT_FDCL_DATA_RESP_V02, QMI_IDL_TYPE16(0, 0), 7}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_indication_messages_v02[] = {
@@ -6589,7 +6726,10 @@ static const qmi_idl_service_message_table_entry loc_service_indication_messages
   {QMI_LOC_CROWDSOURCE_MANAGER_CONTROL_IND_V02, QMI_IDL_TYPE16(0, 243), 540},
   {QMI_LOC_QUERY_XTRA_INFO_IND_V02, QMI_IDL_TYPE16(0, 246), 1569},
   {QMI_LOC_START_OUTDOOR_TRIP_BATCHING_IND_V02, QMI_IDL_TYPE16(0, 248), 7},
-  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02, QMI_IDL_TYPE16(0, 250), 21}
+  {QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02, QMI_IDL_TYPE16(0, 250), 21},
+  {QMI_LOC_EVENT_FDCL_SERVICE_REQ_IND_V02, QMI_IDL_TYPE16(0, 251), 0},
+  {QMI_LOC_GET_FDCL_BS_LIST_IND_V02, QMI_IDL_TYPE16(0, 253), 2015},
+  {QMI_LOC_INJECT_FDCL_DATA_IND_V02, QMI_IDL_TYPE16(0, 255), 272}
 };
 
 /*Service Object*/
@@ -6603,7 +6743,7 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x48,
+  0x4A,
   NULL
 };
 

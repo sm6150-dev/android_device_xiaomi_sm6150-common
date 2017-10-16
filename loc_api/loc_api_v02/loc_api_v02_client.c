@@ -277,6 +277,11 @@ static const locClientEventIndTableStructT locClientEventIndTable[]= {
   { QMI_LOC_EVENT_INJECT_SRN_AP_DATA_REQ_IND_V02,
     sizeof(qmiLocEventInjectSrnApDataReqIndMsgT_v02),
     QMI_LOC_EVENT_MASK_INJECT_SRN_AP_DATA_REQ_V02},
+
+  { QMI_LOC_EVENT_FDCL_SERVICE_REQ_IND_V02,
+    sizeof(qmiLocEventFdclServiceReqIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ_V02},
+
 };
 
 /* table to relate the respInd Id with its size */
@@ -653,7 +658,15 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
      sizeof(qmiLocStartOutdoorTripBatchingIndMsgT_v02) },
 
    { QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02,
-     sizeof(qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02) }
+     sizeof(qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02) },
+
+   { QMI_LOC_GET_FDCL_BS_LIST_IND_V02,
+     sizeof(qmiLocGetFdclBsListIndMsgT_v02) },
+
+   { QMI_LOC_INJECT_FDCL_DATA_IND_V02,
+     sizeof(qmiLocInjectFdclDataIndMsgT_v02) }
+
+
 };
 
 
@@ -1607,6 +1620,18 @@ static bool validateRequest(
     case QMI_LOC_START_OUTDOOR_TRIP_BATCHING_REQ_V02:
     {
         *pOutLen = sizeof(qmiLocStartOutdoorTripBatchingReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_GET_FDCL_BS_LIST_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocGetFdclBsListReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_INJECT_FDCL_DATA_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocInjectFdclDataReqMsgT_v02);
         break;
     }
 

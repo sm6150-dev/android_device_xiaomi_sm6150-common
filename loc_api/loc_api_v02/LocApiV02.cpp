@@ -262,10 +262,9 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
   enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
   LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = convertMask(newMask);
-  LOC_LOGD("%s:%d]: %p Enter mMask: %x; mask: %x; newMask: %x \
+  LOC_LOGD("%s:%d]: %p Enter mMask: %" PRIu64 "; mask: %" PRIu64 "; newMask: %" PRIu64 " \
           mQmiMask: %" PRIu64 " qmiMask: %" PRIu64,
-           __func__, __LINE__, clientHandle, mMask, mask, newMask,
-           mQmiMask, qmiMask);
+           __func__, __LINE__, clientHandle, mMask, mask, newMask, mQmiMask, qmiMask);
   /* If the client is already open close it first */
   if(LOC_CLIENT_INVALID_HANDLE_VALUE == clientHandle)
   {
@@ -449,8 +448,8 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
                                     eQMI_SYSTEM_GAL_V02 |
                                     eQMI_SYSTEM_QZSS_V02);
   }
-  LOC_LOGD("%s:%d]: Exit mMask: %x; mask: %x mQmiMask: %" PRIu64 " qmiMask: %" PRIu64,
-           __func__, __LINE__, mMask, mask, mQmiMask, qmiMask);
+  LOC_LOGD("%s:%d]: Exit mMask: %" PRIu64 "; mask: %" PRIu64 " mQmiMask: %" PRIu64 " \
+           qmiMask: %" PRIu64, __func__, __LINE__, mMask, mask, mQmiMask, qmiMask);
 
   if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
       cacheGnssMeasurementSupport();
@@ -2147,6 +2146,9 @@ locClientEventMaskType LocApiV02 :: convertMask(
 
   if(mask & LOC_API_ADAPTER_BIT_REQUEST_SRN_DATA)
       eventMask |= QMI_LOC_EVENT_MASK_INJECT_SRN_AP_DATA_REQ_V02 ;
+
+  if (mask & LOC_API_ADAPTER_BIT_FDCL_SERVICE_REQ)
+      eventMask |= QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ_V02;
 
   return eventMask;
 }

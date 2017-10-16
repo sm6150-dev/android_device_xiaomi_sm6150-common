@@ -44,9 +44,7 @@ enable_tracing_events()
     echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_init/enable
     echo 1 > /sys/kernel/debug/tracing/events/timer/hrtimer_start/enable
     #enble FTRACE for softirq events
-    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_entry/enable
-    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_exit/enable
-    echo 1 > /sys/kernel/debug/tracing/events/irq/softirq_raise/enable
+    echo 1 > /sys/kernel/debug/tracing/events/irq/enable
     #enble FTRACE for Workqueue events
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_activate_work/enable
     echo 1 > /sys/kernel/debug/tracing/events/workqueue/workqueue_execute_end/enable

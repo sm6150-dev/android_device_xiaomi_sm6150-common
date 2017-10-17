@@ -48,7 +48,7 @@
 #define BLUE_LED_PATH           "/sys/class/leds/blue/brightness"
 #define RED_LED_BLINK_PATH      "/sys/class/leds/red/blink"
 #define GREEN_LED_BLINK_PATH    "/sys/class/leds/green/blink"
-#define BACKLIGHT_PATH          "/sys/class/leds/lcd-backlight/brightness"
+#define BACKLIGHT_PATH          "/sys/class/backlight/panel0-backlight/brightness"
 
 #define CHARGING_ENABLED_PATH   "/sys/class/power_supply/battery/charging_enabled"
 #define CHARGER_TYPE_PATH       "/sys/class/power_supply/usb/type"

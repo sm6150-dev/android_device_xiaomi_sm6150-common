@@ -1631,35 +1631,6 @@ case "$target" in
     ;;
 esac
 
-case "$target" in
-    "sdm670")
-
-        if [ -f /sys/devices/soc0/soc_id ]; then
-            soc_id=`cat /sys/devices/soc0/soc_id`
-        else
-            soc_id=`cat /sys/devices/system/soc/soc0/id`
-        fi
-
-        if [ -f /sys/devices/soc0/hw_platform ]; then
-            hw_platform=`cat /sys/devices/soc0/hw_platform`
-        else
-            hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
-        fi
-
-        case "$soc_id" in
-           "336" | "337" )
-
-                  # Start Host based Touch processing
-                  case "$hw_platform" in
-                    "MTP" | "Surf" | "RCM" )
-                        start_hbtp
-                        ;;
-                  esac
-           ;;
-       esac
-    ;;
-esac
-
 
 case "$target" in
     "sdm660")
@@ -2012,8 +1983,21 @@ case "$target" in
                 soc_id=`cat /sys/devices/system/soc/soc0/id`
         fi
 
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+            hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+            hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+
         case "$soc_id" in
-            "336" )
+            "336" | "337" )
+
+            # Start Host based Touch processing
+            case "$hw_platform" in
+              "MTP" | "Surf" | "RCM" )
+                  start_hbtp
+                  ;;
+            esac
 
 	    # Core control parameters on silver
             echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
@@ -2035,9 +2019,9 @@ case "$target" in
 	    echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
 
 	    # configure governor settings for big cluster
-	    echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-	    echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/rate_limit_us
-	    echo 1344000 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
+	    echo "schedutil" > /sys/devices/system/cpu/cpu6/cpufreq/scaling_governor
+	    echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
+	    echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
 
 	    echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
 	    echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
@@ -2895,7 +2879,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670")
         setprop sys.post_boot.parsed 1
     ;;
     "apq8084")

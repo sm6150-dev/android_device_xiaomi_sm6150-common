@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2012-2013, 2016, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013, 2016-2017, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -1977,7 +1977,7 @@ case "$target" in
         # to one of the CPU from the default IRQ affinity mask.
         echo 3f > /proc/irq/default_smp_affinity
 
-	if [ -f /sys/devices/soc0/soc_id ]; then
+        if [ -f /sys/devices/soc0/soc_id ]; then
                 soc_id=`cat /sys/devices/soc0/soc_id`
         else
                 soc_id=`cat /sys/devices/system/soc/soc0/id`
@@ -1999,35 +1999,37 @@ case "$target" in
                   ;;
             esac
 
-	    # Core control parameters on silver
-            echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
-	    echo 60 > /sys/devices/system/cpu/cpu0/core_ctl/busy_up_thres
-	    echo 40 > /sys/devices/system/cpu/cpu0/core_ctl/busy_down_thres
-	    echo 100 > /sys/devices/system/cpu/cpu0/core_ctl/offline_delay_ms
-	    echo 0 > /sys/devices/system/cpu/cpu0/core_ctl/is_big_cluster
-	    echo 8 > /sys/devices/system/cpu/cpu0/core_ctl/task_thres
+      # Core control parameters on silver
+      echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
+      echo 60 > /sys/devices/system/cpu/cpu0/core_ctl/busy_up_thres
+      echo 40 > /sys/devices/system/cpu/cpu0/core_ctl/busy_down_thres
+      echo 100 > /sys/devices/system/cpu/cpu0/core_ctl/offline_delay_ms
+      echo 0 > /sys/devices/system/cpu/cpu0/core_ctl/is_big_cluster
+      echo 8 > /sys/devices/system/cpu/cpu0/core_ctl/task_thres
 
-	    # Setting b.L scheduler parameters
-	    echo 96 > /proc/sys/kernel/sched_upmigrate
-	    echo 90 > /proc/sys/kernel/sched_downmigrate
-	    echo 140 > /proc/sys/kernel/sched_group_upmigrate
-	    echo 120 > /proc/sys/kernel/sched_group_downmigrate
+      # Setting b.L scheduler parameters
+      echo 96 > /proc/sys/kernel/sched_upmigrate
+      echo 90 > /proc/sys/kernel/sched_downmigrate
+      echo 140 > /proc/sys/kernel/sched_group_upmigrate
+      echo 120 > /proc/sys/kernel/sched_group_downmigrate
 
-	    # configure governor settings for little cluster
-	    echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-	    echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rate_limit_us
-	    echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
+      # configure governor settings for little cluster
+      echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+      echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rate_limit_us
+      echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
 
-	    # configure governor settings for big cluster
-	    echo "schedutil" > /sys/devices/system/cpu/cpu6/cpufreq/scaling_governor
-	    echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
-	    echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
+      # configure governor settings for big cluster
+      echo "schedutil" > /sys/devices/system/cpu/cpu6/cpufreq/scaling_governor
+      echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
+      echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
 
-	    echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
-	    echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
+      echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
+      echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
+      # Limit the min frequency to 720MHz
+      echo 720000 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
 
-            # Enable bus-dcvs
-            for cpubw in /sys/class/devfreq/*qcom,cpubw*
+      # Enable bus-dcvs
+      for cpubw in /sys/class/devfreq/*qcom,cpubw*
             do
                 echo "bw_hwmon" > $cpubw/governor
                 echo 50 > $cpubw/polling_interval
@@ -2045,15 +2047,15 @@ case "$target" in
                 echo 1600 > $cpubw/bw_hwmon/idle_mbps
             done
 
-	    #Enable mem_latency governor for DDR scaling
+            #Enable mem_latency governor for DDR scaling
             for memlat in /sys/class/devfreq/*qcom,memlat-cpu*
             do
-	        echo "mem_latency" > $memlat/governor
+                echo "mem_latency" > $memlat/governor
                 echo 10 > $memlat/polling_interval
                 echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
-	    #Enable mem_latency governor for L3 scaling
+            #Enable mem_latency governor for L3 scaling
             for memlat in /sys/class/devfreq/*qcom,l3-cpu*
             do
                 echo "mem_latency" > $memlat/governor
@@ -2061,18 +2063,18 @@ case "$target" in
                 echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
-	    echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+            echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
-	    # cpuset parameters
+            # cpuset parameters
             echo 0-5 > /dev/cpuset/background/cpus
             echo 0-5 > /dev/cpuset/system-background/cpus
 
-	    # Turn off scheduler boost at the end
+            # Turn off scheduler boost at the end
             echo 0 > /proc/sys/kernel/sched_boost
 
             # Turn on sleep modes.
             echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
-	    echo 100 > /proc/sys/vm/swappiness
+            echo 100 > /proc/sys/vm/swappiness
             ;;
         esac
     ;;

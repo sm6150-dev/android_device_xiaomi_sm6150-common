@@ -442,6 +442,12 @@ void LocNetIface::notifyCurrentNetworkInfo(bool queryQcmap, LocNetConnType connT
 
     ENTRY_LOG();
 
+    /* Validate QCMAP Client instance */
+    if (mQcmapClientPtr == NULL) {
+        LOC_LOGE("No QCMAP instance !");
+        return;
+    }
+
     /* Check saved state if queryQcmap disabled */
     if (!queryQcmap) {
         if (mLocNetWlanState == LOC_NET_CONN_STATE_CONNECTED) {
@@ -474,6 +480,12 @@ void LocNetIface::notifyCurrentWifiHardwareState(bool queryQcmap) {
 
     ENTRY_LOG();
 
+    /* Validate QCMAP Client instance */
+    if (mQcmapClientPtr == NULL) {
+        LOC_LOGE("No QCMAP instance !");
+        return;
+    }
+
     /* Check saved state if queryQcmap disabled */
     if (!queryQcmap) {
         if (mLocNetWlanState == LOC_NET_CONN_STATE_ENABLED ||
@@ -492,12 +504,6 @@ void LocNetIface::notifyCurrentWifiHardwareState(bool queryQcmap) {
     if (this != LocNetIface::sLocNetIfaceInstance &&
             LocNetIface::sLocNetIfaceInstance != NULL) {
         LocNetIface::sLocNetIfaceInstance->notifyCurrentWifiHardwareState(queryQcmap);
-    }
-
-    /* Validate QCMAP Client instance */
-    if (mQcmapClientPtr == NULL) {
-        LOC_LOGE("No QCMAP instance !");
-        return;
     }
 
     /* Fetch WLAN status */

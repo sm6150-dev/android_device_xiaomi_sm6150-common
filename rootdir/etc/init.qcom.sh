@@ -92,7 +92,7 @@ start_msm_irqbalance_8939()
 start_msm_irqbalance()
 {
 	if [ -f /vendor/bin/msm_irqbalance ]; then
-		start msm_irqbalance
+		start vendor.msm_irqbalance
 	fi
 }
 

@@ -29,7 +29,8 @@
 #define LOG_TAG "LocSvc_LocNetIfaceHolder"
 
 #include <LocNetIfaceAgps.h>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 
 /* LocNetIfaceAgps members */
 LocNetIface* LocNetIfaceAgps::sLocNetIfaceAgpsInternet = NULL;

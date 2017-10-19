@@ -36,7 +36,7 @@
 #include <loc_cfg.h>
 #include "loc_api_v02_client.h"
 #include "loc_api_sync_req.h"
-#include "platform_lib_macros.h"
+#include <loc_pla.h>
 
 /* Logging */
 // Uncomment to log verbose logs

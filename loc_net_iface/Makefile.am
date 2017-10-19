@@ -2,6 +2,7 @@ AM_CFLAGS = \
      -I./ \
      -I./le \
      $(LOCPLA_CFLAGS) \
+     $(LOCCORE_CFLAGS) \
      $(LOCHAL_CFLAGS) \
      $(GPSUTILS_CFLAGS) \
      $(QMIF_CFLAGS) \
@@ -32,8 +33,8 @@ libloc_net_iface_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
 libloc_net_iface_la_LIBADD  = -lstdc++ $(QMIF_LIBS) -lqmiservices
-libloc_net_iface_la_LIBADD += $(GPSUTILS_LIBS) $(LOCPLA_LIBS) $(LOCHAL_LIBS)
-libloc_net_iface_la_LIBADD += -lqcmap_client -ldsi_netctrl -ldataitems
+libloc_net_iface_la_LIBADD += $(GPSUTILS_LIBS) $(LOCHAL_LIBS) $(DATAITEMS_LIBS)
+libloc_net_iface_la_LIBADD += -lqcmap_client -ldsi_netctrl
 
 library_include_HEADERS = \
     LocNetIfaceBase.h \

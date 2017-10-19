@@ -44,7 +44,8 @@
 #include <dsi_netctrl.h>
 #include <ds_client.h>
 #include <sys/time.h>
-#include <platform_lib_includes.h>
+#include <loc_pla.h>
+#include <log_util.h>
 
 /**
  * @file

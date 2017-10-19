@@ -28,7 +28,7 @@
 #ifndef LOC_UTIL_LOG_H
 #define LOC_UTIL_LOG_H
 
-#include <platform_lib_log_util.h>
+#include <log_util.h>
 
 #if defined(_ANDROID_)
 #include "loc_api_v02_log.h"
@@ -57,9 +57,6 @@
 //verbose logs
 #define LOC_LOGV(...) printf(__VA_ARGS__)
 #endif //__LOC_API_V02_LOG_SILENT__
-
-#define MODEM_LOG_CALLFLOW(SPEC, VAL)
-#define EXIT_LOG_CALLFLOW(SPEC, VAL)
 
 #define loc_get_v02_event_name(X) #X
 #define loc_get_v02_client_status_name(X) #X

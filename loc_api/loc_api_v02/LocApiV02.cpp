@@ -42,7 +42,7 @@
 #include <loc_api_v02_client.h>
 #include <loc_util_log.h>
 #include <gps_extended.h>
-#include "platform_lib_includes.h"
+#include "loc_pla.h"
 #include <loc_cfg.h>
 #include <LocDualContext.h>
 
@@ -714,7 +714,7 @@ enum loc_api_adapter_err LocApiV02 ::
 
   inject_time_msg.timeUtc = time;
 
-  inject_time_msg.timeUtc += (int64_t)(platform_lib_abstraction_elapsed_millis_since_boot() - timeReference);
+  inject_time_msg.timeUtc += (int64_t)(uptimeMillis() - timeReference);
 
   inject_time_msg.timeUnc = uncertainty;
 

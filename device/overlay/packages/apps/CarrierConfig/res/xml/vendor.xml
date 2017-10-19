@@ -866,6 +866,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -924,6 +925,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -945,6 +947,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
         <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
@@ -967,6 +970,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </map>
         <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="06">
@@ -1021,6 +1025,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -1060,6 +1065,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">
@@ -1103,6 +1109,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </map>
         <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
@@ -1124,6 +1131,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         </map>
         <boolean name="ignore_data_enabled_changed_for_video_calls" value="true"/>
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="ignore_reset_ut_capability_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="00">

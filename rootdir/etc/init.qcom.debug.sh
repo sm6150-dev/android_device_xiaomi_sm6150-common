@@ -1961,8 +1961,8 @@ case "$coresight_config" in
                 srcenable="enable_source"
                 sinkenable="enable_sink"
             fi
-            #echo "Enabling STM events."
-            #enable_stm_events
+            echo "Enabling STM events."
+            enable_stm_events
             setprop ro.dbg.coresight.stm_cfg_done 1
         fi
         ;;

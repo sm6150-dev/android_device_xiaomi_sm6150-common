@@ -27,14 +27,13 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-abnormalcnt="persist.crash.cnt"
+abnormalcnt="persist.vendor.crash.cnt"
 
 abnormal_cnt=`getprop $abnormalcnt`
-crash_detect=`getprop sys.crash.detect`
+crash_detect=`getprop persist.vendor.crash.detect`
 
 if [ "$abnormal_cnt" = "" ]
 then
-echo "initialize crash detection count to be 0"
 setprop $abnormalcnt 0
 fi
 
@@ -42,11 +41,8 @@ if [ "$crash_detect" = "true" ]
 then
 abnormal_cnt=`expr $abnormal_cnt + 1`
 setprop $abnormalcnt $abnormal_cnt
-#To handle the FWR situation, the script will be executed again.
-#We have to ensure abnormalcnt only added 1 time
-setprop sys.crash.detect true_cnted
 elif [ "$crash_detect" = "false" ];then
-setprop sys.crash.detect false_cnted
+setprop persist.vendor.crash.detect true
 else
-echo "do nothing if $crash_detect is empty"
+setprop persist.vendor.crash.detect true
 fi

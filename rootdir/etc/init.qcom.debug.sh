@@ -50,6 +50,7 @@ enable_tracing_events()
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_switch/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup/enable
     echo 1 > /sys/kernel/debug/tracing/events/sched/sched_wakeup_new/enable
+    echo 1 > /sys/kernel/debug/tracing/events/sched/sched_isolate/enable
     # sound
     echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_read/enable
     echo 1 > /sys/kernel/debug/tracing/events/asoc/snd_soc_reg_write/enable

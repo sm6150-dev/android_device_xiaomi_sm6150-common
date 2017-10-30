@@ -1010,7 +1010,7 @@ PRODUCT_COPY_FILES += \
 
 # enable overlays to use our version of
 # source/resources etc.
-DEVICE_PACKAGE_OVERLAYS += device/qcom/common/device/overlay
+#DEVICE_PACKAGE_OVERLAYS += device/qcom/common/device/overlay
 PRODUCT_PACKAGE_OVERLAYS += device/qcom/common/product/overlay
 # Set up flags to determine the kernel version
 ifeq ($(TARGET_KERNEL_VERSION),)
@@ -1058,7 +1058,7 @@ PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 endif
 
 # Preloading QPerformance jar to ensure faster perflocks in Boost Framework
-PRODUCT_BOOT_JARS += QPerformance
+#PRODUCT_BOOT_JARS += QPerformance
 
 # OEM Unlock reporting
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \

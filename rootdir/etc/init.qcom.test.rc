@@ -60,4 +60,4 @@ service DiagDaemon /system/vendor/bin/diag_socket_log -f /sdcard/ipaddress.txt
     oneshot
     disabled
     user root
-    group root system log qcom_diag net_raw
+    group root system log diag net_raw

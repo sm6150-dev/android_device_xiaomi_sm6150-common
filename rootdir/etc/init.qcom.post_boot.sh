@@ -2536,11 +2536,11 @@ case "$target" in
             echo 50 > $cpubw/polling_interval
             echo "2288 4577 6500 8132 9155 10681" > $cpubw/bw_hwmon/mbps_zones
             echo 4 > $cpubw/bw_hwmon/sample_ms
-            echo 40 > $cpubw/bw_hwmon/io_percent
+            echo 50 > $cpubw/bw_hwmon/io_percent
             echo 20 > $cpubw/bw_hwmon/hist_memory
             echo 10 > $cpubw/bw_hwmon/hyst_length
             echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-            echo 40 > $cpubw/bw_hwmon/low_power_io_percent
+            echo 50 > $cpubw/bw_hwmon/low_power_io_percent
             echo 20 > $cpubw/bw_hwmon/low_power_delay
             echo 0 > $cpubw/bw_hwmon/guard_band_mbps
             echo 250 > $cpubw/bw_hwmon/up_scale

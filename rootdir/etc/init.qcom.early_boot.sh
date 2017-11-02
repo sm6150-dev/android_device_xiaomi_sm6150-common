@@ -309,7 +309,6 @@ case "$target" in
     "sdm670" | "msmpeafowl")
         case "$soc_hwplatform" in
             *)
-                setprop ro.sf.lcd_density 560
                 sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
                 if [ $sku_ver -eq 1 ]; then
                     setprop media.sdm670.version 1

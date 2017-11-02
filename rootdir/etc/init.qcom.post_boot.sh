@@ -2583,7 +2583,8 @@ case "$target" in
 	#Gold L3 ratio ceil
         echo 4000 > /sys/class/devfreq/soc:qcom,l3-cpu4/mem_latency/ratio_ceil
 
-	echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+	echo "compute" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+	echo 10 > /sys/class/devfreq/soc:qcom,mincpubw/polling_interval
 
 	# cpuset parameters
         echo 0-3 > /dev/cpuset/background/cpus

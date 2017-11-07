@@ -30,8 +30,6 @@ on post-fs-data
     # Create directory for Graphics applications
     mkdir /data/vendor/gpu 0777 system system
 
-write /proc/sys/kernel/kptr_restrict 0
-
 # Coresight early boot service
 service cs-early-boot /vendor/bin/sh /persist/coresight/qdss.agent.sh early-boot /vendor/bin/init.qcom.debug.sh
     class core

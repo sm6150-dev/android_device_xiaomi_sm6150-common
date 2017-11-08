@@ -645,7 +645,7 @@ service ipacm /system/vendor/bin/ipacm
 service qti /system/vendor/bin/qti
     class main
     user radio
-    group radio net_raw diag usb net_admin
+    group radio oem_2901 diag usb net_admin
     disabled
 
 service sensors /vendor/bin/sensors.qcom

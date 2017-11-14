@@ -1965,8 +1965,8 @@ case "$coresight_config" in
             "sdm845")
                 srcenable="enable_source"
                 sinkenable="enable_sink"
-                #echo "Enabling STM events."
-                #enable_stm_events
+                echo "Enabling STM events."
+                enable_stm_events
                 if [ "$ftrace_disable" != "Yes" ]; then
                     enable_ftrace_event_tracing
                 fi

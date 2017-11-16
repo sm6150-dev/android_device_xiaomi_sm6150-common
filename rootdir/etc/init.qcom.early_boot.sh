@@ -266,8 +266,10 @@ case "$target" in
             *)
                 if [ $fb_width -le 1600 ]; then
                     setprop ro.sf.lcd_density 560
+                    setprop dalvik.vm.heapgrowthlimit 256m
                 else
                     setprop ro.sf.lcd_density 640
+                    setprop dalvik.vm.heapgrowthlimit 512m
                 fi
 
                 if [ ! -e /dev/kgsl-3d0 ]; then

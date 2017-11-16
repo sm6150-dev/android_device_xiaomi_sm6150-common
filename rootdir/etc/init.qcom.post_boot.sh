@@ -2696,6 +2696,7 @@ case "$target" in
         for l3cdsp in /sys/class/devfreq/*qcom,l3-cdsp*
         do
             echo "userspace" > $l3cdsp/governor
+            chown -h system $l3cdsp/userspace/set_freq
         done
 
 	#Gold L3 ratio ceil

@@ -738,20 +738,21 @@ on property:netd.fstman.start=false
     stop fstman
 
 service wigighalsvc /vendor/bin/wigighalsvc
-    class main
+    class hal
     user system
     group wifi
+    # needed for on-demand insmod/rmmod of wigig module
+    capabilities SYS_MODULE
     disabled
 
 service wigignpt /vendor/bin/wigignpt
-    class main
+    class hal
     socket wigignpt stream 660 system wifi
     user system
     group wifi net_admin
     disabled
 
 on property:persist.vendor.wigig.enable=1
-    insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
     start wigighalsvc
 
 on property:persist.vendor.wigig.npt.enable=1

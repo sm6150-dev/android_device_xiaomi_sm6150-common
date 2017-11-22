@@ -48,8 +48,11 @@ fi
 
 if [ -f /sys/class/drm/card0-DSI-1/modes ]; then
     echo "detect" > /sys/class/drm/card0-DSI-1/status
-    res=`cat /sys/class/drm/card0-DSI-1/modes` 2> /dev/null
-    fb_width=${res%x*}
+    mode_file=/sys/class/drm/card0-DSI-1/modes
+    while read line; do
+        fb_width=${line%x*};
+        break;
+    done < $mode_file
 elif [ -f /sys/class/graphics/fb0/virtual_size ]; then
     res=`cat /sys/class/graphics/fb0/virtual_size` 2> /dev/null
     fb_width=${res%,*}

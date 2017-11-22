@@ -95,14 +95,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
-        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
-            <item value="iccid"/>
-            <item value="898603,898611,8985231,8985302,8985307"/>
-            <item value="type"/>
-            <item value="ims"/>
-            <item value="include_common_rules"/>
-            <item value="false"/>
-        </string-array>
     </carrier_config>
 
     <carrier_config mcc="222" mnc="01">
@@ -784,14 +776,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
-        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
-            <item value="iccid"/>
-            <item value="8985231"/>
-            <item value="type"/>
-            <item value="ims"/>
-            <item value="include_common_rules"/>
-            <item value="false"/>
-        </string-array>
     </carrier_config>
 
     <carrier_config mcc="454" mnc="03">
@@ -799,14 +783,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
-        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
-            <item value="iccid"/>
-            <item value="898603,898611,8985231,8985302,8985307"/>
-            <item value="type"/>
-            <item value="ims"/>
-            <item value="include_common_rules"/>
-            <item value="false"/>
-        </string-array>
     </carrier_config>
 
     <carrier_config mcc="454" mnc="04">
@@ -814,28 +790,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="check_mobile_data_for_cf" value="true" />
-        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
-            <item value="iccid"/>
-            <item value="898603,898611,8985231,8985302,8985307"/>
-            <item value="type"/>
-            <item value="ims"/>
-            <item value="include_common_rules"/>
-            <item value="false"/>
-        </string-array>
     </carrier_config>
 
     <carrier_config mcc="454" mnc="31">
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
-        <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
-            <item value="iccid"/>
-            <item value="898603,898611,8985231,8985302,8985307"/>
-            <item value="type"/>
-            <item value="ims"/>
-            <item value="include_common_rules"/>
-            <item value="false"/>
-        </string-array>
     </carrier_config>
 
     <carrier_config mcc="455" mnc="02">
@@ -845,7 +805,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <string-array name="apn_hide_rule_strings_array" num="2">
             <item value="type"/>
-            <item value="supl,mms,ims"/>
+            <item value="supl,mms"/>
         </string-array>
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>
@@ -860,7 +820,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="check_mobile_data_for_cf" value="true" />
         <string-array name="apn_hide_rule_strings_array" num="2">
             <item value="type"/>
-            <item value="supl,mms,ims"/>
+            <item value="supl,mms"/>
         </string-array>
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>
@@ -973,7 +933,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_emergency_numbers_in_call_log_bool" value="true"/>
         <string-array name="apn_hide_rule_strings_array" num="2">
             <item value="type"/>
-            <item value="supl,mms,ims"/>
+            <item value="supl,mms"/>
         </string-array>
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>
@@ -1124,7 +1084,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
         <string-array name="apn_hide_rule_strings_array" num="2">
             <item value="type"/>
-            <item value="supl,mms,ims"/>
+            <item value="supl,mms"/>
         </string-array>
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>
@@ -1144,7 +1104,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_show_orig_dial_string_for_cdma" value="true" />
         <string-array name="apn_hide_rule_strings_array" num="2">
             <item value="type"/>
-            <item value="supl,mms,ims"/>
+            <item value="supl,mms"/>
         </string-array>
         <map name="apn_default_values_strings_array">
             <string name="protocol">IPV4V6</string>

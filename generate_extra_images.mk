@@ -133,7 +133,7 @@ ifeq ($(strip $(BOARD_KERNEL_SEPARATED_DTBO)),true)
 
 MKDTIMG := $(HOST_OUT_EXECUTABLES)/mkdtimg$(HOST_EXECUTABLE_SUFFIX)
 
-INSTALLED_DTBOIMAGE_TARGET := $(PRODUCT_OUT)/dtbo.img
+BOARD_PREBUILT_DTBOIMAGE := $(PRODUCT_OUT)/prebuilt_dtbo.img
 
 # Most specific paths must come first in possible_dtbo_dirs
 possible_dtbo_dirs = $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts $(KERNEL_OUT)/arch/arm/boot/dts
@@ -142,22 +142,16 @@ dtbo_dir = $(firstword $(wildcard $(possible_dtbo_dirs)))
 dtbo_objs = $(shell find $(dtbo_dir) -name \*.dtbo)
 
 define build-dtboimage-target
-    $(call pretty,"Target dtbo image: $(INSTALLED_DTBOIMAGE_TARGET)")
+    $(call pretty,"Target dtbo image: $(BOARD_PREBUILT_DTBOIMAGE)")
     $(hide) $(MKDTIMG) create $@ --page_size=$(BOARD_KERNEL_PAGESIZE) $(dtbo_objs)
     $(hide) chmod a+r $@
-    $(hide) $(AVBTOOL) add_hash_footer \
-	    --image $@ \
-	    --partition_size $(BOARD_DTBOIMAGE_PARTITION_SIZE) \
-	    --partition_name dtbo $(INTERNAL_AVB_SIGNING_ARGS)
 endef
 
 ifeq ($(BOARD_AVB_ENABLE),true)
-$(INSTALLED_DTBOIMAGE_TARGET): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET) $(AVBTOOL)
+$(BOARD_PREBUILT_DTBOIMAGE): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET)
 	$(build-dtboimage-target)
 endif
 
-ALL_DEFAULT_INSTALLED_MODULES += $(INSTALLED_DTBOIMAGE_TARGET)
-ALL_MODULES.$(LOCAL_MODULE).INSTALLED += $(INSTALLED_DTBOIMAGE_TARGET)
 endif
 endif
 

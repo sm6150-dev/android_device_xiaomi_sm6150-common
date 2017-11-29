@@ -4648,7 +4648,8 @@ void LocApiV02 :: cacheGnssMeasurementSupport()
                                    &setGNSSConstRepConfigInd);
 
         if(status != eLOC_CLIENT_SUCCESS ||
-           setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02) {
+           (setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02 &&
+            setGNSSConstRepConfigInd.status != eQMI_LOC_ENGINE_BUSY_V02)) {
             LOC_LOGD("%s:%d]: Set GNSS constellation failed."
                      " status: %s, ind status:%s\n",
                      __func__, __LINE__,

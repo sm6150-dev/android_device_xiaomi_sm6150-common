@@ -24,7 +24,7 @@ else
 # For SHARED_LIBRARIES and EXECUTABLES we need to filter out flags not
 # needed/understood by SD LLVM's Linker.
 
-FLAGS_TO_BE_FILTERED := -Wl,--icf=safe -Wl,--no-undefined-version -Wl,--fix-cortex-a53-843419 -fuse-ld=gold
+FLAGS_TO_BE_FILTERED := -Wl,--icf=safe -Wl,--no-undefined-version -Wl,--fix-cortex-a53-843419 -fuse-ld=gold -Wl,-m,aarch64_elf64_le_vec
 linked_module_32 := $(intermediates)/LINKED/$(my_installed_module_stem)
 intermediates    := $(call local-intermediates-dir,,$(LOCAL_2ND_ARCH_VAR_PREFIX))
 linked_module_64 := $(intermediates)/LINKED/$(my_installed_module_stem)

@@ -1957,8 +1957,8 @@ case "$coresight_config" in
                 echo "Enabling STM/Debug events for SDM660"
                 enable_sdm660_debug
             ;;
-            "sdm670")
-                echo "Enabling DCC/STM/Debug events for SDM670"
+            "sdm670" | "qcs605")
+                echo "Enabling DCC/STM/Debug events for SDM670 and qcs605"
                 enable_sdm670_debug
                 setprop ro.dbg.coresight.stm_cfg_done 1
             ;;

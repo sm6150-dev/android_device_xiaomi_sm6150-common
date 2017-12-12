@@ -2645,12 +2645,14 @@ case "$target" in
 	echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 	echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rate_limit_us
 	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
+	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/pl
         echo 576000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 
 	# configure governor settings for big cluster
 	echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
 	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/rate_limit_us
 	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
+	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/pl
 	echo "0:1324800" > /sys/module/cpu_boost/parameters/input_boost_freq
 	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 	# Limit the min frequency to 825MHz

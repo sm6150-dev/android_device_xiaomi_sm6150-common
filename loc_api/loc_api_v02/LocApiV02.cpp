@@ -3809,13 +3809,12 @@ int LocApiV02 :: convertGnssClock (GnssMeasurementsClock& clock,
             float sysClkBias = gnss_measurement_info.systemTime.systemClkTimeBias;
             float sysClkUncMs = gnss_measurement_info.systemTime.systemClkTimeUncMs;
             bool isTimeValid = (sysClkUncMs <= 16.0f); // 16ms
-            double gps_time_ns;
 
             msInWeek = (int)systemMsec;
             if (systemWeek != C_GPS_WEEK_UNKNOWN && isTimeValid) {
                 // fullBiasNs, biasNs & biasUncertaintyNs
-                double temp = (double)(systemWeek)* (double)WEEK_MSECS + (double)systemMsec;
-                gps_time_ns = (double)temp*1e6 - (double)((int)(sysClkBias*1e6));
+                double temp = ((double)systemWeek) * ((double)WEEK_MSECS) + ((double)systemMsec);
+                double gps_time_ns = (temp - (double)sysClkBias) * 1e6;
                 clock.fullBiasNs = (int64_t)(clock.timeNs - gps_time_ns);
                 clock.biasNs = (double)(clock.timeNs - gps_time_ns) - clock.fullBiasNs;
                 clock.biasUncertaintyNs = (double)sysClkUncMs * 1e6;

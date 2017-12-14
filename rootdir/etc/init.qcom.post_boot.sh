@@ -2068,6 +2068,16 @@ case "$target" in
 
             echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
+            # Disable CPU Retention
+            echo N > /sys/module/lpm_levels/L3/cpu0/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu1/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu2/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu3/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu4/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu5/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu6/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu7/ret/idle_enabled
+
             # cpuset parameters
             echo 0-5 > /dev/cpuset/background/cpus
             echo 0-5 > /dev/cpuset/system-background/cpus

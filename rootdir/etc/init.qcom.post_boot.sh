@@ -2745,6 +2745,7 @@ case "$target" in
         # Turn on sleep modes.
         echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 	echo 100 > /proc/sys/vm/swappiness
+	echo 120 > /proc/sys/vm/watermark_scale_factor
     ;;
 esac
 

@@ -779,6 +779,9 @@ WIGIG += libwigig_utils
 WIGIG += libwigig_flashaccess
 WIGIG += libwigig_pciaccess
 
+#FD_LEAK
+FD_LEAK := libc_leak_detector
+
 PRODUCT_PACKAGES := \
     AccountAndSyncSettings \
     DeskClock \
@@ -911,6 +914,7 @@ PRODUCT_PACKAGES += $(WLAN)
 PRODUCT_PACKAGES += $(IPACM)
 PRODUCT_PACKAGES += $(FSTMAN)
 PRODUCT_PACKAGES += $(WIGIG)
+PRODUCT_PACKAGES += $(FD_LEAK)
 PRODUCT_PACKAGES += $(IMS_EXT)
 # Temp workarround for b/36603742
 PRODUCT_PACKAGES += android.hidl.manager@1.0-java

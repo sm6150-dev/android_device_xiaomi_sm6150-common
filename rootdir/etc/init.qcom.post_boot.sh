@@ -2024,6 +2024,7 @@ case "$target" in
       echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
       echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
       echo 652800 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
+      echo -6 >  /sys/devices/system/cpu/cpu6/sched_load_boost
 
       echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
       echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms

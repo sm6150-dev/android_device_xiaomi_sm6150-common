@@ -824,6 +824,24 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0x179e20b0 1 > $DCC_PATH/config
     echo 0x179e20c0 1 > $DCC_PATH/config
     echo 0x179e20c4 1 > $DCC_PATH/config
+    echo 0x179C0400 1 > $DCC_PATH/config
+    #RSC registers
+    echo 0x179C0404 1 > $DCC_PATH/config
+    echo 0x179C0408 1 > $DCC_PATH/config
+    echo 0x179D0400 1 > $DCC_PATH/config
+    echo 0x179D0404 1 > $DCC_PATH/config
+    echo 0x179D0408 1 > $DCC_PATH/config
+    echo 0x179E0400 1 > $DCC_PATH/config
+    echo 0x179E0404 1 > $DCC_PATH/config
+    echo 0x179E0408 1 > $DCC_PATH/config
+    echo 0x179C0038 1 > $DCC_PATH/config
+    echo 0x179C0040 1 > $DCC_PATH/config
+    echo 0x179C0048 1 > $DCC_PATH/config
+    echo 0x179E0038 1 > $DCC_PATH/config
+    echo 0x179E0040 1 > $DCC_PATH/config
+    #clock to APSS
+    echo 0x148010   1 > $DCC_PATH/config
+    echo 0x148198   1 > $DCC_PATH/config
  }
  config_sdm670_dcc_pdc_apps()
  {
@@ -860,6 +878,16 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0x0B204510 1 > $DCC_PATH/config
     echo 0x0B204514 1 > $DCC_PATH/config
     echo 0x0B204520 1 > $DCC_PATH/config
+    echo 0x0B2013CC 1 > $DCC_PATH/config
+    echo 0x0B2013D4 1 > $DCC_PATH/config
+    echo 0x0B2013DC 1 > $DCC_PATH/config
+    echo 0x0B2013E4 1 > $DCC_PATH/config
+    echo 0x0B20155C 1 > $DCC_PATH/config
+    echo 0x0B201564 1 > $DCC_PATH/config
+    echo 0x0B20156C 1 > $DCC_PATH/config
+    echo 0x0B201574 1 > $DCC_PATH/config
+
+
  }
  config_sdm670_dcc_rscc_lpass()
  {
@@ -1199,6 +1227,23 @@ config_sdm670_dcc_rscc_modem()
     echo 0x4201b70 1 > $DCC_PATH/config
     echo 0x4201b80 1 > $DCC_PATH/config
     echo 0x4201b84 1 > $DCC_PATH/config
+    #Modem registers debug
+    echo 0x4130400  1 > $DCC_PATH/config
+    echo 0x4130404  1 > $DCC_PATH/config
+    echo 0x4130408  1 > $DCC_PATH/config
+    echo 0x4200400  1 > $DCC_PATH/config
+    echo 0x4200404  1 > $DCC_PATH/config
+    echo 0x4200408  1 > $DCC_PATH/config
+    echo 0x4200024  1 > $DCC_PATH/config
+    echo 0x4200028  1 > $DCC_PATH/config
+    echo 0xB2B4520  1 > $DCC_PATH/config
+    echo 0xB2B4524  1 > $DCC_PATH/config
+    echo 0xB2B4510  1 > $DCC_PATH/config
+    echo 0xB2B4514  1 > $DCC_PATH/config
+    echo 0xB2B1020  1 > $DCC_PATH/config
+    echo 0xB2B1024  1 > $DCC_PATH/config
+    echo 0xB2B1030  1 > $DCC_PATH/config
+
 }
 config_sdm670_dcc_rscc_cdsp()
 {

@@ -2043,9 +2043,6 @@ case "$target" in
                 echo 20 > $cpubw/bw_hwmon/hist_memory
                 echo 0 > $cpubw/bw_hwmon/hyst_length
                 echo 80 > $cpubw/bw_hwmon/down_thres
-                echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-                echo 68 > $cpubw/bw_hwmon/low_power_io_percent
-                echo 20 > $cpubw/bw_hwmon/low_power_delay
                 echo 0 > $cpubw/bw_hwmon/guard_band_mbps
                 echo 250 > $cpubw/bw_hwmon/up_scale
                 echo 1600 > $cpubw/bw_hwmon/idle_mbps
@@ -2669,9 +2666,6 @@ case "$target" in
             echo 50 > $cpubw/bw_hwmon/io_percent
             echo 20 > $cpubw/bw_hwmon/hist_memory
             echo 10 > $cpubw/bw_hwmon/hyst_length
-            echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-            echo 50 > $cpubw/bw_hwmon/low_power_io_percent
-            echo 20 > $cpubw/bw_hwmon/low_power_delay
             echo 0 > $cpubw/bw_hwmon/guard_band_mbps
             echo 250 > $cpubw/bw_hwmon/up_scale
             echo 1600 > $cpubw/bw_hwmon/idle_mbps
@@ -2686,9 +2680,6 @@ case "$target" in
             echo 80 > $llccbw/bw_hwmon/io_percent
             echo 20 > $llccbw/bw_hwmon/hist_memory
             echo 10 > $llccbw/bw_hwmon/hyst_length
-            echo 0 > $llccbw/bw_hwmon/low_power_ceil_mbps
-            echo 80 > $llccbw/bw_hwmon/low_power_io_percent
-            echo 20 > $llccbw/bw_hwmon/low_power_delay
             echo 0 > $llccbw/bw_hwmon/guard_band_mbps
             echo 250 > $llccbw/bw_hwmon/up_scale
             echo 1600 > $llccbw/bw_hwmon/idle_mbps

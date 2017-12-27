@@ -785,7 +785,6 @@ PRODUCT_PACKAGES := \
     Email \
     Gallery2 \
     LatinIME \
-    Mms \
     Music \
     netutils-wrapper-1.0 \
     Phone \
@@ -804,9 +803,7 @@ PRODUCT_PACKAGES := \
     FM2 \
     FMRecord \
     VideoEditor \
-    SnapdragonGallery \
     SnapdragonLauncher \
-    SnapdragonMusic \
     a4wpservice \
     wipowerservice
 

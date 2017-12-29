@@ -1934,6 +1934,20 @@ enable_core_gladiator_hang_config()
     esac
 }
 
+enable_schedstats()
+{
+    # bail out if its perf config
+    if [ ! -d /sys/module/msm_rtb ]
+    then
+        return
+    fi
+
+    if [ -f /proc/sys/kernel/sched_schedstats ]
+    then
+        echo 1 > /proc/sys/kernel/sched_schedstats
+    fi
+}
+
 coresight_config=`getprop persist.debug.coresight.config`
 coresight_stm_cfg_done=`getprop ro.dbg.coresight.stm_cfg_done`
 ftrace_disable=`getprop persist.debug.ftrace_events_disable`
@@ -1983,3 +1997,5 @@ case "$coresight_config" in
         exit
         ;;
 esac
+
+enable_schedstats

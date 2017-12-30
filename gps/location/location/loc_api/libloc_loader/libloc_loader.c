@@ -16,6 +16,7 @@ void load_from_libdsi_netctrl() {
         ALOGE("%s: DLOPEN failed for %s", __func__, LIBDSI_NETCTRL);
     } else {
         dsi_init = dlsym(lib_handle, "dsi_init");
+        dsi_release = dlsym(lib_handle, "dsi_release");
         dsi_start_data_call = dlsym(lib_handle, "dsi_start_data_call");
         dsi_stop_data_call = dlsym(lib_handle, "dsi_stop_data_call");
         dsi_set_data_call_param = dlsym(lib_handle, "dsi_set_data_call_param");

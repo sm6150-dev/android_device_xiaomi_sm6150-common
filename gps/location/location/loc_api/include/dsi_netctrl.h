@@ -17,6 +17,7 @@
 
 #define DSI_SUCCESS 0
 #define DSI_MODE_GENERAL 0
+#define DSI_MODE_SSR 1
 
 #define DSI_IP_VERSION_4 4
 #define DSI_IP_VERSION_6 6
@@ -129,7 +130,8 @@ typedef void (*net_ev_cb_type)(
 );
 
 /* Functions */
-int (*dsi_init)();
+int (*dsi_init)(uint8_t dsi_mode);
+int (*dsi_release)(uint8_t dsi_mode);
 int (*dsi_start_data_call)(dsi_hndl_t handle);
 int (*dsi_stop_data_call)(dsi_hndl_t handle);
 int (*dsi_set_data_call_param)(dsi_hndl_t handle, uint8_t call_info, dsi_call_param_value_t *param_info);

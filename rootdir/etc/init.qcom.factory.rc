@@ -66,6 +66,8 @@ on mmi && property:ro.bootmode=ffbm-00
     mkdir /persist/FTM_AP 0750 root root
 
     start fastmmi
+    # start qcom-post-boot to set the misc partition path property value
+    start qcom-post-boot
 
 on mmi && property:ro.bootmode=ffbm-01
     # ========================================================
@@ -75,6 +77,8 @@ on mmi && property:ro.bootmode=ffbm-01
     mkdir /persist/FTM_AP 0750 root root
 
     start fastmmi
+    ## start qcom-post-boot to set the misc partition path property value
+    start qcom-post-boot
 
 on ffbm
     trigger early-fs

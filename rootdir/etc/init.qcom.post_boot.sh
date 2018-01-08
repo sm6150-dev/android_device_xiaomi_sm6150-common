@@ -2024,7 +2024,10 @@ case "$target" in
       echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
       echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
       echo 652800 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
+
+      # sched_load_boost as -6 is equivalent to target load as 85. It is per cpu tunable.
       echo -6 >  /sys/devices/system/cpu/cpu6/sched_load_boost
+      echo -6 >  /sys/devices/system/cpu/cpu7/sched_load_boost
 
       echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
       echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms

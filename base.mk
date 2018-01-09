@@ -692,6 +692,8 @@ STMLOG := libstm-log
 #THERMAL_HAL
 THERMAL_HAL := thermal.msm8998
 THERMAL_HAL += thermal.sdm845
+THERMAL_HAL += thermal.sdm670
+THERMAL_HAL += thermal.qcs605
 
 #TSLIB_EXTERNAL
 TSLIB_EXTERNAL := corgi

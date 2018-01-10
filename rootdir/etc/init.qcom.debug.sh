@@ -323,7 +323,6 @@ enable_sdm845_dcc_config()
     echo 0x0113E030 1 > $DCC_PATH/config
     echo 0x0113E034 1 > $DCC_PATH/config
     echo 0x01141000 1 > $DCC_PATH/config
-    echo 0x01142028 1 > $DCC_PATH/config
     echo 0x01148058 1 > $DCC_PATH/config
     echo 0x0114805C 1 > $DCC_PATH/config
     echo 0x01148060 1 > $DCC_PATH/config
@@ -346,7 +345,6 @@ enable_sdm845_dcc_config()
     echo 0x011BE030 1 > $DCC_PATH/config
     echo 0x011BE034 1 > $DCC_PATH/config
     echo 0x011C1000 1 > $DCC_PATH/config
-    echo 0x011C2028 1 > $DCC_PATH/config
     echo 0x011C8058 1 > $DCC_PATH/config
     echo 0x011C805C 1 > $DCC_PATH/config
     echo 0x011C8060 1 > $DCC_PATH/config
@@ -369,7 +367,6 @@ enable_sdm845_dcc_config()
     echo 0x0123E030 1 > $DCC_PATH/config
     echo 0x0123E034 1 > $DCC_PATH/config
     echo 0x01241000 1 > $DCC_PATH/config
-    echo 0x01242028 1 > $DCC_PATH/config
     echo 0x01248058 1 > $DCC_PATH/config
     echo 0x0124805C 1 > $DCC_PATH/config
     echo 0x01248060 1 > $DCC_PATH/config
@@ -392,7 +389,6 @@ enable_sdm845_dcc_config()
     echo 0x012BE030 1 > $DCC_PATH/config
     echo 0x012BE034 1 > $DCC_PATH/config
     echo 0x012C1000 1 > $DCC_PATH/config
-    echo 0x012C2028 1 > $DCC_PATH/config
     echo 0x012C8058 1 > $DCC_PATH/config
     echo 0x012C805C 1 > $DCC_PATH/config
     echo 0x012C8060 1 > $DCC_PATH/config
@@ -419,10 +415,6 @@ enable_sdm845_dcc_config()
     echo 0x01380d08 1 > $DCC_PATH/config
     echo 0x01380d0c 1 > $DCC_PATH/config
     echo 0x01380d10 1 > $DCC_PATH/config
-    echo 0x01350110 1 > $DCC_PATH/config
-    echo 0x01350114 1 > $DCC_PATH/config
-    echo 0x01350118 1 > $DCC_PATH/config
-    echo 0x0135011c 1 > $DCC_PATH/config
     echo 0x01430280 1 > $DCC_PATH/config
     echo 0x01430288 1 > $DCC_PATH/config
     echo 0x0143028c 1 > $DCC_PATH/config
@@ -441,7 +433,6 @@ enable_sdm845_dcc_config()
     echo 0x0113E030 1 > $DCC_PATH/config
     echo 0x0113E034 1 > $DCC_PATH/config
     echo 0x01141000 1 > $DCC_PATH/config
-    echo 0x01142028 1 > $DCC_PATH/config
     echo 0x01148058 1 > $DCC_PATH/config
     echo 0x0114805C 1 > $DCC_PATH/config
     echo 0x01148060 1 > $DCC_PATH/config
@@ -464,7 +455,6 @@ enable_sdm845_dcc_config()
     echo 0x011BE030 1 > $DCC_PATH/config
     echo 0x011BE034 1 > $DCC_PATH/config
     echo 0x011C1000 1 > $DCC_PATH/config
-    echo 0x011C2028 1 > $DCC_PATH/config
     echo 0x011C8058 1 > $DCC_PATH/config
     echo 0x011C805C 1 > $DCC_PATH/config
     echo 0x011C8060 1 > $DCC_PATH/config
@@ -487,7 +477,6 @@ enable_sdm845_dcc_config()
     echo 0x0123E030 1 > $DCC_PATH/config
     echo 0x0123E034 1 > $DCC_PATH/config
     echo 0x01241000 1 > $DCC_PATH/config
-    echo 0x01242028 1 > $DCC_PATH/config
     echo 0x01248058 1 > $DCC_PATH/config
     echo 0x0124805C 1 > $DCC_PATH/config
     echo 0x01248060 1 > $DCC_PATH/config
@@ -510,7 +499,6 @@ enable_sdm845_dcc_config()
     echo 0x012BE030 1 > $DCC_PATH/config
     echo 0x012BE034 1 > $DCC_PATH/config
     echo 0x012C1000 1 > $DCC_PATH/config
-    echo 0x012C2028 1 > $DCC_PATH/config
     echo 0x012C8058 1 > $DCC_PATH/config
     echo 0x012C805C 1 > $DCC_PATH/config
     echo 0x012C8060 1 > $DCC_PATH/config
@@ -537,10 +525,6 @@ enable_sdm845_dcc_config()
     echo 0x01380d08 1 > $DCC_PATH/config
     echo 0x01380d0c 1 > $DCC_PATH/config
     echo 0x01380d10 1 > $DCC_PATH/config
-    echo 0x01350110 1 > $DCC_PATH/config
-    echo 0x01350114 1 > $DCC_PATH/config
-    echo 0x01350118 1 > $DCC_PATH/config
-    echo 0x0135011c 1 > $DCC_PATH/config
     echo 0x01430280 1 > $DCC_PATH/config
     echo 0x01430288 1 > $DCC_PATH/config
     echo 0x0143028c 1 > $DCC_PATH/config

@@ -990,8 +990,6 @@ service battery_monitor /system/bin/battery_monitor
 
 service ril-daemon2 /vendor/bin/hw/rild -c 2
     class main
-    socket rild2 stream 660 root radio
-    socket rild-debug2 stream 660 radio system
     user radio
     disabled
     group radio cache inet misc audio sdcard_r sdcard_rw diag oem_2901 log
@@ -999,8 +997,6 @@ service ril-daemon2 /vendor/bin/hw/rild -c 2
 
 service ril-daemon3 /vendor/bin/hw/rild -c 3
     class main
-    socket rild3 stream 660 root radio
-    socket rild-debug3 stream 660 radio system
     user radio
     disabled
     group radio cache inet misc audio sdcard_r sdcard_rw diag oem_2901 log

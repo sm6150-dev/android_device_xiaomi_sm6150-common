@@ -33,11 +33,14 @@
 baseband=`getprop ro.baseband`
 sgltecsfb=`getprop persist.vendor.radio.sglte_csfb`
 datamode=`getprop persist.data.mode`
+rild_status=`getprop init.svc.ril-daemon`
 
 case "$baseband" in
     "apq" | "sda" | "qcs" )
     setprop ro.radio.noril yes
-    stop ril-daemon
+    if [ -n "$rild_status" ]; then
+      stop ril-daemon
+    fi
 esac
 
 case "$baseband" in
@@ -47,6 +50,9 @@ esac
 
 case "$baseband" in
     "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3" | "sdm" | "sdx")
+    if [ -z "$rild_status" ]; then
+      start vendor.qcrild
+    fi
     start ipacm-diag
     start ipacm
     case "$baseband" in
@@ -67,10 +73,19 @@ case "$baseband" in
     multisim=`getprop persist.radio.multisim.config`
 
     if [ "$multisim" = "dsds" ] || [ "$multisim" = "dsda" ]; then
-        start ril-daemon2
+        if [ -z "$rild_status" ]; then
+          start vendor.qcrild2
+        else
+          start ril-daemon2
+        fi
     elif [ "$multisim" = "tsts" ]; then
-        start ril-daemon2
-        start ril-daemon3
+        if [ -z "$rild_status" ]; then
+          start vendor.qcrild2
+          start vendor.qcrild3
+        else
+          start ril-daemon2
+          start ril-daemon3
+        fi
     fi
 
     case "$datamode" in

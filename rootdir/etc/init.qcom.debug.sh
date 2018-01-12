@@ -311,6 +311,16 @@ enable_sdm845_dcc_config()
     echo 0x17D42D70 1 > $DCC_PATH/config
     echo 0x17D42D88 1 > $DCC_PATH/config
 
+   # core hang
+    echo 0x17E0005C 1 > $DCC_PATH/config
+    echo 0x17E1005C 1 > $DCC_PATH/config
+    echo 0x17E2005C 1 > $DCC_PATH/config
+    echo 0x17E3005C 1 > $DCC_PATH/config
+    echo 0x17E4005C 1 > $DCC_PATH/config
+    echo 0x17E5005C 1 > $DCC_PATH/config
+    echo 0x17E6005C 1 > $DCC_PATH/config
+    echo 0x17E7005C 1 > $DCC_PATH/config
+
    # DDR_SS
     echo 0x01132100 1 > $DCC_PATH/config
     echo 0x01136044 1 > $DCC_PATH/config
@@ -1839,8 +1849,8 @@ enable_sdm845_core_hang_config()
     fi
 
     #set the threshold to around 100 milli-second
-    echo 0x1d4c01 > $CORE_PATH_SILVER/threshold
-    echo 0x1d4c01 > $CORE_PATH_GOLD/threshold
+    echo 0xffffffff > $CORE_PATH_SILVER/threshold
+    echo 0xffffffff > $CORE_PATH_GOLD/threshold
 
     #To the enable core hang detection
     echo 0x1 > $CORE_PATH_SILVER/enable

@@ -54,9 +54,15 @@ on factory-fs && property:ro.bootmode=ffbm-01
     mount tmpfs tmpfs /data
 
 on post-fs-data
-    setprop persist.sys.usb.ffbm-00.func diag
-    setprop persist.sys.usb.ffbm-01.func diag
-    setprop persist.sys.usb.ffbm-02.func diag
+# aligned the usb port with system standard, otherwise if only diag be added
+# Then in QMMI mode, the whole Andoid be booted, but due to the ro.bootmode is
+# not normal/unknow, then when it apply the default funcs, it will turn to MTP
+# which cause the diag/Wwan/modem port all be lost in qmmi mode. Details:
+# UsbDeviceManager.java---->getDefaultFunctions and trySetEnabledFunctions
+
+    setprop persist.sys.usb.ffbm-00.func ${persist.sys.usb.config}
+    setprop persist.sys.usb.ffbm-01.func ${persist.sys.usb.config}
+    setprop persist.sys.usb.ffbm-02.func ${persist.sys.usb.config}
 
 on mmi && property:ro.bootmode=ffbm-00
     # ========================================================
@@ -66,6 +72,8 @@ on mmi && property:ro.bootmode=ffbm-00
     mkdir /persist/FTM_AP 0750 root root
 
     start fastmmi
+    # start qcom-post-boot to set the misc partition path property value
+    start qcom-post-boot
 
 on mmi && property:ro.bootmode=ffbm-01
     # ========================================================
@@ -75,6 +83,8 @@ on mmi && property:ro.bootmode=ffbm-01
     mkdir /persist/FTM_AP 0750 root root
 
     start fastmmi
+    ## start qcom-post-boot to set the misc partition path property value
+    start qcom-post-boot
 
 on ffbm
     trigger early-fs

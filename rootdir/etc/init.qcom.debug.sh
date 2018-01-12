@@ -144,8 +144,6 @@ enable_sdm845_dcc_config()
     echo 0x00151004 1 > $DCC_PATH/config
     echo 0x1 0x1 > $DCC_PATH/rd_mod_wr
     echo 0x00151004 1 > $DCC_PATH/config
-    echo 0x146bf010 1 > $DCC_PATH/config
-    echo 0x146bf020 1 > $DCC_PATH/config
     echo 0x013E7E00 124 > $DCC_PATH/config
 
     #Use for address change between V1 vs V2

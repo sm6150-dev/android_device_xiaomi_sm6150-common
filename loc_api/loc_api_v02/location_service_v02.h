@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Sep 19 2017 (Spin 0)
+   It was generated on: Tue Oct 17 2017 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x48
+#define LOC_V02_IDL_MINOR_VERS 0x4A
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00B2
+#define LOC_V02_MAX_MESSAGE_ID 0x00B5
 /**
     @}
   */
@@ -343,6 +343,14 @@ extern "C" {
 #define QMI_LOC_SRN_MAC_ADDR_LENGTH_V02 6
 #define QMI_LOC_MAX_WIFI_CROWDSOURCING_SERVER_CONFIG_LEN_V02 512
 #define QMI_LOC_MAX_CROWDSOURCING_MODEM_CLIENT_INFO_LEN_V02 512
+
+/**  Maximum number of BS info in the BS list.
+  */
+#define QMI_LOC_FDCL_BS_LIST_MAX_SIZE_V02 100
+
+/**  FDCL cell-position list length.  */
+#define QMI_LOC_FDCL_CELL_POS_LIST_LENGTH_V02 20
+#define QMI_LOC_INJECT_FDCL_DATA_ERROR_MSG_LEN_V02 255
 /**
     @}
   */
@@ -475,6 +483,8 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.  */
 #define QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x400000000ull) /**<  The control point must enable this mask to receive the position report
        event indications that contain a GNSS only position.  */
+#define QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ_V02 ((qmiLocEventRegMaskT_v02)0x800000000ull) /**<  The control point must enable this mask to receive the FDCL service
+       request.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -582,6 +592,8 @@ typedef struct {
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.
       - QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT (0x400000000) --  The control point must enable this mask to receive the position report
        event indications that contain a GNSS only position.
+      - QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ (0x800000000) --  The control point must enable this mask to receive the FDCL service
+       request.
 
  Multiple events can be registered by ORing the individual masks and
  sending them in this TLV. All unused bits in this mask must be set to 0.
@@ -5171,6 +5183,7 @@ typedef uint32_t qmiLocNmeaSentenceMaskT_v02;
 #define QMI_LOC_NMEA_MASK_PQGSA_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00008000) /**<  Enable PQGSA type  */
 #define QMI_LOC_NMEA_MASK_PQGSV_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00010000) /**<  Enable PQGSV type  */
 #define QMI_LOC_NMEA_MASK_DEBUG_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00020000) /**<  Enable NMEA type  */
+#define QMI_LOC_NMEA_MASK_GPDTM_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00040000) /**<  Enable GPDTM type  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5201,6 +5214,7 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_PQGSA (0x00008000) --  Enable PQGSA type
       - QMI_LOC_NMEA_MASK_PQGSV (0x00010000) --  Enable PQGSV type
       - QMI_LOC_NMEA_MASK_DEBUG (0x00020000) --  Enable NMEA type
+      - QMI_LOC_NMEA_MASK_GPDTM (0x00040000) --  Enable GPDTM type
  */
 }qmiLocSetNmeaTypesReqMsgT_v02;  /* Message */
 /**
@@ -5303,6 +5317,7 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_PQGSA (0x00008000) --  Enable PQGSA type
       - QMI_LOC_NMEA_MASK_PQGSV (0x00010000) --  Enable PQGSV type
       - QMI_LOC_NMEA_MASK_DEBUG (0x00020000) --  Enable NMEA type
+      - QMI_LOC_NMEA_MASK_GPDTM (0x00040000) --  Enable GPDTM type
  */
 }qmiLocGetNmeaTypesIndMsgT_v02;  /* Message */
 /**
@@ -6466,6 +6481,8 @@ typedef struct {
        short range node (SRN) RSSI scans, e.g., BT, BTLE, NFC, etc.
       - QMI_LOC_EVENT_MASK_GNSS_ONLY_POSITION_REPORT (0x400000000) --  The control point must enable this mask to receive the position report
        event indications that contain a GNSS only position.
+      - QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ (0x800000000) --  The control point must enable this mask to receive the FDCL service
+       request.
  */
 }qmiLocGetRegisteredEventsIndMsgT_v02;  /* Message */
 /**
@@ -16561,6 +16578,7 @@ typedef enum {
   eQMI_LOC_SUPPORTED_FEATURE_WIFI_AP_DATA_INJECT_2_V02 = 1, /**<  Support the Wi-Fi AP data inject version 2 feature  */
   eQMI_LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02 = 2, /**<  Support the debug NMEA feature  */
   eQMI_LOC_SUPPORTED_FEATURE_GNSS_ONLY_POSITION_REPORT_V02 = 3, /**<  Support the GNSS only position report feature  */
+  eQMI_LOC_SUPPORTED_FEATURE_FDCL_V02 = 4, /**<  Support the FDCL feature  */
   QMILOCSUPPORTEDFEATUREENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSupportedFeatureEnumT_v02;
 /**
@@ -17417,6 +17435,347 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Requests the control point for making a FDCL request. */
+typedef struct {
+  /* This element is a placeholder to prevent the declaration of
+     an empty struct.  DO NOT USE THIS FIELD UNDER ANY CIRCUMSTANCE */
+  char __placeholder;
+}qmiLocEventFdclServiceReqIndMsgT_v02;
+
+  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to request FDCL BS(Base station)
+                   list from TLE. */
+typedef struct {
+
+  /* Optional */
+  /*  Expire In Days */
+  uint8_t expireInDays_valid;  /**< Must be set to true if expireInDays is being passed */
+  uint32_t expireInDays;
+  /**<   Get the base station list that expire in less than or equal to
+       "expireInDays".\n
+   */
+
+  /* Optional */
+  /*  UTC Timestamp */
+  uint8_t timestampUtc_valid;  /**< Must be set to true if timestampUtc is being passed */
+  uint64_t timestampUtc;
+  /**<   UTC timestamp.
+        - Units: Milliseconds (since Jan. 1, 1970) */
+}qmiLocGetFdclBsListReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCFDCLAIRINTERFACETYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_CDMA_V02 = 0, /**<  FDCL CDMA cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_GSM_V02 = 1, /**<  FDCL GSM cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_WCDMA_V02 = 2, /**<  FDCL WCDMA cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_V02 = 3, /**<  FDCL LTE cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_M1_V02 = 4, /**<  FDCL LTE-M1 cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_NB1_V02 = 5, /**<  FDCL LTE-NB1 cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_M1_MODE_A_V02 = 6, /**<  FDCL LTE-M1ModeA cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_M1_MODE_B_V02 = 7, /**<  FDCL LTE-M1ModeB cell  */
+  eQMI_LOC_FDCL_AIR_INTERFACE_TYPE_LTE_UNKNOWN_V02 = 8, /**<  FDCL LTE-Unknown cell  */
+  QMILOCFDCLAIRINTERFACETYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocFdclAirInterfaceTypeEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocFdclAirInterfaceTypeEnumT_v02 airInterfaceType;
+  /**<   The cell type for this record. */
+
+  uint32_t id1;
+  /**<   ID1
+       - For all air interface: MCC
+   */
+
+  uint32_t id2;
+  /**<   ID2
+       - For GSM, WCDMA, LTE: MNC
+   */
+
+  uint32_t id3;
+  /**<   ID3
+       - For CDMA: NID
+       - For GSM and WCDMA: LAC
+       - For LTE: TAC
+   */
+
+  uint32_t id4;
+  /**<   ID4
+       - For CDMA: BSID
+       - For GSM: CI
+       - For WCDMA: U_CI
+       - For LTE: G_CI
+   */
+}qmiLocFdclCellIdStructT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to request FDCL BS(Base station)
+                   list from TLE. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Get FDCL BS List request Status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Get FDCL BS List request.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+ */
+
+  /* Mandatory */
+  /*  Base station list */
+  uint32_t BsList_len;  /**< Must be set to # of elements in BsList */
+  qmiLocFdclCellIdStructT_v02 BsList[QMI_LOC_FDCL_BS_LIST_MAX_SIZE_V02];
+  /**<   \vspace{4pt} \n A list of base station IDs for FDCL request. */
+
+  /* Optional */
+  /*  More BS lists are available */
+  uint8_t moreBsAvailable_valid;  /**< Must be set to true if moreBsAvailable is being passed */
+  uint8_t moreBsAvailable;
+  /**<   Indicates whether more base station lists are available. \n
+       - 0x00 (FALSE) -- No more base station lists are available\n
+       - 0x01 (TRUE) -- More base station lists are available
+       If not specified, moreBsAvailable defaults to FALSE.
+  */
+}qmiLocGetFdclBsListIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+typedef uint32_t qmiLocFdclCellPosValidMaskT_v02;
+#define QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALTITUDE_V02 ((qmiLocFdclCellPosValidMaskT_v02)0x00000001) /**<  Altitude field is valid in cell position  */
+#define QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_UNC_V02 ((qmiLocFdclCellPosValidMaskT_v02)0x00000002) /**<  Altitude uncertainty field is valid in cell position  */
+#define QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_CONFIDENCE_V02 ((qmiLocFdclCellPosValidMaskT_v02)0x00000004) /**<  Altitude confidence is valid in cell position  */
+#define QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_RELIABILITY_V02 ((qmiLocFdclCellPosValidMaskT_v02)0x00000008) /**<  Altitude reliability field is valid in cell position  */
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocFdclCellPosValidMaskT_v02 validMask;
+  /**<   Bitmask indicating which of the fields in this TLV are valid.
+
+ Valid bitmasks: \n
+      - QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALTITUDE (0x00000001) --  Altitude field is valid in cell position
+      - QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_UNC (0x00000002) --  Altitude uncertainty field is valid in cell position
+      - QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_CONFIDENCE (0x00000004) --  Altitude confidence is valid in cell position
+      - QMI_LOC_FDCL_CELL_POS_MASK_VALID_ALT_RELIABILITY (0x00000008) --  Altitude reliability field is valid in cell position
+ */
+
+  qmiLocFdclCellIdStructT_v02 cellId;
+  /**<   \vspace{4pt} \n The cell ID for this record. */
+
+  double latitude;
+  /**<   Latitude (specified in WGS84 datum).
+       \begin{itemize1}
+       \item    Type: Floating point
+       \item    Units: Degrees
+       \item    Range: -90.0 to 90.0       \begin{itemize1}
+         \item    Positive values indicate northern latitude
+         \item    Negative values indicate southern latitude
+       \vspace{-0.18in} \end{itemize1} \end{itemize1}
+    */
+
+  double longitude;
+  /**<   Longitude (specified in WGS84 datum).
+       \begin{itemize1}
+       \item    Type: Floating point
+       \item    Units: Degrees
+       \item    Range: -180.0 to 180.0     \begin{itemize1}
+         \item    Positive values indicate eastern longitude
+         \item    Negative values indicate western longitude
+       \vspace{-0.18in} \end{itemize1} \end{itemize1}
+   */
+
+  float horCoverageRadius;
+  /**<   Horizontal coverage radius (circular).\n
+        - Units: Meters */
+
+  uint8_t horConfidence;
+  /**<   Horizontal confidence, as defined by ETSI TS 101 109 (3GPP \hyperref[TS 03.32]{TS 03.32).
+        \begin{itemize1}
+        \item    Units: Percent (1 to 99)
+        \item    0, 101 to 255 -- invalid value
+        \item    If 100 is received, reinterpret to 99
+        \end{itemize1}
+    */
+
+  qmiLocReliabilityEnumT_v02 horReliability;
+  /**<   Specifies the reliability of the horizontal position.
+
+ Valid values: \n
+      - eQMI_LOC_RELIABILITY_NOT_SET (0) --  Location reliability is not set
+      - eQMI_LOC_RELIABILITY_VERY_LOW (1) --  Location reliability is very low; use it at your own risk
+      - eQMI_LOC_RELIABILITY_LOW (2) --  Location reliability is low; little or no cross-checking is possible
+      - eQMI_LOC_RELIABILITY_MEDIUM (3) --  Location reliability is medium; limited cross-check passed
+      - eQMI_LOC_RELIABILITY_HIGH (4) --  Location reliability is high; strong cross-check passed
+ */
+
+  float altitude;
+  /**<   Altitude with respect to mean sea level.\n
+       - Units: Meters */
+
+  float altUnc;
+  /**<   Vertical uncertainty. This is mandatory if either altitudeWrtEllipsoid
+        or altitudeWrtMeanSeaLevel is specified.\n
+        - Units: Meters */
+
+  uint8_t altConfidence;
+  /**<   Vertical confidence, as defined by  ETSI TS 101 109 (3GPP \hyperref[TS 03.32]{TS 03.32}).
+        \begin{itemize1}
+        \item    Units: Percent (0-99)
+        \item    0 -- invalid value
+        \item    100 to 256 -- not used
+        \item    If 100 is received, reinterpret to 99
+        \end{itemize1}
+    */
+
+  qmiLocReliabilityEnumT_v02 altReliability;
+  /**<   Specifies the reliability of the vertical position.
+
+ Valid values: \n
+      - eQMI_LOC_RELIABILITY_NOT_SET (0) --  Location reliability is not set
+      - eQMI_LOC_RELIABILITY_VERY_LOW (1) --  Location reliability is very low; use it at your own risk
+      - eQMI_LOC_RELIABILITY_LOW (2) --  Location reliability is low; little or no cross-checking is possible
+      - eQMI_LOC_RELIABILITY_MEDIUM (3) --  Location reliability is medium; limited cross-check passed
+      - eQMI_LOC_RELIABILITY_HIGH (4) --  Location reliability is high; strong cross-check passed
+ */
+}qmiLocFdclCellPosStructT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to Inject FDCL data to TLE. */
+typedef struct {
+
+  /* Mandatory */
+  /*  FDCL Cell Position list */
+  uint32_t cellPosList_len;  /**< Must be set to # of elements in cellPosList */
+  qmiLocFdclCellPosStructT_v02 cellPosList[QMI_LOC_FDCL_CELL_POS_LIST_LENGTH_V02];
+  /**<   Cell-position list. */
+
+  /* Mandatory */
+  /*  Number of days this FDCL data is valid for */
+  uint32_t daysValid;
+  /**<   Days valid. */
+
+  /* Optional */
+  /*  UTC Timestamp */
+  uint8_t timestampUtc_valid;  /**< Must be set to true if timestampUtc is being passed */
+  uint64_t timestampUtc;
+  /**<   UTC timestamp.
+       - Units: Milliseconds (since Jan. 1, 1970) */
+}qmiLocInjectFdclDataReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCINJECTFDCLDATASTATUSENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_INJECT_FDCL_DATA_SUCCESS_V02 = 0, /**<  Request was completed successfully \n  */
+  eQMI_LOC_INJECT_FDCL_DATA_FAILURE_GENERAL_V02 = 1, /**<  Request failed \n  */
+  eQMI_LOC_INJECT_FDCL_DATA_FAILURE_NO_CELLS_INJECTED_V02 = 2, /**<  Request failed because no cells were injected \n  */
+  QMILOCINJECTFDCLDATASTATUSENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocInjectFdclDataStatusEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to Inject FDCL data to TLE. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Inject FDCL Data Status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Inject FDCL Data request.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+ */
+
+  /* Mandatory */
+  /*  FDCL data injection Status */
+  qmiLocInjectFdclDataStatusEnumT_v02 inject_status;
+  /**<   Status of the FDCL data injection.
+ Valid values: \n
+      - eQMI_LOC_INJECT_FDCL_DATA_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_INJECT_FDCL_DATA_FAILURE_GENERAL (1) --  Request failed \n
+      - eQMI_LOC_INJECT_FDCL_DATA_FAILURE_NO_CELLS_INJECTED (2) --  Request failed because no cells were injected \n
+ */
+
+  /* Optional */
+  /*  Error message (NULL Terminated) */
+  uint8_t errorMsg_valid;  /**< Must be set to true if errorMsg is being passed */
+  char errorMsg[QMI_LOC_INJECT_FDCL_DATA_ERROR_MSG_LEN_V02 + 1];
+  /**<   Error message. \n
+       \begin{itemize1}
+       \item    Type: NULL-terminated string
+       \item    Maximum string length (including NULL terminator): 256
+       \end{itemize1}
+   */
+}qmiLocInjectFdclDataIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -17433,6 +17792,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_EVENT_DBT_POSITION_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_DBT_SESSION_STATUS_V02
 //#define REMOVE_QMI_LOC_EVENT_ENGINE_STATE_V02
+//#define REMOVE_QMI_LOC_EVENT_FDCL_SERVICE_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_FIX_SESSION_STATE_V02
 //#define REMOVE_QMI_LOC_EVENT_GDT_DOWNLOAD_BEGIN_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_GDT_DOWNLOAD_END_REQ_V02
@@ -17479,6 +17839,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_GET_CRADLE_MOUNT_CONFIG_V02
 //#define REMOVE_QMI_LOC_GET_ENGINE_LOCK_V02
 //#define REMOVE_QMI_LOC_GET_EXTERNAL_POWER_CONFIG_V02
+//#define REMOVE_QMI_LOC_GET_FDCL_BS_LIST_V02
 //#define REMOVE_QMI_LOC_GET_FIX_CRITERIA_V02
 //#define REMOVE_QMI_LOC_GET_GEOFENCE_ENGINE_CONFIG_V02
 //#define REMOVE_QMI_LOC_GET_LOW_POWER_MODE_V02
@@ -17506,6 +17867,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_INFORM_NI_USER_RESPONSE_V02
 //#define REMOVE_QMI_LOC_INJECT_APCACHE_DATA_V02
 //#define REMOVE_QMI_LOC_INJECT_APDONOTCACHE_DATA_V02
+//#define REMOVE_QMI_LOC_INJECT_FDCL_DATA_V02
 //#define REMOVE_QMI_LOC_INJECT_GSM_CELL_INFO_V02
 //#define REMOVE_QMI_LOC_INJECT_GTP_CLIENT_DOWNLOADED_DATA_V02
 //#define REMOVE_QMI_LOC_INJECT_MOTION_DATA_V02
@@ -17934,6 +18296,13 @@ typedef struct {
 #define QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02 0x00B2
 #define QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_RESP_V02 0x00B2
 #define QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02 0x00B2
+#define QMI_LOC_EVENT_FDCL_SERVICE_REQ_IND_V02 0x00B3
+#define QMI_LOC_GET_FDCL_BS_LIST_REQ_V02 0x00B4
+#define QMI_LOC_GET_FDCL_BS_LIST_RESP_V02 0x00B4
+#define QMI_LOC_GET_FDCL_BS_LIST_IND_V02 0x00B4
+#define QMI_LOC_INJECT_FDCL_DATA_REQ_V02 0x00B5
+#define QMI_LOC_INJECT_FDCL_DATA_RESP_V02 0x00B5
+#define QMI_LOC_INJECT_FDCL_DATA_IND_V02 0x00B5
 /**
     @}
   */

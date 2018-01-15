@@ -2070,6 +2070,13 @@ case "$target" in
                 echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
+            #Enable userspace governor for L3 cdsp nodes
+            for l3cdsp in /sys/class/devfreq/*qcom,l3-cdsp*
+            do
+                echo "userspace" > $l3cdsp/governor
+                chown -h system $l3cdsp/userspace/set_freq
+            done
+
             echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
             # Disable CPU Retention

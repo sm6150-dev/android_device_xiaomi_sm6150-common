@@ -41,9 +41,13 @@ using namespace loc_core;
  *
  * These values are same as we define in case of LA,
  * except for emergency type WWAN which is not defined there. */
+
 typedef enum {
     LOC_NET_CONN_TYPE_INVALID = 0,
     LOC_NET_CONN_TYPE_WLAN = 100,
+    LOC_NET_CONN_TYPE_ETHERNET = 101,
+    LOC_NET_CONN_TYPE_BLUETOOTH = 102,
+    LOC_NET_CONN_TYPE_USB_CRADLE = 103,
     LOC_NET_CONN_TYPE_WWAN_INTERNET = 201,
     LOC_NET_CONN_TYPE_WWAN_SUPL = 205,
     LOC_NET_CONN_TYPE_WWAN_EMERGENCY = 206,

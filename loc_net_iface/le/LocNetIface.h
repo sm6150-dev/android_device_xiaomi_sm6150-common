@@ -46,8 +46,9 @@ public:
         LocNetIfaceBase(connType), mQcmapClientPtr(NULL),
         mConnectReqRecvCount(0), mIsConnectReqSent(false),
         mIsConnectBackhaulPending(false), mIsDisconnectBackhaulPending(false),
+        mLocNetBackHaulState(LOC_NET_CONN_STATE_INVALID),
+        mLocNetBackHaulType(LOC_NET_CONN_TYPE_INVALID),
         mLocNetWlanState(LOC_NET_CONN_STATE_INVALID),
-        mLocNetWwanState(LOC_NET_CONN_STATE_INVALID),
         mIsDsiInitDone(false), mDsiHandle(NULL), mIsDsiCallUp(false),
         mIsDsiStartCallPending(false), mIsDsiStopCallPending(false),
         mMutex() {}
@@ -67,9 +68,12 @@ public:
     /* Disconnects the WWANbackhaul, only if it was setup by us */
     bool disconnectBackhaul();
 
-    /* APIs to fetch current WLAN/WWAN status */
-    bool isWlanConnected();
+    /* APIs to fetch current WWAN status */
     bool isWwanConnected();
+    /* APIs to fetch current Backhaul Network Interface status */
+    bool isAnyBackHaulConnected();
+    /* API to check if any non-metered backhaul type (eg: wifi, ethernet etc) status*/
+    bool isNonMeteredBackHaulTypeConnected();
 
     recursive_mutex& getMutex(){ return mMutex; }
 
@@ -90,8 +94,11 @@ private:
     static LocNetIface* sLocNetIfaceInstance;
 
     /* Current connection status */
+    LocNetConnState mLocNetBackHaulState;
+    /* Current Backhaul type include wwan, wifi, BT, USB cradle, Ethernet etc*/
+    LocNetConnType  mLocNetBackHaulType;
+    /* Check wifi hardware state */
     LocNetConnState mLocNetWlanState;
-    LocNetConnState mLocNetWwanState;
 
     /* Private APIs to interact with QCMAP module */
     void subscribeWithQcmap();
@@ -99,9 +106,7 @@ private:
     void handleQcmapCallback(
             qcmap_msgr_wlan_status_ind_msg_v01 &wlanStatusIndData);
     void handleQcmapCallback(
-            qcmap_msgr_station_mode_status_ind_msg_v01 &stationModeIndData);
-    void handleQcmapCallback(
-            qcmap_msgr_wwan_status_ind_msg_v01 &wwanStatusIndData);
+            qcmap_msgr_backhaul_status_ind_msg_v01 &backhaulStatusIndData);
     void handleQcmapCallback(
             qcmap_msgr_bring_up_wwan_ind_msg_v01 &bringUpWwanIndData);
     void handleQcmapCallback(
@@ -111,6 +116,8 @@ private:
     void notifyCurrentNetworkInfo(bool queryQcmap,
             LocNetConnType connType = LOC_NET_CONN_TYPE_INVALID);
     void notifyCurrentWifiHardwareState(bool queryQcmap);
+    void setCurrentBackHaulStatus(qcmap_msgr_backhaul_type_enum_v01  backhaulType,
+            boolean backhaulIPv4Available, boolean backhaulIPv6Available);
 
     /* Callback registered with QCMAP */
     static void qcmapClientCallback

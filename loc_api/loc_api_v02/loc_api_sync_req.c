@@ -121,7 +121,11 @@ void loc_sync_req_init()
       loc_sync_req_data_s_type *slot = &loc_sync_array.slots[i];
 
       pthread_mutex_init(&slot->sync_req_lock, NULL);
-      pthread_cond_init(&slot->ind_arrived_cond, NULL);
+      pthread_condattr_t condAttr;
+      pthread_condattr_init(&condAttr);
+      pthread_condattr_setclock(&condAttr, CLOCK_MONOTONIC);
+      pthread_cond_init(&slot->ind_arrived_cond, &condAttr);
+      pthread_condattr_destroy(&condAttr);
 
       slot->client_handle = LOC_CLIENT_INVALID_HANDLE_VALUE;
       slot->ind_is_selected = false;       /* is ind selected? */

@@ -1953,6 +1953,11 @@ then
     exit
 fi
 
+#add permission of block_size node to collect diag over QDSS by ODL
+#application by "oem_2902" group
+chown -h root.oem_2902 /sys/devices/platform/soc/6048000.tmc/coresight-tmc-etr/block_size
+chmod 660 /sys/devices/platform/soc/6048000.tmc/coresight-tmc-etr/block_size
+
 enable_dcc_config
 enable_core_gladiator_hang_config
 enable_osm_wdog_status_config

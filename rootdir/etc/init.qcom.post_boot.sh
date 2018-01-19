@@ -2691,7 +2691,7 @@ case "$target" in
         do
             echo "bw_hwmon" > $llccbw/governor
             echo 50 > $llccbw/polling_interval
-            echo "1720 2929 4943 5931 6881" > $llccbw/bw_hwmon/mbps_zones
+            echo "1720 2929 3879 5931 6881" > $llccbw/bw_hwmon/mbps_zones
             echo 4 > $llccbw/bw_hwmon/sample_ms
             echo 80 > $llccbw/bw_hwmon/io_percent
             echo 20 > $llccbw/bw_hwmon/hist_memory

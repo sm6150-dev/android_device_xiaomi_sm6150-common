@@ -565,7 +565,6 @@ service bt-dun /system/bin/dun-server /dev/smd7 /dev/rfcomm0
     user bluetooth
     group bluetooth net_bt_admin inet
     disabled
-    seclabel u:r:bluetooth:s0
     oneshot
 
 service btsnoop /system/bin/btsnoop
@@ -573,7 +572,6 @@ service btsnoop /system/bin/btsnoop
    group bluetooth net_bt_admin sdcard_rw sdcard_r media_rw
    class late_start
    disabled
-   seclabel u:r:bluetooth:s0
    oneshot
 
 service bt_logger /system/bin/bt_logger
@@ -581,7 +579,6 @@ service bt_logger /system/bin/bt_logger
    group bluetooth net_bt_admin sdcard_rw sdcard_r media_rw
    class late_start
    disabled
-   seclabel u:r:bluetooth:s0
    oneshot
 
 service ftmd /system/bin/logwrapper /system/bin/ftmdaemon

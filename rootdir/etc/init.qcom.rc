@@ -306,6 +306,9 @@ on post-fs-data
     # Create directory for radio
     mkdir /data/vendor/radio 0770 system radio
 
+    # Create directory for modem_config
+    mkdir /data/vendor/modem_config 0550 system radio
+
     # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
     # We chown/chmod /persist again so because mount is run as root + defaults
     chown root system /persist
@@ -914,6 +917,9 @@ service wifi-crda /vendor/bin/init.crda.sh
 on property:sys.boot_completed=1
     start qcom-post-boot
     start qti-testscripts
+
+on property:ro.runtime.mbn_copy_completed=1
+    write /data/vendor/radio/copy_complete 1
 
 service qvop-daemon /vendor/bin/qvop-daemon
     class late_start

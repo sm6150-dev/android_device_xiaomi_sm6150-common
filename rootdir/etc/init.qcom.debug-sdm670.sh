@@ -893,6 +893,13 @@ config_sdm670_dcc_pcu_rscc_apps()
  {
     #RSCC
     echo 0x62b9000c 1 > $DCC_PATH/config
+    echo 0x62b90014 1 > $DCC_PATH/config
+    echo 0x62b90018 1 > $DCC_PATH/config
+    echo 0x62b90400 1 > $DCC_PATH/config
+    echo 0x62b90404 1 > $DCC_PATH/config
+    echo 0x62b90408 1 > $DCC_PATH/config
+    echo 0x62b90c28 1 > $DCC_PATH/config
+    echo 0x62b90c2c 1 > $DCC_PATH/config
     echo 0x62b91c00 1 > $DCC_PATH/config
     echo 0x62b91c04 1 > $DCC_PATH/config
     echo 0x62b92154 1 > $DCC_PATH/config
@@ -1038,18 +1045,20 @@ config_sdm670_dcc_pcu_rscc_apps()
 
     #RSC CHILD
     echo 0x624b0208 1 > $DCC_PATH/config
-    echo 0x624b0228 1 > $DCC_PATH/config
-    echo 0x624b0248 1 > $DCC_PATH/config
-    echo 0x624b0268 1 > $DCC_PATH/config
     echo 0x624b020c 1 > $DCC_PATH/config
-    echo 0x624b022c 1 > $DCC_PATH/config
-    echo 0x624b024c 1 > $DCC_PATH/config
-    echo 0x624b026c 1 > $DCC_PATH/config
     echo 0x624b0210 1 > $DCC_PATH/config
+    echo 0x624b0228 1 > $DCC_PATH/config
+    echo 0x624b022c 1 > $DCC_PATH/config
     echo 0x624b0230 1 > $DCC_PATH/config
+    echo 0x624b0248 1 > $DCC_PATH/config
+    echo 0x624b024c 1 > $DCC_PATH/config
     echo 0x624b0250 1 > $DCC_PATH/config
+    echo 0x624b0268 1 > $DCC_PATH/config
+    echo 0x624b026c 1 > $DCC_PATH/config
     echo 0x624b0270 1 > $DCC_PATH/config
-
+    echo 0X624b0400 1 > $DCC_PATH/config
+    echo 0X624b0404 1 > $DCC_PATH/config
+    echo 0x624b0408 1 > $DCC_PATH/config
     #RSC PARENT
     echo 0x62b90208 1 > $DCC_PATH/config
     echo 0x62b90228 1 > $DCC_PATH/config
@@ -1064,6 +1073,9 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0x62b90250 1 > $DCC_PATH/config
     echo 0x62b90270 1 > $DCC_PATH/config
     #PDC
+    echo 0xb251020  1 > $DCC_PATH/config
+    echo 0xb251024  1 > $DCC_PATH/config
+    echo 0xb251030  1 > $DCC_PATH/config
     echo 0xb251200  1 > $DCC_PATH/config
     echo 0xb251214  1 > $DCC_PATH/config
     echo 0xb251228  1 > $DCC_PATH/config
@@ -1079,6 +1091,9 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0xb251230  1 > $DCC_PATH/config
     echo 0xb251244  1 > $DCC_PATH/config
     echo 0xb251258  1 > $DCC_PATH/config
+    echo 0xb254520  1 > $DCC_PATH/config
+    echo 0xb254510  1 > $DCC_PATH/config
+    echo 0xb254514  1 > $DCC_PATH/config
 
 }
 config_sdm670_dcc_rscc_modem()

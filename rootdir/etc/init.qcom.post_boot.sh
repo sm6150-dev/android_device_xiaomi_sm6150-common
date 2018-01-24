@@ -30,12 +30,18 @@
 target=`getprop ro.board.platform`
 
 function configure_zram_parameters() {
-    # Zram disk - 512MB size
-    zram_enable=`getprop ro.vendor.qti.config.zram`
-    if [ "$zram_enable" == "true" ]; then
-        echo 536870912 > /sys/block/zram0/disksize
+    MemTotalStr=`cat /proc/meminfo | grep MemTotal`
+    MemTotal=${MemTotalStr:16:8}
+    # Set Zram disk size to 512MB for 3GB and below targets, 1GB for above 3GB targets.
+    if [ -f /sys/block/zram0/disksize ]; then
+        if [ $MemTotal -gt 3145728 ]; then
+            echo 1073741824 > /sys/block/zram0/disksize
+        else
+            echo 536870912 > /sys/block/zram0/disksize
+        fi
         mkswap /dev/block/zram0
         swapon /dev/block/zram0 -p 32758
+        echo 100 > /proc/sys/vm/swappiness
     fi
 }
 
@@ -91,7 +97,7 @@ else
         echo 10 > /sys/module/process_reclaim/parameters/pressure_min
         echo 1024 > /sys/module/process_reclaim/parameters/per_swap_size
         echo "18432,23040,27648,32256,55296,80640" > /sys/module/lowmemorykiller/parameters/minfree
-        echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+        echo 80640 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     elif [ "$arch_type" == "aarch64" ] && [ $MemTotal -gt 1048576 ]; then
         echo 10 > /sys/module/process_reclaim/parameters/pressure_min
         echo 1024 > /sys/module/process_reclaim/parameters/per_swap_size
@@ -2098,7 +2104,6 @@ case "$target" in
 
             # Turn on sleep modes.
             echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
-            echo 60 > /proc/sys/vm/swappiness
             ;;
         esac
     ;;

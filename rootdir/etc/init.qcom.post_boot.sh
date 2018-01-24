@@ -231,10 +231,10 @@ function configure_zram_parameters() {
     # Zram disk - 75% for Go devices.
     # For 512MB Go device, size = 384MB
     # For 1GB Go device, size = 768MB
-    # Others - 512MB size
+    # For >3GB Non-Go device, size = 1GB
+    # For <=3GB Non-Go device, size = 512MB
     # And enable lz4 zram compression for Go devices
-    zram_enable=`getprop ro.vendor.qti.config.zram`
-    if [ "$zram_enable" == "true" ]; then
+    if [ -f /sys/block/zram0/disksize ]; then
         if [ $MemTotal -le 524288 ] && [ "$low_ram" == "true" ]; then
             echo lz4 > /sys/block/zram0/comp_algorithm
             echo 402653184 > /sys/block/zram0/disksize
@@ -242,11 +242,19 @@ function configure_zram_parameters() {
             echo lz4 > /sys/block/zram0/comp_algorithm
             echo 805306368 > /sys/block/zram0/disksize
         else
-            #Set Zram disk size - 512MB for Non-Go Devices
-            echo 536870912 > /sys/block/zram0/disksize
+            # Set Zram disk size to 512MB for <=3GB
+            # and 1GB for >3GB Non-Go targets.
+            if [ $MemTotal -gt 3145728 ]; then
+                echo 1073741824 > /sys/block/zram0/disksize
+            else
+                echo 536870912 > /sys/block/zram0/disksize
+            fi
         fi
         mkswap /dev/block/zram0
         swapon /dev/block/zram0 -p 32758
+
+        # Set swappiness to 100 for all targets
+        echo 100 > /proc/sys/vm/swappiness
     fi
 }
 
@@ -265,6 +273,10 @@ function configure_memory_parameters() {
     # Set ALMK parameters (usually above the highest minfree values)
     # 32 bit will have 53K & 64 bit will have 81K
     #
+    # vmpressure_file_min threshold is always set slightly higher
+    # than LMK minfree's last bin value for 32-bit arch. It is calculated as
+    # vmpressure_file_min = (last bin - second last bin ) + last bin
+    # For 64-bit arch, vmpressure_file_min = LMK minfree's last bin value
 
 ProductName=`getprop ro.product.name`
 low_ram=`getprop ro.config.low_ram`
@@ -272,7 +284,7 @@ low_ram=`getprop ro.config.low_ram`
 if [ "$ProductName" == "msm8996" ]; then
       # Enable Adaptive LMK
       echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
-      echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+      echo 80640 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
 
       configure_zram_parameters
 else
@@ -304,17 +316,17 @@ else
         echo 10 > /sys/module/process_reclaim/parameters/pressure_min
         echo 1024 > /sys/module/process_reclaim/parameters/per_swap_size
         echo "18432,23040,27648,32256,55296,80640" > /sys/module/lowmemorykiller/parameters/minfree
-        echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+        echo 80640 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     elif [ "$arch_type" == "aarch64" ] && [ $MemTotal -gt 1048576 ]; then
         echo 10 > /sys/module/process_reclaim/parameters/pressure_min
         echo 1024 > /sys/module/process_reclaim/parameters/per_swap_size
         echo "14746,18432,22118,25805,40000,55000" > /sys/module/lowmemorykiller/parameters/minfree
-        echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+        echo 55000 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     elif [ "$arch_type" == "aarch64" ]; then
         echo 50 > /sys/module/process_reclaim/parameters/pressure_min
         echo 512 > /sys/module/process_reclaim/parameters/per_swap_size
         echo "14746,18432,22118,25805,40000,55000" > /sys/module/lowmemorykiller/parameters/minfree
-        echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+        echo 55000 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     else
         if [ $MemTotal -le 1048576 ] && [ "$low_ram" == "true" ]; then
             # Disable KLMK, ALMK, PPR & Core Control for Go devices
@@ -2384,7 +2396,6 @@ case "$target" in
 
             # Turn on sleep modes.
             echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
-            echo 60 > /proc/sys/vm/swappiness
             ;;
         esac
     ;;

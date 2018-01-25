@@ -46,6 +46,8 @@
 #include <sys/time.h>
 #include <platform_lib_includes.h>
 
+#define sockaddr_storage __kernel_sockaddr_storage
+
 /**
  * @file
  * @brief DS client API declaration.

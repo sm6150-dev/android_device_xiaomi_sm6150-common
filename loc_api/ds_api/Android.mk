@@ -31,7 +31,9 @@ LOCAL_LDFLAGS += -Wl,--export-dynamic
 LOCAL_C_INCLUDES := \
     $(TARGET_OUT_HEADERS)/qmi-framework/inc \
     $(TARGET_OUT_HEADERS)/qmi/inc \
-    $(TARGET_OUT_HEADERS)/data/inc
+    $(TARGET_OUT_HEADERS)/data/inc \
+    $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 LOCAL_HEADER_LIBRARIES := \
     libgps.utils_headers \
     libloc_pla_headers

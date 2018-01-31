@@ -97,3 +97,7 @@ $(WCNSS_MAC_SYMLINK): $(LOCAL_INSTALLED_MODULE)
 ALL_DEFAULT_INSTALLED_MODULES += $(WCNSS_INI_SYMLINK) $(WCNSS_MAC_SYMLINK)
 
 endif
+
+ifneq ($(filter rhine shinano,$(PRODUCT_PLATFORM)),)
+include $(call all-subdir-makefiles)
+endif

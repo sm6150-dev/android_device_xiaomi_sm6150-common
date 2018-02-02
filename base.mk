@@ -811,6 +811,7 @@ PRODUCT_PACKAGES := \
     SnapdragonLauncher \
     a4wpservice \
     wipowerservice \
+    Mms \
     QtiDialer
 
 PRODUCT_PACKAGES += $(ALSA_HARDWARE)

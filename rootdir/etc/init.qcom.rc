@@ -63,6 +63,7 @@ on early-boot
     write /sys/kernel/boot_cdsp/boot 1
     write /sys/kernel/boot_slpi/boot 1
     exec u:r:qti_init_shell:s0 -- /vendor/bin/init.qcom.early_boot.sh
+    chown system system /persist/sensors
 
 on boot
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power

@@ -342,6 +342,11 @@ else
         fi
     fi
 
+    # Enable oom_reaper
+    if [ -f /sys/module/lowmemorykiller/parameters/oom_reaper ]; then
+        echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
+    fi
+
     configure_zram_parameters
 
     SWAP_ENABLE_THRESHOLD=1048576
@@ -2966,6 +2971,9 @@ case "$target" in
 	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 	# Limit the min frequency to 825MHz
 	echo 825000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+
+        # Enable oom_reaper
+        echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
 
         # Enable bus-dcvs
         for cpubw in /sys/class/devfreq/*qcom,cpubw*

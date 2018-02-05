@@ -1,69 +1,69 @@
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials provided
- *       with the distribution.
- *     * Neither the name of The Linux Foundation, nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above
+*       copyright notice, this list of conditions and the following
+*       disclaimer in the documentation and/or other materials provided
+*       with the distribution.
+*     * Neither the name of The Linux Foundation, nor the names of its
+*       contributors may be used to endorse or promote products derived
+*       from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 #ifndef LOC_SERVICE_02_H
 #define LOC_SERVICE_02_H
 /**
-  @file location_service_v02.h
+@file location_service_v02.h
 
-  @brief This is the public header file which defines the loc service Data structures.
+@brief This is the public header file which defines the loc service Data structures.
 
-  This header file defines the types and structures that were defined in
-  loc. It contains the constant values defined, enums, structures,
-  messages, and service message IDs (in that order) Structures that were
-  defined in the IDL as messages contain mandatory elements, optional
-  elements, a combination of mandatory and optional elements (mandatory
-  always come before optionals in the structure), or nothing (null message)
+This header file defines the types and structures that were defined in
+loc. It contains the constant values defined, enums, structures,
+messages, and service message IDs (in that order) Structures that were
+defined in the IDL as messages contain mandatory elements, optional
+elements, a combination of mandatory and optional elements (mandatory
+always come before optionals in the structure), or nothing (null message)
 
-  An optional element in a message is preceded by a uint8_t value that must be
-  set to true if the element is going to be included. When decoding a received
-  message, the uint8_t values will be set to true or false by the decode
-  routine, and should be checked before accessing the values that they
-  correspond to.
+An optional element in a message is preceded by a uint8_t value that must be
+set to true if the element is going to be included. When decoding a received
+message, the uint8_t values will be set to true or false by the decode
+routine, and should be checked before accessing the values that they
+correspond to.
 
-  Variable sized arrays are defined as static sized arrays with an unsigned
-  integer (32 bit) preceding it that must be set to the number of elements
-  in the array that are valid. For Example:
+Variable sized arrays are defined as static sized arrays with an unsigned
+integer (32 bit) preceding it that must be set to the number of elements
+in the array that are valid. For Example:
 
-  uint32_t test_opaque_len;
-  uint8_t test_opaque[16];
+uint32_t test_opaque_len;
+uint8_t test_opaque[16];
 
-  If only 4 elements are added to test_opaque[] then test_opaque_len must be
-  set to 4 before sending the message.  When decoding, the _len value is set
-  by the decode routine and should be checked so that the correct number of
-  elements in the array will be accessed.
+If only 4 elements are added to test_opaque[] then test_opaque_len must be
+set to 4 before sending the message.  When decoding, the _len value is set
+by the decode routine and should be checked so that the correct number of
+elements in the array will be accessed.
 
 */
 /*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
- *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
- *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
+*THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue May 15 2018 (Spin 0)
+   It was generated on: Wed Jun  6 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x58
+#define LOC_V02_IDL_MINOR_VERS 0x5A
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00C0
+#define LOC_V02_MAX_MESSAGE_ID 0x00C2
 /**
     @}
   */
@@ -118,6 +118,13 @@ extern "C" {
 /**  Maximum length of the list containing the SVs that were used to generate
      a position report.  */
 #define QMI_LOC_MAX_SV_USED_LIST_LENGTH_V02 80
+
+/**  Maximum expanded length of the list containing the SVs that were used to generate
+     a position report.  */
+#define QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02 176
+
+/**  Maximum number of GNSS signal type  */
+#define QMI_LOC_MAX_GNSS_SIGNAL_TYPE_V02 19
 
 /**  East, North, Up array length  */
 #define QMI_LOC_ENU_ARRAY_LENGTH_V02 3
@@ -1219,6 +1226,70 @@ typedef uint64_t qmiLocSpoofMaskT_v02;
 #define QMI_LOC_POSITION_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000001ull) /**<  Set bit indicates suspected spoofing in position  */
 #define QMI_LOC_TIME_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000002ull) /**<  Set bit indicates suspected spoofing in time  */
 #define QMI_LOC_NAVIGATION_DATA_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000004ull) /**<  Set bit indicates suspected spoofing in navigation data  */
+typedef uint64_t qmiLocGnssSignalTypeMaskT_v02;
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000001ull) /**<  GPS L1CA Signal  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000002ull) /**<  GPS L1C Signal  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000004ull) /**<  GPS L2C_L RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000008ull) /**<  GPS L5_Q RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000010ull) /**<  GLONASS G1 (L1OF) RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000020ull) /**<  GLONASS G2 (L2OF) RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000040ull) /**<  GALILEO E1_C RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000080ull) /**<  GALILEO E5A_Q RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000100ull) /**<  GALILEO E5B_Q RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000200ull) /**<  BEIDOU B1_I RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000400ull) /**<  BEIDOU B1C RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00000800ull) /**<  BEIDOU B2_I RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00001000ull) /**<  BEIDOU B2A_I RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00002000ull) /**<  QZSS L1CA RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00004000ull) /**<  QZSS L1S RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00008000ull) /**<  QZSS L2C_L RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00010000ull) /**<  QZSS L5_Q RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00020000ull) /**<  SBAS L1_CA RF Band  */
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCGNSSSIGNALTYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_GNSS_SIGNAL_TYPE_INVALID_V02 = 0, /**<  Invalid Signal Type  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GPS_L1CA_V02 = 1, /**<  GPS L1CA Signal  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GPS_L1C_V02 = 2, /**<  GPS L1C Signal  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GPS_L2C_L_V02 = 3, /**<  GPS L2C_L RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GPS_L5_Q_V02 = 4, /**<  GPS L5_Q RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 = 5, /**<  GLONASS G1 (L1OF) RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GLONASS_G2_V02 = 6, /**<  GLONASS G2 (L2OF) RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02 = 7, /**<  GALILEO E1_C RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q_V02 = 8, /**<  GALILEO E5A_Q RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q_V02 = 9, /**<  GALILEO E5B_Q RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_BEIDOU_B1_I_V02 = 10, /**<  BEIDOU B1_I RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_BEIDOU_B1C_V02 = 11, /**<  BEIDOU B1C RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_BEIDOU_B2_I_V02 = 12, /**<  BEIDOU B2_I RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I_V02 = 13, /**<  BEIDOU B2A_I RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L1CA_V02 = 14, /**<  QZSS L1CA RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L1S_V02 = 15, /**<  QZSS L1S RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L2C_L_V02 = 16, /**<  QZSS L2C_L RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L5_Q_V02 = 17, /**<  QZSS L5_Q RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 = 18, /**<  SBAS L1_CA RF Band  */
+  QMILOCGNSSSIGNALTYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocGnssSignalTypeEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  int32_t agcMetricDb;
+  /**<   AGC Metric in 0.01 dB */
+
+  int32_t bpMetricDb;
+  /**<   BP Metric in 0.01 dB */
+}qmiLocJammerIndicatorStructT_v02;  /* Type */
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -1616,6 +1687,60 @@ typedef struct {
       - QMI_LOC_TIME_SPOOFED (0x00000002) --  Set bit indicates suspected spoofing in time
       - QMI_LOC_NAVIGATION_DATA_SPOOFED (0x00000004) --  Set bit indicates suspected spoofing in navigation data
  */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   If the service reports expandedGnssSvUsedList, the gnssSvUsedList will
+      not be reported. Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
+
+  /* Optional */
+  /*  SVs Signal Types in the SVs Used list */
+  uint8_t gnssSvUsedSignalTypeList_valid;  /**< Must be set to true if gnssSvUsedSignalTypeList is being passed */
+  uint32_t gnssSvUsedSignalTypeList_len;  /**< Must be set to # of elements in gnssSvUsedSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSvUsedSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in expandedGnssSvUsedList. Value 0
+ means invalid.
+ Valid bitmasks: \n
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+ */
+
+  /* Optional */
+  /*  Jammer Indicator of each GNSS Signal */
+  uint8_t jammerIndicatorList_valid;  /**< Must be set to true if jammerIndicatorList is being passed */
+  uint32_t jammerIndicatorList_len;  /**< Must be set to # of elements in jammerIndicatorList */
+  qmiLocJammerIndicatorStructT_v02 jammerIndicatorList[QMI_LOC_MAX_GNSS_SIGNAL_TYPE_V02];
+  /**<   Indicates the jammer indicator of each signal.
+  */
 }qmiLocEventPositionReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -1752,6 +1877,25 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocSvInfoStructT_v02 svInfo;
+  /**<   SV information. */
+
+  uint8_t gloFrequency;
+  /**<   GLONASS frequency number + 8. \n
+       Valid only for GLONASS systems and
+       must be ignored for all other systems. \n
+           - Range: 1 to 14
+  */
+}qmiLocExpandedSvInfoStructT_v02;  /* Type */
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -1773,6 +1917,41 @@ typedef struct {
   uint32_t svList_len;  /**< Must be set to # of elements in svList */
   qmiLocSvInfoStructT_v02 svList[QMI_LOC_SV_INFO_LIST_MAX_SIZE_V02];
   /**<   \vspace{0.06in} \n SV information list. */
+
+  /* Optional */
+  /*  Satellite Info */
+  uint8_t expandedSvList_valid;  /**< Must be set to true if expandedSvList is being passed */
+  uint32_t expandedSvList_len;  /**< Must be set to # of elements in expandedSvList */
+  qmiLocExpandedSvInfoStructT_v02 expandedSvList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   \vspace{0.06in} \n Expanded SV information list. If the service reports
+       expandedSvList, the svList will not be reported.*/
+
+  /* Optional */
+  /*  Satellite Signal Type */
+  uint8_t gnssSignalTypeList_valid;  /**< Must be set to true if gnssSignalTypeList is being passed */
+  uint32_t gnssSignalTypeList_len;  /**< Must be set to # of elements in gnssSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in svList. Value 0 means
+ invalid.
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
 }qmiLocEventGnssSvInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -3750,6 +3929,50 @@ typedef struct {
   uint8_t extDOP_valid;  /**< Must be set to true if extDOP is being passed */
   qmiLocExtDOPStructT_v02 extDOP;
   /**<   \vspace{0.06in} \n Dilution of precision associated with this position. */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   If the service reports expandedGnssSvUsedList, the expandedGnssSvUsedList will
+      not be reported. Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
+
+  /* Optional */
+  /*  Satellite Signal Types in the SVs Used list */
+  uint8_t gnssSvUsedSignalTypeList_valid;  /**< Must be set to true if gnssSvUsedSignalTypeList is being passed */
+  uint32_t gnssSvUsedSignalTypeList_len;  /**< Must be set to # of elements in gnssSvUsedSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSvUsedSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in expandedGnssSvUsedList. Value 0
+ means invalid.
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
 }qmiLocEventGeofenceBatchedBreachIndMsgT_v02;  /* Message */
 /**
     @}
@@ -3919,6 +4142,50 @@ typedef struct {
   uint8_t extDOP_valid;  /**< Must be set to true if extDOP is being passed */
   qmiLocExtDOPStructT_v02 extDOP;
   /**<   \vspace{0.06in} \n Dilution of precision associated with this position. */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   If the service reports expandedGnssSvUsedList, the gnssSvUsedList will
+      not be reported. Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
+
+  /* Optional */
+  /*  Satellite Signal Types in the SVs Used list */
+  uint8_t gnssSvUsedSignalTypeList_valid;  /**< Must be set to true if gnssSvUsedSignalTypeList is being passed */
+  uint32_t gnssSvUsedSignalTypeList_len;  /**< Must be set to # of elements in gnssSvUsedSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSvUsedSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in expandedGnssSvUsedList. Value 0
+ means invalid.
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
 }qmiLocEventGeofenceBatchedDwellIndMsgT_v02;  /* Message */
 /**
     @}
@@ -10969,6 +11236,50 @@ typedef struct {
       - QMI_LOC_TIME_SPOOFED (0x00000002) --  Set bit indicates suspected spoofing in time
       - QMI_LOC_NAVIGATION_DATA_SPOOFED (0x00000004) --  Set bit indicates suspected spoofing in navigation data
  */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   If the service reports expandedGnssSvUsedList, the gnssSvUsedList will
+      not be reported. Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
+
+  /* Optional */
+  /*  Satellite Signal Types in the SVs Used list */
+  uint8_t gnssSvUsedSignalTypeList_valid;  /**< Must be set to true if gnssSvUsedSignalTypeList is being passed */
+  uint32_t gnssSvUsedSignalTypeList_len;  /**< Must be set to # of elements in gnssSvUsedSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSvUsedSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in expandedGnssSvUsedList. Value 0
+ means invalid.
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
 }qmiLocGetBestAvailablePositionIndMsgT_v02;  /* Message */
 /**
     @}
@@ -13797,6 +14108,10 @@ typedef uint64_t qmiLocSvMeasStatusValidMaskT_v02;
 #define QMI_LOC_MASK_MEAS_STATUS_FROM_RNG_DIFF_STAT_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x00000200ull) /**<  Range update from satellite differences  */
 #define QMI_LOC_MASK_MEAS_STATUS_FROM_VE_DIFF_STAT_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x00000400ull) /**<  Doppler update from satellite differences  */
 #define QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x08000000ull) /**< TRUE -- Fresh GNSS measurement observed in the last second  >  */
+#define QMI_LOC_MASK_MEAS_STATUS_RESERVED_UNUSED_1_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x10000000ull) /**< Reserved for future use  >  */
+#define QMI_LOC_MASK_MEAS_STATUS_RESERVED_UNUSED_2_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x20000000ull) /**< Reserved for future use  >  */
+#define QMI_LOC_MASK_MEAS_STATUS_100MS_STAT_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x40000000ull) /**< TRUE -> SV time known with 100 ms ambiguity  */
+#define QMI_LOC_MASK_MEAS_STATUS_2S_STAT_BIT_VALID_V02 ((qmiLocSvMeasStatusValidMaskT_v02)0x80000000ull) /**< TRUE -> SV time known with 2 seconds ambiguity  */
 typedef uint64_t qmiLocSvMeasStatusMaskT_v02;
 #define QMI_LOC_MASK_MEAS_STATUS_SM_VALID_V02 ((qmiLocSvMeasStatusMaskT_v02)0x00000001ull) /**<  Satellite time in submilliseconds (code phase) is known  */
 #define QMI_LOC_MASK_MEAS_STATUS_SB_VALID_V02 ((qmiLocSvMeasStatusMaskT_v02)0x00000002ull) /**<  Satellite sub-bit time is known  */
@@ -13886,7 +14201,7 @@ typedef struct {
          \vspace{-0.18in} \end{itemize1} \end{itemize1} */
 
   uint8_t gloFrequency;
-  /**<   GLONASS frequency number + 7. \n
+  /**<   GLONASS frequency number + 8. \n
          Valid only for a GLONASS system and
          is to be ignored for all other systems. \n
              - Range: 1 to 14
@@ -13944,6 +14259,10 @@ typedef struct {
       - QMI_LOC_MASK_MEAS_STATUS_FROM_RNG_DIFF_STAT_BIT_VALID (0x00000200) --  Range update from satellite differences
       - QMI_LOC_MASK_MEAS_STATUS_FROM_VE_DIFF_STAT_BIT_VALID (0x00000400) --  Doppler update from satellite differences
       - QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID (0x08000000) -- TRUE -- Fresh GNSS measurement observed in the last second  >
+      - QMI_LOC_MASK_MEAS_STATUS_RESERVED_UNUSED_1_BIT_VALID (0x10000000) -- Reserved for future use  >
+      - QMI_LOC_MASK_MEAS_STATUS_RESERVED_UNUSED_2_BIT_VALID (0x20000000) -- Reserved for future use  >
+      - QMI_LOC_MASK_MEAS_STATUS_100MS_STAT_BIT_VALID (0x40000000) -- TRUE -> SV time known with 100 ms ambiguity
+      - QMI_LOC_MASK_MEAS_STATUS_2S_STAT_BIT_VALID (0x80000000) -- TRUE -> SV time known with 2 seconds ambiguity
 \vspace{4pt}
  Additionally, MSB 0xFFC0000000000000 bits indicate the validity of DONT_USE bits. \n
 
@@ -14172,6 +14491,35 @@ typedef struct {
   uint8_t svCarrierPhaseUncertainty_valid;  /**< Must be set to true if svCarrierPhaseUncertainty is being passed */
   uint32_t svCarrierPhaseUncertainty_len;  /**< Must be set to # of elements in svCarrierPhaseUncertainty */
   float svCarrierPhaseUncertainty[QMI_LOC_SV_MEAS_LIST_MAX_SIZE_V02];
+
+  /* Optional */
+  /*  GNSS Signal Type */
+  uint8_t gnssSignalType_valid;  /**< Must be set to true if gnssSignalType is being passed */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSignalType;
+  /**<   GNSS Signal Type
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+
+  /* Optional */
+  /*  Jammer Indicator */
+  uint8_t jammerIndicator_valid;  /**< Must be set to true if jammerIndicator is being passed */
+  qmiLocJammerIndicatorStructT_v02 jammerIndicator;
 }qmiLocEventGnssSvMeasInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -14266,7 +14614,7 @@ typedef struct {
   /*  GLONASS Frequency Number */
   uint8_t gloFrequency_valid;  /**< Must be set to true if gloFrequency is being passed */
   uint8_t gloFrequency;
-  /**<   GLONASS frequency number + 7. \n
+  /**<   GLONASS frequency number + 8. \n
          Valid only for GLONASS systems and
          must be ignored for all other systems. \n
              - Range: 1 to 14
@@ -15766,6 +16114,50 @@ typedef struct {
   uint8_t extDOP_valid;  /**< Must be set to true if extDOP is being passed */
   qmiLocExtDOPStructT_v02 extDOP;
   /**<   \vspace{0.06in} \n Dilution of precision associated with this position. */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   If the service reports expandedGnssSvUsedList, the gnssSvUsedList will
+      not be reported. Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
+
+  /* Optional */
+  /*  Satellite Signal Types in the SVs Used list */
+  uint8_t gnssSvUsedSignalTypeList_valid;  /**< Must be set to true if gnssSvUsedSignalTypeList is being passed */
+  uint32_t gnssSvUsedSignalTypeList_len;  /**< Must be set to # of elements in gnssSvUsedSignalTypeList */
+  qmiLocGnssSignalTypeMaskT_v02 gnssSvUsedSignalTypeList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Indicates the signal type of each satellite in expandedGnssSvUsedList. The
+ signal type list shall be aligned with the SVs in expandedGnssSvUsedList. Value 0
+ means invalid.
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA (0x00000001) --  GPS L1CA Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C (0x00000002) --  GPS L1C Signal
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L (0x00000004) --  GPS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q (0x00000008) --  GPS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1 (0x00000010) --  GLONASS G1 (L1OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2 (0x00000020) --  GLONASS G2 (L2OF) RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C (0x00000040) --  GALILEO E1_C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q (0x00000080) --  GALILEO E5A_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q (0x00000100) --  GALILEO E5B_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I (0x00000200) --  BEIDOU B1_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C (0x00000400) --  BEIDOU B1C RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I (0x00000800) --  BEIDOU B2_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I (0x00001000) --  BEIDOU B2A_I RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA (0x00002000) --  QZSS L1CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
 }qmiLocEventDbtPositionReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -16601,6 +16993,7 @@ typedef uint32_t qmiLocDeleteSatelliteDataMaskT_v02;
 #define QMI_LOC_DELETE_DATA_MASK_SV_NO_EXIST_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000100) /**<  SV does not exist  */
 #define QMI_LOC_DELETE_DATA_MASK_IONO_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000200) /**<  Ionosphere correction  */
 #define QMI_LOC_DELETE_DATA_MASK_TIME_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000400) /**<  Reset satellite time  */
+#define QMI_LOC_DELETE_DATA_MASK_MB_DATA_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000800) /**<  Delete Multiband data  */
 typedef uint32_t qmiLocGNSSConstellMaskT_v02;
 #define QMI_LOC_SYSTEM_GPS_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000001) /**<  System GPS data  */
 #define QMI_LOC_SYSTEM_GLO_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000002) /**<  System GLONASS data  */
@@ -16637,6 +17030,7 @@ typedef struct {
       - QMI_LOC_DELETE_DATA_MASK_SV_NO_EXIST (0x00000100) --  SV does not exist
       - QMI_LOC_DELETE_DATA_MASK_IONO (0x00000200) --  Ionosphere correction
       - QMI_LOC_DELETE_DATA_MASK_TIME (0x00000400) --  Reset satellite time
+      - QMI_LOC_DELETE_DATA_MASK_MB_DATA (0x00000800) --  Delete Multiband data
  */
 }qmiLocDeleteSatelliteDataStructT_v02;  /* Type */
 /**
@@ -18720,6 +19114,168 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to enable position injection
+                      in test mode. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Enable / disable test mode */
+  uint8_t enableTestMode;
+  /**<   Specifies whether the test mode is enabled.
+       If the control point has already enabled the test mode
+       then this command shall have no effect */
+}qmiLocEnablePositionInjectionTestModeReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCENABLEPOSITIONINJECTIONTESTMODEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_TEST_MODE_UNKNOWN_V02 = 0, /**<  Test mode in unknown state  */
+  eQMI_LOC_TEST_MODE_ENABLED_V02 = 1, /**<  Test mode is enabled  */
+  eQMI_LOC_TEST_MODE_DISABLED_V02 = 2, /**<  Test mode is disbled  */
+  eQMI_LOC_TEST_MODE_ALREADY_ENABLED_V02 = 3, /**<  Test mode is already enabled  */
+  eQMI_LOC_TEST_MODE_ALREADY_DISABLED_V02 = 4, /**<  Test mode is already disabled  */
+  QMILOCENABLEPOSITIONINJECTIONTESTMODEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocEnablePositionInjectionTestModeEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to enable position injection
+                      in test mode. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Position Injection test mode status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of Enable Position Injection Test Mode request.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+ */
+
+  /* Optional */
+  /*  Test mode state */
+  uint8_t testModeState_valid;  /**< Must be set to true if testModeState is being passed */
+  qmiLocEnablePositionInjectionTestModeEnumT_v02 testModeState;
+  /**<   State of the test mode
+
+ Valid values: \n
+      - eQMI_LOC_TEST_MODE_UNKNOWN (0) --  Test mode in unknown state
+      - eQMI_LOC_TEST_MODE_ENABLED (1) --  Test mode is enabled
+      - eQMI_LOC_TEST_MODE_DISABLED (2) --  Test mode is disbled
+      - eQMI_LOC_TEST_MODE_ALREADY_ENABLED (3) --  Test mode is already enabled
+      - eQMI_LOC_TEST_MODE_ALREADY_DISABLED (4) --  Test mode is already disabled
+ */
+}qmiLocEnablePositionInjectionTestModeIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to inject a test position. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Latitude */
+  double latitude;
+  /**<   Latitude (specified in WGS84 datum).
+       \begin{itemize1}
+       \item    Type: Floating point
+       \item    Units: Degrees
+       \item    Range: -90.0 to 90.0      \begin{itemize1}
+         \item    Positive values indicate northern latitude
+         \item    Negative values indicate southern latitude
+       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+
+  /* Mandatory */
+  /*  Longitude */
+  double longitude;
+  /**<   Longitude (specified in WGS84 datum).
+       \begin{itemize1}
+       \item    Type: Floating point
+       \item    Units: Degrees
+       \item    Range: -180.0 to 180.0     \begin{itemize1}
+         \item    Positive values indicate eastern longitude
+         \item    Negative values indicate western longitude
+       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+
+  /* Mandatory */
+  /*  Circular Horizontal Uncertainty */
+  float horUncCircular;
+  /**<   Horizontal position uncertainty (circular).\n
+       - Units: Meters */
+
+  /* Mandatory */
+  /*  UTC Timestamp */
+  uint64_t timestampUtc;
+  /**<   UTC timestamp.
+       \begin{itemize1}
+       \item    Units: Milliseconds since Jan. 1, 1970
+       \vspace{-0.18in} \end{itemize1} */
+
+  /* Optional */
+  /*  Position source */
+  uint8_t positionSource_valid;  /**< Must be set to true if positionSource is being passed */
+  qmiLocPositionSourceEnumT_v02 positionSource;
+}qmiLocInjectTestPositionReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to inject a test position. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Injected test position.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+ */
+}qmiLocInjectTestPositionIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -18732,6 +19288,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_DELETE_GNSS_SERVICE_DATA_V02
 //#define REMOVE_QMI_LOC_DELETE_SUPL_CERTIFICATE_V02
 //#define REMOVE_QMI_LOC_EDIT_GEOFENCE_V02
+//#define REMOVE_QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCHING_STATUS_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_V02
 //#define REMOVE_QMI_LOC_EVENT_DBT_POSITION_REPORT_V02
@@ -18827,6 +19384,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_INJECT_SUBSCRIBER_ID_V02
 //#define REMOVE_QMI_LOC_INJECT_SUPL_CERTIFICATE_V02
 //#define REMOVE_QMI_LOC_INJECT_TDSCDMA_CELL_INFO_V02
+//#define REMOVE_QMI_LOC_INJECT_TEST_POSITION_V02
 //#define REMOVE_QMI_LOC_INJECT_TIME_SYNC_DATA_V02
 //#define REMOVE_QMI_LOC_INJECT_TIME_ZONE_INFO_V02
 //#define REMOVE_QMI_LOC_INJECT_UTC_TIME_V02
@@ -19282,6 +19840,12 @@ typedef struct {
 #define QMI_LOC_GET_CONSTELLATION_CONTROL_RESP_V02 0x00BF
 #define QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02 0x00BF
 #define QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02 0x00C0
+#define QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_REQ_V02 0x00C1
+#define QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_RESP_V02 0x00C1
+#define QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_IND_V02 0x00C1
+#define QMI_LOC_INJECT_TEST_POSITION_REQ_V02 0x00C2
+#define QMI_LOC_INJECT_TEST_POSITION_RESP_V02 0x00C2
+#define QMI_LOC_INJECT_TEST_POSITION_IND_V02 0x00C2
 /**
     @}
   */

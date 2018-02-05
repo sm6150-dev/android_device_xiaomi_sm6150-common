@@ -278,7 +278,7 @@ public:
     -1 on failure
   */
   virtual int getGpsLock(void);
-  virtual int setSvMeasurementConstellation(const qmiLocGNSSConstellEnumT_v02 svConstellation);
+  virtual int setSvMeasurementConstellation(const locClientEventMaskType mask);
   virtual LocationError setXtraVersionCheck(uint32_t check);
   virtual void installAGpsCert(const LocDerEncodedCertificate* pData,
                                size_t length,

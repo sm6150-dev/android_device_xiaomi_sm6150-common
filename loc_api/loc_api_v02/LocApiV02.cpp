@@ -262,9 +262,11 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
   enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
   LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = convertMask(newMask);
+  locClientEventMaskType oldQmiMask;
   LOC_LOGD("%s:%d]: %p Enter mMask: %" PRIu64 "; mask: %" PRIu64 "; newMask: %" PRIu64 " \
           mQmiMask: %" PRIu64 " qmiMask: %" PRIu64,
            __func__, __LINE__, clientHandle, mMask, mask, newMask, mQmiMask, qmiMask);
+  oldQmiMask = mQmiMask;
   /* If the client is already open close it first */
   if(LOC_CLIENT_INVALID_HANDLE_VALUE == clientHandle)
   {
@@ -303,6 +305,10 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
             // For - LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_TRACKING
             QMI_LOC_START_DBT_REQ_V02
         };
+
+        cacheGnssMeasurementSupport();
+        /* Indicate that QMI LOC message for GNSS measurement was sent */
+        oldQmiMask |= QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
 
         // check the modem
         status = locClientSupportMsgCheck(clientHandle,
@@ -436,22 +442,22 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         mQmiMask = qmiMask;
     }
   }
-  /*Set the SV Measurement Constellation when Measurement Report or Polynomial report is set*/
-  if( (qmiMask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) ||
-      (qmiMask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02) )
-  {
-     setSvMeasurementConstellation( eQMI_SYSTEM_GPS_V02 |
-                                    eQMI_SYSTEM_GLO_V02 |
-                                    eQMI_SYSTEM_BDS_V02 |
-                                    eQMI_SYSTEM_GAL_V02 |
-                                    eQMI_SYSTEM_QZSS_V02);
+
+  /* Set the SV Measurement Constellation when Measurement Report or Polynomial report is set */
+  /* Check if either measurement report or sv polynomial report bit is different in the new
+     mask compared to the old mask. If yes then turn that report on or off as requested */
+  locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
+                                        QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
+
+  locClientEventMaskType maskDiff = qmiMask ^ oldQmiMask;
+
+  if ((maskDiff & measOrSvPoly) != 0) {
+      setSvMeasurementConstellation(qmiMask);
   }
+
   LOC_LOGD("%s:%d]: Exit mMask: %" PRIu64 "; mask: %" PRIu64 " mQmiMask: %" PRIu64 " \
            qmiMask: %" PRIu64, __func__, __LINE__, mMask, mask, mQmiMask, qmiMask);
 
-  if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
-      cacheGnssMeasurementSupport();
-  }
 
   return rtv;
 }
@@ -475,7 +481,8 @@ locClientEventMaskType LocApiV02 :: adjustMaskForNoSession(locClientEventMaskTyp
                                        QMI_LOC_EVENT_MASK_GNSS_SV_INFO_V02 |
                                        QMI_LOC_EVENT_MASK_NMEA_V02 |
                                        QMI_LOC_EVENT_MASK_ENGINE_STATE_V02 |
-                                       QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
+                                       QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
+                                       QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
 
     qmiMask = qmiMask & ~clearMask;
     LOC_LOGD("%s:%d]: after qmiMask=%" PRIu64,
@@ -4544,41 +4551,54 @@ void LocApiV02 :: installAGpsCert(const LocDerEncodedCertificate* pData,
     }
 }
 
-int LocApiV02::setSvMeasurementConstellation(const qmiLocGNSSConstellEnumT_v02 svConstellation)
+int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
 {
     enum loc_api_adapter_err ret_val = LOC_API_ADAPTER_ERR_SUCCESS;
     qmiLocSetGNSSConstRepConfigReqMsgT_v02 setGNSSConstRepConfigReq;
     qmiLocSetGNSSConstRepConfigIndMsgT_v02 setGNSSConstRepConfigInd;
     locClientStatusEnumType status;
     locClientReqUnionType req_union;
+
+    qmiLocGNSSConstellEnumT_v02 svConstellation = eQMI_SYSTEM_GPS_V02 |
+                                                eQMI_SYSTEM_GLO_V02 |
+                                                eQMI_SYSTEM_BDS_V02 |
+                                                eQMI_SYSTEM_GAL_V02 |
+                                                eQMI_SYSTEM_QZSS_V02;
     LOC_LOGD("%s] set GNSS measurement to report constellation: %" PRIu64 "\n",
-            __func__, svConstellation);
+        __func__, svConstellation);
 
     memset(&setGNSSConstRepConfigReq, 0, sizeof(setGNSSConstRepConfigReq));
-    setGNSSConstRepConfigReq.measReportConfig_valid = true;
-    setGNSSConstRepConfigReq.measReportConfig = svConstellation;
-    setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
-    setGNSSConstRepConfigReq.svPolyReportConfig = svConstellation;
 
+    setGNSSConstRepConfigReq.measReportConfig_valid = true;
+    if (mask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) {
+        setGNSSConstRepConfigReq.measReportConfig = svConstellation;
+    }
+
+    setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
+    if (mask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02) {
+        setGNSSConstRepConfigReq.svPolyReportConfig = svConstellation;
+    }
     req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;
     memset(&setGNSSConstRepConfigInd, 0, sizeof(setGNSSConstRepConfigInd));
 
     status = locSyncSendReq(QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
-                            req_union,
-                            LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                            QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
-                            &setGNSSConstRepConfigInd);
+        req_union,
+        LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+        QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
+        &setGNSSConstRepConfigInd);
 
-    if(status != eLOC_CLIENT_SUCCESS || setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02)
-    {
+    if (status != eLOC_CLIENT_SUCCESS ||
+        (setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02 &&
+            setGNSSConstRepConfigInd.status != eQMI_LOC_ENGINE_BUSY_V02)) {
         LOC_LOGE("%s:%d]: Set GNSS constellation failed. status: %s, ind status:%s\n",
-                __func__, __LINE__,
-                loc_get_v02_client_status_name(status),
-                loc_get_v02_qmi_status_name(setGNSSConstRepConfigInd.status));
+            __func__, __LINE__,
+            loc_get_v02_client_status_name(status),
+            loc_get_v02_qmi_status_name(setGNSSConstRepConfigInd.status));
         ret_val = LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
-    } else {
+    }
+    else {
         LOC_LOGD("%s:%d]: Set GNSS constellation succeeded.\n",
-                __func__, __LINE__);
+            __func__, __LINE__);
     }
 
     return ret_val;
@@ -4597,44 +4617,14 @@ void LocApiV02 :: cacheGnssMeasurementSupport()
           to check if modem support this feature or not*/
         LOC_LOGD("%s:%d]: set GNSS measurement.\n", __func__, __LINE__);
 
-        qmiLocSetGNSSConstRepConfigReqMsgT_v02 setGNSSConstRepConfigReq;
-        qmiLocSetGNSSConstRepConfigIndMsgT_v02 setGNSSConstRepConfigInd;
-        memset(&setGNSSConstRepConfigReq, 0, sizeof(setGNSSConstRepConfigReq));
-        memset(&setGNSSConstRepConfigInd, 0, sizeof(setGNSSConstRepConfigInd));
-
-        locClientStatusEnumType status;
-        locClientReqUnionType req_union;
-
-        setGNSSConstRepConfigReq.measReportConfig_valid = true;
-        setGNSSConstRepConfigReq.measReportConfig = eQMI_SYSTEM_GPS_V02 |
-                                                    eQMI_SYSTEM_GLO_V02 |
-                                                    eQMI_SYSTEM_BDS_V02 |
-                                                    eQMI_SYSTEM_GAL_V02 |
-                                                    eQMI_SYSTEM_QZSS_V02;
-        req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;
-
-        status = locSyncSendReq(QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
-                                req_union,
-                                LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
-                                &setGNSSConstRepConfigInd);
-
-        if(status != eLOC_CLIENT_SUCCESS ||
-           (setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02 &&
-            setGNSSConstRepConfigInd.status != eQMI_LOC_ENGINE_BUSY_V02)) {
-            LOC_LOGD("%s:%d]: Set GNSS constellation failed."
-                     " status: %s, ind status:%s\n",
-                     __func__, __LINE__,
-                     loc_get_v02_client_status_name(status),
-                     loc_get_v02_qmi_status_name(setGNSSConstRepConfigInd.status));
-            mGnssMeasurementSupported = sup_no;
-        } else {
-            LOC_LOGD("%s:%d]: Set GNSS constellation succeeded.\n",
-                     __func__, __LINE__);
+        if (LOC_API_ADAPTER_ERR_SUCCESS ==
+            setSvMeasurementConstellation(QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02)) {
             mGnssMeasurementSupported = sup_yes;
         }
+        else {
+            mGnssMeasurementSupported = sup_no;
+        }
     }
-
     LOC_LOGV("%s:%d]: mGnssMeasurementSupported is %d\n", __func__, __LINE__, mGnssMeasurementSupported);
 }
 

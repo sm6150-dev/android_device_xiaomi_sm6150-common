@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015,2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,46 +30,44 @@
 #ifndef _META_FORMAT_H_
 #define _META_FORMAT_H_
 
+#include <inttypes.h>
+
 #define META_HEADER_MAGIC  0xce1ad63c
 #define MAX_GPT_NAME_SIZE  72
-typedef unsigned int u32;
-typedef unsigned short int u16;
+#define MAX_VERSION_LEN    64
 
 typedef struct meta_header {
-  u32       magic;		    /* 0xce1ad63c */
-  u16       major_version;	/* (0x1) - reject images with higher major versions */
-  u16       minor_version;	/* (0x0) - allow images with higer minor versions */
-  char 	    img_version[64]; /* Top level version for images in this meta */
-  u16	    meta_hdr_sz;    /* size of this header */
-  u16	    img_hdr_sz;     /* size of img_header_entry list */
+    uint32_t  magic;           /* 0xce1ad63c */
+    uint16_t  major_version;   /* (0x1) - reject images with higher major versions */
+    uint16_t  minor_version;   /* (0x0) - allow images with higer minor versions */
+    char      img_version[MAX_VERSION_LEN];
+                               /* Top level version for images in this meta */
+    uint16_t  meta_hdr_sz;     /* size of this header */
+    uint16_t  img_hdr_sz;      /* size of img_header_entry list */
 } meta_header_t;
 
 typedef struct img_header_entry {
-  char      ptn_name[MAX_GPT_NAME_SIZE];
-  u32       start_offset;
-  u32       size;
+    char      ptn_name[MAX_GPT_NAME_SIZE];  /* single-byte; rely on usage module to
+                                             truncate for proper sizing */
+    uint32_t  start_offset;
+    uint32_t  size;
 } img_header_entry_t;
 
-
-
-typedef int bool;
-typedef struct device_info device_info;
 
 #define DEVICE_MAGIC "ANDROID-BOOT!"
 #define DEVICE_MAGIC_SIZE 13
 #define MAX_PANEL_ID_LEN 64
-#define MAX_VERSION_LEN  64
 
 struct device_info
 {
-	unsigned char magic[DEVICE_MAGIC_SIZE];
-	bool is_unlocked;
-	bool is_tampered;
-	bool is_verified;
-	bool charger_screen_enabled;
-	char display_panel[MAX_PANEL_ID_LEN];
-	char bootloader_version[MAX_VERSION_LEN];
-	char radio_version[MAX_VERSION_LEN];
+    char     magic[DEVICE_MAGIC_SIZE];
+    uint32_t is_unlocked;
+    uint32_t is_tampered;
+    uint32_t is_verified;
+    uint32_t charger_screen_enabled;
+    char     display_panel[MAX_PANEL_ID_LEN];
+    char     bootloader_version[MAX_VERSION_LEN];
+    char     radio_version[MAX_VERSION_LEN];
 };
 
 #endif

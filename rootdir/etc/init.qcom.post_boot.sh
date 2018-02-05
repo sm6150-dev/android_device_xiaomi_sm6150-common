@@ -109,6 +109,9 @@ else
         echo 53059 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     fi
 
+    #Enable oom_reaper
+    echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
+
     configure_zram_parameters
 
     SWAP_ENABLE_THRESHOLD=1048576

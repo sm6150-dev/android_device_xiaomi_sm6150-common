@@ -2012,6 +2012,7 @@ case "$target" in
       echo 90 > /proc/sys/kernel/sched_downmigrate
       echo 140 > /proc/sys/kernel/sched_group_upmigrate
       echo 120 > /proc/sys/kernel/sched_group_downmigrate
+      echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
 
       # configure governor settings for little cluster
       echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor

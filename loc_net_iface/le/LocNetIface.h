@@ -49,6 +49,7 @@ public:
         mLocNetBackHaulState(LOC_NET_CONN_STATE_INVALID),
         mLocNetBackHaulType(LOC_NET_CONN_TYPE_INVALID),
         mLocNetWlanState(LOC_NET_CONN_STATE_INVALID),
+        mIsRoaming(false),
         mIsDsiInitDone(false), mDsiHandle(NULL), mIsDsiCallUp(false),
         mIsDsiStartCallPending(false), mIsDsiStopCallPending(false),
         mMutex() {}
@@ -74,6 +75,8 @@ public:
     bool isAnyBackHaulConnected();
     /* API to check if any non-metered backhaul type (eg: wifi, ethernet etc) status*/
     bool isNonMeteredBackHaulTypeConnected();
+    /* API to check wwan roaming status */
+    bool isWwanRoaming();
 
     recursive_mutex& getMutex(){ return mMutex; }
 
@@ -99,6 +102,8 @@ private:
     LocNetConnType  mLocNetBackHaulType;
     /* Check wifi hardware state */
     LocNetConnState mLocNetWlanState;
+    /* Roaming status */
+    bool mIsRoaming;
 
     /* Private APIs to interact with QCMAP module */
     void subscribeWithQcmap();
@@ -111,6 +116,8 @@ private:
             qcmap_msgr_bring_up_wwan_ind_msg_v01 &bringUpWwanIndData);
     void handleQcmapCallback(
             qcmap_msgr_tear_down_wwan_ind_msg_v01 &teardownWwanIndData);
+    void handleQcmapCallback(
+            qcmap_msgr_wwan_roaming_status_ind_msg_v01 &roamingStatusIndData);
     void notifyObserverForWlanStatus(bool isWlanEnabled);
     void notifyObserverForNetworkInfo(boolean isConnected, LocNetConnType connType);
     void notifyCurrentNetworkInfo(bool queryQcmap,

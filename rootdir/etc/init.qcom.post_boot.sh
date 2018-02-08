@@ -2630,10 +2630,30 @@ case "$target" in
                 soc_id=`cat /sys/devices/system/soc/soc0/id`
         fi
 
-	case "$soc_id" in
-		"321" | "341") #sdm845
-		start_hbtp
-		;;
+	if [ -f /sys/devices/soc0/hw_platform ]; then
+                hw_platform=`cat /sys/devices/soc0/hw_platform`
+	fi
+
+	if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+		platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+	fi
+
+    case "$soc_id" in
+                "321")
+                # Start Host based Touch processing
+                case "$hw_platform" in
+                    "MTP" )
+                          start_hbtp
+                     ;;
+                    "QRD" )
+                            case "$platform_subtype_id" in
+                                   "1") #QRD845
+                                         start_hbtp
+                                     ;;
+                            esac
+                     ;;
+                esac
+         ;;
 	esac
 	# Core control parameters
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus

@@ -918,6 +918,9 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,serial_cdev,rmne
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
+on property:sys.usb.config=diag,uac2,adb && property:sys.usb.configfs=1
+    start adbd
+
 on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uac2_adb"
     rm /config/usb_gadget/g1/configs/b.1/f1
@@ -937,7 +940,7 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2,adb && prop
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2 && property:sys.usb.configfs=1
+on property:sys.usb.config=diag,uac2 && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uac2"
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
@@ -954,6 +957,9 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2 && property
     symlink /config/usb_gadget/g1/functions/uac2.0 /config/usb_gadget/g1/configs/b.1/f2
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
+
+on property:sys.usb.config=diag,uvc,adb && property:sys.usb.configfs=1
+    start adbd
 
 on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uvc,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uvc_adb"
@@ -974,7 +980,7 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uvc,adb && prope
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uvc && property:sys.usb.configfs=1
+on property:sys.usb.config=diag,uvc && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uvc"
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2
@@ -991,6 +997,9 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uvc && property:
     symlink /config/usb_gadget/g1/functions/uvc.0 /config/usb_gadget/g1/configs/b.1/f2
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
+
+on property:sys.usb.config=diag,uac2,uvc,adb && property:sys.usb.configfs=1
+    start adbd
 
 on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2,uvc,adb && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uac2_uvc_adb"
@@ -1012,7 +1021,7 @@ on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2,uvc,adb && 
     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
     setprop sys.usb.state ${sys.usb.config}
 
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=diag,uac2,uvc && property:sys.usb.configfs=1
+on property:sys.usb.config=diag,uac2,uvc && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "diag_uac2_uvc"
     rm /config/usb_gadget/g1/configs/b.1/f1
     rm /config/usb_gadget/g1/configs/b.1/f2

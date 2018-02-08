@@ -809,7 +809,8 @@ PRODUCT_PACKAGES := \
     VideoEditor \
     SnapdragonLauncher \
     a4wpservice \
-    wipowerservice
+    wipowerservice \
+    QtiDialer
 
 PRODUCT_PACKAGES += $(ALSA_HARDWARE)
 PRODUCT_PACKAGES += $(ALSA_UCM)

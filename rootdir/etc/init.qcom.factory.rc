@@ -27,7 +27,7 @@
 #
 
 # Define fastmmi
-service fastmmi /vendor/bin/mmi
+service fastmmi /system/bin/mmi
     user root
     group root
     disabled

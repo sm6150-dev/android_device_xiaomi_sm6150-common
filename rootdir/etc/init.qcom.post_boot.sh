@@ -124,10 +124,11 @@ else
         echo 81250 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     else
         if [ $MemTotal -le 1048576 ] && [ "$low_ram" == "true" ]; then
-            # Disable KLMK, ALMK & PPR for Go devices
+            # Disable KLMK, ALMK, PPR & Core Control for Go devices
             echo 0 > /sys/module/lowmemorykiller/parameters/enable_lmk
             echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
             echo 0 > /sys/module/process_reclaim/parameters/enable_process_reclaim
+            echo 1 > /sys/devices/system/cpu/cpu0/core_ctl/disable
         else
             echo 50 > /sys/module/process_reclaim/parameters/pressure_min
             echo 512 > /sys/module/process_reclaim/parameters/per_swap_size

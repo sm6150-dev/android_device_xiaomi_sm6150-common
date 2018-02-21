@@ -48,6 +48,8 @@
 #include "loc_api_v02_client.h"
 #include "loc_util_log.h"
 
+#include "loc_cfg.h"
+
 #ifdef LOC_UTIL_TARGET_OFF_TARGET
 
 // timeout in ms before send_msg_sync should return
@@ -83,7 +85,9 @@ enum
       -1 for compatibility */
   eLOC_CLIENT_INSTANCE_ID_MDM = eLOC_CLIENT_INSTANCE_ID_ANY,
   /*  GSS service id value is 0, for auto config  */
-  eLOC_CLIENT_INSTANCE_ID_GSS_AUTO = 0
+  eLOC_CLIENT_INSTANCE_ID_GSS_AUTO = 0,
+  /* Loc Modem Emulator Service Instance */
+  eLOC_CLIENT_INSTANCE_ID_MODEM_EMULATOR = 5,
 };
 
 /* Table to relate eventId, size and mask value used to enable the event*/
@@ -1968,31 +1972,36 @@ locClientStatusEnumType locClientOpen (
   int instanceId;
   locClientStatusEnumType status;
   int tries = 1;
-#ifdef _ANDROID_
-  switch (getTargetGnssType(loc_get_target()))
-  {
-  case GNSS_GSS:
-    instanceId = eLOC_CLIENT_INSTANCE_ID_GSS;
-    break;
-  case GNSS_MSM:
-    instanceId = eLOC_CLIENT_INSTANCE_ID_MSM;
-    break;
-  case GNSS_MDM:
-    instanceId = eLOC_CLIENT_INSTANCE_ID_MDM;
-    break;
-  case GNSS_AUTO:
-    instanceId = eLOC_CLIENT_INSTANCE_ID_GSS_AUTO;
-    break;
-  default:
-    instanceId = eLOC_CLIENT_INSTANCE_ID_ANY;
-    break;
+
+  if (loc_modem_emulator_enabled()) {
+      instanceId = eLOC_CLIENT_INSTANCE_ID_MODEM_EMULATOR;
+  } else {
+    #ifdef _ANDROID_
+      switch (getTargetGnssType(loc_get_target()))
+      {
+      case GNSS_GSS:
+        instanceId = eLOC_CLIENT_INSTANCE_ID_GSS;
+        break;
+      case GNSS_MSM:
+        instanceId = eLOC_CLIENT_INSTANCE_ID_MSM;
+        break;
+      case GNSS_MDM:
+        instanceId = eLOC_CLIENT_INSTANCE_ID_MDM;
+        break;
+      case GNSS_AUTO:
+        instanceId = eLOC_CLIENT_INSTANCE_ID_GSS_AUTO;
+        break;
+      default:
+        instanceId = eLOC_CLIENT_INSTANCE_ID_ANY;
+        break;
+      }
+    #else
+      instanceId = eLOC_CLIENT_INSTANCE_ID_ANY;
+    #endif
   }
 
   LOC_LOGI("%s:%d]: Service instance id is %d\n",
              __func__, __LINE__, instanceId);
-#else
-  instanceId = eLOC_CLIENT_INSTANCE_ID_ANY;
-#endif
 
   while ((status = locClientOpenInstance(eventRegMask, instanceId, pLocClientCallbacks,
           pLocClientHandle, pClientCookie)) != eLOC_CLIENT_SUCCESS) {

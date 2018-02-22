@@ -639,6 +639,20 @@ void LocApiV02 :: startFix(const LocPosMode& fixCriteria, LocApiResponse *adapte
       start_msg.configAltitudeAssumed_valid = 1;
       start_msg.configAltitudeAssumed = eQMI_LOC_ALTITUDE_ASSUMED_IN_GNSS_SV_INFO_DISABLED_V02;
 
+      // set power mode details
+      if (GNSS_POWER_MODE_INVALID != fixCriteria.powerMode) {
+          start_msg.powerMode_valid = 1;
+          start_msg.powerMode.powerMode = convertPowerMode(fixCriteria.powerMode);
+          start_msg.powerMode.timeBetweenMeasurement =
+                  fixCriteria.timeBetweenMeasurements;
+          // Force low accuracy for background power modes
+          if (GNSS_POWER_MODE_M3 == fixCriteria.powerMode ||
+                  GNSS_POWER_MODE_M4 == fixCriteria.powerMode ||
+                  GNSS_POWER_MODE_M5 == fixCriteria.powerMode) {
+              start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_LOW_V02;
+          }
+      }
+
       req_union.pStartReq = &start_msg;
 
       status = locClientSendReq(QMI_LOC_START_REQ_V02, req_union);
@@ -5339,4 +5353,22 @@ LocApiV02::convertToGnssSvTypeConfig(
                     ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
         config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_QZSS_BIT;
     }
+}
+
+qmiLocPowerModeEnumT_v02 LocApiV02::convertPowerMode(GnssPowerMode powerMode)
+{
+    switch(powerMode) {
+    case GNSS_POWER_MODE_M1:
+        return eQMI_LOC_POWER_MODE_IMPROVED_ACCURACY_V02;
+    case GNSS_POWER_MODE_M2:
+        return eQMI_LOC_POWER_MODE_NORMAL_V02;
+    case GNSS_POWER_MODE_M3:
+        return eQMI_LOC_POWER_MODE_BACKGROUND_DEFINED_POWER_V02;
+    case GNSS_POWER_MODE_M4:
+        return eQMI_LOC_POWER_MODE_BACKGROUND_DEFINED_TIME_V02;
+    case GNSS_POWER_MODE_M5:
+        return eQMI_LOC_POWER_MODE_BACKGROUND_KEEP_WARM_V02;
+    }
+
+    return QMILOCPOWERMODEENUMT_MIN_ENUM_VAL_V02;
 }

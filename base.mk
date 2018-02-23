@@ -1060,7 +1060,7 @@ endif
 #endif
 
 # Preloading QPerformance jar to ensure faster perflocks in Boost Framework
-#PRODUCT_BOOT_JARS += QPerformance
+PRODUCT_BOOT_JARS += QPerformance
 
 # OEM Unlock reporting
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \

@@ -32,6 +32,11 @@ service fastmmi /vendor/bin/mmi
     group root
     disabled
 
+service mmid /vendor/bin/mmid
+    user root
+    group root
+    disabled
+
 on property:sys.boot_mode=ffbm
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"
 
@@ -42,53 +47,44 @@ on property:sys.boot_mode=normal
     write ${persist.vendor.mmi.misc_dev_path} "normal"
 
 # Creating a scratch storage on /data for factory testing.
-on factory-fs
+on factory-fs && property:ro.bootmode=ffbm-00
+    mount tmpfs tmpfs /data
+
+on factory-fs && property:ro.bootmode=ffbm-01
     mount tmpfs tmpfs /data
 
 on post-fs-data
-    setprop persist.sys.usb.ffbm-00.func diag
-    setprop persist.sys.usb.ffbm-01.func diag
-    setprop persist.sys.usb.ffbm-02.func diag
+# aligned the usb port with system standard, otherwise if only diag be added
+# Then in QMMI mode, the whole Andoid be booted, but due to the ro.bootmode is
+# not normal/unknow, then when it apply the default funcs, it will turn to MTP
+# which cause the diag/Wwan/modem port all be lost in qmmi mode. Details:
+# UsbDeviceManager.java---->getDefaultFunctions and trySetEnabledFunctions
 
-on mmi
+    setprop persist.sys.usb.ffbm-00.func ${persist.sys.usb.config}
+    setprop persist.sys.usb.ffbm-01.func ${persist.sys.usb.config}
+    setprop persist.sys.usb.ffbm-02.func ${persist.sys.usb.config}
+
+on mmi && property:ro.bootmode=ffbm-00
     # ========================================================
     #              This is FFBM only settings.
     # ========================================================
-
-    start fastmmi
-
-    # A/B update verifier that marks a successful boot.
-    exec - root cache -- /system/bin/update_verifier nonencrypted
-
     #mkdir for factory data files.
     mkdir /persist/FTM_AP 0750 root root
 
-    #set property for sys.usb.config
-    setprop sys.usb.config diag,adb
-
-    #Start the following services needed for fftm
-    start servicemanager
-    start surfaceflinger
-    start qcom-usb-sh
-    start logd
-    start debuggerd
-    start debuggerd64
-    start per_mgr
-    start qcom-sh
-    start ril-daemon
-    start config_bluetooth
-    start sensors
-    start media
-    start wcnss-service
+    start fastmmi
+    # start qcom-post-boot to set the misc partition path property value
     start qcom-post-boot
-    start rmt_storage
-    start qcom-c_main-sh
-    start irsc_util
-    start qcamerasvr
-    start qcomsysd
-    start ptt_ffbm
-    start tftp_server
-    start cnss-daemon
+
+on mmi && property:ro.bootmode=ffbm-01
+    # ========================================================
+    #              This is FFBM only settings.
+    # ========================================================
+    #mkdir for factory data files.
+    mkdir /persist/FTM_AP 0750 root root
+
+    start fastmmi
+    ## start qcom-post-boot to set the misc partition path property value
+    start qcom-post-boot
 
 on ffbm
     trigger early-fs
@@ -96,14 +92,21 @@ on ffbm
     trigger fs
     trigger post-fs
 
-    # Load properties from /system/ + /factory after fs mount. Place
-    # this in another action so that the load will be scheduled after the prior
-    # issued fs triggers have completed.
-    trigger load_system_props_action
+    # Mount fstab in init.{$device}.rc by mount_all with '--late' parameter
+    # to only mount entries with 'latemount'. This is needed if '--early' is
+    # specified in the previous mount_all command on the fs stage.
+    # With /system mounted and properties form /system + /factory available,
+    # some services can be started.
+    trigger late-fs
 
     # Now we can mount /data. File encryption requires keymaster to decrypt
-    # /data, which in turn can only be loaded when system properties are present
+    # /data, which in turn can only be loaded when system properties are present.
     trigger post-fs-data
+
+    # Now we can start zygote for devices with file based encryption
+    trigger zygote-start
+
+    # Load persist properties and override properties (if enabled) from /data.
     trigger load_persist_props_action
 
     # Remove a file to wake up anything waiting for firmware.

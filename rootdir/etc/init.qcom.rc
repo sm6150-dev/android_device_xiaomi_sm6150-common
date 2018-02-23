@@ -916,6 +916,7 @@ on property:drmdiag.load=0
 service qcom-sh /vendor/bin/init.qcom.sh
     class late_start
     user root
+    group root system radio
     oneshot
 
 service sensor-sh /vendor/bin/init.qcom.sensors.sh

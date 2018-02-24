@@ -111,6 +111,7 @@ AUDIO_HARDWARE += audio.primary.sdm845
 AUDIO_HARDWARE += audio.primary.apq8098_latv
 AUDIO_HARDWARE += audio.primary.sdm670
 AUDIO_HARDWARE += audio.primary.qcs605
+AUDIO_HARDWARE += audio.primary.msmnile
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084

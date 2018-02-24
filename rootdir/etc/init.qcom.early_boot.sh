@@ -433,6 +433,8 @@ then
             set_perms $file/msm_fb_persist_mode system.graphics 0664
         fi
     done
+else
+    set_perms /sys/devices/virtual/hdcp/msm_hdcp/min_level_change system.graphics 0660
 fi
 
 boot_reason=`cat /proc/sys/kernel/boot_reason`

@@ -917,6 +917,7 @@ on property:drmdiag.load=0
 service qcom-sh /vendor/bin/init.qcom.sh
     class late_start
     user root
+    group root system radio
     oneshot
 
 service sensor-sh /vendor/bin/init.qcom.sensors.sh
@@ -932,6 +933,7 @@ service crashdata-sh /vendor/bin/init.qcom.crashdata.sh
 service qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     class late_start
     user root
+    group root system wakelock graphics
     disabled
     oneshot
 

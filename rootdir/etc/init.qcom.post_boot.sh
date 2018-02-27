@@ -2131,13 +2131,22 @@ case "$target" in
             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
         fi
 
+        if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+            platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+        fi
+
         case "$soc_id" in
             "347" )
 
             # Start Host based Touch processing
             case "$hw_platform" in
-              "MTP" | "Surf" | "RCM" | "QRD" )
+              "Surf" | "RCM" | "QRD" )
                   start_hbtp
+                  ;;
+              "MTP" )
+                  if [ $platform_subtype_id != 5 ]; then
+                      start_hbtp
+                  fi
                   ;;
             esac
 

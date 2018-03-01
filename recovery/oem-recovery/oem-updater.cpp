@@ -33,6 +33,7 @@
 #include "edify/expr.h"
 #include "dec.h"
 #include "gpt-utils.h"
+#include "otautil/error_code.h"
 
 Value* DecryptFn(const char* name, State* state,  const std::vector<std::unique_ptr<Expr>>& argv) {
     int rc = -1;

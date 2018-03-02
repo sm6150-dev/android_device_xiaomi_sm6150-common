@@ -1143,7 +1143,7 @@ service qdmastatsd /system/vendor/bin/qdmastatsd
     user system
     group readproc system net_bw_stats radio
 
-service vppservice /vendor/bin/vppservice
+service vendor.vppservice /vendor/bin/vppservice
     class main
     user media
     group camera

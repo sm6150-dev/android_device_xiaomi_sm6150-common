@@ -1133,6 +1133,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">
@@ -1144,6 +1145,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="070">
@@ -1156,6 +1158,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="080">
@@ -1164,6 +1167,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="config_enable_display_14digit_imei" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="090">
@@ -1178,6 +1182,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="config_enable_display_14digit_imei" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="150">
@@ -1190,6 +1195,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="170">
@@ -1202,6 +1208,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="280">
@@ -1214,6 +1221,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="380">
@@ -1226,6 +1234,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="410">
@@ -1238,6 +1247,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="560">
@@ -1250,6 +1260,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="680">
@@ -1262,6 +1273,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="980">
@@ -1275,16 +1287,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_supported_on_vtcalls" value="true"/>
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="160">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="200">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="210">
@@ -1293,31 +1308,37 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_supported_on_vtcalls" value="true"/>
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="220">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="230">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="240">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="250">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="270">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="300">
@@ -1327,41 +1348,49 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
     <carrier_config mcc="310" mnc="310">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="490">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="530">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="580">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="590">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="640">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="660">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="800">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="config_enable_mms_with_mobile_data_off" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="311" mnc="180">
@@ -1371,6 +1400,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="311" mnc="480">
@@ -1379,6 +1409,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported_on_vtcalls" value="false"/>
         <boolean name="carrier_rtt_upgrade_supported" value="false"/>
         <boolean name="support_downgrade_vt_to_audio_bool" value="true" />
+        <boolean name="allow_emergency_video_calls_bool" value="true" />
     </carrier_config>
 
     <carrier_config>

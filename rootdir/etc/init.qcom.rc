@@ -430,7 +430,7 @@ service iop /system/vendor/bin/iop
 service qcomsysd /system/vendor/bin/qcom-system-daemon
     class main
     user root
-    group root diag
+    group root diag oem_2901
 
 service ssr_setup /system/vendor/bin/ssr_setup
     oneshot

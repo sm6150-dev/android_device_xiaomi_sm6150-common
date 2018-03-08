@@ -53,8 +53,8 @@ case "$baseband" in
     if [ -z "$rild_status" ]; then
       start vendor.qcrild
     fi
-    start ipacm-diag
-    start ipacm
+    start vendor.ipacm-diag
+    start vendor.ipacm
     case "$baseband" in
         "svlte2a" | "csfb")
           start qmiproxy

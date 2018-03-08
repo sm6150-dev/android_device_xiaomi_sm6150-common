@@ -531,7 +531,7 @@ on property:vold.decrypt=trigger_restart_framework
 on property:persist.env.fastdorm.enabled=true
     setprop persist.radio.data_no_toggle 1
 
-service cnd /system/vendor/bin/cnd
+service vendor.cnd /system/vendor/bin/cnd
     class main
     user system
     group system wifi inet radio wakelock net_admin
@@ -629,14 +629,14 @@ service netmgrd /system/vendor/bin/netmgrd
     class main
     disabled
 
-service ipacm-diag /system/vendor/bin/ipacm-diag
+service vendor.ipacm-diag /system/vendor/bin/ipacm-diag
     class main
     user radio
     socket ipacm_log_file dgram 660 radio radio
     group radio diag oem_2901
     disabled
 
-service ipacm /system/vendor/bin/ipacm
+service vendor.ipacm /system/vendor/bin/ipacm
     class main
     user radio
     group radio inet

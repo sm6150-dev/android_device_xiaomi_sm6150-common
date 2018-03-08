@@ -80,7 +80,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_ui" value="false" />
         <!-- Config to control the voWiFi call quality indication. -->
         <boolean name="vowifi_call_quality" value="false" />
-        <boolean name="config_carrier_ims_call_deflect" value="false" />
+        <boolean name="carrier_allow_deflect_ims_call_bool" value="false" />
 
         <!-- Config for RTT feature support -->
         <boolean name="carrier_rtt_supported" value="false" />
@@ -746,13 +746,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
     <carrier_config mcc="440" mnc="50">
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
-        <boolean name="config_carrier_ims_call_deflect" value="true" />
+        <boolean name="carrier_allow_deflect_ims_call_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="440" mnc="51">
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
-        <boolean name="config_carrier_ims_call_deflect" value="true" />
+        <boolean name="carrier_allow_deflect_ims_call_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="450" mnc="05">

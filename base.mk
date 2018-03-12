@@ -29,6 +29,7 @@ QCOM_BOARD_PLATFORMS += qcs605
 QSD8K_BOARD_PLATFORMS := qsd8k
 
 TARGET_USE_VENDOR_CAMERA_EXT := true
+TARGET_USE_QTI_BT_STACK := true
 
 #List of targets that use video hw
 MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm670 qcs605 msmnile
@@ -165,6 +166,9 @@ BT += libbt-vendor
 BT += libbthost_if
 BT += libbt-logClient
 BT += bt_logger
+ifeq ($(TARGET_USE_QTI_BT_STACK), true)
+BT += libbluetooth_qti
+endif
 BT += libbt-hidlclient
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/qcom/common
 
@@ -781,6 +785,7 @@ PRODUCT_PACKAGES := \
     AlarmProvider \
     Bluetooth \
     BluetoothExt \
+    HidTestApp \
     Calculator \
     Calendar \
     Camera \
@@ -976,6 +981,10 @@ PRODUCT_COPY_FILES := \
     system/bluetooth/data/blacklist.conf:system/etc/bluetooth/blacklist.conf \
     system/bluetooth/data/input.conf:system/etc/bluetooth/input.conf \
     system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
+
+ifeq ($(TARGET_USE_QTI_BT_STACK), true)
+    PRODUCT_PROPERTY_OVERRIDES += ro.bluetooth.library_name=libbluetooth_qti.so
+endif
 
 #ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ),true)
 #PRODUCT_COPY_FILES += \

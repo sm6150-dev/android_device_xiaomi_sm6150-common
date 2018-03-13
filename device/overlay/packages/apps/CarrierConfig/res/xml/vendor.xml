@@ -866,6 +866,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="disable_filter_out_conference_host" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -924,6 +925,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="disable_filter_out_conference_host" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -1021,6 +1023,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="disable_filter_out_conference_host" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -1060,6 +1063,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_cancel_modify_call" value="true" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_hide_vt_callforward_option" value="true" />
+        <boolean name="disable_filter_out_conference_host" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">

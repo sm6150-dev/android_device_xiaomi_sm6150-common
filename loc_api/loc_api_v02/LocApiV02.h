@@ -31,7 +31,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <ds_client.h>
 #include <LocApiBase.h>
 #include <loc_api_v02_client.h>
 #include <vector>
@@ -73,12 +72,6 @@ protected:
   locClientHandleType clientHandle;
 
 private:
-  /* ds client library handle */
-  void *dsLibraryHandle;
-  /* ds client interface */
-  const ds_client_iface_type *dsClientIface;
-  /* ds client handle */
-  dsClientHandleType dsClientHandle;
   locClientEventMaskType mQmiMask;
   bool mInSession;
   bool mEngineOn;
@@ -215,8 +208,6 @@ public:
   void errorCb(locClientHandleType handle,
                locClientErrorEnumType errorId);
 
-  void ds_client_event_cb(ds_client_status_enum_type result);
-
   virtual void startFix(const LocPosMode& posMode,
         LocApiResponse *adapterResponse);
 
@@ -282,11 +273,6 @@ public:
   virtual void
       handleZppBestAvailableFixIndication(const qmiLocGetBestAvailablePositionIndMsgT_v02 &zpp_ind);
   virtual void getBestAvailableZppFix();
-  virtual int initDataServiceClient(bool isDueToSsr);
-  virtual int openAndStartDataCall();
-  virtual void stopDataCall();
-  virtual void closeDataCall();
-  virtual void releaseDataServiceClient();
   virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
 
   /*

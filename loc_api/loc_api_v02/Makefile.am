@@ -3,7 +3,6 @@ AM_CFLAGS = \
     $(LOCPLA_CFLAGS) \
     $(GPSUTILS_CFLAGS) \
     $(LOC_CORE_CFLAGS) \
-    $(LOCDS_CFLAGS) \
     $(QMIFW_CFLAGS) \
     -fno-short-enums \
     -D__func__=__PRETTY_FUNCTION__ \

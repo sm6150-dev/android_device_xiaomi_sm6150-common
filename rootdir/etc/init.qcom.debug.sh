@@ -622,7 +622,6 @@ enable_sdm845_dcc_config()
     echo 0x013D0008 1 > $DCC_PATH/config
     echo 0x013D0068 1 > $DCC_PATH/config
     echo 0x013D0078 1 > $DCC_PATH/config
-    echo 0x013D1000 1 > $DCC_PATH/config
 
     echo 0x069EA00C 0x00600007 1 > $DCC_PATH/config_write
     echo 0x069EA01C 0x00136800 1 > $DCC_PATH/config_write

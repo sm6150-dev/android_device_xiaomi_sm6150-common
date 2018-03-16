@@ -28,7 +28,7 @@
 
 # Function Enable stm events
 
-enable_sdm670_tracing_events()
+enable_sdm710_tracing_events()
 {
     # timer
     echo 1 > /sys/kernel/debug/tracing/events/timer/timer_expire_entry/enable
@@ -90,7 +90,7 @@ enable_sdm670_tracing_events()
 }
 
 # function to enable ftrace events
-enable_sdm670_ftrace()
+enable_sdm710_ftrace()
 {
     # bail out if its perf config
     if [ ! -d /sys/module/msm_rtb ]
@@ -105,11 +105,11 @@ enable_sdm670_ftrace()
     fi
 
     echo 0x2000000 > /sys/kernel/debug/tracing/buffer_size_kb
-    enable_sdm670_tracing_events
+    enable_sdm710_tracing_events
 }
 
 # function to enable ftrace event transfer to CoreSight STM
-enable_sdm670_stm()
+enable_sdm710_stm()
 {
     # bail out if its perf config
     if [ ! -d /sys/module/msm_rtb ]
@@ -132,10 +132,10 @@ enable_sdm670_stm()
     echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/enable_sink
     echo 1 > /sys/bus/coresight/devices/coresight-stm/enable_source
     echo 0 > /sys/bus/coresight/devices/coresight-stm/hwevent_enable
-    enable_sdm670_tracing_events
+    enable_sdm710_tracing_events
 }
 
-config_sdm670_dcc_gcc_regs()
+config_sdm710_dcc_gcc_regs()
 {
     echo 0x100000   1 > $DCC_PATH/config
     echo 0x100004   1 > $DCC_PATH/config
@@ -274,7 +274,7 @@ config_sdm670_dcc_gcc_regs()
     echo 0xC2A2150  1 > $DCC_PATH/config
     echo 0xC2A2154  1 > $DCC_PATH/config
 }
-config_sdm670_regs_no_ac()
+config_sdm710_regs_no_ac()
 {
     #CNOC Register
     echo 0x01500008 1 > $DCC_PATH/config
@@ -450,7 +450,7 @@ config_sdm670_regs_no_ac()
     echo 0x62D43034  1 > $DCC_PATH/config
 }
 
-config_sdm670_dcc_noc_err_regs()
+config_sdm710_dcc_noc_err_regs()
 {
     echo 0x80A9008  1 > $DCC_PATH/config
     echo 0x80A9010  1 > $DCC_PATH/config
@@ -561,7 +561,7 @@ config_sdm670_dcc_noc_err_regs()
     echo 0x80B7034  1 > $DCC_PATH/config
 }
 
-config_sdm670_dcc_gladiator()
+config_sdm710_dcc_gladiator()
 {
     echo 0x7840000 1 > $DCC_PATH/config
     echo 0x7842500 1 > $DCC_PATH/config
@@ -576,7 +576,7 @@ config_sdm670_dcc_gladiator()
     #echo 0x784100C 1 > $DCC_PATH/config
     #echo 1 > $DCC_PATH/loop
 }
-config_sdm670_dcc_cprh()
+config_sdm710_dcc_cprh()
 {
     #CPRH
     echo 0x17DC3A84 2 > $DCC_PATH/config
@@ -587,7 +587,7 @@ config_sdm670_dcc_cprh()
     echo 0x17D2000C 1 > $DCC_PATH/config
     echo 0x17D20018 1 > $DCC_PATH/config
 }
-config_sdm670_dcc_pcu_rscc_apps()
+config_sdm710_dcc_pcu_rscc_apps()
 {
     #PCU APPS
     echo 0x17E00024 1 > $DCC_PATH/config
@@ -854,7 +854,7 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0x148010   1 > $DCC_PATH/config
     echo 0x148198   1 > $DCC_PATH/config
  }
- config_sdm670_dcc_pdc_apps()
+ config_sdm710_dcc_pdc_apps()
  {
     #PDC APPS
     echo 0x0B201020 1 > $DCC_PATH/config
@@ -900,7 +900,7 @@ config_sdm670_dcc_pcu_rscc_apps()
 
 
  }
- config_sdm670_dcc_rscc_lpass()
+ config_sdm710_dcc_rscc_lpass()
  {
     #RSCC
     echo 0x62b9000c 1 > $DCC_PATH/config
@@ -1107,7 +1107,7 @@ config_sdm670_dcc_pcu_rscc_apps()
     echo 0xb254514  1 > $DCC_PATH/config
 
 }
-config_sdm670_dcc_rscc_modem()
+config_sdm710_dcc_rscc_modem()
 {
     #RSCC
     echo 0x420000c 1 > $DCC_PATH/config
@@ -1271,7 +1271,7 @@ config_sdm670_dcc_rscc_modem()
     echo 0xB2B1030  1 > $DCC_PATH/config
 
 }
-config_sdm670_dcc_rscc_cdsp()
+config_sdm710_dcc_rscc_cdsp()
 {
     #RSCC
     echo 0x80a400c 1 > $DCC_PATH/config
@@ -1332,7 +1332,7 @@ config_sdm670_dcc_rscc_cdsp()
     echo 0x80a55f0 1 > $DCC_PATH/config
     echo 0x80a55f4 1 > $DCC_PATH/config
 }
-config_sdm670_dcc_pdc_display()
+config_sdm710_dcc_pdc_display()
 {
     #PDC Display
     echo 0x0B291020 1 > $DCC_PATH/config
@@ -1357,7 +1357,7 @@ config_sdm670_dcc_pdc_display()
     echo 0x0B294510 1 > $DCC_PATH/config
     echo 0x0B294514 1 > $DCC_PATH/config
 }
-config_sdm670_dcc_aop_rpmh()
+config_sdm710_dcc_aop_rpmh()
 {
     #PDC AOP
     echo 0x0B264520 1 > $DCC_PATH/config
@@ -1422,7 +1422,7 @@ config_sdm670_dcc_aop_rpmh()
     echo 0x0C207244 1 > $DCC_PATH/config
     echo 0x0C20F000 1 > $DCC_PATH/config
 }
-config_sdm670_dcc_lmh()
+config_sdm710_dcc_lmh()
 {
     #LMH-Gold Thermal
     echo 0x17D91008 1 > $DCC_PATH/config
@@ -1462,7 +1462,7 @@ config_sdm670_dcc_lmh()
     echo 0x17870730 1 > $DCC_PATH/config
     echo 0x17871480 1 > $DCC_PATH/config
  }
- config_sdm670_dcc_ipm_apps()
+ config_sdm710_dcc_ipm_apps()
  {
     #LLCC
     echo 0x01301000 1 > $DCC_PATH/config
@@ -1480,7 +1480,7 @@ config_sdm670_dcc_lmh()
     echo 0x17810048 2 > $DCC_PATH/config
     echo 0x17990044 1 > $DCC_PATH/config
 }
-config_sdm670_dcc_osm()
+config_sdm710_dcc_osm()
 {
     #OSM
     echo 0x17D45F00 1 > $DCC_PATH/config
@@ -1518,7 +1518,7 @@ config_sdm670_dcc_osm()
     echo 0x17D42D88 1 > $DCC_PATH/config
 }
 
-config_sdm670_dcc_shrm()
+config_sdm710_dcc_shrm()
 {
     #SHRM DDR
     echo 0x069EA00C 0x00600007 1 > $DCC_PATH/config_write
@@ -1584,7 +1584,7 @@ config_sdm670_dcc_shrm()
     echo 0x069EA008 0x00000007 1 > $DCC_PATH/config_write
     echo 0x013E7E00 31 > $DCC_PATH/config
 }
-config_sdm670_dcc_ddr()
+config_sdm710_dcc_ddr()
 {
    # DDR_SS
     echo 0x01132100 1 > $DCC_PATH/config
@@ -1648,7 +1648,7 @@ config_sdm670_dcc_ddr()
     echo 0x011e5804 1 > $DCC_PATH/config
 }
 
-config_sdm670_dcc_ecc_llc()
+config_sdm710_dcc_ecc_llc()
 {
     #LLC
     echo 0x1120344 1 > $DCC_PATH/config
@@ -1785,7 +1785,7 @@ config_sdm670_dcc_ecc_llc()
     echo 0x12C208C 1 > $DCC_PATH/config
 }
 
-config_sdm670_dcc_cabo_llcc_shrm()
+config_sdm710_dcc_cabo_llcc_shrm()
 {
     #CABO,LLCC,SHRM CSR & MEMNOC
     echo 0x1160080 1 > $DCC_PATH/config
@@ -1856,14 +1856,14 @@ config_sdm670_dcc_cabo_llcc_shrm()
     echo 0x1393010 1 > $DCC_PATH/config
     echo 0x1394010 1 > $DCC_PATH/config
 }
-config_sdm670_shrm()
+config_sdm710_shrm()
 {
     echo 0x13d0008 > $DCC_PATH/config
     echo 0x13d0100 > $DCC_PATH/config
     echo 0x13d0104 > $DCC_PATH/config
     echo 0x13d0078 > $DCC_PATH/config
 }
-config_sdm670_memnoc_mccc()
+config_sdm710_memnoc_mccc()
 {
    echo 0x1380900  1 > $DCC_PATH/config
    echo 0x1380904  1 > $DCC_PATH/config
@@ -1888,14 +1888,14 @@ config_sdm670_memnoc_mccc()
    echo 0x14302a0  1 > $DCC_PATH/config
 
 }
-config_sdm670_dcc_cx_mx()
+config_sdm710_dcc_cx_mx()
 {
     #CX and MX voltage
     echo 0x0C201244 1 > $DCC_PATH/config
     echo 0x0C202244 1 > $DCC_PATH/config
 }
 
-config_sdm670_axi_pc()
+config_sdm710_axi_pc()
 {
     echo 0x07030200 2 > $DCC_PATH/config
     echo 0x07130200 2 > $DCC_PATH/config
@@ -1907,7 +1907,7 @@ config_sdm670_axi_pc()
     echo 0x07730200 2 > $DCC_PATH/config
 }
 
-config_sdm670_apb_pc()
+config_sdm710_apb_pc()
 {
     echo 0x87030200 2 1 > $DCC_PATH/config
     echo 0x87130200 2 1 > $DCC_PATH/config
@@ -1920,10 +1920,10 @@ config_sdm670_apb_pc()
 
 }
 
-# Function SDM670 DCC configuration
-enable_sdm670_dcc_config()
+# Function sdm710 DCC configuration
+enable_sdm710_dcc_config()
 {
-    echo "enabling DCC config for SDM670"
+    echo "enabling DCC config for sdm710"
     DCC_PATH="/sys/bus/platform/devices/10a2000.dcc_v2"
 
     if [ ! -d $DCC_PATH ]; then
@@ -1936,43 +1936,43 @@ enable_sdm670_dcc_config()
     echo sram > $DCC_PATH/data_sink
     echo 1 > $DCC_PATH/config_reset
     echo 2 > $DCC_PATH/curr_list
-    config_sdm670_dcc_gladiator
-    config_sdm670_dcc_noc_err_regs
-    config_sdm670_shrm
-    config_sdm670_dcc_cprh
-    config_sdm670_dcc_pcu_rscc_apps
-    config_sdm670_dcc_pdc_apps
-    config_sdm670_dcc_rscc_lpass
-    config_sdm670_dcc_rscc_modem
-    config_sdm670_dcc_rscc_cdsp
-    #config_sdm670_axi_pc
-    #config_sdm670_apb_pc
-    config_sdm670_memnoc_mccc
-    #config_sdm670_dcc_pdc_display
-    #config_sdm670_dcc_aop_rpmh
-    #config_sdm670_dcc_lmh
-    config_sdm670_dcc_ipm_apps
-    config_sdm670_dcc_osm
-    #config_sdm670_dcc_shrm
-    config_sdm670_dcc_ddr
-    #config_sdm670_dcc_ecc_llc
-    config_sdm670_dcc_cabo_llcc_shrm
-    config_sdm670_dcc_cx_mx
-    config_sdm670_dcc_gcc_regs
+    config_sdm710_dcc_gladiator
+    config_sdm710_dcc_noc_err_regs
+    config_sdm710_shrm
+    config_sdm710_dcc_cprh
+    config_sdm710_dcc_pcu_rscc_apps
+    config_sdm710_dcc_pdc_apps
+    config_sdm710_dcc_rscc_lpass
+    config_sdm710_dcc_rscc_modem
+    config_sdm710_dcc_rscc_cdsp
+    #config_sdm710_axi_pc
+    #config_sdm710_apb_pc
+    config_sdm710_memnoc_mccc
+    #config_sdm710_dcc_pdc_display
+    #config_sdm710_dcc_aop_rpmh
+    #config_sdm710_dcc_lmh
+    config_sdm710_dcc_ipm_apps
+    config_sdm710_dcc_osm
+    #config_sdm710_dcc_shrm
+    config_sdm710_dcc_ddr
+    #config_sdm710_dcc_ecc_llc
+    config_sdm710_dcc_cabo_llcc_shrm
+    config_sdm710_dcc_cx_mx
+    config_sdm710_dcc_gcc_regs
     ## Enable below function with relaxed AC
-    #config_sdm670_regs_no_ac
+    #config_sdm710_regs_no_ac
     #Apply configuration and enable DCC
     echo  1 > $DCC_PATH/enable
 }
 
 
-enable_sdm670_stm_hw_events()
+enable_sdm710_stm_hw_events()
 {
    #TODO: Add HW events
 
 }
 
-enable_sdm670_core_hang_config()
+enable_sdm710_core_hang_config()
 {
     CORE_PATH_SILVER="/sys/devices/system/cpu/hang_detect_silver"
     CORE_PATH_GOLD="/sys/devices/system/cpu/hang_detect_gold"
@@ -1990,13 +1990,13 @@ enable_sdm670_core_hang_config()
     echo 0x1 > $CORE_PATH_GOLD/enable
 }
 
-enable_sdm670_osm_wdog_status_config()
+enable_sdm710_osm_wdog_status_config()
 {
     echo 1 > /sys/kernel/debug/osm/pwrcl_clk/wdog_trace_enable
     echo 1 > /sys/kernel/debug/osm/perfcl_clk/wdog_trace_enable
 }
 
-enable_sdm670_gladiator_hang_config()
+enable_sdm710_gladiator_hang_config()
 {
     GLADIATOR_PATH="/sys/devices/system/cpu/gladiator_hang_detect"
     if [ ! -d $GLADIATOR_PATH ]; then
@@ -2020,16 +2020,16 @@ enable_sdm670_gladiator_hang_config()
 ftrace_disable=`getprop persist.debug.ftrace_events_disable`
 srcenable="enable"
 sinkenable="curr_sink"
-enable_sdm670_debug()
+enable_sdm710_debug()
 {
-    echo "sdm670 debug"
-    enable_sdm670_dcc_config
-    enable_sdm670_gladiator_hang_config
-    enable_sdm670_osm_wdog_status_config
-    enable_sdm670_core_hang_config
-    enable_sdm670_stm
+    echo "sdm710 debug"
+    enable_sdm710_dcc_config
+    enable_sdm710_gladiator_hang_config
+    enable_sdm710_osm_wdog_status_config
+    enable_sdm710_core_hang_config
+    enable_sdm710_stm
     if [ "$ftrace_disable" != "Yes" ]; then
-        enable_sdm670_ftrace
+        enable_sdm710_ftrace
     fi
-    enable_sdm670_stm_hw_events
+    enable_sdm710_stm_hw_events
 }

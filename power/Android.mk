@@ -61,12 +61,12 @@ ifeq ($(call is-board-platform-in-list,sdm845), true)
 LOCAL_SRC_FILES += power-845.c
 endif
 
-ifeq ($(call is-board-platform-in-list,sdm670), true)
-LOCAL_SRC_FILES += power-670.c
+ifeq ($(call is-board-platform-in-list,sdm710), true)
+LOCAL_SRC_FILES += power-710.c
 endif
 
 ifeq ($(call is-board-platform-in-list,qcs605), true)
-LOCAL_SRC_FILES += power-670.c
+LOCAL_SRC_FILES += power-710.c
 endif
 
 ifeq ($(TARGET_USES_INTERACTION_BOOST),true)

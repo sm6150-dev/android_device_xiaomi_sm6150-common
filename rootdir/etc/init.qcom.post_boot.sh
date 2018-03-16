@@ -1977,9 +1977,9 @@ case "$target" in
 esac
 
 case "$target" in
-    "sdm670")
+    "sdm710")
 
-        #Apply settings for sdm670
+        #Apply settings for sdm710
         # Set the default IRQ affinity to the silver cluster. When a
         # CPU is isolated/hotplugged, the IRQ affinity is adjusted
         # to one of the CPU from the default IRQ affinity mask.
@@ -1998,7 +1998,7 @@ case "$target" in
         fi
 
         case "$soc_id" in
-            "336" | "337" | "347" )
+            "336" | "337" | "347" | "360" )
 
             # Start Host based Touch processing
             case "$hw_platform" in
@@ -3062,7 +3062,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm710")
         setprop sys.post_boot.parsed 1
     ;;
     "apq8084")

@@ -29,7 +29,7 @@
 
 HERE=/vendor/bin
 source $HERE/init.qcom.debug-sdm660.sh
-source $HERE/init.qcom.debug-sdm670.sh
+source $HERE/init.qcom.debug-sdm710.sh
 enable_tracing_events()
 {
     # timer
@@ -1985,9 +1985,9 @@ case "$coresight_config" in
                 echo "Enabling STM/Debug events for SDM660"
                 enable_sdm660_debug
             ;;
-            "sdm670" | "qcs605")
-                echo "Enabling DCC/STM/Debug events for SDM670 and qcs605"
-                enable_sdm670_debug
+            "sdm710" | "qcs605")
+                echo "Enabling DCC/STM/Debug events for sdm710 and qcs605"
+                enable_sdm710_debug
                 setprop ro.dbg.coresight.stm_cfg_done 1
             ;;
             "sdm845")

@@ -67,7 +67,9 @@ function generate_make_files() {
                 root="$root.$delimeter"
                 hal_path="$hal_path/$delimeter"
             fi
-
+            if echo "$delimeter" | grep "fingerprint" > /dev/null;then
+              continue;
+            fi
             local root_arguments="-r $root:$hal_path -r  $2"
             echo "Updating $hal_package"
             hidl-gen -Landroidbp $root_arguments $hal_package;
@@ -80,12 +82,17 @@ function generate_make_files() {
 function start_script_for_interfaces {
 #Find interfaces in workspace
 local interfaces=$(ls -d $ANDROID_BUILD_TOP/vendor/qcom/*/interfaces)
-for interface in $interfaces
-do
-    #generate interfaces
-    local relative_interface=${interface#${ANDROID_BUILD_TOP}/}
-    generate_make_files $relative_interface "android.hidl:system/libhidl/transport"
-done
+local bp_flag_camera=$(ls $ANDROID_BUILD_TOP/vendor/qcom/opensource/interfaces/camera/device/1.0)
+if echo "$bp_flag_camera" | grep "Android.bp" > /dev/null;then
+    echo "bp file exist : exiting"
+else
+    for interface in $interfaces
+    do
+        #generate interfaces
+        local relative_interface=${interface#${ANDROID_BUILD_TOP}/}
+        generate_make_files $relative_interface "android.hidl:system/libhidl/transport"
+    done
+fi
 }
 #Start script for interfaces
 start_script_for_interfaces

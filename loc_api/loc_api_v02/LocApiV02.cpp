@@ -4118,6 +4118,16 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
     case QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02:
       reportPosition(eventPayload.pPositionReportEvent, true);
       break;
+
+    case QMI_LOC_GET_BLACKLIST_SV_IND_V02:
+      LOC_LOGd("GET blacklist SV Ind");
+      reportGnssSvIdConfig(*eventPayload.pGetBlacklistSvEvent);
+      break;
+
+    case QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02:
+      LOC_LOGd("GET constellation Ind");
+      reportGnssSvTypeConfig(*eventPayload.pGetConstellationConfigEvent);
+      break;
   }
 }
 
@@ -5061,4 +5071,272 @@ LocApiV02::convertLppeUp(const uint32_t lppeUserPlaneMask)
         mask |= GNSS_CONFIG_LPPE_USER_PLANE_SENSOR_BARO_MEASUREMENTS_BIT;
     }
     return mask;
+}
+
+LocationError
+LocApiV02::setBlacklistSvSync(const GnssSvIdConfig& config)
+{
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+
+    qmiLocSetBlacklistSvReqMsgT_v02 setBlacklistSvMsg;
+    qmiLocGenReqStatusIndMsgT_v02 genReqStatusIndMsg;
+
+    // Clear all fields
+    memset(&setBlacklistSvMsg, 0, sizeof(setBlacklistSvMsg));
+    memset(&genReqStatusIndMsg, 0, sizeof(genReqStatusIndMsg));
+
+    // Fill in the request details
+    setBlacklistSvMsg.glo_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.glo_persist_blacklist_sv = config.gloBlacklistSvMask;
+    setBlacklistSvMsg.glo_clear_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.glo_clear_persist_blacklist_sv = ~config.gloBlacklistSvMask;
+
+    setBlacklistSvMsg.bds_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.bds_persist_blacklist_sv = config.bdsBlacklistSvMask;
+    setBlacklistSvMsg.bds_clear_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.bds_clear_persist_blacklist_sv = ~config.bdsBlacklistSvMask;
+
+    setBlacklistSvMsg.qzss_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.qzss_persist_blacklist_sv = config.qzssBlacklistSvMask;
+    setBlacklistSvMsg.qzss_clear_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.qzss_clear_persist_blacklist_sv = ~config.qzssBlacklistSvMask;
+
+    setBlacklistSvMsg.gal_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.gal_persist_blacklist_sv = config.galBlacklistSvMask;
+    setBlacklistSvMsg.gal_clear_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.gal_clear_persist_blacklist_sv = ~config.galBlacklistSvMask;
+
+    // Update in request union
+    req_union.pSetBlacklistSvReq = &setBlacklistSvMsg;
+
+    // Send the request
+    status = loc_sync_send_req(clientHandle,
+                               QMI_LOC_SET_BLACKLIST_SV_REQ_V02,
+                               req_union,
+                               LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                               QMI_LOC_SET_BLACKLIST_SV_IND_V02,
+                               &genReqStatusIndMsg);
+    if(status != eLOC_CLIENT_SUCCESS ||
+            genReqStatusIndMsg.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("Set Blacklist SV failed. status: %s ind status %s",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(genReqStatusIndMsg.status));
+        return LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    return LOCATION_ERROR_SUCCESS;
+}
+
+void
+LocApiV02::setBlacklistSv(const GnssSvIdConfig& config)
+{
+    sendMsg(new LocApiMsg([this, config] () {
+        setBlacklistSvSync(config);
+    }));
+}
+
+void LocApiV02::getBlacklistSv()
+{
+    sendMsg(new LocApiMsg([this] () {
+
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+
+    // Nothing to update in request union
+
+    // Send the request
+    status = locClientSendReq(QMI_LOC_GET_BLACKLIST_SV_REQ_V02, req_union);
+    if(status != eLOC_CLIENT_SUCCESS) {
+        LOC_LOGe("Get Blacklist SV failed. status: %s",
+                 loc_get_v02_client_status_name(status));
+    }
+
+    }));
+}
+
+void
+LocApiV02::setConstellationControl(const GnssSvTypeConfig& config)
+{
+    sendMsg(new LocApiMsg([this, config] () {
+
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+
+    qmiLocSetConstellationConfigReqMsgT_v02 setConstellationConfigMsg;
+    qmiLocGenReqStatusIndMsgT_v02 genReqStatusIndMsg;
+
+    // Clear all fields
+    memset (&setConstellationConfigMsg, 0, sizeof(setConstellationConfigMsg));
+    memset(&genReqStatusIndMsg, 0, sizeof(genReqStatusIndMsg));
+
+    // Fill in the request details
+    setConstellationConfigMsg.resetConstellations = false;
+
+    if (config.enabledSvTypesMask != 0) {
+        setConstellationConfigMsg.enableMask_valid = true;
+        setConstellationConfigMsg.enableMask = config.enabledSvTypesMask;
+    }
+    if (config.blacklistedSvTypesMask != 0) {
+        setConstellationConfigMsg.disableMask_valid = true;
+        setConstellationConfigMsg.disableMask = config.blacklistedSvTypesMask;
+    }
+
+    // Update in request union
+    req_union.pSetConstellationConfigReq = &setConstellationConfigMsg;
+
+    // Send the request
+    status = loc_sync_send_req(clientHandle,
+                               QMI_LOC_SET_CONSTELLATION_CONTROL_REQ_V02,
+                               req_union,
+                               LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                               QMI_LOC_SET_CONSTELLATION_CONTROL_IND_V02,
+                               &genReqStatusIndMsg);
+    if(status != eLOC_CLIENT_SUCCESS ||
+            genReqStatusIndMsg.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("Set Constellation Config failed. status: %s ind status %s",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(genReqStatusIndMsg.status));
+    }
+
+    }));
+}
+
+void
+LocApiV02::getConstellationControl()
+{
+    sendMsg(new LocApiMsg([this] () {
+
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+
+    // Nothing to update in request union
+
+    // Send the request
+    status = locClientSendReq(QMI_LOC_GET_CONSTELLATION_CONTROL_REQ_V02, req_union);
+    if(status != eLOC_CLIENT_SUCCESS) {
+        LOC_LOGe("Get Constellation failed. status: %s",
+                 loc_get_v02_client_status_name(status));
+    }
+
+    }));
+}
+
+void
+LocApiV02::resetConstellationControl()
+{
+    sendMsg(new LocApiMsg([this] () {
+
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+
+    qmiLocSetConstellationConfigReqMsgT_v02 setConstellationConfigMsg;
+    qmiLocGenReqStatusIndMsgT_v02 genReqStatusIndMsg;
+
+    // Clear all fields
+    memset (&setConstellationConfigMsg, 0, sizeof(setConstellationConfigMsg));
+    memset(&genReqStatusIndMsg, 0, sizeof(genReqStatusIndMsg));
+
+    // Fill in the request details
+    setConstellationConfigMsg.resetConstellations = true;
+
+    // Update in request union
+    req_union.pSetConstellationConfigReq = &setConstellationConfigMsg;
+
+    // Send the request
+    status = loc_sync_send_req(clientHandle,
+                               QMI_LOC_SET_CONSTELLATION_CONTROL_REQ_V02,
+                               req_union,
+                               LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                               QMI_LOC_SET_CONSTELLATION_CONTROL_IND_V02,
+                               &genReqStatusIndMsg);
+    if(status != eLOC_CLIENT_SUCCESS ||
+            genReqStatusIndMsg.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("Reset Constellation Config failed. "
+                 "status: %s ind status %s",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(genReqStatusIndMsg.status));
+    }
+
+    }));
+}
+
+void
+LocApiV02::reportGnssSvIdConfig(
+        const qmiLocGetBlacklistSvIndMsgT_v02& ind)
+{
+    // Validate status
+    if (ind.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("Ind failure status %d", ind.status);
+        return;
+    }
+
+    // Parse all fields
+    GnssSvIdConfig config = {};
+    config.size = sizeof(GnssSvIdConfig);
+    if (ind.bds_persist_blacklist_sv_valid) {
+        config.bdsBlacklistSvMask = ind.bds_persist_blacklist_sv;
+    }
+    if (ind.gal_persist_blacklist_sv_valid) {
+        config.galBlacklistSvMask = ind.gal_persist_blacklist_sv;
+    }
+    if (ind.qzss_persist_blacklist_sv_valid) {
+        config.qzssBlacklistSvMask = ind.qzss_persist_blacklist_sv;
+    }
+    if (ind.glo_persist_blacklist_sv_valid) {
+        config.gloBlacklistSvMask = ind.glo_persist_blacklist_sv;
+    }
+
+    // Pass on GnssSvConfig
+    LocApiBase::reportGnssSvIdConfig(config);
+}
+
+void
+LocApiV02::reportGnssSvTypeConfig(
+        const qmiLocGetConstellationConfigIndMsgT_v02& ind)
+{
+    // Validate status
+    if (ind.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("Ind failure status %d", ind.status);
+        return;
+    }
+
+    // Parse all fields
+    GnssSvTypeConfig config = {};
+    config.size = sizeof(GnssSvTypeConfig);
+    convertToGnssSvTypeConfig(ind, config);
+
+    // Pass on GnssSvConfig
+    LocApiBase::reportGnssSvTypeConfig(config);
+}
+
+void
+LocApiV02::convertToGnssSvTypeConfig(
+        const qmiLocGetConstellationConfigIndMsgT_v02& ind,
+        GnssSvTypeConfig& config)
+{
+    if (ind.bds_status_valid &&
+            (ind.bds_status == eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY_V02 ||
+                    ind.bds_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
+                    ind.bds_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
+        config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_BDS_BIT;
+    }
+    if (ind.glonass_status_valid &&
+            (ind.glonass_status == eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY_V02 ||
+                    ind.glonass_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
+                    ind.glonass_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
+        config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_GLO_BIT;
+    }
+    if (ind.galileo_status_valid &&
+            (ind.galileo_status == eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY_V02 ||
+                    ind.galileo_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
+                    ind.galileo_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
+        config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_GAL_BIT;
+    }
+    if (ind.qzss_status_valid &&
+            (ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY_V02 ||
+                    ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
+                    ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
+        config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_QZSS_BIT;
+    }
 }

@@ -747,6 +747,12 @@ typedef union
 
     const qmiLocInjectFdclDataReqMsgT_v02 *pInjectFdclDataReq;
     /*QMI_LOC_INJECT_FDCL_DATA_REQ_V02*/
+
+    const qmiLocSetBlacklistSvReqMsgT_v02 *pSetBlacklistSvReq;
+    /*QMI_LOC_SET_BLACKLIST_SV_REQ_V02*/
+
+    const qmiLocSetConstellationConfigReqMsgT_v02 *pSetConstellationConfigReq;
+    /*QMI_LOC_SET_CONSTELLATION_CONTROL_REQ_V02*/
 }locClientReqUnionType;
 
 
@@ -1018,6 +1024,14 @@ typedef union
    const qmiLocEventFdclServiceReqIndMsgT_v02 *pFdclServiceReqEvent;
   /**< Sent by the engine to request the client for FDCL data
     QMI_LOC_EVENT_FDCL_SERVICE_REQ_IND_V02. */
+
+   const qmiLocGetBlacklistSvIndMsgT_v02 *pGetBlacklistSvEvent;
+   /**< Sent by the engine to provide current blackisting SV info.
+        QMI_LOC_GET_BLACKLIST_SV_IND_V02. */
+
+   const qmiLocGetConstellationConfigIndMsgT_v02 *pGetConstellationConfigEvent;
+   /**< Sent by the engine to provide current constellation control info.
+        QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02. */
 
 }locClientEventIndUnionType;
 

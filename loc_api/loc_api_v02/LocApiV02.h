@@ -111,6 +111,11 @@ private:
   static qmiLocApnTypeMaskT_v02 convertLocApnTypeMask(LocApnTypeMask mask);
   static LocApnTypeMask convertQmiLocApnTypeMask(qmiLocApnTypeMaskT_v02 mask);
 
+  /* Convert Get Constellation QMI Ind info to GnssSvTypeConfig */
+  static void convertToGnssSvTypeConfig(
+          const qmiLocGetConstellationConfigIndMsgT_v02& ind,
+          GnssSvTypeConfig& config);
+
   /*convert LocGnssClock type from QMI LOC to loc eng format*/
   int convertGnssClock (GnssMeasurementsClock& clock,
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_info);
@@ -171,6 +176,14 @@ private:
   bool registerEventMask(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
   bool cacheGnssMeasurementSupport();
+
+  /* Convert get blacklist sv info to GnssSvIdConfig */
+  void reportGnssSvIdConfig
+    (const qmiLocGetBlacklistSvIndMsgT_v02& getBlacklistSvIndMsg);
+
+  /* Convert get constellation info to GnssSvTypeConfig */
+  void reportGnssSvTypeConfig
+    (const qmiLocGetConstellationConfigIndMsgT_v02& getConstellationConfigIndMsg);
 
 protected:
   virtual enum loc_api_adapter_err
@@ -285,6 +298,14 @@ public:
   virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
   virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
 
+  /* Requests for SV/Constellation Control */
+  virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);
+  virtual void setBlacklistSv(const GnssSvIdConfig& config);
+  virtual void getBlacklistSv();
+  virtual void setConstellationControl(const GnssSvTypeConfig& config);
+  virtual void getConstellationControl();
+  virtual void resetConstellationControl();
+
   locClientStatusEnumType locSyncSendReq(uint32_t req_id, locClientReqUnionType req_payload,
           uint32_t timeout_msec, uint32_t ind_id, void* ind_payload_ptr);
 
@@ -292,7 +313,6 @@ public:
           locClientReqUnionType req_payload) {
       return ::locClientSendReq(clientHandle, req_id, req_payload);
   }
-
 };
 
 extern "C" LocApiBase* getLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask,

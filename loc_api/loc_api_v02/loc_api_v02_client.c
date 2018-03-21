@@ -673,9 +673,19 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
      sizeof(qmiLocGetFdclBsListIndMsgT_v02) },
 
    { QMI_LOC_INJECT_FDCL_DATA_IND_V02,
-     sizeof(qmiLocInjectFdclDataIndMsgT_v02) }
+     sizeof(qmiLocInjectFdclDataIndMsgT_v02) },
 
+   { QMI_LOC_SET_BLACKLIST_SV_IND_V02,
+     sizeof(qmiLocGenReqStatusIndMsgT_v02) },
 
+   { QMI_LOC_GET_BLACKLIST_SV_IND_V02,
+     sizeof(qmiLocGetBlacklistSvIndMsgT_v02) },
+
+   { QMI_LOC_SET_CONSTELLATION_CONTROL_IND_V02,
+     sizeof(qmiLocGenReqStatusIndMsgT_v02) },
+
+   { QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02,
+     sizeof(qmiLocGetConstellationConfigIndMsgT_v02) }
 };
 
 
@@ -1644,6 +1654,18 @@ static bool validateRequest(
         break;
     }
 
+    case QMI_LOC_SET_BLACKLIST_SV_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocSetBlacklistSvReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_SET_CONSTELLATION_CONTROL_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocSetConstellationConfigReqMsgT_v02);
+        break;
+    }
+
     // ALL requests with no payload
     case QMI_LOC_GET_SERVICE_REVISION_REQ_V02:
     case QMI_LOC_GET_FIX_CRITERIA_REQ_V02:
@@ -1665,6 +1687,8 @@ static bool validateRequest(
     case QMI_LOC_GET_SUPPORTED_MSGS_REQ_V02:
     case QMI_LOC_GET_SUPPORTED_FIELDS_REQ_V02:
     case QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02:
+    case QMI_LOC_GET_BLACKLIST_SV_REQ_V02:
+    case QMI_LOC_GET_CONSTELLATION_CONTROL_REQ_V02:
     {
       noPayloadFlag = true;
       break;

@@ -648,13 +648,13 @@ service qti /system/vendor/bin/qti
     group radio oem_2901 diag usb net_admin
     disabled
 
-service sensors /vendor/bin/sscrpcd
+service vendor.sensors /vendor/bin/sscrpcd
     class core
     user system
     group system
     disabled
 
-service sensors.qti /vendor/bin/sensors.qti
+service vendor.sensors.qti /vendor/bin/sensors.qti
     class core
     user system
     group system
@@ -914,7 +914,7 @@ service qcom-sh /vendor/bin/init.qcom.sh
     group root system radio
     oneshot
 
-service sensor-sh /vendor/bin/init.qcom.sensors.sh
+service vendor-sensor-sh /vendor/bin/init.qcom.sensors.sh
     class core
     user root
     oneshot

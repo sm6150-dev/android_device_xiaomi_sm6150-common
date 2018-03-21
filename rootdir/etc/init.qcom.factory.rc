@@ -27,7 +27,7 @@
 #
 
 # Define fastmmi
-service fastmmi /vendor/bin/mmi
+service fastmmi /system/bin/mmi
     user root
     group root
     disabled
@@ -36,6 +36,12 @@ service mmid /vendor/bin/mmid
     user root
     group root
     disabled
+
+service mmi_diag /system/bin/mmi_diag
+        class main
+        user root
+        group root oem_2901
+        disable
 
 on property:sys.boot_mode=ffbm
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"
@@ -74,6 +80,7 @@ on mmi && property:ro.bootmode=ffbm-00
     start fastmmi
     # start qcom-post-boot to set the misc partition path property value
     start qcom-post-boot
+    start mmi_diag
 
 on mmi && property:ro.bootmode=ffbm-01
     # ========================================================
@@ -85,6 +92,7 @@ on mmi && property:ro.bootmode=ffbm-01
     start fastmmi
     ## start qcom-post-boot to set the misc partition path property value
     start qcom-post-boot
+    start mmi_diag
 
 on ffbm
     trigger early-fs

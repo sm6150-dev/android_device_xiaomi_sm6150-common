@@ -41,7 +41,7 @@ service mmi_diag /system/bin/mmi_diag
         class main
         user root
         group root oem_2901
-        disable
+        disabled
 
 on property:sys.boot_mode=ffbm
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"

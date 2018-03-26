@@ -651,7 +651,7 @@ case "$target" in
                 echo 100000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
                 echo 1497600 > /sys/module/cpu_boost/parameters/input_boost_freq
                 echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
-                setprop ro.qualcomm.perf.cores_online 2
+                setprop ro.vendor.perf.cores_online 2
             ;;
             *)
                 echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
@@ -2553,7 +2553,7 @@ case "$target" in
         echo 300000 > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
         echo 300000 > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
         echo 1 > /sys/module/msm_thermal/core_control/enabled
-        setprop ro.qualcomm.perf.cores_online 2
+        setprop ro.vendor.perf.cores_online 2
         chown -h  system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h root.system /sys/devices/system/cpu/mfreq
@@ -3395,7 +3395,7 @@ chown -h system /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
 chown -h system /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
 chown -h system /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
 
-emmc_boot=`getprop ro.boot.emmc`
+emmc_boot=`getprop vendor.boot.emmc`
 case "$emmc_boot"
     in "true")
         chown -h system /sys/devices/platform/rs300000a7.65536/force_sync
@@ -3420,7 +3420,7 @@ case "$target" in
         start mpdecision
     ;;
     "msm8916")
-        setprop sys.post_boot.parsed 1
+        setprop vendor.post_boot.parsed 1
 
         if [ -f /sys/devices/soc0/soc_id ]; then
            soc_id=`cat /sys/devices/soc0/soc_id`
@@ -3429,11 +3429,11 @@ case "$target" in
         fi
         case $soc_id in
             "239" | "241" | "263" | "268" | "269" | "270" | "271")
-            setprop ro.min_freq_0 960000
-            setprop ro.min_freq_4 800000
+            setprop vendor.min_freq_0 960000
+            setprop vendor.min_freq_4 800000
         ;;
             "206" | "247" | "248" | "249" | "250" | "233" | "240" | "242")
-            setprop ro.min_freq_0 800000
+            setprop vendor.min_freq_0 800000
         ;;
         esac
     ;;
@@ -3442,7 +3442,7 @@ case "$target" in
         echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/queue/read_ahead_kb
-        setprop sys.post_boot.parsed 1
+        setprop vendor.post_boot.parsed 1
     ;;
     "msm8952")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
@@ -3451,7 +3451,7 @@ case "$target" in
         echo 128 > /sys/block/dm-1/queue/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/queue/read_ahead_kb
-        setprop sys.post_boot.parsed 1
+        setprop vendor.post_boot.parsed 1
     ;;
     "msm8937" | "msm8953")
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
@@ -3460,7 +3460,7 @@ case "$target" in
         echo 128 > /sys/block/dm-1/queue/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0rpmb/queue/read_ahead_kb
-        setprop sys.post_boot.parsed 1
+        setprop vendor.post_boot.parsed 1
 
         low_ram_enable=`getprop ro.config.low_ram`
 
@@ -3473,7 +3473,7 @@ case "$target" in
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
     "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670")
-        setprop sys.post_boot.parsed 1
+        setprop vendor.post_boot.parsed 1
     ;;
     "apq8084")
         rm /data/system/perfd/default_values

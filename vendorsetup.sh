@@ -40,11 +40,14 @@ add_lunch_combo msm8916_64-userdebug
 add_lunch_combo msm8994-userdebug
 add_lunch_combo msm8996-userdebug
 add_lunch_combo msm8909-userdebug
+add_lunch_combo msm8909go-userdebug
 add_lunch_combo msm8909_512-userdebug
+add_lunch_combo msm8909_512go-userdebug
 add_lunch_combo msm8992-userdebug
 add_lunch_combo msm8952_64-userdebug
 add_lunch_combo msm8952_32-userdebug
 add_lunch_combo msm8937_32-userdebug
+add_lunch_combo msm8937_32go-userdebug
 add_lunch_combo msm8937_64-userdebug
 add_lunch_combo msm8953_32-userdebug
 add_lunch_combo msm8953_64-userdebug

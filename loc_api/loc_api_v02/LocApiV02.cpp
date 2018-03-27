@@ -478,6 +478,7 @@ locClientEventMaskType LocApiV02 :: adjustMaskForNoSession(locClientEventMaskTyp
     LOC_LOGD("%s:%d]: before qmiMask=%" PRIu64,
              __func__, __LINE__, qmiMask);
     locClientEventMaskType clearMask = QMI_LOC_EVENT_MASK_POSITION_REPORT_V02 |
+                                       QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT_V02 |
                                        QMI_LOC_EVENT_MASK_GNSS_SV_INFO_V02 |
                                        QMI_LOC_EVENT_MASK_NMEA_V02 |
                                        QMI_LOC_EVENT_MASK_ENGINE_STATE_V02 |
@@ -2035,6 +2036,9 @@ locClientEventMaskType LocApiV02 :: convertMask(
   if (mask & LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT)
       eventMask |= QMI_LOC_EVENT_MASK_POSITION_REPORT_V02;
 
+  if (mask & LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT)
+      eventMask |= QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT_V02;
+
   if (mask & LOC_API_ADAPTER_BIT_SATELLITE_REPORT)
       eventMask |= QMI_LOC_EVENT_MASK_GNSS_SV_INFO_V02;
 
@@ -2196,13 +2200,16 @@ enum loc_api_adapter_err LocApiV02 :: convertErr(
    position to loc eng */
 
 void LocApiV02 :: reportPosition (
-  const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr)
+  const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr,
+  bool unpropagatedPosition)
 {
     UlpLocation location;
     LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
     LOC_LOGD("Reporting position from V2 Adapter\n");
     memset(&location, 0, sizeof (UlpLocation));
     location.size = sizeof(location);
+    location.unpropagatedPosition = unpropagatedPosition;
+
     GpsLocationExtended locationExtended;
     memset(&locationExtended, 0, sizeof (GpsLocationExtended));
     locationExtended.size = sizeof(locationExtended);
@@ -2394,6 +2401,27 @@ void LocApiV02 :: reportPosition (
             {
                 locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_HOR_ELIP_UNC_AZIMUTH;
                 locationExtended.horUncEllipseOrientAzimuth = location_report_ptr->horUncEllipseOrientAzimuth;
+            }
+
+            // If the horizontal uncertainty ellipse info is available,
+            // calculate the horizontal uncertainty along north and east
+            if (location_report_ptr->horUncEllipseSemiMajor_valid &&
+                location_report_ptr->horUncEllipseSemiMinor_valid &&
+                location_report_ptr->horUncEllipseOrientAzimuth_valid)
+            {
+                double cosVal = cos((double)locationExtended.horUncEllipseOrientAzimuth);
+                double sinVal = sin((double)locationExtended.horUncEllipseOrientAzimuth);
+                double major = locationExtended.horUncEllipseSemiMajor;
+                double minor = locationExtended.horUncEllipseSemiMinor;
+
+                double northSquare = major*major * cosVal*cosVal + minor*minor * sinVal*sinVal;
+                double eastSquare =  major*major * sinVal*sinVal + minor*minor * cosVal*cosVal;
+
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_STD_DEV;
+                locationExtended.northStdDeviation = sqrt(northSquare);
+
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_STD_DEV;
+                locationExtended.eastStdDeviation  = sqrt(eastSquare);
             }
 
             if (location_report_ptr->gnssSvUsedList_valid &&
@@ -2883,6 +2911,21 @@ void  LocApiV02 :: reportSvMeasurement (
     {
       LOC_LOGW("[SV_MEAS_QMI] #of SV in QMI: %d, Valid SV-id Count: %d",
                  gnss_raw_measurement_ptr->svMeasurement_len,cnt );
+    }
+
+    // svCarrierPhseUnc
+    LOC_LOGV("[SV_MEAS] svCarrierPhseUnc_valid=%u _len=%u",
+            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_valid,
+            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len);
+    if ((1 == gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_valid) &&
+            (gnss_raw_measurement_ptr->svMeasurement_len ==
+            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len)) {
+
+        for(i=0;i<gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len;i++) {
+            svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhaseUncValid = 1;
+            svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhaseUnc =
+                    gnss_raw_measurement_ptr->svCarrierPhaseUncertainty[i];
+        }
     }
 
   } //if svClockMeasurement_valid
@@ -3950,6 +3993,10 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
       reportSvPolynomial(eventPayload.pGnssSvPolyInfoEvent);
       break;
 
+    //Unpropagated position report
+    case QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02:
+      reportPosition(eventPayload.pPositionReportEvent, true);
+      break;
   }
 }
 

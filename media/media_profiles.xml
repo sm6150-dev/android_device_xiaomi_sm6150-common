@@ -90,7 +90,7 @@
     <CamcorderProfiles cameraId="0">
 
         <EncoderProfile quality="qvga" fileFormat="3gp" duration="60">
-            <Video codec="m4v"
+            <Video codec="h264"
                    bitRate="128000"
                    width="320"
                    height="240"
@@ -224,7 +224,7 @@
     <CamcorderProfiles cameraId="1">
 
         <EncoderProfile quality="qvga" fileFormat="3gp" duration="60">
-            <Video codec="m4v"
+            <Video codec="h264"
                    bitRate="128000"
                    width="320"
                    height="240"

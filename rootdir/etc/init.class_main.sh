@@ -32,7 +32,7 @@
 #
 baseband=`getprop ro.baseband`
 sgltecsfb=`getprop persist.vendor.radio.sglte_csfb`
-datamode=`getprop persist.data.mode`
+datamode=`getprop persist.vendor.data.mode`
 rild_status=`getprop init.svc.ril-daemon`
 
 case "$baseband" in

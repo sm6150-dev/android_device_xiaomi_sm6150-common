@@ -253,7 +253,7 @@ case "$target" in
                   ;;
         esac
         ;;
-    "msm8994" | "msm8992" | "msm8998" | "apq8098_latv" | "sdm845" | "sdm670" | "qcs605")
+    "msm8994" | "msm8992" | "msm8998" | "apq8098_latv" | "sdm845" | "sdm670" | "qcs605" | "msmnile")
         start_msm_irqbalance
         ;;
     "msm8996")

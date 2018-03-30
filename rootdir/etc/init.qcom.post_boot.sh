@@ -422,7 +422,7 @@ function start_hbtp()
         # Start the Host based Touch processing but not in the power off mode.
         bootmode=`getprop ro.bootmode`
         if [ "charger" != $bootmode ]; then
-                start hbtp
+                start vendor.hbtp
         fi
 }
 

@@ -1100,3 +1100,5 @@ else
 endif
 
 PRODUCT_PACKAGES_DEBUG += sl4a
+PRODUCT_PACKAGES += liboemaids_system
+PRODUCT_PACKAGES += liboemaids_vendor

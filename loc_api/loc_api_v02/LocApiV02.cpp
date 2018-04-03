@@ -773,73 +773,87 @@ void LocApiV02 ::
 void LocApiV02 ::
     injectPosition(double latitude, double longitude, float accuracy)
 {
-  sendMsg(new LocApiMsg([this, latitude, longitude, accuracy] () {
+    Location location = {};
 
-  locClientReqUnionType req_union;
-  locClientStatusEnumType status;
-  qmiLocInjectPositionReqMsgT_v02 inject_pos_msg;
-  qmiLocInjectPositionIndMsgT_v02 inject_pos_ind;
+    location.flags |= LOCATION_HAS_LAT_LONG_BIT;
+    location.latitude = latitude;
+    location.longitude = longitude;
 
-  memset(&inject_pos_msg, 0, sizeof(inject_pos_msg));
-  memset(&inject_pos_ind, 0, sizeof(inject_pos_ind));
+    location.flags |= LOCATION_HAS_ACCURACY_BIT;
+    location.accuracy = accuracy;
 
-  inject_pos_msg.latitude_valid = 1;
-  inject_pos_msg.latitude = latitude;
+    struct timespec time_info_current;
+    if(clock_gettime(CLOCK_REALTIME,&time_info_current) == 0) //success
+    {
+        location.timestamp = (time_info_current.tv_sec)*1e3 +
+            (time_info_current.tv_nsec)/1e6;
+    }
 
-  inject_pos_msg.longitude_valid = 1;
-  inject_pos_msg.longitude = longitude;
+    injectPosition(location, false);
+}
 
-  inject_pos_msg.horUncCircular_valid = 1;
+void LocApiV02::injectPosition(const Location& location, bool onDemandCpi)
+{
+    sendMsg(new LocApiMsg([this, location, onDemandCpi] () {
 
-  inject_pos_msg.horUncCircular = accuracy; //meters assumed
-  if (inject_pos_msg.horUncCircular < 1000) {
-      inject_pos_msg.horUncCircular = 1000;
-  }
+    qmiLocInjectPositionReqMsgT_v02 injectPositionReq;
+    memset(&injectPositionReq, 0, sizeof(injectPositionReq));
 
-  inject_pos_msg.horConfidence_valid = 1;
+    if (location.timestamp > 0) {
+        injectPositionReq.timestampUtc_valid = 1;
+        injectPositionReq.timestampUtc = location.timestamp;
+    }
 
-  inject_pos_msg.horConfidence = 68; //1 std dev assumed as specified by API
+    if (LOCATION_HAS_LAT_LONG_BIT & location.flags) {
+        injectPositionReq.latitude_valid = 1;
+        injectPositionReq.longitude_valid = 1;
+        injectPositionReq.latitude = location.latitude;
+        injectPositionReq.longitude = location.longitude;
+    }
 
-  inject_pos_msg.rawHorUncCircular_valid = 1;
+    if (LOCATION_HAS_ACCURACY_BIT & location.flags) {
+        injectPositionReq.horUncCircular_valid = 1;
+        injectPositionReq.horUncCircular = location.accuracy;
+        injectPositionReq.horConfidence_valid = 1;
+        injectPositionReq.horConfidence = 68;
+        injectPositionReq.rawHorUncCircular_valid = 1;
+        injectPositionReq.rawHorUncCircular = location.accuracy;
+        injectPositionReq.rawHorConfidence_valid = 1;
+        injectPositionReq.rawHorConfidence = 68;
 
-  inject_pos_msg.rawHorUncCircular = accuracy; //meters assumed
+        // We don't wish to advertise accuracy better than 1000 meters to Modem
+        if (injectPositionReq.horUncCircular < 1000) {
+            injectPositionReq.horUncCircular = 1000;
+        }
+    }
 
-  inject_pos_msg.rawHorConfidence_valid = 1;
+    if (LOCATION_HAS_ALTITUDE_BIT & location.flags) {
+        injectPositionReq.altitudeWrtEllipsoid_valid = 1;
+        injectPositionReq.altitudeWrtEllipsoid = location.altitude;
+    }
 
-  inject_pos_msg.rawHorConfidence = 68; //1 std dev assumed as specified by API
+    if (LOCATION_HAS_VERTICAL_ACCURACY_BIT & location.flags) {
+        injectPositionReq.vertUnc_valid = 1;
+        injectPositionReq.vertUnc = location.verticalAccuracy;
+        injectPositionReq.vertConfidence_valid = 1;
+        injectPositionReq.vertConfidence = 68;
+    }
 
-  struct timespec time_info_current;
-  if(clock_gettime(CLOCK_REALTIME,&time_info_current) == 0) //success
-  {
-      inject_pos_msg.timestampUtc_valid = 1;
-      inject_pos_msg.timestampUtc = (time_info_current.tv_sec)*1e3 +
-          (time_info_current.tv_nsec)/1e6;
-      LOC_LOGV("%s:%d] inject timestamp from system: %" PRIu64,
-               __func__, __LINE__, inject_pos_msg.timestampUtc);
-  }
+    if (onDemandCpi) {
+        injectPositionReq.onDemandCpi_valid = 1;
+        injectPositionReq.onDemandCpi = 1;
+    }
 
-  /* Log */
-  LOC_LOGD("%s:%d]: Lat=%lf, Lon=%lf, Acc=%.2lf rawAcc=%.2lf", __func__, __LINE__,
-                inject_pos_msg.latitude, inject_pos_msg.longitude,
-                inject_pos_msg.horUncCircular, inject_pos_msg.rawHorUncCircular);
+    LOC_LOGv("Lat=%lf, Lon=%lf, Acc=%.2lf rawAcc=%.2lf horConfidence=%d"
+             "rawHorConfidence=%d onDemandCpi=%d",
+             injectPositionReq.latitude, injectPositionReq.longitude,
+             injectPositionReq.horUncCircular, injectPositionReq.rawHorUncCircular,
+             injectPositionReq.horConfidence, injectPositionReq.rawHorConfidence,
+             injectPositionReq.onDemandCpi);
 
-  req_union.pInjectPositionReq = &inject_pos_msg;
+    LOC_SEND_SYNC_REQ(InjectPosition, INJECT_POSITION, injectPositionReq);
 
-  status = locSyncSendReq(QMI_LOC_INJECT_POSITION_REQ_V02,
-                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                          QMI_LOC_INJECT_POSITION_IND_V02,
-                          &inject_pos_ind);
-
-  if (status != eLOC_CLIENT_SUCCESS ||
-      eQMI_LOC_SUCCESS_V02 != inject_pos_ind.status)
-  {
-    LOC_LOGE ("%s:%d]: error! status = %s, inject_pos_ind.status = %s\n",
-              __func__, __LINE__,
-              loc_get_v02_client_status_name(status),
-              loc_get_v02_qmi_status_name(inject_pos_ind.status));
-  }
-
-  }));
+    }));
 }
 
 /* delete assistance date */
@@ -3700,6 +3714,35 @@ void LocApiV02 :: reportGnssMeasurementData(
     }
 }
 
+/* convert and report ODCPI request */
+void LocApiV02::requestOdcpi(const qmiLocEventWifiReqIndMsgT_v02& qmiReq)
+{
+    LOC_LOGv("ODCPI Request: requestType %d", qmiReq.requestType);
+
+    OdcpiRequestInfo req = {};
+    req.size = sizeof(OdcpiRequestInfo);
+
+    if (eQMI_LOC_WIFI_START_PERIODIC_HI_FREQ_FIXES_V02 == qmiReq.requestType ||
+            eQMI_LOC_WIFI_START_PERIODIC_KEEP_WARM_V02 == qmiReq.requestType) {
+        req.type = ODCPI_REQUEST_TYPE_START;
+    } else if (eQMI_LOC_WIFI_STOP_PERIODIC_FIXES_V02 == qmiReq.requestType){
+        req.type = ODCPI_REQUEST_TYPE_STOP;
+    } else {
+        LOC_LOGe("Invalid request type");
+        return;
+    }
+
+    if (qmiReq.e911Mode_valid) {
+        req.isEmergencyMode = qmiReq.e911Mode == 1 ? true : false;
+    }
+
+    if (qmiReq.tbfInMs_valid) {
+        req.tbfMillis = qmiReq.tbfInMs;
+    }
+
+    LocApiBase::requestOdcpi(req);
+}
+
 #define FIRST_BDS_D2_SV_PRN 1
 #define LAST_BDS_D2_SV_PRN  5
 #define IS_BDS_GEO_SV(svId, gnssType) ( ((gnssType == GNSS_SV_TYPE_BEIDOU) && \
@@ -4141,6 +4184,11 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
     case QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02:
       LOC_LOGd("GET constellation Ind");
       reportGnssSvTypeConfig(*eventPayload.pGetConstellationConfigEvent);
+      break;
+
+    case  QMI_LOC_EVENT_WIFI_REQ_IND_V02:
+      LOC_LOGd("WIFI Req Ind");
+      requestOdcpi(*eventPayload.pWifiReqEvent);
       break;
   }
 }
@@ -5368,6 +5416,8 @@ qmiLocPowerModeEnumT_v02 LocApiV02::convertPowerMode(GnssPowerMode powerMode)
         return eQMI_LOC_POWER_MODE_BACKGROUND_DEFINED_TIME_V02;
     case GNSS_POWER_MODE_M5:
         return eQMI_LOC_POWER_MODE_BACKGROUND_KEEP_WARM_V02;
+    default:
+        LOC_LOGE("Invalid power mode %d", powerMode);
     }
 
     return QMILOCPOWERMODEENUMT_MIN_ENUM_VAL_V02;

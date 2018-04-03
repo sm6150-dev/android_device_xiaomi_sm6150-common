@@ -176,6 +176,10 @@ private:
   void reportGnssMeasurementData(
     const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr);
 
+  /* convert and report ODCPI request */
+  void requestOdcpi(
+    const qmiLocEventWifiReqIndMsgT_v02& odcpiReq);
+
   bool registerEventMask(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
   bool cacheGnssMeasurementSupport();
@@ -225,6 +229,9 @@ public:
 
   virtual void
     injectPosition(double latitude, double longitude, float accuracy);
+
+  virtual void
+    injectPosition(const Location& location, bool onDemandCpi);
 
   virtual void
     deleteAidingData(const GnssAidingData& data, LocApiResponse *adapterResponse);

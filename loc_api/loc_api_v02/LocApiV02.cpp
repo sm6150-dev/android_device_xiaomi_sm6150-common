@@ -804,6 +804,64 @@ enum loc_api_adapter_err LocApiV02 ::
   return convertErr(status);
 }
 
+enum loc_api_adapter_err LocApiV02::injectPosition(const Location& location)
+{
+    qmiLocInjectPositionReqMsgT_v02 injectPositionReq;
+    memset(&injectPositionReq, 0, sizeof(injectPositionReq));
+
+    injectPositionReq.timestampUtc_valid = 1;
+    injectPositionReq.timestampUtc = location.timestamp;
+
+    if (LOCATION_HAS_LAT_LONG_BIT & location.flags) {
+        injectPositionReq.latitude_valid = 1;
+        injectPositionReq.longitude_valid = 1;
+        injectPositionReq.latitude = location.latitude;
+        injectPositionReq.longitude = location.longitude;
+    }
+
+    if (LOCATION_HAS_ACCURACY_BIT & location.flags) {
+        injectPositionReq.horUncCircular_valid = 1;
+        injectPositionReq.horUncCircular = location.accuracy;
+        injectPositionReq.horConfidence_valid = 1;
+        injectPositionReq.horConfidence = 68;
+        injectPositionReq.rawHorUncCircular_valid = 1;
+        injectPositionReq.rawHorUncCircular = location.accuracy;
+        injectPositionReq.rawHorConfidence_valid = 1;
+        injectPositionReq.rawHorConfidence = 68;
+
+        // We don't wish to advertise accuracy better than 1000 meters to Modem
+        if (injectPositionReq.horUncCircular < 1000) {
+            injectPositionReq.horUncCircular = 1000;
+        }
+    }
+
+    if (LOCATION_HAS_ALTITUDE_BIT & location.flags) {
+        injectPositionReq.altitudeWrtEllipsoid_valid = 1;
+        injectPositionReq.altitudeWrtEllipsoid = location.altitude;
+    }
+
+    if (LOCATION_HAS_VERTICAL_ACCURACY_BIT & location.flags) {
+        injectPositionReq.vertUnc_valid = 1;
+        injectPositionReq.vertUnc = location.verticalAccuracy;
+        injectPositionReq.vertConfidence_valid = 1;
+        injectPositionReq.vertConfidence = 68;
+    }
+
+    injectPositionReq.onDemandCpi_valid = 1;
+    injectPositionReq.onDemandCpi = 1;
+
+    LOC_LOGv("Lat=%lf, Lon=%lf, Acc=%.2lf rawAcc=%.2lf horConfidence=%d"
+             "rawHorConfidence=%d onDemandCpi=%d",
+             injectPositionReq.latitude, injectPositionReq.longitude,
+             injectPositionReq.horUncCircular, injectPositionReq.rawHorUncCircular,
+             injectPositionReq.horConfidence, injectPositionReq.rawHorConfidence,
+             injectPositionReq.onDemandCpi);
+
+    LOC_SEND_SYNC_REQ(InjectPosition, INJECT_POSITION, injectPositionReq);
+
+    return convertErr(st);
+}
+
 /* delete assistance date */
 LocationError
 LocApiV02::deleteAidingData(const GnssAidingData& data)
@@ -3516,6 +3574,35 @@ void LocApiV02 :: reportGnssMeasurementData(
     }
 }
 
+/* convert and report ODCPI request */
+void LocApiV02::reportOdcpiRequest(const qmiLocEventWifiReqIndMsgT_v02& qmiReq)
+{
+    LOC_LOGv("ODCPI Request: requestType %d", qmiReq.requestType);
+
+    OdcpiRequestInfo req = {};
+    req.size = sizeof(OdcpiRequestInfo);
+
+    if (eQMI_LOC_WIFI_START_PERIODIC_HI_FREQ_FIXES_V02 == qmiReq.requestType ||
+            eQMI_LOC_WIFI_START_PERIODIC_KEEP_WARM_V02 == qmiReq.requestType) {
+        req.type = ODCPI_REQUEST_TYPE_START;
+    } else if (eQMI_LOC_WIFI_STOP_PERIODIC_FIXES_V02 == qmiReq.requestType){
+        req.type = ODCPI_REQUEST_TYPE_STOP;
+    } else {
+        LOC_LOGe("Invalid request type");
+        return;
+    }
+
+    if (qmiReq.e911Mode_valid) {
+        req.isEmergencyMode = qmiReq.e911Mode == 1 ? true : false;
+    }
+
+    if (qmiReq.tbfInMs_valid) {
+        req.tbfMillis = qmiReq.tbfInMs;
+    }
+
+    LocApiBase::reportOdcpiRequest(req);
+}
+
 #define FIRST_BDS_D2_SV_PRN 1
 #define LAST_BDS_D2_SV_PRN  5
 #define IS_BDS_GEO_SV(svId, gnssType) ( ((gnssType == GNSS_SV_TYPE_BEIDOU) && \
@@ -3943,6 +4030,10 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
       reportSvPolynomial(eventPayload.pGnssSvPolyInfoEvent);
       break;
 
+    case  QMI_LOC_EVENT_WIFI_REQ_IND_V02:
+      LOC_LOGd("WIFI Req Ind");
+      reportOdcpiRequest(*eventPayload.pWifiReqEvent);
+      break;
   }
 }
 

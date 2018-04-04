@@ -262,11 +262,10 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
   enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
   LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = convertMask(newMask);
-  locClientEventMaskType oldQmiMask;
   LOC_LOGD("%s:%d]: %p Enter mMask: %" PRIu64 "; mask: %" PRIu64 "; newMask: %" PRIu64 " \
           mQmiMask: %" PRIu64 " qmiMask: %" PRIu64,
            __func__, __LINE__, clientHandle, mMask, mask, newMask, mQmiMask, qmiMask);
-  oldQmiMask = mQmiMask;
+
   /* If the client is already open close it first */
   if(LOC_CLIENT_INVALID_HANDLE_VALUE == clientHandle)
   {
@@ -307,8 +306,6 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         };
 
         cacheGnssMeasurementSupport();
-        /* Indicate that QMI LOC message for GNSS measurement was sent */
-        oldQmiMask |= QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
 
         // check the modem
         status = locClientSupportMsgCheck(clientHandle,
@@ -443,17 +440,10 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
     }
   }
 
-  /* Set the SV Measurement Constellation when Measurement Report or Polynomial report is set */
-  /* Check if either measurement report or sv polynomial report bit is different in the new
-     mask compared to the old mask. If yes then turn that report on or off as requested */
-  locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
-                                        QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
-
-  locClientEventMaskType maskDiff = qmiMask ^ oldQmiMask;
-
-  if ((maskDiff & measOrSvPoly) != 0) {
-      setSvMeasurementConstellation(qmiMask);
-  }
+    if((qmiMask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) ||
+        (qmiMask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02)) {
+        setSvMeasurementConstellation(qmiMask);
+    }
 
   LOC_LOGD("%s:%d]: Exit mMask: %" PRIu64 "; mask: %" PRIu64 " mQmiMask: %" PRIu64 " \
            qmiMask: %" PRIu64, __func__, __LINE__, mMask, mask, mQmiMask, qmiMask);
@@ -4629,13 +4619,13 @@ int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
 
     memset(&setGNSSConstRepConfigReq, 0, sizeof(setGNSSConstRepConfigReq));
 
-    setGNSSConstRepConfigReq.measReportConfig_valid = true;
     if (mask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) {
+        setGNSSConstRepConfigReq.measReportConfig_valid = true;
         setGNSSConstRepConfigReq.measReportConfig = svConstellation;
     }
 
-    setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
     if (mask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02) {
+        setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
         setGNSSConstRepConfigReq.svPolyReportConfig = svConstellation;
     }
     req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;

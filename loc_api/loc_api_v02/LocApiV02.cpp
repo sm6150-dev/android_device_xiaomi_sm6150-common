@@ -42,7 +42,7 @@
 #include <loc_api_v02_client.h>
 #include <loc_util_log.h>
 #include <gps_extended.h>
-#include "platform_lib_includes.h"
+#include "loc_pla.h"
 #include <loc_cfg.h>
 #include <LocDualContext.h>
 
@@ -328,12 +328,11 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
             queryAonConfigReq.transactionId = LOC_API_V02_DEF_SESSION_ID;
 
             req_union.pQueryAonConfigReq = &queryAonConfigReq;
-            status = loc_sync_send_req(clientHandle,
-                                       QMI_LOC_QUERY_AON_CONFIG_REQ_V02,
-                                       req_union,
-                                       LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                       QMI_LOC_QUERY_AON_CONFIG_IND_V02,
-                                       &queryAonConfigInd);
+            status = locSyncSendReq(QMI_LOC_QUERY_AON_CONFIG_REQ_V02,
+                                    req_union,
+                                    LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                    QMI_LOC_QUERY_AON_CONFIG_IND_V02,
+                                    &queryAonConfigInd);
 
             if (status == eLOC_CLIENT_FAILURE_UNSUPPORTED) {
                 LOC_LOGE("%s:%d]: Query AON config is not supported.\n", __func__, __LINE__);
@@ -404,12 +403,11 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         memset(&getSupportedFeatureList_ind, 0, sizeof(getSupportedFeatureList_ind));
 
         req_union.pGetSupportedFeatureReq = &getSupportedFeatureList_req;
-        status = loc_sync_send_req(clientHandle,
-                                   QMI_LOC_GET_SUPPORTED_FEATURE_REQ_V02,
-                                   req_union,
-                                   LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                   QMI_LOC_GET_SUPPORTED_FEATURE_IND_V02,
-                                   &getSupportedFeatureList_ind);
+        status = locSyncSendReq(QMI_LOC_GET_SUPPORTED_FEATURE_REQ_V02,
+                                req_union,
+                                LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                QMI_LOC_GET_SUPPORTED_FEATURE_IND_V02,
+                                &getSupportedFeatureList_ind);
         if (eLOC_CLIENT_SUCCESS != status) {
             LOC_LOGE("%s:%d:%d]: Failed to get features supported from "
                      "QMI_LOC_GET_SUPPORTED_FEATURE_REQ_V02. \n", __func__, __LINE__, status);
@@ -550,12 +548,11 @@ enum loc_api_adapter_err LocApiV02 :: startFix(const LocPosMode& fixCriteria)
   req_union.pSetOperationModeReq = &set_mode_msg;
 
   // send the mode first, before the start message.
-  status = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_OPERATION_MODE_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_OPERATION_MODE_IND_V02,
-                             &set_mode_ind); // NULL?
-   //When loc_sync_send_req status is time out, more likely the response was lost.
+  status = locSyncSendReq(QMI_LOC_SET_OPERATION_MODE_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_OPERATION_MODE_IND_V02,
+                          &set_mode_ind); // NULL?
+   //When locSyncSendReq status is time out, more likely the response was lost.
    //startFix will continue as though it is succeeded.
   if ((status != eLOC_CLIENT_SUCCESS && status != eLOC_CLIENT_FAILURE_TIMEOUT) ||
        eQMI_LOC_SUCCESS_V02 != set_mode_ind.status)
@@ -639,8 +636,7 @@ enum loc_api_adapter_err LocApiV02 :: startFix(const LocPosMode& fixCriteria)
 
       req_union.pStartReq = &start_msg;
 
-      status = locClientSendReq (clientHandle, QMI_LOC_START_REQ_V02,
-                                 req_union );
+      status = locClientSendReq(QMI_LOC_START_REQ_V02, req_union);
   }
 
   return convertErr(status);
@@ -663,9 +659,7 @@ enum loc_api_adapter_err LocApiV02 :: stopFix()
 
   req_union.pStopReq = &stop_msg;
 
-  status = locClientSendReq(clientHandle,
-                            QMI_LOC_STOP_REQ_V02,
-                            req_union);
+  status = locClientSendReq(QMI_LOC_STOP_REQ_V02, req_union);
 
   mInSession = false;
   // if engine on never happend, deregister events
@@ -714,7 +708,7 @@ enum loc_api_adapter_err LocApiV02 ::
 
   inject_time_msg.timeUtc = time;
 
-  inject_time_msg.timeUtc += (int64_t)(platform_lib_abstraction_elapsed_millis_since_boot() - timeReference);
+  inject_time_msg.timeUtc += (int64_t)(uptimeMillis() - timeReference);
 
   inject_time_msg.timeUnc = uncertainty;
 
@@ -723,11 +717,10 @@ enum loc_api_adapter_err LocApiV02 ::
   LOC_LOGV ("%s:%d]: uncertainty = %d\n", __func__, __LINE__,
                  uncertainty);
 
-  status = loc_sync_send_req(clientHandle,
-                             QMI_LOC_INJECT_UTC_TIME_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_INJECT_UTC_TIME_IND_V02,
-                             &inject_time_ind);
+  status = locSyncSendReq(QMI_LOC_INJECT_UTC_TIME_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_INJECT_UTC_TIME_IND_V02,
+                          &inject_time_ind);
 
   if (status != eLOC_CLIENT_SUCCESS ||
       eQMI_LOC_SUCCESS_V02 != inject_time_ind.status)
@@ -794,11 +787,10 @@ enum loc_api_adapter_err LocApiV02 ::
 
   req_union.pInjectPositionReq = &inject_pos_msg;
 
-  status = loc_sync_send_req(clientHandle,
-                             QMI_LOC_INJECT_POSITION_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_INJECT_POSITION_IND_V02,
-                             &inject_pos_ind);
+  status = locSyncSendReq(QMI_LOC_INJECT_POSITION_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_INJECT_POSITION_IND_V02,
+                          &inject_pos_ind);
 
   if (status != eLOC_CLIENT_SUCCESS ||
       eQMI_LOC_SUCCESS_V02 != inject_pos_ind.status)
@@ -943,11 +935,10 @@ LocApiV02::deleteAidingData(const GnssAidingData& data)
 
       req_union.pDeleteGNSSServiceDataReq = &delete_gnss_req;
 
-      status = loc_sync_send_req(clientHandle,
-          QMI_LOC_DELETE_GNSS_SERVICE_DATA_REQ_V02,
-          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-          QMI_LOC_DELETE_GNSS_SERVICE_DATA_IND_V02,
-          &delete_gnss_resp);
+      status = locSyncSendReq(QMI_LOC_DELETE_GNSS_SERVICE_DATA_REQ_V02,
+                              req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                              QMI_LOC_DELETE_GNSS_SERVICE_DATA_IND_V02,
+                              &delete_gnss_resp);
 
       if (status != eLOC_CLIENT_SUCCESS ||
           eQMI_LOC_SUCCESS_V02 != delete_gnss_resp.status)
@@ -1078,11 +1069,10 @@ LocApiV02::deleteAidingData(const GnssAidingData& data)
 
       req_union.pDeleteAssistDataReq = &delete_req;
 
-      status = loc_sync_send_req(clientHandle,
-          QMI_LOC_DELETE_ASSIST_DATA_REQ_V02,
-          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-          QMI_LOC_DELETE_ASSIST_DATA_IND_V02,
-          &delete_resp);
+      status = locSyncSendReq(QMI_LOC_DELETE_ASSIST_DATA_REQ_V02,
+                              req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                              QMI_LOC_DELETE_ASSIST_DATA_IND_V02,
+                              &delete_resp);
 
       if (status != eLOC_CLIENT_SUCCESS ||
           eQMI_LOC_SUCCESS_V02 != delete_resp.status)
@@ -1190,10 +1180,10 @@ LocApiV02::informNiResponse(GnssNiResponse userResponse,
 
   req_union.pNiUserRespReq = &ni_resp;
 
-  status = loc_sync_send_req (
-     clientHandle, QMI_LOC_NI_USER_RESPONSE_REQ_V02,
-     req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-     QMI_LOC_NI_USER_RESPONSE_IND_V02, &ni_resp_ind);
+  status = locSyncSendReq(QMI_LOC_NI_USER_RESPONSE_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_NI_USER_RESPONSE_IND_V02,
+                          &ni_resp_ind);
 
   if (status != eLOC_CLIENT_SUCCESS ||
       eQMI_LOC_SUCCESS_V02 != ni_resp_ind.status)
@@ -1239,11 +1229,10 @@ LocApiV02::setServer(const char* url, int len)
 
   req_union.pSetServerReq = &set_server_req;
 
-  status = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_SERVER_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_SERVER_IND_V02,
-                             &set_server_ind);
+  status = locSyncSendReq(QMI_LOC_SET_SERVER_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_SERVER_IND_V02,
+                          &set_server_ind);
 
   if (status != eLOC_CLIENT_SUCCESS ||
          eQMI_LOC_SUCCESS_V02 != set_server_ind.status)
@@ -1292,11 +1281,10 @@ LocApiV02::setServer(unsigned int ip, int port, LocServerType type)
 
   req_union.pSetServerReq = &set_server_req;
 
-  status = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_SERVER_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_SERVER_IND_V02,
-                             &set_server_ind);
+  status = locSyncSendReq(QMI_LOC_SET_SERVER_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_SERVER_IND_V02,
+                          &set_server_ind);
 
   if (status != eLOC_CLIENT_SUCCESS ||
       eQMI_LOC_SUCCESS_V02 != set_server_ind.status)
@@ -1362,11 +1350,10 @@ enum loc_api_adapter_err LocApiV02 :: setXtraData(
                   len_injected);
 
     memset(&inject_xtra_ind, 0, sizeof(inject_xtra_ind));
-    status = loc_sync_send_req( clientHandle,
-                                QMI_LOC_INJECT_PREDICTED_ORBITS_DATA_REQ_V02,
-                                req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                QMI_LOC_INJECT_PREDICTED_ORBITS_DATA_IND_V02,
-                                &inject_xtra_ind);
+    status = locSyncSendReq(QMI_LOC_INJECT_PREDICTED_ORBITS_DATA_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_INJECT_PREDICTED_ORBITS_DATA_IND_V02,
+                            &inject_xtra_ind);
 
     if (status != eLOC_CLIENT_SUCCESS ||
         eQMI_LOC_SUCCESS_V02 != inject_xtra_ind.status ||
@@ -1397,11 +1384,10 @@ enum loc_api_adapter_err LocApiV02 :: requestXtraServer()
 
   memset(&request_xtra_server_ind, 0, sizeof(request_xtra_server_ind));
 
-  status = loc_sync_send_req( clientHandle,
-                              QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02,
-                              req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                              QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02,
-                              &request_xtra_server_ind);
+  status = locSyncSendReq(QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02,
+                          &request_xtra_server_ind);
 
   if (status == eLOC_CLIENT_SUCCESS &&
       eQMI_LOC_SUCCESS_V02 == request_xtra_server_ind.status &&
@@ -1502,11 +1488,10 @@ enum loc_api_adapter_err LocApiV02 :: atlOpenStatus(
 
   req_union.pInformLocationServerConnStatusReq = &conn_status_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02,
-                             &conn_status_ind);
+  result = locSyncSendReq(QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02,
+                          &conn_status_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != conn_status_ind.status)
@@ -1553,11 +1538,10 @@ enum loc_api_adapter_err LocApiV02 :: atlCloseStatus(
 
   req_union.pInformLocationServerConnStatusReq = &conn_status_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02,
-                             &conn_status_ind);
+  result = locSyncSendReq(QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02,
+                          &conn_status_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != conn_status_ind.status)
@@ -1605,11 +1589,10 @@ LocApiV02::setSUPLVersion(GnssConfigSuplVersion version)
 
   req_union.pSetProtocolConfigParametersReq = &supl_config_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
-                             &supl_config_ind);
+  result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                          &supl_config_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != supl_config_ind.status)
@@ -1642,10 +1625,10 @@ enum loc_api_adapter_err LocApiV02 :: setNMEATypes (uint32_t typesMask)
 
   req_union.pSetNmeaTypesReq = &setNmeaTypesReqMsg;
 
-  result = loc_sync_send_req( clientHandle,
-          QMI_LOC_SET_NMEA_TYPES_REQ_V02, req_union,
-          LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-          QMI_LOC_SET_NMEA_TYPES_IND_V02, &setNmeaTypesIndMsg);
+  result = locSyncSendReq(QMI_LOC_SET_NMEA_TYPES_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_NMEA_TYPES_IND_V02,
+                          &setNmeaTypesIndMsg);
 
   // if success
   if ( result != eLOC_CLIENT_SUCCESS )
@@ -1694,11 +1677,10 @@ LocApiV02::setLPPConfig(GnssConfigLppProfile profile)
 
   req_union.pSetProtocolConfigParametersReq = &lpp_config_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
-                             &lpp_config_ind);
+  result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                          &lpp_config_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != lpp_config_ind.status)
@@ -1739,11 +1721,10 @@ enum loc_api_adapter_err LocApiV02 :: setSensorControlConfig(
 
   req_union.pSetSensorControlConfigReq = &sensor_config_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_SENSOR_CONTROL_CONFIG_IND_V02,
-                             &sensor_config_ind);
+  result = locSyncSendReq(QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_SENSOR_CONTROL_CONFIG_IND_V02,
+                          &sensor_config_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != sensor_config_ind.status)
@@ -1796,11 +1777,10 @@ enum loc_api_adapter_err LocApiV02 :: setSensorProperties(bool gyroBiasVarianceR
 
   req_union.pSetSensorPropertiesReq = &sensor_prop_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02,
-                             &sensor_prop_ind);
+  result = locSyncSendReq(QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02,
+                          &sensor_prop_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != sensor_prop_ind.status)
@@ -1868,11 +1848,10 @@ enum loc_api_adapter_err LocApiV02 :: setSensorPerfControlConfig(int controlMode
 
   req_union.pSetSensorPerformanceControlConfigReq = &sensor_perf_config_req;
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02,
-                             &sensor_perf_config_ind);
+  result = locSyncSendReq(QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02,
+                          &sensor_perf_config_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != sensor_perf_config_ind.status)
@@ -1922,11 +1901,10 @@ LocApiV02::setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask aGlonassPr
   LOC_LOGD("%s:%d]: aGlonassProtocolMask = 0x%x",  __func__, __LINE__,
                              aGlonassProtocol_req.assistedGlonassProtocolMask);
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
-                             &aGlonassProtocol_ind);
+  result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                          &aGlonassProtocol_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != aGlonassProtocol_ind.status)
@@ -1972,11 +1950,10 @@ LocApiV02::setLPPeProtocolCp(GnssConfigLppeControlPlaneMask lppeCP)
   LOC_LOGD("%s:%d]: lppeCpConfig = 0x%" PRIx64,  __func__, __LINE__,
            lppe_req.lppeCpConfig);
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
-                             &lppe_ind);
+  result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                          &lppe_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != lppe_ind.status)
@@ -2023,11 +2000,10 @@ LocApiV02::setLPPeProtocolUp(GnssConfigLppeUserPlaneMask lppeUP)
   LOC_LOGD("%s:%d]: lppeUpConfig = 0x%" PRIx64,  __func__, __LINE__,
            lppe_req.lppeUpConfig);
 
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
-                             &lppe_ind);
+  result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                          QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                          &lppe_ind);
 
   if(result != eLOC_CLIENT_SUCCESS ||
      eQMI_LOC_SUCCESS_V02 != lppe_ind.status)
@@ -3078,6 +3054,12 @@ void LocApiV02 :: reportEngineState (
           } else {
               mpLocApiV02->reportStatus(LOC_GPS_STATUS_SESSION_END);
               mpLocApiV02->reportStatus(LOC_GPS_STATUS_ENGINE_OFF);
+              mpLocApiV02->registerEventMask(mpLocApiV02->mQmiMask);
+              for (auto resender : mpLocApiV02->mResenders) {
+                  LOC_LOGV("%s:%d]: resend failed command.", __func__, __LINE__);
+                  resender();
+              }
+              mpLocApiV02->mResenders.clear();
           }
       }
   };
@@ -4201,9 +4183,7 @@ getWwanZppFix()
 
     LOC_LOGD("%s:%d]: Get ZPP Fix from available wwan position\n", __func__, __LINE__);
     locClientStatusEnumType status =
-        locClientSendReq(clientHandle,
-                         QMI_LOC_GET_AVAILABLE_WWAN_POSITION_REQ_V02,
-                         req_union);
+            locClientSendReq(QMI_LOC_GET_AVAILABLE_WWAN_POSITION_REQ_V02, req_union);
 
     if (status == eLOC_CLIENT_SUCCESS) {
         return LOC_API_ADAPTER_ERR_SUCCESS;
@@ -4239,11 +4219,10 @@ getBestAvailableZppFix(LocGpsLocation &zppLoc, GpsLocationExtended & location_ex
     LOC_LOGD("%s:%d]: Get ZPP Fix from best available source\n", __func__, __LINE__);
 
     locClientStatusEnumType status =
-        loc_sync_send_req(clientHandle,
-                          QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02,
-                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                          QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02,
-                          &zpp_ind);
+        locSyncSendReq(QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02,
+                       req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                       QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02,
+                       &zpp_ind);
 
     if (status != eLOC_CLIENT_SUCCESS ||
         eQMI_LOC_SUCCESS_V02 != zpp_ind.status) {
@@ -4346,11 +4325,10 @@ LocApiV02 :: setGpsLock(GnssConfigGpsLock lock)
     setEngineLockReq.lockType = convertGpsLockMask(lock);
     req_union.pSetEngineLockReq = &setEngineLockReq;
     memset(&setEngineLockInd, 0, sizeof(setEngineLockInd));
-    status = loc_sync_send_req(clientHandle,
-                               QMI_LOC_SET_ENGINE_LOCK_REQ_V02,
-                               req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                               QMI_LOC_SET_ENGINE_LOCK_IND_V02,
-                               &setEngineLockInd);
+    status = locSyncSendReq(QMI_LOC_SET_ENGINE_LOCK_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_SET_ENGINE_LOCK_IND_V02,
+                            &setEngineLockInd);
 
     if(status != eLOC_CLIENT_SUCCESS || setEngineLockInd.status != eQMI_LOC_SUCCESS_V02) {
         LOC_LOGE("%s:%d]: Set engine lock failed. status: %s, ind status:%s\n",
@@ -4379,11 +4357,10 @@ int LocApiV02 :: getGpsLock()
 
     //Passing req_union as a parameter even though this request has no payload
     //since NULL or 0 gives an error during compilation
-    status = loc_sync_send_req(clientHandle,
-                               QMI_LOC_GET_ENGINE_LOCK_REQ_V02,
-                               req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                               QMI_LOC_GET_ENGINE_LOCK_IND_V02,
-                               &getEngineLockInd);
+    status = locSyncSendReq(QMI_LOC_GET_ENGINE_LOCK_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_GET_ENGINE_LOCK_IND_V02,
+                            &getEngineLockInd);
     if(status != eLOC_CLIENT_SUCCESS || getEngineLockInd.status != eQMI_LOC_SUCCESS_V02) {
         LOC_LOGE("%s:%d]: Set engine lock failed. status: %s, ind status:%s\n",
                  __func__, __LINE__,
@@ -4436,11 +4413,10 @@ LocApiV02:: setXtraVersionCheck(uint32_t check)
     }
 
     req_union.pSetXtraVersionCheckReq = &req;
-    status = loc_sync_send_req(clientHandle,
-                               QMI_LOC_SET_XTRA_VERSION_CHECK_REQ_V02,
-                               req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                               QMI_LOC_SET_XTRA_VERSION_CHECK_IND_V02,
-                               &ind);
+    status = locSyncSendReq(QMI_LOC_SET_XTRA_VERSION_CHECK_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_SET_XTRA_VERSION_CHECK_IND_V02,
+                            &ind);
     if(status != eLOC_CLIENT_SUCCESS || ind.status != eQMI_LOC_SUCCESS_V02) {
         LOC_LOGE("%s:%d]: Set xtra version check failed. status: %s, ind status:%s\n",
                  __func__, __LINE__,
@@ -4483,11 +4459,10 @@ void LocApiV02 :: installAGpsCert(const LocDerEncodedCertificate* pData,
 
                 req_union.pInjectSuplCertificateReq = &injectCertReq;
 
-                status = loc_sync_send_req(clientHandle,
-                                           QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02,
-                                           req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                           QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02,
-                                           &injectCertInd);
+                status = locSyncSendReq(QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02,
+                                        req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                        QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02,
+                                        &injectCertInd);
 
                 if (status != eLOC_CLIENT_SUCCESS ||
                     eQMI_LOC_SUCCESS_V02 != injectCertInd.status)
@@ -4521,11 +4496,10 @@ void LocApiV02 :: installAGpsCert(const LocDerEncodedCertificate* pData,
 
                     req_union.pInjectSuplCertificateReq = &injectFakeCertReq;
 
-                    status = loc_sync_send_req(clientHandle,
-                                       QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02,
-                                       req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                       QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02,
-                                       &injectFakeCertInd);
+                    status = locSyncSendReq(QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02,
+                                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                            QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02,
+                                            &injectFakeCertInd);
 
                     if (status != eLOC_CLIENT_SUCCESS ||
                         eQMI_LOC_SUCCESS_V02 != injectFakeCertInd.status)
@@ -4549,11 +4523,10 @@ void LocApiV02 :: installAGpsCert(const LocDerEncodedCertificate* pData,
 
                 req_union.pDeleteSuplCertificateReq = &deleteCertReq;
 
-                status = loc_sync_send_req(clientHandle,
-                                           QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02,
-                                           req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                           QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02,
-                                           &deleteCertInd);
+                status = locSyncSendReq(QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02,
+                                        req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                        QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02,
+                                        &deleteCertInd);
 
                 if (status != eLOC_CLIENT_SUCCESS ||
                     eQMI_LOC_SUCCESS_V02 != deleteCertInd.status)
@@ -4590,12 +4563,11 @@ int LocApiV02::setSvMeasurementConstellation(const qmiLocGNSSConstellEnumT_v02 s
     req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;
     memset(&setGNSSConstRepConfigInd, 0, sizeof(setGNSSConstRepConfigInd));
 
-    status = loc_sync_send_req(clientHandle,
-                                QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
-                                req_union,
-                                LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
-                                &setGNSSConstRepConfigInd);
+    status = locSyncSendReq(QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
+                            req_union,
+                            LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
+                            &setGNSSConstRepConfigInd);
 
     if(status != eLOC_CLIENT_SUCCESS || setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02)
     {
@@ -4641,12 +4613,11 @@ void LocApiV02 :: cacheGnssMeasurementSupport()
                                                     eQMI_SYSTEM_QZSS_V02;
         req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;
 
-        status = loc_sync_send_req(clientHandle,
-                                   QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
-                                   req_union,
-                                   LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                                   QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
-                                   &setGNSSConstRepConfigInd);
+        status = locSyncSendReq(QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
+                                req_union,
+                                LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
+                                &setGNSSConstRepConfigInd);
 
         if(status != eLOC_CLIENT_SUCCESS ||
            (setGNSSConstRepConfigInd.status != eQMI_LOC_SUCCESS_V02 &&
@@ -4665,6 +4636,27 @@ void LocApiV02 :: cacheGnssMeasurementSupport()
     }
 
     LOC_LOGV("%s:%d]: mGnssMeasurementSupported is %d\n", __func__, __LINE__, mGnssMeasurementSupported);
+}
+
+locClientStatusEnumType LocApiV02::locSyncSendReq(uint32_t req_id,
+        locClientReqUnionType req_payload, uint32_t timeout_msec,
+        uint32_t ind_id, void* ind_payload_ptr) {
+    locClientStatusEnumType status = loc_sync_send_req(clientHandle, req_id, req_payload,
+            timeout_msec, ind_id, ind_payload_ptr);
+    if (eLOC_CLIENT_FAILURE_ENGINE_BUSY == status ||
+            (eLOC_CLIENT_SUCCESS == status && nullptr != ind_payload_ptr &&
+            eLOC_CLIENT_FAILURE_ENGINE_BUSY == *((qmiLocStatusEnumT_v02*)ind_payload_ptr))) {
+        if (mResenders.empty()) {
+            registerEventMask(mQmiMask | QMI_LOC_EVENT_MASK_ENGINE_STATE_V02);
+        }
+        LOC_LOGD("%s:%d]: Engine busy, cache req: %d", __func__, __LINE__, req_id);
+        mResenders.push_back([=](){
+                // ignore indicator, we use nullptr as the last parameter
+                loc_sync_send_req(clientHandle, req_id, req_payload,
+                    timeout_msec, ind_id, nullptr);
+                });
+    }
+    return status;
 }
 
 void LocApiV02 ::

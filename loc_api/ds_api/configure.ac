@@ -1,11 +1,11 @@
-# configure.ac -- Autoconf script for gps loc-net-iface
+# configure.ac -- Autoconf script for gps loc-ds
 #
 # Process this file with autoconf to produce a configure script
 
 # Requires autoconf tool later than 2.61
 AC_PREREQ(2.61)
-# Initialize the gps lbs-core package version 1.0.0
-AC_INIT([loc-net-iface],1.0.0)
+# Initialize the gps loc-ds package version 1.0.0
+AC_INIT([loc-ds],1.0.0)
 # Does not strictly follow GNU Coding standards
 AM_INIT_AUTOMAKE([foreign])
 # Disables auto rebuilding of configure, Makefile.ins
@@ -29,22 +29,6 @@ AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
-PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
-AC_SUBST([GPSUTILS_CFLAGS])
-AC_SUBST([GPSUTILS_LIBS])
-
-PKG_CHECK_MODULES([LOCCORE], [loc-core])
-AC_SUBST([LOCCORE_CFLAGS])
-AC_SUBST([LOCCORE_LIBS])
-
-PKG_CHECK_MODULES([LOCHAL], [loc-hal])
-AC_SUBST([LOCHAL_CFLAGS])
-AC_SUBST([LOCHAL_LIBS])
-
-PKG_CHECK_MODULES([QMIF], [qmi-framework])
-AC_SUBST([QMIF_CFLAGS])
-AC_SUBST([QMIF_LIBS])
-
 PKG_CHECK_MODULES([DATA], [data])
 AC_SUBST([DATA_CFLAGS])
 AC_SUBST([DATA_LIBS])
@@ -53,33 +37,35 @@ PKG_CHECK_MODULES([QMI], [qmi])
 AC_SUBST([QMI_CFLAGS])
 AC_SUBST([QMI_LIBS])
 
-PKG_CHECK_MODULES([DSUTILS], [dsutils])
-AC_SUBST([DSUTILS_CFLAGS])
-AC_SUBST([DSUTILS_LIBS])
+PKG_CHECK_MODULES([QMIFW], [qmi-framework])
+AC_SUBST([QMIFW_CFLAGS])
+AC_SUBST([QMIFW_LIBS])
 
-PKG_CHECK_MODULES([DATAITEMS], [data-items])
-AC_SUBST([DATAITEMS_CFLAGS])
-AC_SUBST([DATAITEMS_LIBS])
+PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
+AC_SUBST([GPSUTILS_CFLAGS])
+AC_SUBST([GPSUTILS_LIBS])
 
 AC_ARG_WITH([core_includes],
       AC_HELP_STRING([--with-core-includes=@<:@dir@:>@],
-         [Specify the location of the core headers]),
+        [Specify the location of the core headers]),
       [core_incdir=$withval],
       with_core_includes=no)
 
-if test "x$with_core_includes" != "xno"; then
-   CPPFLAGS="${CPPFLAGS} -I${core_incdir}"
+if test "x${with_core_includes}" != "xno"; then
+    CPPFLAGS="${CPPFLAGS} -I${core_incdir}"
 fi
 
 AC_ARG_WITH([locpla_includes],
       AC_HELP_STRING([--with-locpla-includes=@<:@dir@:>@],
-         [specify the path to locpla-includes in loc-pla_git.bb]),
+        [Specify the path to locpla-includes in loc-pla_git.bb]),
       [locpla_incdir=$withval],
       with_locpla_includes=no)
 
-if test "x$with_locpla_includes" != "xno"; then
+if test "x${with_locpla_includes}" != "xno"; then
    AC_SUBST(LOCPLA_CFLAGS, "-I${locpla_incdir}")
 fi
+
+AC_SUBST([CPPFLAGS])
 
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
@@ -102,7 +88,7 @@ AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 
 AC_CONFIG_FILES([ \
         Makefile \
-        loc-net-iface.pc
+        loc-ds.pc
         ])
 
 AC_OUTPUT

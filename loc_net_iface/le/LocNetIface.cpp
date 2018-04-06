@@ -30,10 +30,10 @@
 #include "LocNetIface.h"
 #include <QCMAP_Client.h>
 #include "qualcomm_mobile_access_point_msgr_v01.h"
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
 #include "DataItemConcreteTypes.h"
 #include <loc_cfg.h>
-#include <platform_lib_macros.h>
+#include <log_util.h>
 #include <unistd.h>
 
 using namespace izat_manager;

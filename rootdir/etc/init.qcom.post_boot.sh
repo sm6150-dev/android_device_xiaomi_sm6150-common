@@ -3204,6 +3204,28 @@ case "$target" in
 		echo 4000 > $l3gold/mem_latency/ratio_ceil
 	    done
 	done
+
+    if [ -f /sys/devices/soc0/hw_platform ]; then
+        hw_platform=`cat /sys/devices/soc0/hw_platform`
+    else
+        hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+    fi
+
+    if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+        platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+    fi
+
+    case "$hw_platform" in
+        "MTP" | "Surf" | "RCM" )
+            # Start Host based Touch processing
+            case "$platform_subtype_id" in
+                "0")
+                    start_hbtp
+                    ;;
+            esac
+        ;;
+    esac
+
     ;;
 esac
 

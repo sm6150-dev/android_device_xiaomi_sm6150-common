@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2012-2013, 2016-2017, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013, 2016-2018, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -3090,6 +3090,31 @@ esac
 
 case "$target" in
     "msmnile")
+	# Core control parameters for gold
+	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
+	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
+	echo 30 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres
+	echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms
+	echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster
+	echo 3 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres
+
+	# Disable Core control on silver & gold+
+	echo 0 > /sys/devices/system/cpu/cpu0/core_ctl/enable
+	echo 0 > /sys/devices/system/cpu/cpu7/core_ctl/enable
+
+	# Setting b.L scheduler parameters
+	echo 95 95 > /proc/sys/kernel/sched_upmigrate
+	echo 85 85 > /proc/sys/kernel/sched_downmigrate
+	echo 100 > /proc/sys/kernel/sched_group_upmigrate
+	echo 95 > /proc/sys/kernel/sched_group_downmigrate
+
+	# cpuset parameters
+	echo 0-3 > /dev/cpuset/background/cpus
+	echo 0-3 > /dev/cpuset/system-background/cpus
+
+	# Turn off scheduler boost at the end
+	echo 0 > /proc/sys/kernel/sched_boost
+
 	# configure governor settings for silver cluster
 	echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 	echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us

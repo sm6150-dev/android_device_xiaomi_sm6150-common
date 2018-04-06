@@ -812,6 +812,7 @@ PRODUCT_PACKAGES := \
     VoiceDialer \
     FM2 \
     FMRecord \
+    SnapdragonGallery \
     VideoEditor \
     SnapdragonLauncher \
     a4wpservice \

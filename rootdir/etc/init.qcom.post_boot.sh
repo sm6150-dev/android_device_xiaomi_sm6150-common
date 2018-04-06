@@ -3113,6 +3113,11 @@ case "$target" in
 	echo "0:1324800" > /sys/module/cpu_boost/parameters/input_boost_freq
 	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 
+        echo 120 > /proc/sys/vm/watermark_scale_factor
+
+        echo 0-3 > /dev/cpuset/background/cpus
+        echo 0-3 > /dev/cpuset/system-background/cpus
+
 	# Enable bus-dcvs
 	for device in /sys/devices/platform/soc
 	do
@@ -3502,7 +3507,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670" | "msmnile")
         setprop vendor.post_boot.parsed 1
     ;;
     "apq8084")

@@ -286,6 +286,19 @@ case "$target" in
                 ;;
         esac
         ;;
+    "msmnile")
+        case "$soc_hwplatform" in
+            *)
+                if [ $fb_width -le 1600 ]; then
+                    setprop ro.sf.lcd_density 560
+                    setprop dalvik.vm.heapgrowthlimit 256m
+                else
+                    setprop ro.sf.lcd_density 640
+                    setprop dalvik.vm.heapgrowthlimit 512m
+                fi
+                ;;
+        esac
+        ;;
     "sdm660")
         if [ -f /firmware/verinfo/ver_info.txt ]; then
             Meta_Build_ID=`cat /firmware/verinfo/ver_info.txt |

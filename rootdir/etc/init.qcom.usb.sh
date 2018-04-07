@@ -165,7 +165,7 @@ case "$usb_config" in
 	              "msm8998" | "sdm660" | "apq8098_latv")
 		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,adb
 		      ;;
-	              "sdm845" | "sdm670")
+	              "sdm845" | "sdm710")
 		          setprop persist.sys.usb.config diag,serial_cdev,rmnet,dpl,adb
 		      ;;
 	              "msmnile")
@@ -205,7 +205,7 @@ case "$target" in
 	setprop sys.usb.rmnet.func.name "rmnet_bam"
 	echo 15916 > /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size
         ;;
-    "sdm845" | "sdm670" | "msmnile")
+    "sdm845" | "sdm710" | "msmnile")
         setprop sys.usb.controller "a600000.dwc3"
         setprop sys.usb.rndis.func.name "gsi"
         setprop sys.usb.rmnet.func.name "gsi"
@@ -358,3 +358,59 @@ case "$soc_id" in
 		setprop sys.usb.rps_mask 40
 	;;
 esac
+
+#
+# Initialize UVC conifguration.
+#
+if [ -d /config/usb_gadget/g1/functions/uvc.0 ]; then
+	cd /config/usb_gadget/g1/functions/uvc.0
+
+	echo 3072 > streaming_maxpacket
+	echo 1 > streaming_maxburst
+	mkdir control/header/h
+	ln -s control/header/h control/class/fs/
+	ln -s control/header/h control/class/ss
+
+	mkdir -p streaming/uncompressed/u/360p
+	echo "666666\n1000000\n5000000\n" > streaming/uncompressed/u/360p/dwFrameInterval
+
+	mkdir -p streaming/uncompressed/u/720p
+	echo 1280 > streaming/uncompressed/u/720p/wWidth
+	echo 720 > streaming/uncompressed/u/720p/wWidth
+	echo 29491200 > streaming/uncompressed/u/720p/dwMinBitRate
+	echo 29491200 > streaming/uncompressed/u/720p/dwMaxBitRate
+	echo 1843200 > streaming/uncompressed/u/720p/dwMaxVideoFrameBufferSize
+	echo 5000000 > streaming/uncompressed/u/720p/dwDefaultFrameInterval
+	echo "5000000\n" > streaming/uncompressed/u/720p/dwFrameInterval
+
+	mkdir -p streaming/mjpeg/m/360p
+	echo "666666\n1000000\n5000000\n" > streaming/mjpeg/m/360p/dwFrameInterval
+
+	mkdir -p streaming/mjpeg/m/720p
+	echo 1280 > streaming/mjpeg/m/720p/wWidth
+	echo 720 > streaming/mjpeg/m/720p/wWidth
+	echo 29491200 > streaming/mjpeg/m/720p/dwMinBitRate
+	echo 29491200 > streaming/mjpeg/m/720p/dwMaxBitRate
+	echo 1843200 > streaming/mjpeg/m/720p/dwMaxVideoFrameBufferSize
+	echo 5000000 > streaming/mjpeg/m/720p/dwDefaultFrameInterval
+	echo "5000000\n" > streaming/mjpeg/m/720p/dwFrameInterval
+
+	echo 0x04 > /config/usb_gadget/g1/functions/uvc.0/streaming/mjpeg/m/bmaControls
+
+	mkdir -p streaming/h264/h/960p
+	echo 1920 > streaming/h264/h/960p/wWidth
+	echo 960 > streaming/h264/h/960p/wWidth
+	echo 40 > streaming/h264/h/960p/bLevelIDC
+	echo "333667\n" > streaming/h264/h/960p/dwFrameInterval
+
+	mkdir -p streaming/h264/h/1920p
+	echo "333667\n" > streaming/h264/h/1920p/dwFrameInterval
+
+	mkdir streaming/header/h
+	ln -s streaming/uncompressed/u streaming/header/h
+	ln -s streaming/mjpeg/m streaming/header/h
+	ln -s streaming/h264/h streaming/header/h
+	ln -s streaming/header/h streaming/class/fs/
+	ln -s streaming/header/h streaming/class/hs/
+	ln -s streaming/header/h streaming/class/ss/
+fi

@@ -1089,6 +1089,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_retry_sms_over_ims" value="true"/>
     </carrier_config>
 
+    <carrier_config mcc="440" mnc="10">
+        <boolean name="carrier_volte_available_bool" value="true" />
+        <boolean name="carrier_vt_available_bool" value="true" />
+    </carrier_config>
+
+    <carrier_config mcc="440" mnc="20">
+        <boolean name="carrier_volte_available_bool" value="true" />
+    </carrier_config>
+
     <carrier_config mcc="440" mnc="50">
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_vt_available_bool" value="true" />
@@ -1549,6 +1558,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="carrier_volte_tty_supported_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">
@@ -1655,6 +1665,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_supported" value="true" />
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
+        <boolean name="carrier_volte_tty_supported_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="260">

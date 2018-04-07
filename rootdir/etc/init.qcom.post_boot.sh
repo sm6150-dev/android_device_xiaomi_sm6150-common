@@ -263,7 +263,6 @@ function configure_read_ahead_kb_values() {
     MemTotal=${MemTotalStr:16:8}
 
     # Set 128 for <= 3GB &
-    # Set 512 for > 3GB
     if [ $MemTotal -le 3145728 ]; then
         echo 128 > /sys/block/mmcblk0/bdi/read_ahead_kb
         echo 128 > /sys/block/mmcblk0/queue/read_ahead_kb
@@ -371,6 +370,9 @@ else
     if [ -f /sys/module/lowmemorykiller/parameters/oom_reaper ]; then
         echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
     fi
+
+    #Enable oom_reaper
+    echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
 
     configure_zram_parameters
 
@@ -2320,9 +2322,9 @@ case "$target" in
 esac
 
 case "$target" in
-    "sdm670")
+    "sdm710")
 
-        #Apply settings for sdm670
+        #Apply settings for sdm710
         # Set the default IRQ affinity to the silver cluster. When a
         # CPU is isolated/hotplugged, the IRQ affinity is adjusted
         # to one of the CPU from the default IRQ affinity mask.
@@ -2341,7 +2343,7 @@ case "$target" in
         fi
 
         case "$soc_id" in
-            "336" | "337" | "347" )
+            "336" | "337" | "347" | "360" )
 
             # Start Host based Touch processing
             case "$hw_platform" in
@@ -2351,6 +2353,7 @@ case "$target" in
             esac
 
       # Core control parameters on silver
+      echo 0 0 0 0 1 1 > /sys/devices/system/cpu/cpu0/core_ctl/not_preferred
       echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
       echo 60 > /sys/devices/system/cpu/cpu0/core_ctl/busy_up_thres
       echo 40 > /sys/devices/system/cpu/cpu0/core_ctl/busy_down_thres
@@ -2363,6 +2366,7 @@ case "$target" in
       echo 90 > /proc/sys/kernel/sched_downmigrate
       echo 140 > /proc/sys/kernel/sched_group_upmigrate
       echo 120 > /proc/sys/kernel/sched_group_downmigrate
+      echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
 
       # configure governor settings for little cluster
       echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
@@ -2374,7 +2378,11 @@ case "$target" in
       echo "schedutil" > /sys/devices/system/cpu/cpu6/cpufreq/scaling_governor
       echo 0 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/rate_limit_us
       echo 1344000 > /sys/devices/system/cpu/cpu6/cpufreq/schedutil/hispeed_freq
-      echo 825600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
+      echo 652800 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
+
+      # sched_load_boost as -6 is equivalent to target load as 85. It is per cpu tunable.
+      echo -6 >  /sys/devices/system/cpu/cpu6/sched_load_boost
+      echo -6 >  /sys/devices/system/cpu/cpu7/sched_load_boost
 
       echo "0:1209600" > /sys/module/cpu_boost/parameters/input_boost_freq
       echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
@@ -2393,9 +2401,6 @@ case "$target" in
                 echo 20 > $cpubw/bw_hwmon/hist_memory
                 echo 0 > $cpubw/bw_hwmon/hyst_length
                 echo 80 > $cpubw/bw_hwmon/down_thres
-                echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-                echo 68 > $cpubw/bw_hwmon/low_power_io_percent
-                echo 20 > $cpubw/bw_hwmon/low_power_delay
                 echo 0 > $cpubw/bw_hwmon/guard_band_mbps
                 echo 250 > $cpubw/bw_hwmon/up_scale
                 echo 1600 > $cpubw/bw_hwmon/idle_mbps
@@ -2417,7 +2422,24 @@ case "$target" in
                 echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
+            #Enable userspace governor for L3 cdsp nodes
+            for l3cdsp in /sys/class/devfreq/*qcom,l3-cdsp*
+            do
+                echo "userspace" > $l3cdsp/governor
+                chown -h system $l3cdsp/userspace/set_freq
+            done
+
             echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
+
+            # Disable CPU Retention
+            echo N > /sys/module/lpm_levels/L3/cpu0/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu1/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu2/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu3/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu4/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu5/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu6/ret/idle_enabled
+            echo N > /sys/module/lpm_levels/L3/cpu7/ret/idle_enabled
 
             # cpuset parameters
             echo 0-5 > /dev/cpuset/background/cpus
@@ -2454,13 +2476,22 @@ case "$target" in
             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
         fi
 
+        if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+            platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+        fi
+
         case "$soc_id" in
             "347" )
 
             # Start Host based Touch processing
             case "$hw_platform" in
-              "MTP" | "Surf" | "RCM" | "QRD" )
+              "Surf" | "RCM" | "QRD" )
                   start_hbtp
+                  ;;
+              "MTP" )
+                  if [ $platform_subtype_id != 5 ]; then
+                      start_hbtp
+                  fi
                   ;;
             esac
 
@@ -2958,10 +2989,30 @@ case "$target" in
                 soc_id=`cat /sys/devices/system/soc/soc0/id`
         fi
 
-	case "$soc_id" in
-		"321" | "341") #sdm845
-		start_hbtp
-		;;
+	if [ -f /sys/devices/soc0/hw_platform ]; then
+                hw_platform=`cat /sys/devices/soc0/hw_platform`
+	fi
+
+	if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+		platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+	fi
+
+    case "$soc_id" in
+                "321")
+                # Start Host based Touch processing
+                case "$hw_platform" in
+                    "MTP" )
+                          start_hbtp
+                     ;;
+                    "QRD" )
+                            case "$platform_subtype_id" in
+                                   "1") #QRD845
+                                         start_hbtp
+                                     ;;
+                            esac
+                     ;;
+                esac
+         ;;
 	esac
 	# Core control parameters
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
@@ -3012,9 +3063,6 @@ case "$target" in
             echo 50 > $cpubw/bw_hwmon/io_percent
             echo 20 > $cpubw/bw_hwmon/hist_memory
             echo 10 > $cpubw/bw_hwmon/hyst_length
-            echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
-            echo 50 > $cpubw/bw_hwmon/low_power_io_percent
-            echo 20 > $cpubw/bw_hwmon/low_power_delay
             echo 0 > $cpubw/bw_hwmon/guard_band_mbps
             echo 250 > $cpubw/bw_hwmon/up_scale
             echo 1600 > $cpubw/bw_hwmon/idle_mbps
@@ -3024,14 +3072,11 @@ case "$target" in
         do
             echo "bw_hwmon" > $llccbw/governor
             echo 50 > $llccbw/polling_interval
-            echo "1720 2929 4943 5931 6881" > $llccbw/bw_hwmon/mbps_zones
+            echo "1720 2929 3879 5931 6881" > $llccbw/bw_hwmon/mbps_zones
             echo 4 > $llccbw/bw_hwmon/sample_ms
             echo 80 > $llccbw/bw_hwmon/io_percent
             echo 20 > $llccbw/bw_hwmon/hist_memory
             echo 10 > $llccbw/bw_hwmon/hyst_length
-            echo 0 > $llccbw/bw_hwmon/low_power_ceil_mbps
-            echo 80 > $llccbw/bw_hwmon/low_power_io_percent
-            echo 20 > $llccbw/bw_hwmon/low_power_delay
             echo 0 > $llccbw/bw_hwmon/guard_band_mbps
             echo 250 > $llccbw/bw_hwmon/up_scale
             echo 1600 > $llccbw/bw_hwmon/idle_mbps
@@ -3085,6 +3130,7 @@ case "$target" in
         # Turn on sleep modes.
         echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 	echo 100 > /proc/sys/vm/swappiness
+	echo 120 > /proc/sys/vm/watermark_scale_factor
     ;;
 esac
 
@@ -3554,7 +3600,7 @@ case "$target" in
         start mpdecision
         echo 512 > /sys/block/mmcblk0/bdi/read_ahead_kb
     ;;
-    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm670" | "msmnile")
+    "msm8994" | "msm8992" | "msm8996" | "msm8998" | "sdm660" | "apq8098_latv" | "sdm845" | "sdm710" | "msmnile")
         setprop vendor.post_boot.parsed 1
     ;;
     "apq8084")

@@ -313,17 +313,27 @@ case "$target" in
             esac
         fi
         ;;
-    "sdm670" | "msmpeafowl")
+    "sdm710" | "msmpeafowl")
         case "$soc_hwplatform" in
             *)
                 sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
                 if [ $sku_ver -eq 1 ]; then
-                    setprop vendor.media.sdm670.version 1
+                    setprop vendor.media.sdm710.version 1
                 fi
                 ;;
         esac
         ;;
 esac
+
+baseband=`getprop ro.baseband`
+#enable atfwd daemon all targets except sda, apq, qcs
+case "$baseband" in
+    "apq" | "sda" | "qcs" )
+        setprop persist.radio.atfwd.start false;;
+    *)
+        setprop persist.radio.atfwd.start true;;
+esac
+
 #set default lcd density
 #Since lcd density has read only
 #property, it will not overwrite previous set
@@ -362,6 +372,7 @@ function setHDMIPermission() {
    set_perms $file/pa system.graphics 0664
    set_perms $file/cec/wr_msg system.graphics 0600
    set_perms $file/hdcp/tp system.graphics 0664
+   set_perms $file/hdcp2p2/min_level_change system.graphics 0660
    set_perms $file/hdmi_audio_cb audioserver.audio 0600
    ln -s $dev_file $dev_gfx_hdmi
 }
@@ -427,6 +438,8 @@ then
             set_perms $file/msm_fb_persist_mode system.graphics 0664
         fi
     done
+else
+    set_perms /sys/devices/virtual/hdcp/msm_hdcp/min_level_change system.graphics 0660
 fi
 
 boot_reason=`cat /proc/sys/kernel/boot_reason`

@@ -18,6 +18,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.custom_ecc=1 \
     persist.vendor.radio.rat_on=combine \
+    persist.backup.ntpServer=0.pool.ntp.org \
     sys.vendor.shutdown.waittime=500 \
     ro.build.shutdown_timeout=0
 
@@ -30,6 +31,9 @@ endif
 # whitelisted app
 PRODUCT_COPY_FILES += \
     device/qcom/common/qti_whitelist.xml:system/etc/sysconfig/qti_whitelist.xml
+
+PRODUCT_COPY_FILES += \
+    device/qcom/common/privapp-permissions-qti.xml:system/etc/permissions/privapp-permissions-qti.xml
 
 PRODUCT_PRIVATE_KEY := device/qcom/common/qcom.key
 

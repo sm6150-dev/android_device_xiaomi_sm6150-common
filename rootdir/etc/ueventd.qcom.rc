@@ -127,6 +127,7 @@
 /dev/sp_kernel            0660   system     system
 /dev/sp_ssr               0660   system     system
 /dev/sp_keymaster         0660   system     system
+/dev/sec_nvm_*            0660   system     system
 /dev/cryptoapp            0660   system     system
 /dev/gemini0              0660   system     camera
 /dev/jpeg0                0660   system     camera
@@ -136,6 +137,10 @@
 /dev/adsprpc-smd          0664   system     system
 /dev/system_health_monitor 0644  radio      system
 /dev/mdss_rotator         0664   system     system
+
+#QDSS
+/dev/byte-cntr            0660   system    oem_2902
+
 # wlan
 /dev/wcnss_wlan           0660   system     system
 /dev/wcnss_ctrl           0660   system     system
@@ -235,6 +240,8 @@
 /sys/devices/soc/c179000.i2c/i2c-5/5-0020/input/input*    secure_touch_enable  0660   system  drmrpc
 /sys/devices/platform/soc/a98000.i2c/i2c-2/2-0020/input/input*  secure_touch          0440 system drmrpc
 /sys/devices/platform/soc/a98000.i2c/i2c-2/2-0020/input/input*  secure_touch_enable   0660 system drmrpc
+/sys/devices/platform/soc/a84000.i2c/i2c-2/2-0020/input/input*  secure_touch          0440 system drmrpc
+/sys/devices/platform/soc/a84000.i2c/i2c-2/2-0020/input/input*  secure_touch_enable   0660 system drmrpc
 
 # laser sensor access
 /sys/devices/virtual/input/input*                   enable_ps_sensor 0660  system   input

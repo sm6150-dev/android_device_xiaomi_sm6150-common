@@ -43,13 +43,13 @@ service mmi_diag /system/bin/mmi_diag
         group root oem_2901
         disabled
 
-on property:sys.boot_mode=ffbm
+on property:vendor.sys.boot_mode=ffbm
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-01"
 
-on property:sys.boot_mode=qmmi
+on property:vendor.sys.boot_mode=qmmi
     write ${persist.vendor.mmi.misc_dev_path} "ffbm-02"
 
-on property:sys.boot_mode=normal
+on property:vendor.sys.boot_mode=normal
     write ${persist.vendor.mmi.misc_dev_path} "normal"
 
 # Creating a scratch storage on /data for factory testing.

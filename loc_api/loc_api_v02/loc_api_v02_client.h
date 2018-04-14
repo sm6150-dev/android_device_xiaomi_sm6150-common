@@ -763,7 +763,8 @@ typedef union
         sent.
 
         The eventIndId field in the event indication callback is set to
-        QMI_LOC_EVENT_POSITION_REPORT_IND_V02. */
+        QMI_LOC_EVENT_POSITION_REPORT_IND_V02 or
+        QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02. */
 
    const qmiLocEventGnssSvInfoIndMsgT_v02* pGnssSvInfoReportEvent;
    /**< Contains the GNSS satellite information.

@@ -126,7 +126,8 @@ private:
   /* convert position report to loc eng format and send the converted
      position to loc eng */
   void reportPosition
-    (const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr);
+    (const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr,
+     bool unpropagatedPosition = false);
 
   /* convert satellite report to loc eng format and  send the converted
      report to loc eng */

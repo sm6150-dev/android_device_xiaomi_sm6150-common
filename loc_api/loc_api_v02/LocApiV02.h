@@ -169,6 +169,10 @@ private:
   void reportGnssMeasurementData(
     const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr);
 
+  /* convert and report ODCPI request */
+  void reportOdcpiRequest(
+    const qmiLocEventWifiReqIndMsgT_v02& odcpiReq);
+
   bool registerEventMask(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
   void cacheGnssMeasurementSupport();
@@ -212,6 +216,9 @@ public:
 
   virtual enum loc_api_adapter_err
     injectPosition(double latitude, double longitude, float accuracy);
+
+  virtual enum loc_api_adapter_err
+    injectPosition(const Location& location);
 
   virtual LocationError
     deleteAidingData(const GnssAidingData& data);

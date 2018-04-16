@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Wed Apr 11 2018 (Spin 0)
+   It was generated on: Tue May 15 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x55
+#define LOC_V02_IDL_MINOR_VERS 0x58
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -1215,6 +1215,10 @@ typedef uint32_t qmiLocSensorSubTechnologyMaskT_v02;
 #define QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000001) /**<  Bitmask to specify whether PDR is enabled or disabled  */
 #define QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000002) /**<  Bitmask to specify whether a pedometer was used  */
 #define QMI_LOC_SENSOR_SUB_MASK_VEHICULAR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000004) /**<  Bitmask to specify whether vehicular sensor assistance is enabled or disabled  */
+typedef uint64_t qmiLocSpoofMaskT_v02;
+#define QMI_LOC_POSITION_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000001ull) /**<  Set bit indicates suspected spoofing in position  */
+#define QMI_LOC_TIME_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000002ull) /**<  Set bit indicates suspected spoofing in time  */
+#define QMI_LOC_NAVIGATION_DATA_SPOOFED_V02 ((qmiLocSpoofMaskT_v02)0x00000004ull) /**<  Set bit indicates suspected spoofing in navigation data  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -1601,6 +1605,17 @@ typedef struct {
      -  Monitoring Station: 1000-2023 (Station ID biased by 1000) \n
                Other values reserved \n
   */
+
+  /* Optional */
+  /*  Spoof Report */
+  uint8_t spoofReportMask_valid;  /**< Must be set to true if spoofReportMask is being passed */
+  qmiLocSpoofMaskT_v02 spoofReportMask;
+  /**<   Spoof report
+ Valid bitmasks: \n
+      - QMI_LOC_POSITION_SPOOFED (0x00000001) --  Set bit indicates suspected spoofing in position
+      - QMI_LOC_TIME_SPOOFED (0x00000002) --  Set bit indicates suspected spoofing in time
+      - QMI_LOC_NAVIGATION_DATA_SPOOFED (0x00000004) --  Set bit indicates suspected spoofing in navigation data
+ */
 }qmiLocEventPositionReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -5477,6 +5492,9 @@ typedef uint32_t qmiLocNmeaSentenceMaskT_v02;
 #define QMI_LOC_NMEA_MASK_PQGSV_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00010000) /**<  Enable PQGSV type  */
 #define QMI_LOC_NMEA_MASK_DEBUG_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00020000) /**<  Enable NMEA type  */
 #define QMI_LOC_NMEA_MASK_GPDTM_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00040000) /**<  Enable GPDTM type  */
+#define QMI_LOC_NMEA_MASK_GNGGA_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00080000) /**<  Enable GNGGA type  */
+#define QMI_LOC_NMEA_MASK_GNRMC_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00100000) /**<  Enable GNRMC type  */
+#define QMI_LOC_NMEA_MASK_GNVTG_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00200000) /**<  Enable GNVTG type  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5508,6 +5526,9 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_PQGSV (0x00010000) --  Enable PQGSV type
       - QMI_LOC_NMEA_MASK_DEBUG (0x00020000) --  Enable NMEA type
       - QMI_LOC_NMEA_MASK_GPDTM (0x00040000) --  Enable GPDTM type
+      - QMI_LOC_NMEA_MASK_GNGGA (0x00080000) --  Enable GNGGA type
+      - QMI_LOC_NMEA_MASK_GNRMC (0x00100000) --  Enable GNRMC type
+      - QMI_LOC_NMEA_MASK_GNVTG (0x00200000) --  Enable GNVTG type
  */
 }qmiLocSetNmeaTypesReqMsgT_v02;  /* Message */
 /**
@@ -5611,6 +5632,9 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_PQGSV (0x00010000) --  Enable PQGSV type
       - QMI_LOC_NMEA_MASK_DEBUG (0x00020000) --  Enable NMEA type
       - QMI_LOC_NMEA_MASK_GPDTM (0x00040000) --  Enable GPDTM type
+      - QMI_LOC_NMEA_MASK_GNGGA (0x00080000) --  Enable GNGGA type
+      - QMI_LOC_NMEA_MASK_GNRMC (0x00100000) --  Enable GNRMC type
+      - QMI_LOC_NMEA_MASK_GNVTG (0x00200000) --  Enable GNVTG type
  */
 }qmiLocGetNmeaTypesIndMsgT_v02;  /* Message */
 /**
@@ -10934,6 +10958,17 @@ typedef struct {
   uint8_t extDOP_valid;  /**< Must be set to true if extDOP is being passed */
   qmiLocExtDOPStructT_v02 extDOP;
   /**<   \vspace{0.06in} \n Dilution of precision associated with this position. */
+
+  /* Optional */
+  /*  Spoof Report */
+  uint8_t spoofReportMask_valid;  /**< Must be set to true if spoofReportMask is being passed */
+  qmiLocSpoofMaskT_v02 spoofReportMask;
+  /**<   Spoof report
+ Valid bitmasks: \n
+      - QMI_LOC_POSITION_SPOOFED (0x00000001) --  Set bit indicates suspected spoofing in position
+      - QMI_LOC_TIME_SPOOFED (0x00000002) --  Set bit indicates suspected spoofing in time
+      - QMI_LOC_NAVIGATION_DATA_SPOOFED (0x00000004) --  Set bit indicates suspected spoofing in navigation data
+ */
 }qmiLocGetBestAvailablePositionIndMsgT_v02;  /* Message */
 /**
     @}
@@ -16918,6 +16953,7 @@ typedef enum {
   eQMI_LOC_SUPPORTED_FEATURE_FDCL_V02 = 4, /**<  Support the FDCL feature  */
   eQMI_LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT_V02 = 5, /**<  Support the GNSS constellation enablement feature  */
   eQMI_LOC_SUPPORTED_FEATURE_AGPM_V02 = 6, /**<  Support the advanced GNSS power management feature  */
+  eQMI_LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY_V02 = 7, /**<  Support the XTRA integrity feature  */
   QMILOCSUPPORTEDFEATUREENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSupportedFeatureEnumT_v02;
 /**

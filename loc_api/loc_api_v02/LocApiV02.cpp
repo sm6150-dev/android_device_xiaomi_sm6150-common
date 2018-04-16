@@ -2287,9 +2287,11 @@ void LocApiV02 :: reportPosition (
        locationExtended.timeStamp.apTimeStampUncertaintyMs = FLT_MAX;
        LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
     }
-    LOC_LOGD("%s:%d QMI_PosPacketTime  %ld (sec)  %ld (nsec)", __func__, __LINE__,
+    LOC_LOGd("QMI_PosPacketTime %" PRIu64 " (sec) %" PRIu64 " (nsec), QMI_spoofReportMask 0x%x",
                  locationExtended.timeStamp.apTimeStamp.tv_sec,
-                 locationExtended.timeStamp.apTimeStamp.tv_nsec);
+                 locationExtended.timeStamp.apTimeStamp.tv_nsec,
+                 location_report_ptr->spoofReportMask);
+
     // Process the position from final and intermediate reports
 
     if( (location_report_ptr->sessionStatus == eQMI_LOC_SESS_STATUS_SUCCESS_V02) ||
@@ -2364,6 +2366,13 @@ void LocApiV02 :: reportPosition (
             //Mark the location source as from GNSS
             location.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
             location.position_source = ULP_LOCATION_IS_FROM_GNSS;
+
+            if(location_report_ptr->spoofReportMask_valid)
+            {
+                location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_SPOOF_MASK;
+                location.gpsLocation.spoof_mask = (uint32_t)location_report_ptr->spoofReportMask;
+            }
+
             if (location_report_ptr->magneticDeviation_valid)
             {
                 locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
@@ -4932,6 +4941,13 @@ void LocApiV02::
 
             if (zpp_ind.technologyMask_valid) {
                 tech_mask = zpp_ind.technologyMask;
+            }
+
+            if(zpp_ind.spoofReportMask_valid) {
+                zppLoc.flags |= LOC_GPS_LOCATION_HAS_SPOOF_MASK;
+                zppLoc.spoof_mask = (uint32_t)zpp_ind.spoofReportMask;
+                LOC_LOGD("%s:%d QMI_spoofReportMask:0x%x", __func__, __LINE__,
+                             (uint8_t)zppLoc.spoof_mask);
             }
         }
 

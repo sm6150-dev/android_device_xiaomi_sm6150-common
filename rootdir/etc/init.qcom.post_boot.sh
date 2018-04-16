@@ -3265,7 +3265,7 @@ case "$target" in
         "MTP" | "Surf" | "RCM" )
             # Start Host based Touch processing
             case "$platform_subtype_id" in
-                "0")
+                "0" | "1")
                     start_hbtp
                     ;;
             esac

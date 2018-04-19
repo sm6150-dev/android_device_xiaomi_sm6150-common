@@ -3897,10 +3897,11 @@ int LocApiV02 :: convertGnssClock (GnssMeasurementsClock& clock,
             msInWeek = (int)systemMsec;
             if (systemWeek != C_GPS_WEEK_UNKNOWN && isTimeValid) {
                 // fullBiasNs, biasNs & biasUncertaintyNs
-                int64_t temp = ((int64_t)systemWeek) * ((int64_t)WEEK_MSECS) + ((int64_t)systemMsec);
-                int64_t gps_time_ns = (temp - (int64_t)sysClkBias) * 1e6;
-                clock.fullBiasNs = clock.timeNs - gps_time_ns;
-                clock.biasNs = (double)(clock.timeNs - gps_time_ns) - clock.fullBiasNs;
+                int64_t totalMs = ((int64_t)systemWeek) *
+                                  ((int64_t)WEEK_MSECS) + ((int64_t)systemMsec);
+                int64_t gpsTimeNs = totalMs * 1000000 - (int64_t)(sysClkBias * 1e6);
+                clock.fullBiasNs = clock.timeNs - gpsTimeNs;
+                clock.biasNs = sysClkBias * 1e6 - (double)((int64_t)(sysClkBias * 1e6));
                 clock.biasUncertaintyNs = (double)sysClkUncMs * 1e6;
                 flags |= (GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT |
                           GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT |

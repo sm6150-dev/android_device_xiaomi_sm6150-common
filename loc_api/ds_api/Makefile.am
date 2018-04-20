@@ -22,7 +22,7 @@ libloc_ds_api_la_LDFLAGS = -lstdc++ -Wl,-z,defs -shared -version-info 1:0:0
 libloc_ds_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libloc_ds_api_la_LIBADD = $(QM_LIBS) $(QMFW_LIBS) -lqmiservices -ldsi_netctrl $(GPSUTILS_LIBS)
+libloc_ds_api_la_LIBADD = $(QM_LIBS) $(QMFW_LIBS) -lqmi_cci -lqmiservices -ldsi_netctrl $(GPSUTILS_LIBS)
 
 library_include_HEADERS = \
     ds_client.h

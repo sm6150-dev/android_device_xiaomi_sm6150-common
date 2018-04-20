@@ -35,16 +35,28 @@
 #include <pthread.h>
 #include <timepps.h>
 #include <linux/types.h>
-
+#include <stdbool.h>
+#include "loc_cfg.h"
 //DRsync kernel timestamp
 static struct timespec drsyncKernelTs = {0,0};
 //DRsync userspace timestamp
 static struct timespec drsyncUserTs = {0,0};
+
+static struct timespec prevDrsyncKernelTs = {0,0};
+#define BILLION_NSEC 1000000000
+
 //flag to stop fetching timestamp
 static int isActive = 0;
 static pps_handle handle;
 
 static pthread_mutex_t ts_lock;
+static int skipPPSPulseCnt = 0;
+static int gnssOutageInSec = 1;
+static loc_param_s_type gps_conf_param_table[] =
+{
+    {"IGNORE_PPS_PULSE_COUNT", &skipPPSPulseCnt, NULL, 'n'},
+    {"GNSS_OUTAGE_DURATION", &gnssOutageInSec, NULL, 'n'}
+};
 
   /*  checks the PPS source and opens it */
 int check_device(char *path, pps_handle *handle)
@@ -75,28 +87,50 @@ int read_pps(pps_handle *handle)
     struct timespec timeout;
     pps_info infobuf;
     int ret;
+    static  bool isFirstPulseReceived = false;
+    static unsigned int skipPulseCnt = 0;
     // 3sec timeout
     timeout.tv_sec = 3;
     timeout.tv_nsec = 0;
 
-       ret = pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,&timeout);
+    ret = pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf, &timeout);
 
-        if (ret < 0 && ret !=-EINTR)
-        {
-            LOC_LOGV("%s:%d pps_fetch() error %d", __func__, __LINE__,  ret);
-            return -1;
-        }
+    if (ret < 0 && ret !=-EINTR)
+    {
+        LOC_LOGV("%s:%d pps_fetch() error %d", __func__, __LINE__, ret);
+        return -1;
+    }
+    if (!isFirstPulseReceived && (skipPPSPulseCnt > 0)) {
+        skipPulseCnt = skipPPSPulseCnt;
+        isFirstPulseReceived = true;
+        LOC_LOGV("%s:%d first pps pulse received %ld (sec) %ld (nsec)",
+                  __func__, __LINE__, infobuf.tv_sec, infobuf.tv_nsec)
+    }else if (isFirstPulseReceived && (skipPPSPulseCnt > 0) &&
+              ((infobuf.tv_sec - prevDrsyncKernelTs.tv_sec) > gnssOutageInSec)) {
+        LOC_LOGV("%s:%d long RF outage detected, ignore next %d PPS Pulses",
+                  __func__, __LINE__, skipPPSPulseCnt)
+        skipPulseCnt = skipPPSPulseCnt;
+    }
+    prevDrsyncKernelTs.tv_sec = infobuf.tv_sec;
+    prevDrsyncKernelTs.tv_nsec = infobuf.tv_nsec;
+    /* check if this dr sync pulse need to be ignored or not*/
+    if (skipPulseCnt > 0) {
+        LOC_LOGV("%s:%d skip pps count %d, ignoring this pps pulse %ld (sec)  %ld (nsec)",
+                  __func__,__LINE__, skipPulseCnt, infobuf.tv_sec, infobuf.tv_nsec);
+        skipPulseCnt--;
+        return 0;
+    }
+    /* update dr syncpulse time*/
+    pthread_mutex_lock(&ts_lock);
+    drsyncKernelTs.tv_sec = infobuf.tv_sec;
+    drsyncKernelTs.tv_nsec = infobuf.tv_nsec;
+    ret = clock_gettime(CLOCK_BOOTTIME, &drsyncUserTs);
+    pthread_mutex_unlock(&ts_lock);
 
-        pthread_mutex_lock(&ts_lock);
-        drsyncKernelTs.tv_sec = infobuf.tv_sec;
-        drsyncKernelTs.tv_nsec = infobuf.tv_nsec;
-        ret = clock_gettime(CLOCK_BOOTTIME,&drsyncUserTs);
-        pthread_mutex_unlock(&ts_lock);
-
-        if(ret != 0)
-        {
-            LOC_LOGV("%s:%d clock_gettime() error",__func__,__LINE__);
-        }
+    if(ret != 0)
+    {
+        LOC_LOGV("%s:%d clock_gettime() error",__func__,__LINE__);
+    }
     return 0;
 }
 
@@ -136,7 +170,7 @@ int initPPS(char *devname)
         LOC_LOGV("%s:%d Could not find PPS source", __func__, __LINE__);
         return 0;
     }
-
+    UTIL_READ_CONF(LOC_PATH_GPS_CONF, gps_conf_param_table);
     pthread_mutex_init(&ts_lock,NULL);
 
     pid = pthread_create(&thread,NULL,&thread_handle,NULL);

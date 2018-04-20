@@ -18,11 +18,11 @@ libloc_api_v02_la_SOURCES = \
 
 if USE_GLIB
 libloc_api_v02_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-libloc_api_v02_la_LDFLAGS = -lstdc++ -Wl,-z,defs @GLIB_LIBS@ -shared -version-info 1:0:0
+libloc_api_v02_la_LDFLAGS = -lstdc++ -Wl,-z,defs -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
 libloc_api_v02_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
 else
 libloc_api_v02_la_CFLAGS = $(AM_CFLAGS)
-libloc_api_v02_la_LDFLAGS = -lstdc++ -Wl,-z,defs -shared -version-info 1:0:0
+libloc_api_v02_la_LDFLAGS = -lstdc++ -Wl,-z,defs -lpthread -shared -version-info 1:0:0
 libloc_api_v02_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 

@@ -3272,6 +3272,7 @@ case "$target" in
         ;;
     esac
 
+    echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
     ;;
 esac
 

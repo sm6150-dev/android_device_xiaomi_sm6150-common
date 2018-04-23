@@ -364,7 +364,7 @@ on post-fs-data
     mkdir /data/hostapd 0770 system wifi
 
     # Create /data/time folder for time-services
-    mkdir /data/time/ 0700 system system
+    mkdir /data/vendor/time/ 0700 system system
 
     setprop vold.post_fs_data_done 1
 

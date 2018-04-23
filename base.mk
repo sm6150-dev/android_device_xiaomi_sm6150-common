@@ -659,9 +659,8 @@ NQ_NFC += nqnfcse_access.xml
 NQ_NFC += Tag
 NQ_NFC += nqnfcinfo
 NQ_NFC += com.android.nfc_extras
-NQ_NFC += vendor.nxp.hardware.nfc@1.0-impl
-NQ_NFC += android.hardware.nfc@1.0-impl
-NQ_NFC += vendor.nxp.hardware.nfc@1.0-service
+NQ_NFC += vendor.nxp.hardware.nfc@1.1-service
+NQ_NFC += nfc_nci.nqx.default.hw
 PRODUCT_PROPERTY_OVERRIDES += ro.hardware.nfc_nci=nqx.default
 
 #OPENCORE

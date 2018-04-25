@@ -133,10 +133,12 @@ case "$baseband" in
     case "$datamode" in
         "tethered")
             start vendor.dataqti
+            start vendor.dataadpl
             start port-bridge
             ;;
         "concurrent")
             start vendor.dataqti
+            start vendor.dataadpl
             start netmgrd
             start port-bridge
             ;;

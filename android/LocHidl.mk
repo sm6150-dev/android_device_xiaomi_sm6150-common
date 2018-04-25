@@ -29,7 +29,6 @@ LOC_HIDL_2_0_TARGET_LIST += $(MSMSTEPPE)
 
 ifneq (,$(filter $(LOC_HIDL_1_0_TARGET_LIST),$(TARGET_BOARD_PLATFORM)))
 LOCHIDL += vendor.qti.gnss@1.0
-LOCHIDL += vendor.qti.gnss@1.0_vendor
 LOCHIDL += vendor.qti.gnss@1.0-impl
 LOCHIDL += vendor.qti.gnss@1.0-service
 LOC_HIDL_VERSION = 1.0
@@ -37,9 +36,7 @@ endif
 
 ifneq (,$(filter $(LOC_HIDL_1_1_TARGET_LIST),$(TARGET_BOARD_PLATFORM)))
 LOCHIDL += vendor.qti.gnss@1.0
-LOCHIDL += vendor.qti.gnss@1.0_vendor
 LOCHIDL += vendor.qti.gnss@1.1
-LOCHIDL += vendor.qti.gnss@1.1_vendor
 LOCHIDL += vendor.qti.gnss@1.1-impl
 LOCHIDL += vendor.qti.gnss@1.1-service
 LOC_HIDL_VERSION = 1.1
@@ -47,11 +44,8 @@ endif
 
 ifneq (,$(filter $(LOC_HIDL_1_2_TARGET_LIST),$(TARGET_BOARD_PLATFORM)))
 LOCHIDL += vendor.qti.gnss@1.0
-LOCHIDL += vendor.qti.gnss@1.0_vendor
 LOCHIDL += vendor.qti.gnss@1.1
-LOCHIDL += vendor.qti.gnss@1.1_vendor
 LOCHIDL += vendor.qti.gnss@1.2
-LOCHIDL += vendor.qti.gnss@1.2_vendor
 LOCHIDL += vendor.qti.gnss@1.2-impl
 LOCHIDL += vendor.qti.gnss@1.2-service
 LOC_HIDL_VERSION = 1.2
@@ -59,13 +53,9 @@ endif
 
 ifneq (,$(filter $(LOC_HIDL_2_0_TARGET_LIST),$(TARGET_BOARD_PLATFORM)))
 LOCHIDL += vendor.qti.gnss@1.0
-LOCHIDL += vendor.qti.gnss@1.0_vendor
 LOCHIDL += vendor.qti.gnss@1.1
-LOCHIDL += vendor.qti.gnss@1.1_vendor
 LOCHIDL += vendor.qti.gnss@1.2
-LOCHIDL += vendor.qti.gnss@1.2_vendor
 LOCHIDL += vendor.qti.gnss@2.0
-LOCHIDL += vendor.qti.gnss@2.0_vendor
 LOCHIDL += vendor.qti.gnss@2.0-impl
 LOCHIDL += vendor.qti.gnss@2.0-service
 LOC_HIDL_VERSION = 2.0

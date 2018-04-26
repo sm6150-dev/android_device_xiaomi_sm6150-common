@@ -1130,3 +1130,4 @@ endif
 #PRODUCT_PACKAGES_DEBUG += sl4a
 PRODUCT_PACKAGES += liboemaids_system
 PRODUCT_PACKAGES += liboemaids_vendor
+PRODUCT_PACKAGES += android.hardware.health@2.0-service

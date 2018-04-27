@@ -282,6 +282,11 @@ static const locClientEventIndTableStructT locClientEventIndTable[]= {
     sizeof(qmiLocEventFdclServiceReqIndMsgT_v02),
     QMI_LOC_EVENT_MASK_FDCL_SERVICE_REQ_V02},
 
+  // unpropagated position report ind
+  { QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02,
+    sizeof(qmiLocEventPositionReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT_V02},
+
 };
 
 /* table to relate the respInd Id with its size */

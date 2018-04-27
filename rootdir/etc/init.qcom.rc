@@ -415,6 +415,9 @@ on post-fs-data
     #Create FTM_AP dir for factory test
     mkdir /data/FTM_AP 0775 system system
 
+    #Create dir for TUI
+    mkdir /data/vendor/tui 0600 system drmrpc
+
 service nqnfcinfo /system/vendor/bin/nqnfcinfo
     class late_start
     group nfc

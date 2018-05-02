@@ -68,11 +68,6 @@ using namespace loc_core;
    This class also implements some of the virtual functions that
    handle the requests from loc engine. */
 class LocApiV02 : public LocApiBase {
-  enum supported_status {
-      sup_unknown,
-      sup_yes,
-      sup_no
-  };
 protected:
   /* loc api v02 handle*/
   locClientHandleType clientHandle;
@@ -84,7 +79,6 @@ private:
   const ds_client_iface_type *dsClientIface;
   /* ds client handle */
   dsClientHandleType dsClientHandle;
-  enum supported_status mGnssMeasurementSupported;
   locClientEventMaskType mQmiMask;
   bool mInSession;
   bool mEngineOn;
@@ -172,7 +166,7 @@ private:
 
   bool registerEventMask(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
-  void cacheGnssMeasurementSupport();
+  bool cacheGnssMeasurementSupport();
 
 protected:
   virtual enum loc_api_adapter_err
@@ -180,15 +174,13 @@ protected:
   virtual enum loc_api_adapter_err
     close();
 
-  LocApiV02(const MsgTask* msgTask,
-            LOC_API_ADAPTER_EVENT_MASK_T exMask,
+  LocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
             ContextBase *context = NULL);
 public:
   ~LocApiV02();
 
-  static LocApiBase* createLocApiV02(const MsgTask *msgTask,
-                                  LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                                  ContextBase* context);
+  static LocApiBase* createLocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                                     ContextBase* context);
   /* event callback registered with the loc_api v02 interface */
   virtual void eventCb(locClientHandleType client_handle,
                uint32_t loc_event_id,
@@ -201,77 +193,75 @@ public:
 
   void ds_client_event_cb(ds_client_status_enum_type result);
 
-  virtual enum loc_api_adapter_err startFix(const LocPosMode& posMode);
+  virtual void startFix(const LocPosMode& posMode,
+        LocApiResponse *adapterResponse);
 
-  virtual enum loc_api_adapter_err stopFix();
+  virtual void stopFix(LocApiResponse *adapterResponse);
 
-  virtual enum loc_api_adapter_err
-    setPositionMode(const LocPosMode& mode);
+  virtual void setPositionMode(const LocPosMode& mode);
 
-  virtual enum loc_api_adapter_err
+  virtual void
     setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
 
-  virtual enum loc_api_adapter_err
+  virtual void
     injectPosition(double latitude, double longitude, float accuracy);
 
-  virtual LocationError
-    deleteAidingData(const GnssAidingData& data);
+  virtual void
+    deleteAidingData(const GnssAidingData& data, LocApiResponse *adapterResponse);
 
-  virtual LocationError
+  virtual void
     informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
 
   virtual LocationError
-    setServer(const char* url, int len);
+    setServerSync(const char* url, int len);
   virtual LocationError
-    setServer(unsigned int ip, int port, LocServerType type);
+    setServerSync(unsigned int ip, int port, LocServerType type);
   virtual enum loc_api_adapter_err
     setXtraData(char* data, int length);
   virtual enum loc_api_adapter_err
     requestXtraServer();
-  virtual enum loc_api_adapter_err
-    atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear,
+  virtual void
+    atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen, AGpsBearerType bear,
                    LocAGpsType agpsType);
-  virtual enum loc_api_adapter_err atlCloseStatus(int handle, int is_succ);
-  virtual LocationError setSUPLVersion(GnssConfigSuplVersion version);
+  virtual void atlCloseStatus(int handle, int is_succ);
+  virtual LocationError setSUPLVersionSync(GnssConfigSuplVersion version);
 
-  virtual enum loc_api_adapter_err setNMEATypes (uint32_t typesMask);
+  virtual enum loc_api_adapter_err setNMEATypesSync(uint32_t typesMask);
 
-  virtual LocationError setLPPConfig(GnssConfigLppProfile profile);
-
-  virtual enum loc_api_adapter_err
-    setSensorControlConfig(int sensorUsage, int sensorProvider);
+  virtual LocationError setLPPConfigSync(GnssConfigLppProfile profile);
 
   virtual enum loc_api_adapter_err
-    setSensorProperties(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
+    setSensorControlConfigSync(int sensorUsage, int sensorProvider);
+
+  virtual enum loc_api_adapter_err
+    setSensorPropertiesSync(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
                             bool accelBiasVarianceRandomWalk_valid, float accelBiasVarianceRandomWalk,
                             bool angleBiasVarianceRandomWalk_valid, float angleBiasVarianceRandomWalk,
                             bool rateBiasVarianceRandomWalk_valid, float rateBiasVarianceRandomWalk,
                             bool velocityBiasVarianceRandomWalk_valid, float velocityBiasVarianceRandomWalk);
 
   virtual enum loc_api_adapter_err
-    setSensorPerfControlConfig(int controlMode, int accelSamplesPerBatch, int accelBatchesPerSec,
-                               int gyroSamplesPerBatch, int gyroBatchesPerSec,
-                               int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
-                               int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig);
+    setSensorPerfControlConfigSync(int controlMode, int accelSamplesPerBatch,
+            int accelBatchesPerSec, int gyroSamplesPerBatch, int gyroBatchesPerSec,
+            int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+            int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig);
   virtual LocationError
-      setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
-  virtual LocationError setLPPeProtocolCp(GnssConfigLppeControlPlaneMask lppeCP);
-  virtual LocationError setLPPeProtocolUp(GnssConfigLppeUserPlaneMask lppeUP);
+      setAGLONASSProtocolSync(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
+  virtual LocationError setLPPeProtocolCpSync(GnssConfigLppeControlPlaneMask lppeCP);
+  virtual LocationError setLPPeProtocolUpSync(GnssConfigLppeUserPlaneMask lppeUP);
   virtual enum loc_api_adapter_err
       getWwanZppFix();
   virtual void
       handleWwanZppFixIndication(const qmiLocGetAvailWwanPositionIndMsgT_v02 &zpp_ind);
-  virtual enum loc_api_adapter_err
-      getBestAvailableZppFix(LocGpsLocation & zppLoc);
-  virtual enum loc_api_adapter_err
-      getBestAvailableZppFix(LocGpsLocation & zppLoc, GpsLocationExtended & location_extended,
-              LocPosTechMask & tech_mask);
+  virtual void
+      handleZppBestAvailableFixIndication(const qmiLocGetBestAvailablePositionIndMsgT_v02 &zpp_ind);
+  virtual void getBestAvailableZppFix();
   virtual int initDataServiceClient(bool isDueToSsr);
   virtual int openAndStartDataCall();
   virtual void stopDataCall();
   virtual void closeDataCall();
   virtual void releaseDataServiceClient();
-  virtual LocationError setGpsLock(GnssConfigGpsLock lock);
+  virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
 
   /*
     Returns
@@ -280,16 +270,16 @@ public:
   */
   virtual int getGpsLock(void);
   virtual int setSvMeasurementConstellation(const locClientEventMaskType mask);
-  virtual LocationError setXtraVersionCheck(uint32_t check);
+  virtual LocationError setXtraVersionCheckSync(uint32_t check);
   virtual void installAGpsCert(const LocDerEncodedCertificate* pData,
                                size_t length,
                                uint32_t slotBitMask);
-  /*
-    Set Gnss Constellation Config
-  */
-  virtual bool gnssConstellationConfig();
   virtual LocPosTechMask convertPosTechMask(qmiLocPosTechMaskT_v02 mask);
   virtual LocNavSolutionMask convertNavSolutionMask(qmiLocNavSolutionMaskT_v02 mask);
+  virtual GnssConfigSuplVersion convertSuplVersion(const uint32_t suplVersion);
+  virtual GnssConfigLppProfile convertLppProfile(const uint32_t lppProfile);
+  virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
+  virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
 
   locClientStatusEnumType locSyncSendReq(uint32_t req_id, locClientReqUnionType req_payload,
           uint32_t timeout_msec, uint32_t ind_id, void* ind_payload_ptr);
@@ -301,7 +291,6 @@ public:
 
 };
 
-extern "C" LocApiBase* getLocApi(const MsgTask* msgTask,
-                                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
+extern "C" LocApiBase* getLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask,
                                  ContextBase *context);
 #endif //LOC_API_V_0_2_H

@@ -33,13 +33,15 @@
 #include <sys/stat.h>
 #include <grp.h>
 #include <unistd.h>
+#include <sys/prctl.h>
+#include <sys/capability.h>
 #include <loc_pla.h>
 #include <loc_cfg.h>
 #include <gps_extended_c.h>
 #include <loc_misc_utils.h>
 #include "LocationApiService.h"
 
-#define HAL_DAEMON_VERSION "1.0.0"
+#define HAL_DAEMON_VERSION "1.0.1"
 
 static uint32_t gAutoStartGnss = 0;
 static uint32_t gGnssSessionTbfMs = 100;
@@ -48,12 +50,6 @@ static const loc_param_s_type gConfigTable[] =
 {
     {"AUTO_START_GNSS", &gAutoStartGnss, NULL, 'n'},
     {"GNSS_SESSION_TBF_MS", &gGnssSessionTbfMs, NULL, 'n'}
-};
-
-// Process group UIDs
-static const gid_t zNewGroups[] =
-{
-    GID_GPS,            // Primary group; required for QMI-LOC and QMI-SLIM
 };
 
 int main(int argc, char *argv[])
@@ -91,20 +87,62 @@ int main(int argc, char *argv[])
         }
         usleep(100000); //100ms
     }
-    LOC_LOGd("done");
+    LOC_LOGd("starting loc_hal_daemon");
+
+    // check if this process started by root
+    if (0 == getuid()) {
+
+        // Set capabilities
+        struct __user_cap_header_struct cap_hdr = {};
+        cap_hdr.version = _LINUX_CAPABILITY_VERSION;
+        cap_hdr.pid = getpid();
+        if(prctl(PR_SET_KEEPCAPS, 1) < 0) {
+            LOC_LOGe("Error: prctl failed. %s", strerror(errno));
+        }
+
+        // groups
+        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag";
+        gid_t groupIds[LOC_PROCESS_MAX_NUM_GROUPS] = {};
+        char *splitGrpString[LOC_PROCESS_MAX_NUM_GROUPS];
+        int numGrps = loc_util_split_string(groupNames, splitGrpString,
+                LOC_PROCESS_MAX_NUM_GROUPS, ' ');
+
+        int numGrpIds=0;
+        for(int i=0; i<numGrps; i++) {
+            struct group* grp = getgrnam(splitGrpString[i]);
+            if (grp) {
+                groupIds[numGrpIds] = grp->gr_gid;
+                LOC_LOGv("Group %s = %d", splitGrpString[i], groupIds[numGrpIds]);
+                numGrpIds++;
+            }
+        }
+        if (0 != numGrpIds) {
+            if(-1 == setgroups(numGrpIds, groupIds)) {
+                LOC_LOGe("Error: setgroups failed %s", strerror(errno));
+            }
+        }
+
+        // Set the group id first and then set the effective userid, to gps.
+        if(-1 == setgid(GID_GPS)) {
+            LOC_LOGe("Error: setgid failed. %s", strerror(errno));
+        }
+        // Set user id
+        if(-1 == setuid(UID_GPS)) {
+            LOC_LOGe("Error: setuid failed. %s", strerror(errno));
+        }
+
+        // Set access to netmgr (QCMAP)
+        struct __user_cap_data_struct cap_data = {};
+        cap_data.permitted = (1 << CAP_NET_BIND_SERVICE) | (1 << CAP_NET_ADMIN);
+        cap_data.effective = cap_data.permitted;
+        LOC_LOGv("cap_data.permitted: %d", (int)cap_data.permitted);
+        if(capset(&cap_hdr, &cap_data)) {
+            LOC_LOGe("Error: capset failed. %s", strerror(errno));
+        }
+    }
 
     // move to root dir
     chdir("/");
-    // close stdin/stdout/stderr
-    //daemon();
-
-     // Set the group id first and then set the effective userid, to gps.
-    if (setgroups(1, zNewGroups)) {
-        LOC_LOGe("setgroups failed %s", strerror(errno));
-    }
-    if(-1 == setgid(GID_GPS)) {
-        LOC_LOGe("Error: setgid failed. %s\n", strerror(errno));
-    }
 
     // start listening for client events - will not return
     if (!LocationApiService::getInstance(gAutoStartGnss, gGnssSessionTbfMs)) {

@@ -2435,34 +2435,59 @@ void LocApiV02 :: reportPosition (
                 uint16_t gnssSvIdUsed = 0;
 
                 locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA;
+                locationExtended.numOfMeasReceived = gnssSvUsedList_len;
+                memset(locationExtended.measUsageInfo, 0, sizeof(locationExtended.measUsageInfo));
                 // Set of used_in_fix SV ID
                 for (idx = 0; idx < gnssSvUsedList_len; idx++)
                 {
                     gnssSvIdUsed = location_report_ptr->gnssSvUsedList[idx];
+                    locationExtended.measUsageInfo[idx].gnssSvId = gnssSvIdUsed;
+                    locationExtended.measUsageInfo[idx].carrierPhaseAmbiguityType =
+                        CARRIER_PHASE_AMBIGUITY_RESOLUTION_NONE;
                     if (gnssSvIdUsed <= GPS_SV_PRN_MAX)
                     {
                         locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask |=
                                                     (1 << (gnssSvIdUsed - GPS_SV_PRN_MIN));
+                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                GNSS_LOC_SV_SYSTEM_GPS;
+                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                                GNSS_SIGNAL_GPS_L1CA;
                     }
                     else if ((gnssSvIdUsed >= GLO_SV_PRN_MIN) && (gnssSvIdUsed <= GLO_SV_PRN_MAX))
                     {
                         locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask |=
                                                     (1 << (gnssSvIdUsed - GLO_SV_PRN_MIN));
+                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                GNSS_LOC_SV_SYSTEM_GLONASS;
+                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                                GNSS_SIGNAL_GLONASS_G1;
                     }
                     else if ((gnssSvIdUsed >= BDS_SV_PRN_MIN) && (gnssSvIdUsed <= BDS_SV_PRN_MAX))
                     {
                         locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask |=
                                                     (1 << (gnssSvIdUsed - BDS_SV_PRN_MIN));
+                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                GNSS_LOC_SV_SYSTEM_BDS;
+                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                                GNSS_SIGNAL_BEIDOU_B1;
                     }
                     else if ((gnssSvIdUsed >= GAL_SV_PRN_MIN) && (gnssSvIdUsed <= GAL_SV_PRN_MAX))
                     {
                         locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask |=
                                                     (1 << (gnssSvIdUsed - GAL_SV_PRN_MIN));
+                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                GNSS_LOC_SV_SYSTEM_GALILEO;
+                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                                GNSS_SIGNAL_GALILEO_E1;
                     }
                     else if ((gnssSvIdUsed >= QZSS_SV_PRN_MIN) && (gnssSvIdUsed <= QZSS_SV_PRN_MAX))
                     {
                         locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask |=
                                                     (1 << (gnssSvIdUsed - QZSS_SV_PRN_MIN));
+                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                GNSS_LOC_SV_SYSTEM_QZSS;
+                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                                GNSS_SIGNAL_QZSS_L1CA;
                     }
                 }
             }
@@ -2478,6 +2503,36 @@ void LocApiV02 :: reportPosition (
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_GPS_TIME;
                locationExtended.gpsTime.gpsWeek = location_report_ptr->gpsTime.gpsWeek;
                locationExtended.gpsTime.gpsTimeOfWeekMs = location_report_ptr->gpsTime.gpsTimeOfWeekMs;
+            }
+
+            if (location_report_ptr->extDOP_valid)
+            {
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EXT_DOP;
+                locationExtended.extDOP.PDOP = location_report_ptr->extDOP.PDOP;
+                locationExtended.extDOP.HDOP = location_report_ptr->extDOP.HDOP;
+                locationExtended.extDOP.VDOP = location_report_ptr->extDOP.VDOP;
+                locationExtended.extDOP.GDOP = location_report_ptr->extDOP.GDOP;
+                locationExtended.extDOP.TDOP = location_report_ptr->extDOP.TDOP;
+            }
+
+            if (location_report_ptr->velEnu_valid)
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL;
+               locationExtended.northVelocity = location_report_ptr->velEnu[0];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL;
+               locationExtended.eastVelocity = location_report_ptr->velEnu[1];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL;
+               locationExtended.upVelocity = location_report_ptr->velEnu[2];
+            }
+
+            if (location_report_ptr->velUncEnu_valid)
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC;
+               locationExtended.northVelocityStdDeviation = location_report_ptr->velUncEnu[0];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC;
+               locationExtended.eastVelocityStdDeviation = location_report_ptr->velUncEnu[1];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
+               locationExtended.upVelocityStdDeviation = location_report_ptr->velUncEnu[2];
             }
 
             LocApiBase::reportPosition(location,
@@ -2787,6 +2842,8 @@ void  LocApiV02 :: reportSvMeasurement (
 
   }
 
+  svMeasurementSet.numClockResets_valid = gnss_raw_measurement_ptr->numClockResets_valid;
+  svMeasurementSet.numClockResets = gnss_raw_measurement_ptr->numClockResets;
 
   if(1 == gnss_raw_measurement_ptr->svMeasurement_valid)
   {
@@ -2857,6 +2914,9 @@ void  LocApiV02 :: reportSvMeasurement (
 
         svMeasurementSet.gnssMeas.svMeasurement[i].measurementStatus =
                  (uint32_t)gnss_raw_measurement_ptr->svMeasurement[i].measurementStatus;
+
+        svMeasurementSet.gnssMeas.svMeasurement[i].validMeasStatusMask =
+                gnss_raw_measurement_ptr->svMeasurement[i].validMeasStatusMask;
 
         if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_MULTIPATH_EST_VALID_V02)
         {

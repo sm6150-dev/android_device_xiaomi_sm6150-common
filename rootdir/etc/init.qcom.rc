@@ -214,7 +214,7 @@ on boot
     mkdir /persist/display 0770 system graphics
 
     # Create vpp directory
-    mkdir /persist/vpp 0770 media media
+    mkdir /mnt/vendor/persist/vpp 0770 media media
 
 # msm specific files that need to be created on /data
 on post-fs-data

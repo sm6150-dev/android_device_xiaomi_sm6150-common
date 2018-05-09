@@ -363,6 +363,11 @@ else
             echo 0 > /sys/module/process_reclaim/parameters/enable_process_reclaim
             echo 1 > /sys/devices/system/cpu/cpu0/core_ctl/disable
         else
+            # Disable Core Control, enable KLMK for non-go 8909
+            if [ "$ProductName" == "msm8909" ]; then
+                echo 1 > /sys/devices/system/cpu/cpu0/core_ctl/disable
+                echo 1 > /sys/module/lowmemorykiller/parameters/enable_lmk
+            fi
             echo 50 > /sys/module/process_reclaim/parameters/pressure_min
             echo 512 > /sys/module/process_reclaim/parameters/per_swap_size
             echo "15360,19200,23040,26880,34415,43737" > /sys/module/lowmemorykiller/parameters/minfree

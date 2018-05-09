@@ -3,6 +3,7 @@ AM_CFLAGS = \
     -I./ \
     -I inc/ \
     $(GPSUTILS_CFLAGS) \
+    $(LOCHALDAEMON_CFLAGS) \
     -std=c++11
 
 ACLOCAL_AMFLAGS = -I m4
@@ -12,7 +13,6 @@ requiredlibs = \
     $(GPSUTILS_LIBS)
 
 h_sources = \
-    inc/LocationApiMsg.h \
     inc/LocationClientApiImpl.h \
     inc/LocationClientApi.h
 

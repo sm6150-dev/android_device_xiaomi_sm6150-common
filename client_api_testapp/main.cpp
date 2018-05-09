@@ -33,7 +33,6 @@
 #include <string.h>
 
 #include <LocationClientApi.h>
-#include <LocationClientApiImpl.h>
 
 using namespace location_client;
 

@@ -3027,11 +3027,6 @@ case "$target" in
 	echo 85 > /proc/sys/kernel/sched_downmigrate
 	echo 100 > /proc/sys/kernel/sched_group_upmigrate
 	echo 95 > /proc/sys/kernel/sched_group_downmigrate
-	echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
-	echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
-	echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
-	echo 5 > /proc/sys/kernel/sched_spill_nr_run
-	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
 
 	# configure governor settings for little cluster
 	echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor

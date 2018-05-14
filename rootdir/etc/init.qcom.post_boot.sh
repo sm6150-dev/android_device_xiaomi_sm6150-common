@@ -356,6 +356,11 @@ else
         echo "14746,18432,22118,25805,40000,55000" > /sys/module/lowmemorykiller/parameters/minfree
         echo 55000 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
     else
+        # Set allocstall_threshold to 0 for both Go & non-go <=1GB targets
+        if [ $MemTotal -le 1048576 ]; then
+            echo 0 > /sys/module/vmpressure/parameters/allocstall_threshold
+        fi
+
         if [ $MemTotal -le 1048576 ] && [ "$low_ram" == "true" ]; then
             # Disable KLMK, ALMK, PPR & Core Control for Go devices
             echo 0 > /sys/module/lowmemorykiller/parameters/enable_lmk

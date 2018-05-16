@@ -76,6 +76,7 @@ on early-boot
     chown system system /persist/sensors/registry/registry/sensors_registry
     chown system system /persist/sensors/sensors_settings
     chown system system /persist/sensors/registry/config
+    chmod 0664 /persist/sensors/sensors_settings
 
 on boot
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power

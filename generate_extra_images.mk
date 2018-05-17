@@ -48,8 +48,7 @@ $(DSP_MOUNT_POINT):
 
 $(PERSIST_MOUNT_POINT):
 	@echo "Creating $(PERSIST_MOUNT_POINT)"
-	@mkdir -p $(TARGET_ROOT_OUT)/persist
-	@mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/persist
+	@ln -sf /mnt/vendor/persist $(TARGET_ROOT_OUT)/persist
 
 #----------------------------------------------------------------------
 # Generate secure boot image

@@ -2340,6 +2340,8 @@ enable_dcc_config()
             case "$soc_id" in
                 "353" | "354" | "363" | "364")
                      echo "Enabling DCC config for 439"
+                     srcenable="enable_source"
+                     sinkenable="enable_sink"
                      enable_sdm632_stm_events
                      ;;
             esac

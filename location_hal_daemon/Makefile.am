@@ -3,7 +3,6 @@ AM_CFLAGS = \
     -I./ \
     $(LOCCORE_CFLAGS) \
     $(GPSUTILS_CFLAGS) \
-    $(LOCCLIENTAPI_CFLAGS) \
     -std=c++11
 
 requiredlibs = \
@@ -11,11 +10,11 @@ requiredlibs = \
     $(GPSUTILS_LIBS)
 
 h_sources = \
+    LocationApiMsg.h \
     LocHalDaemonIPCReceiver.h \
     LocHalDaemonIPCSender.h \
     LocHalDaemonClientHandler.h \
-    LocationApiService.h \
-    main.h
+    LocationApiService.h
 
 c_sources = \
     LocHalDaemonIPCReceiver.cpp \
@@ -43,4 +42,11 @@ endif
 location_hal_daemon_LDADD = $(requiredlibs) -lcutils -ldl
 
 bin_PROGRAMS = location_hal_daemon
+
+library_include_HEADERS = $(h_sources)
+library_includedir = $(pkgincludedir)
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = location-hal-daemon.pc
+EXTRA_DIST = $(pkgconfig_DATA)
 

@@ -380,9 +380,6 @@ else
         echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
     fi
 
-    #Enable oom_reaper
-    echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper
-
     configure_zram_parameters
 
     configure_read_ahead_kb_values
@@ -3455,6 +3452,9 @@ case "$target" in
         echo 0-3 > /dev/cpuset/background/cpus
         echo 0-3 > /dev/cpuset/system-background/cpus
         echo 0 > /proc/sys/kernel/sched_boost
+
+        # Set Memory parameters
+        configure_memory_parameters
     ;;
 esac
 

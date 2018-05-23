@@ -37,13 +37,20 @@
 #include <linux/types.h>
 #include <stdbool.h>
 #include "loc_cfg.h"
+#include <inttypes.h>
+#include <time.h>
+#include <math.h>
+
+#define BILLION_NSEC  (1E9)
+
+typedef struct timespec pps_sync_time;
+
 //DRsync kernel timestamp
 static struct timespec drsyncKernelTs = {0,0};
 //DRsync userspace timestamp
 static struct timespec drsyncUserTs = {0,0};
 
 static struct timespec prevDrsyncKernelTs = {0,0};
-#define BILLION_NSEC 1000000000
 
 //flag to stop fetching timestamp
 static int isActive = 0;
@@ -57,6 +64,13 @@ static loc_param_s_type gps_conf_param_table[] =
     {"IGNORE_PPS_PULSE_COUNT", &skipPPSPulseCnt, NULL, 'n'},
     {"GNSS_OUTAGE_DURATION", &gnssOutageInSec, NULL, 'n'}
 };
+
+typedef enum {
+    KERNEL_REPORTED_CLOCK_BOOTTIME = 0,
+    KERNEL_REPORTED_CLOCK_REALTIME,
+    KERNEL_REPORTED_CLOCK_UNKNOWN = 0xfe,
+    KERNEL_REPORTED_CLOCK_MAX = 0xff
+} kernel_reported_time_e;
 
   /*  checks the PPS source and opens it */
 int check_device(char *path, pps_handle *handle)
@@ -80,6 +94,158 @@ int check_device(char *path, pps_handle *handle)
      }
      return 0;
 }
+
+
+/* calculate the time difference between two given times in argument -
+** returns the result in timeDifference parametter*/
+static inline void calculate_time_difference(pps_sync_time time1,
+                            pps_sync_time time2, pps_sync_time* timeDifference)
+{
+    if (time2.tv_nsec < time1.tv_nsec) {
+        timeDifference->tv_sec = time2.tv_sec - 1 - time1.tv_sec;
+        timeDifference->tv_nsec = BILLION_NSEC + time2.tv_nsec - time1.tv_nsec;
+    } else {
+        timeDifference->tv_sec = time2.tv_sec - time1.tv_sec;
+        timeDifference->tv_nsec = time2.tv_nsec - time1.tv_nsec;
+    }
+}
+
+/*add two timespec values and return the result in third resultTime parameter*/
+static inline void pps_sync_time_add(pps_sync_time time1,
+                            pps_sync_time time2, pps_sync_time* resultTime)
+{
+    if (time2.tv_nsec + time1.tv_nsec >= BILLION_NSEC) {
+        resultTime->tv_sec = time2.tv_sec + time1.tv_sec + 1;
+        resultTime->tv_nsec = time2.tv_nsec + time1.tv_nsec - BILLION_NSEC;
+    } else {
+        resultTime->tv_sec = time2.tv_sec + time1.tv_sec;
+        resultTime->tv_nsec = time2.tv_nsec + time1.tv_nsec;
+    }
+}
+
+#define MAX_REALTIME_OFFSET_DELTA_DIFFERENCE  10
+#define MAX_PPS_KERNEL_TO_USERSPACE_LATENCY   100    /*in milli-second*/
+
+static inline double convertTimeToMilliSec(pps_sync_time timeToConvert)
+{
+   return ((double)(timeToConvert.tv_sec * 1000) + (double)(timeToConvert.tv_nsec * 0.000001));
+}
+
+/*returnValue: 1 = offsetTime OK, 0 = offsetTime NOT OK*/
+static inline bool isTimeOffsetOk(pps_sync_time offsetTime)
+{
+    double offsetInMillis = convertTimeToMilliSec(offsetTime);
+    return (fabs(offsetInMillis) <= MAX_REALTIME_OFFSET_DELTA_DIFFERENCE)? true: false;
+}
+
+/*check whether kernel PPS timestamp is a CLOCK_BOOTTIME or CLOCK_REALTIME*/
+static kernel_reported_time_e get_reported_time_type(pps_sync_time userBootTs,
+                                                    pps_sync_time userRealTs,
+                                                    pps_sync_time kernelTs)
+{
+    double userRealMs, userBootMs, kernelTsMs;
+    kernel_reported_time_e reportedTime = KERNEL_REPORTED_CLOCK_UNKNOWN;
+
+    userRealMs = convertTimeToMilliSec(userRealTs);
+    userBootMs = convertTimeToMilliSec(userBootTs);
+    kernelTsMs = convertTimeToMilliSec(kernelTs);
+
+    if(fabs(userBootMs - kernelTsMs) <= MAX_PPS_KERNEL_TO_USERSPACE_LATENCY) {
+        reportedTime = KERNEL_REPORTED_CLOCK_BOOTTIME;
+    } else if (fabs(userRealMs - kernelTsMs) <= MAX_PPS_KERNEL_TO_USERSPACE_LATENCY) {
+        reportedTime = KERNEL_REPORTED_CLOCK_REALTIME;
+    } else {
+        reportedTime = KERNEL_REPORTED_CLOCK_UNKNOWN;
+    }
+
+    LOC_LOGV("[%s] Detected PPS timestamp type (0:Boot, 1:Real, 0xfe:Unknown):0x%x",
+              __func__, reportedTime);
+
+    return reportedTime;
+}
+
+/*compute_real_to_boot_time - converts the kernel real time stamp to boot time reference*/
+static int compute_real_to_boot_time(pps_info ppsFetchTime)
+{
+    int retVal = 0;
+    /*Offset between REAL_TIME to BOOT_TIME*/
+    static pps_sync_time time_offset = {0, 0};
+    pps_sync_time  drSyncUserRealTs, drSyncUserBootTs;
+    pps_sync_time  deltaRealToBootTime = {0, 0};
+    pps_sync_time  deltaOffsetTime = {0, 0};
+    kernel_reported_time_e  ppsTimeType;
+
+    retVal = clock_gettime(CLOCK_BOOTTIME,&drSyncUserBootTs);
+    if (retVal != 0) {
+        LOC_LOGE("[%s]Error Reading CLOCK_BOOTTIME", __func__);
+        retVal = -1;
+        goto exit0;
+    }
+    retVal = clock_gettime(CLOCK_REALTIME,&drSyncUserRealTs);
+    if (retVal != 0){
+        LOC_LOGE("[%s]Error Reading CLOCK_REALTIME", __func__);
+        retVal = -1;
+        goto exit0;
+    }
+
+    ppsTimeType = get_reported_time_type(drSyncUserBootTs, drSyncUserRealTs, ppsFetchTime);
+
+    if (KERNEL_REPORTED_CLOCK_BOOTTIME == ppsTimeType) {
+
+        /*Store PPS kernel time*/
+        drsyncKernelTs.tv_sec = ppsFetchTime.tv_sec;
+        drsyncKernelTs.tv_nsec = ppsFetchTime.tv_nsec;
+        /*Store User PPS fetch time*/
+        drsyncUserTs.tv_sec = drSyncUserBootTs.tv_sec;
+        drsyncUserTs.tv_nsec = drSyncUserBootTs.tv_nsec;
+
+        LOC_LOGV("[compute_real_to_boot] PPS TimeType CLOCK_BOOTTIME -- report as is");
+        retVal = 0;
+    } else if (KERNEL_REPORTED_CLOCK_REALTIME == ppsTimeType) {
+
+        /* Calculate time difference between REALTIME to BOOT_TIME*/
+        calculate_time_difference(drSyncUserRealTs, drSyncUserBootTs, &deltaRealToBootTime);
+
+        /* Calculate the time difference between stored offset and computed one now*/
+        calculate_time_difference(time_offset, deltaRealToBootTime, &deltaOffsetTime);
+
+        if ((0 == time_offset.tv_sec && 0 == time_offset.tv_nsec) ||
+            (isTimeOffsetOk(deltaOffsetTime))) {
+            /* if Time Offset does not change beyond threshold then
+            ** convert to boot time*/
+            drsyncUserTs.tv_sec = drSyncUserBootTs.tv_sec;
+            drsyncUserTs.tv_nsec = drSyncUserBootTs.tv_nsec;
+            pps_sync_time_add(ppsFetchTime, deltaRealToBootTime, &drsyncKernelTs);
+            retVal = 0;
+        } else {
+            /*The offset is too high, jump detected in realTime tick, either
+            ** wall clock changed by user of NTP, skip PPS, re-sync @ next tick
+            */
+            LOC_LOGE("[%s] Jump detected in CLOCK_REALTIME - Offset %ld:%ld", __func__,
+                    deltaOffsetTime.tv_sec, deltaOffsetTime.tv_nsec);
+            retVal = -1;
+        }
+        time_offset.tv_sec = deltaRealToBootTime.tv_sec;
+        time_offset.tv_nsec = deltaRealToBootTime.tv_nsec;
+
+        LOC_LOGV("[compute_real_to_boot] KernelRealTs %ld:%ld ComputedTs %ld:%ld RealTs %ld:%ld BootTs %ld:%ld Offset %ld:%ld retVal %d ",
+                ppsFetchTime.tv_sec, ppsFetchTime.tv_nsec,
+                drsyncKernelTs.tv_sec, drsyncKernelTs.tv_nsec, drSyncUserRealTs.tv_sec,
+                drSyncUserRealTs.tv_nsec, drsyncUserTs.tv_sec, drsyncUserTs.tv_nsec,
+                time_offset.tv_sec, time_offset.tv_nsec, retVal);
+    } else {
+        LOC_LOGV("[compute_real_to_boot] PPS TimeType Unknown -- KernelTs %ld:%ld userRealTs %ld:%ld userBootTs %ld:%ld",
+                ppsFetchTime.tv_sec, ppsFetchTime.tv_nsec,
+                drSyncUserRealTs.tv_sec, drSyncUserRealTs.tv_nsec,
+                drsyncUserTs.tv_sec, drsyncUserTs.tv_nsec);
+        retVal = -1;
+    }
+
+exit0:
+    return retVal;
+
+}
+
 
 /* fetches the timestamp from the PPS source */
 int read_pps(pps_handle *handle)
@@ -121,16 +287,13 @@ int read_pps(pps_handle *handle)
         return 0;
     }
     /* update dr syncpulse time*/
+
     pthread_mutex_lock(&ts_lock);
-    drsyncKernelTs.tv_sec = infobuf.tv_sec;
-    drsyncKernelTs.tv_nsec = infobuf.tv_nsec;
-    ret = clock_gettime(CLOCK_BOOTTIME, &drsyncUserTs);
+
+    ret = compute_real_to_boot_time(infobuf);
+
     pthread_mutex_unlock(&ts_lock);
 
-    if(ret != 0)
-    {
-        LOC_LOGV("%s:%d clock_gettime() error",__func__,__LINE__);
-    }
     return 0;
 }
 

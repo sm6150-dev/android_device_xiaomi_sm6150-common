@@ -75,7 +75,7 @@ on mmi && property:ro.bootmode=ffbm-00
     #              This is FFBM only settings.
     # ========================================================
     #mkdir for factory data files.
-    mkdir /persist/FTM_AP 0750 root root
+    mkdir /mnt/vendor/persist/FTM_AP 0750 root root
 
     start fastmmi
     # start qcom-post-boot to set the misc partition path property value
@@ -87,7 +87,7 @@ on mmi && property:ro.bootmode=ffbm-01
     #              This is FFBM only settings.
     # ========================================================
     #mkdir for factory data files.
-    mkdir /persist/FTM_AP 0750 root root
+    mkdir /mnt/vendor/persist/FTM_AP 0750 root root
 
     start fastmmi
     ## start qcom-post-boot to set the misc partition path property value

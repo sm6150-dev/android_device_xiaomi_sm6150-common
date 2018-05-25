@@ -159,6 +159,24 @@ static location_client::GnssLocationSvUsedInPosition parseLocationSvUsedInPositi
     return clientSv;
 }
 
+static void parseGnssMeasUsageInfo(const GnssLocationInfoNotification &halLocationInfo,
+    std::vector<location_client::GnssMeasUsageInfo> & clientMeasUsageInfo) {
+
+    if (halLocationInfo.numOfMeasReceived) {
+
+        for (int idx = 0; idx < halLocationInfo.numOfMeasReceived; idx++) {
+            location_client::GnssMeasUsageInfo measUsageInfo;
+
+            measUsageInfo.gnssSignalType = (location_client::GnssSignalTypeMask)
+                    halLocationInfo.measUsageInfo[idx].gnssSignalType;
+            measUsageInfo.gnssConstellation = (location_client::Gnss_LocSvSystemEnumType)
+                    halLocationInfo.measUsageInfo[idx].gnssConstellation;
+            measUsageInfo.gnssSvId = halLocationInfo.measUsageInfo[idx].gnssSvId;
+            clientMeasUsageInfo.push_back(measUsageInfo);
+        }
+    }
+}
+
 static location_client::GnssLocationPositionDynamics parseLocationPositionDynamics(
     const GnssLocationPositionDynamics &halPositionDynamics) {
     location_client::GnssLocationPositionDynamics positionDynamics;
@@ -249,6 +267,7 @@ static location_client::GnssSystemTimeStructType parseGnssTime(
     gnssTime.systemClkTimeBias = halGnssTime.systemClkTimeBias;
     gnssTime.systemClkTimeUncMs = halGnssTime.systemClkTimeUncMs;
     gnssTime.refFCount = halGnssTime.refFCount;
+    gnssTime.numClockResets = halGnssTime.numClockResets;
 
     return gnssTime;
 }
@@ -295,6 +314,7 @@ static location_client::GnssGloTimeStructType parseGloTime(
 static location_client::GnssSystemTime parseSystemTime(
     const GnssSystemTime &halSystemTime) {
     location_client::GnssSystemTime systemTime;
+    memset(&systemTime, 0x0, sizeof(location_client::GnssSystemTime));
 
     switch (halSystemTime.gnssSystemTimeSrc) {
         case GNSS_LOC_SV_SYSTEM_GPS:
@@ -423,14 +443,41 @@ static location_client::GnssLocation parseLocationInfo(
     if (GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT & halLocationInfo.flags) {
         flags |= location_client::GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT;
     }
-    if (GNSS_LOCATION_INFO_GPS_TIME_BIT & halLocationInfo.flags) {
-        flags |= location_client::GNSS_LOCATION_INFO_GPS_TIME_BIT;
-    }
     if (GNSS_LOCATION_INFO_EXT_DOP_BIT & halLocationInfo.flags) {
         flags |= location_client::GNSS_LOCATION_INFO_EXT_DOP_BIT;
     }
     if (GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT & halLocationInfo.flags) {
         flags |= location_client::GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT;
+    }
+    if (GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT;
+    }
+    if (GNSS_LOCATION_INFO_EAST_STD_DEV_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_EAST_STD_DEV_BIT;
+    }
+    if (GNSS_LOCATION_INFO_NORTH_VEL_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_NORTH_VEL_BIT;
+    }
+    if (GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT;
+    }
+    if (GNSS_LOCATION_INFO_EAST_VEL_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_EAST_VEL_BIT;
+    }
+    if (GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT;
+    }
+    if (GNSS_LOCATION_INFO_UP_VEL_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_UP_VEL_BIT;
+    }
+    if (GNSS_LOCATION_INFO_UP_VEL_UNC_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_UP_VEL_UNC_BIT;
+    }
+    if (GNSS_LOCATION_INFO_LEAP_SECONDS_BIT & halLocationInfo.flags) {
+       flags |= location_client::GNSS_LOCATION_INFO_LEAP_SECONDS_BIT;
+    }
+    if (GNSS_LOCATION_INFO_TIME_UNC_BIT & halLocationInfo.flags) {
+        flags |= location_client::GNSS_LOCATION_INFO_TIME_UNC_BIT;
     }
 
     locationInfo.gnssInfoFlags = (location_client::GnssLocationInfoFlagMask)flags;
@@ -446,6 +493,8 @@ static location_client::GnssLocation parseLocationInfo(
     locationInfo.horUncEllipseSemiMajor = halLocationInfo.horUncEllipseSemiMajor;
     locationInfo.horUncEllipseSemiMinor = halLocationInfo.horUncEllipseSemiMinor;
     locationInfo.horUncEllipseOrientAzimuth = halLocationInfo.horUncEllipseOrientAzimuth;
+    locationInfo.northStdDeviation = halLocationInfo.northStdDeviation;
+    locationInfo.eastStdDeviation = halLocationInfo.eastStdDeviation;
     locationInfo.northVelocity = halLocationInfo.northVelocity;
     locationInfo.eastVelocity = halLocationInfo.eastVelocity;
     locationInfo.upVelocity = halLocationInfo.upVelocity;
@@ -454,6 +503,7 @@ static location_client::GnssLocation parseLocationInfo(
     locationInfo.upVelocityStdDeviation = halLocationInfo.upVelocityStdDeviation;
     locationInfo.svUsedInPosition =
             parseLocationSvUsedInPosition(halLocationInfo.svUsedInPosition);
+    parseGnssMeasUsageInfo(halLocationInfo, locationInfo.measUsageInfo);
 
     flags = 0;
     if (LOCATION_SBAS_CORRECTION_IONO_BIT & halLocationInfo.navSolutionMask) {
@@ -513,6 +563,8 @@ static location_client::GnssLocation parseLocationInfo(
     locationInfo.posTechMask = (location_client::GnssLocationPosTechMask)flags;
     locationInfo.bodyFrameData = parseLocationPositionDynamics(halLocationInfo.bodyFrameData);
     locationInfo.gnssSystemTime = parseSystemTime(halLocationInfo.gnssSystemTime);
+    locationInfo.leapSeconds = halLocationInfo.leapSeconds;
+    locationInfo.timeUncMs = halLocationInfo.timeUncMs;
 
     return locationInfo;
 }

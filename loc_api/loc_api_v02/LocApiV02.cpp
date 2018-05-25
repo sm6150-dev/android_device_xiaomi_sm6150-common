@@ -2698,6 +2698,18 @@ void LocApiV02 :: reportPosition (
                locationExtended.upVelocityStdDeviation = location_report_ptr->velUncEnu[2];
             }
 
+            if (location_report_ptr->timeUnc_valid)
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_TIME_UNC;
+               locationExtended.timeUncMs = location_report_ptr->timeUnc;
+            }
+
+            if (location_report_ptr->leapSeconds_valid)
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_LEAP_SECONDS;
+               locationExtended.leapSeconds = location_report_ptr->leapSeconds;
+            }
+
             LocApiBase::reportPosition(location,
                                        locationExtended,
                                        (location_report_ptr->sessionStatus ==

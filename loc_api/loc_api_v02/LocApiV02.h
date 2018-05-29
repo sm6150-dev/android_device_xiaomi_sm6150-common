@@ -276,8 +276,7 @@ public:
       setAGLONASSProtocolSync(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
   virtual LocationError setLPPeProtocolCpSync(GnssConfigLppeControlPlaneMask lppeCP);
   virtual LocationError setLPPeProtocolUpSync(GnssConfigLppeUserPlaneMask lppeUP);
-  virtual enum loc_api_adapter_err
-      getWwanZppFix();
+  virtual void getWwanZppFix();
   virtual void
       handleWwanZppFixIndication(const qmiLocGetAvailWwanPositionIndMsgT_v02 &zpp_ind);
   virtual void

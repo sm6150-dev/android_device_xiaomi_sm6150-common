@@ -4411,9 +4411,10 @@ void LocApiV02 :: releaseDataServiceClient()
 }
 
 
-enum loc_api_adapter_err LocApiV02 ::
-getWwanZppFix()
+void LocApiV02 ::getWwanZppFix()
 {
+    sendMsg(new LocApiMsg([this] () {
+
     locClientReqUnionType req_union;
     qmiLocGetAvailWwanPositionReqMsgT_v02 zpp_req;
     memset(&zpp_req, 0, sizeof(zpp_req));
@@ -4424,15 +4425,16 @@ getWwanZppFix()
     locClientStatusEnumType status =
             locClientSendReq(QMI_LOC_GET_AVAILABLE_WWAN_POSITION_REQ_V02, req_union);
 
-    if (status == eLOC_CLIENT_SUCCESS) {
-        return LOC_API_ADAPTER_ERR_SUCCESS;
-    } else {
-        return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+    if (status != eLOC_CLIENT_SUCCESS) {
+        LOC_LOGe("error! status = %s\n", loc_get_v02_client_status_name(status));
     }
+    }));
 }
 
 void LocApiV02 ::getBestAvailableZppFix()
 {
+    sendMsg(new LocApiMsg([this] () {
+
     locClientReqUnionType req_union;
     qmiLocGetBestAvailablePositionReqMsgT_v02 zpp_req;
 
@@ -4447,6 +4449,7 @@ void LocApiV02 ::getBestAvailableZppFix()
     if (status != eLOC_CLIENT_SUCCESS) {
         LOC_LOGe("error! status = %s\n", loc_get_v02_client_status_name(status));
     }
+    }));
 }
 
 LocationError LocApiV02 :: setGpsLockSync(GnssConfigGpsLock lock)

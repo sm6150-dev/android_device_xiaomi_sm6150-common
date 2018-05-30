@@ -86,6 +86,18 @@ function set_density_by_fb() {
         fi
     fi
 }
+
+# set Lilliput LCD density for ADP
+product=`getprop ro.build.product`
+
+case "$product" in
+        "msmnile_au")
+         setprop ro.sf.lcd_density 160
+         ;;
+        *)
+        ;;
+esac
+
 target=`getprop ro.board.platform`
 case "$target" in
     "msm7630_surf" | "msm7630_1x" | "msm7630_fusion")

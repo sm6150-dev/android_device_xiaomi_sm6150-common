@@ -94,6 +94,12 @@ on mmi && property:ro.bootmode=ffbm-01
     start qcom-post-boot
     start mmi_diag
 
+on property:persist.vendor.usb.config=* && property:ro.bootmode=ffbm-00
+    setprop sys.usb.config ${persist.vendor.usb.config}
+
+on property:persist.vendor.usb.config=* && property:ro.bootmode=ffbm-01
+    setprop sys.usb.config ${persist.vendor.usb.config}
+
 on ffbm
     trigger early-fs
     trigger factory-fs

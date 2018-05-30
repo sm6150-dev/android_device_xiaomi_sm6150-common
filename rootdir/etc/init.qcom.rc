@@ -663,6 +663,12 @@ service vendor.dataqti /system/vendor/bin/qti
     group radio oem_2901 diag usb net_admin
     disabled
 
+service vendor.dataadpl /system/vendor/bin/adpl
+    class main
+    user radio
+    group radio oem_2901 diag usb net_admin
+    disabled
+
 service vendor.sensors /vendor/bin/sscrpcd
     class core
     user system

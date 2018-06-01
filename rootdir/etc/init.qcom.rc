@@ -75,6 +75,8 @@ on early-boot
     write /sys/kernel/boot_cdsp/boot 1
     write /sys/kernel/boot_slpi/boot 1
     exec u:r:qti_init_shell:s0 -- /vendor/bin/init.qcom.early_boot.sh
+
+    # for backward compatibility
     chown system system /persist/sensors
     chown system system /persist/sensors/registry
     chown system system /persist/sensors/registry/registry
@@ -82,6 +84,15 @@ on early-boot
     chown system system /persist/sensors/sensors_settings
     chown system system /persist/sensors/registry/config
     chmod 0664 /persist/sensors/sensors_settings
+
+    chown system system /mnt/vendor/persist/sensors
+    chown system system /mnt/vendor/persist/sensors/registry
+    chown system system /mnt/vendor/persist/sensors/registry/registry
+    chown system system /mnt/vendor/persist/sensors/registry/registry/sensors_registry
+    chown system system /mnt/vendor/persist/sensors/sensors_settings
+    chown system system /mnt/vendor/persist/sensors/registry/sns_reg_config
+    chown system system /mnt/vendor/persist/sensors/registry/config
+    chmod 0664 /mnt/vendor/persist/sensors/sensors_settings
 
 on boot
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power

@@ -93,6 +93,7 @@ private:
     void onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification);
     void onGnssSvCb(GnssSvNotification gnssSvNotification);
     void onGnssNmeaCb(GnssNmeaNotification);
+    void onGnssDataCb(GnssDataNotification gnssDataNotification);
     void onGnssMeasurementsCb(GnssMeasurementsNotification);
 
     // send ipc message to this client for general use

@@ -299,6 +299,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         clientHandle == LOC_CLIENT_INVALID_HANDLE_VALUE )
     {
       mMask = 0;
+      mNmeaMask = 0;
       mQmiMask = 0;
       LOC_LOGE ("%s:%d]: locClientOpen failed, status = %s\n", __func__,
                 __LINE__, loc_get_v02_client_status_name(status));
@@ -534,6 +535,7 @@ enum loc_api_adapter_err LocApiV02 :: close()
       LOC_API_ADAPTER_ERR_SUCCESS : LOC_API_ADAPTER_ERR_FAILURE;
 
   mMask = 0;
+  mNmeaMask = 0;
   clientHandle = LOC_CLIENT_INVALID_HANDLE_VALUE;
   mIsMasterRegistered = false;
 
@@ -1761,27 +1763,31 @@ enum loc_api_adapter_err LocApiV02 :: setNMEATypesSync(uint32_t typesMask)
   qmiLocSetNmeaTypesReqMsgT_v02 setNmeaTypesReqMsg;
   qmiLocSetNmeaTypesIndMsgT_v02 setNmeaTypesIndMsg;
 
-  LOC_LOGD(" %s:%d]: setNMEATypes, mask = %u\n", __func__, __LINE__,typesMask);
+  LOC_LOGD(" %s:%d]: setNMEATypes, mask = 0x%X", __func__, __LINE__, typesMask);
 
-  memset(&setNmeaTypesReqMsg, 0, sizeof(setNmeaTypesReqMsg));
-  memset(&setNmeaTypesIndMsg, 0, sizeof(setNmeaTypesIndMsg));
+  if (typesMask != mNmeaMask) {
+      memset(&setNmeaTypesReqMsg, 0, sizeof(setNmeaTypesReqMsg));
+      memset(&setNmeaTypesIndMsg, 0, sizeof(setNmeaTypesIndMsg));
 
-  setNmeaTypesReqMsg.nmeaSentenceType = typesMask;
+      setNmeaTypesReqMsg.nmeaSentenceType = typesMask;
 
-  req_union.pSetNmeaTypesReq = &setNmeaTypesReqMsg;
+      req_union.pSetNmeaTypesReq = &setNmeaTypesReqMsg;
 
-  result = locSyncSendReq(QMI_LOC_SET_NMEA_TYPES_REQ_V02,
-                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                          QMI_LOC_SET_NMEA_TYPES_IND_V02,
-                          &setNmeaTypesIndMsg);
+      LOC_LOGD(" %s:%d]: Setting mask = 0x%X", __func__, __LINE__, typesMask);
+      result = locSyncSendReq(QMI_LOC_SET_NMEA_TYPES_REQ_V02,
+                              req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                              QMI_LOC_SET_NMEA_TYPES_IND_V02,
+                              &setNmeaTypesIndMsg);
 
-  // if success
-  if ( result != eLOC_CLIENT_SUCCESS )
-  {
-    LOC_LOGE ("%s:%d]: Error status = %s, ind..status = %s ",
-                  __func__, __LINE__,
-                  loc_get_v02_client_status_name(result),
-                  loc_get_v02_qmi_status_name(setNmeaTypesIndMsg.status));
+      // if success
+      if (result != eLOC_CLIENT_SUCCESS)
+      {
+          LOC_LOGE("%s:%d]: Error status = %s, ind..status = %s ",
+                   __func__, __LINE__,
+                   loc_get_v02_client_status_name(result),
+                   loc_get_v02_qmi_status_name(setNmeaTypesIndMsg.status));
+      }
+      mNmeaMask = typesMask;
   }
 
   return convertErr(result);
@@ -2329,6 +2335,8 @@ void LocApiV02 :: reportPosition (
     memset(&location, 0, sizeof (UlpLocation));
     location.size = sizeof(location);
     location.unpropagatedPosition = unpropagatedPosition;
+    GnssDataNotification dataNotify;
+    int msInWeek = -1;
 
     GpsLocationExtended locationExtended;
     memset(&locationExtended, 0, sizeof (GpsLocationExtended));
@@ -2349,6 +2357,39 @@ void LocApiV02 :: reportPosition (
                  location_report_ptr->spoofReportMask);
 
     // Process the position from final and intermediate reports
+    memset(&dataNotify, 0, sizeof(dataNotify));
+    msInWeek = (int)location_report_ptr->gpsTime.gpsTimeOfWeekMs;
+
+    if (location_report_ptr->jammerIndicatorList_valid) {
+        LOC_LOGV("%s:%d jammerIndicator is present len=%d",
+                 __func__, __LINE__,
+                 location_report_ptr->jammerIndicatorList_len);
+        for (uint32_t i = 1; i < location_report_ptr->jammerIndicatorList_len; i++) {
+            dataNotify.gnssDataMask[i-1] = 0;
+            dataNotify.agc[i-1] = 0.0;
+            dataNotify.jammerInd[i-1] = 0.0;
+            if (GNSS_INVALID_JAMMER_IND !=
+                location_report_ptr->jammerIndicatorList[i].agcMetricDb) {
+                LOC_LOGv("agcMetricDb[%d]=0x%X",
+                         i, location_report_ptr->jammerIndicatorList[i].agcMetricDb);
+                dataNotify.gnssDataMask[i-1] |= GNSS_LOC_DATA_AGC_BIT;
+                dataNotify.agc[i-1] =
+                    (double)location_report_ptr->jammerIndicatorList[i].agcMetricDb / 100.0;
+                msInWeek = -1;
+            }
+            if (GNSS_INVALID_JAMMER_IND !=
+                location_report_ptr->jammerIndicatorList[i].bpMetricDb) {
+                LOC_LOGv("bpMetricDb[%d]=0x%X",
+                         i, location_report_ptr->jammerIndicatorList[i].bpMetricDb);
+                dataNotify.gnssDataMask[i-1] |= GNSS_LOC_DATA_JAMMER_IND_BIT;
+                dataNotify.jammerInd[i-1] =
+                    (double)location_report_ptr->jammerIndicatorList[i].bpMetricDb / 100.0;
+                msInWeek = -1;
+            }
+        }
+    } else {
+        LOC_LOGd("jammerIndicator is not present");
+    }
 
     if( (location_report_ptr->sessionStatus == eQMI_LOC_SESS_STATUS_SUCCESS_V02) ||
         (location_report_ptr->sessionStatus == eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02)
@@ -2707,14 +2748,18 @@ void LocApiV02 :: reportPosition (
                                        (location_report_ptr->sessionStatus ==
                                         eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ?
                                         LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
-                                       tech_Mask);
+                                       tech_Mask, &dataNotify, msInWeek);
+        } else {
+            LocApiBase::reportData(dataNotify, msInWeek);
         }
     }
     else
     {
         LocApiBase::reportPosition(location,
                                    locationExtended,
-                                   LOC_SESS_FAILURE);
+                                   LOC_SESS_FAILURE,
+                                   LOC_POS_TECH_MASK_DEFAULT,
+                                   &dataNotify, msInWeek);
 
         LOC_LOGD("%s:%d]: Ignoring position report with sess status = %d, "
                       "fix id = %u\n", __func__, __LINE__,

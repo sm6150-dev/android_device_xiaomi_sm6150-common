@@ -88,6 +88,15 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         mCallbacks.gnssNmeaCb = nullptr;
     }
 
+    // data
+    if (mSubscriptionMask & E_LOC_CB_GNSS_DATA_BIT) {
+        mCallbacks.gnssDataCb = [this](GnssDataNotification notification) {
+            onGnssDataCb(notification);
+        };
+    } else {
+        mCallbacks.gnssDataCb = nullptr;
+    }
+
     // following callbacks are not supported
     mCallbacks.gnssMeasurementsCb = nullptr;
     mCallbacks.gnssNiCb = nullptr;
@@ -305,6 +314,33 @@ void LocHalDaemonClientHandler::onGnssNmeaCb(GnssNmeaNotification notification) 
     }
 
     delete[] msg;
+}
+
+void LocHalDaemonClientHandler::onGnssDataCb(GnssDataNotification notification) {
+
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    LOC_LOGd("--< onGnssDataCb");
+    for (int sig = 0; sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
+        if (GNSS_LOC_DATA_JAMMER_IND_BIT ==
+            (notification.gnssDataMask[sig] & GNSS_LOC_DATA_JAMMER_IND_BIT)) {
+            LOC_LOGv("jammerInd[%d]=%f", sig, notification.jammerInd[sig]);
+        }
+        if (GNSS_LOC_DATA_AGC_BIT ==
+            (notification.gnssDataMask[sig] & GNSS_LOC_DATA_AGC_BIT)) {
+            LOC_LOGv("agc[%d]=%f", sig, notification.agc[sig]);
+        }
+    }
+
+    LocAPIDataIndMsg msg(SERVICE_NAME, notification);
+    if (mSubscriptionMask & E_LOC_CB_GNSS_DATA_BIT) {
+        LOC_LOGv("Sending data message");
+        int rc = sendMessage(msg);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
 }
 
 void LocHalDaemonClientHandler::onGnssMeasurementsCb(GnssMeasurementsNotification notification) {

@@ -120,6 +120,8 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
     }
 
     if (mCallbacksMask != callBacksMask) {
+        mCallbacksMask = callBacksMask;
+
         if (mHalRegistered) {
             struct UpdateCallbacksReq : public LocMsg {
                 UpdateCallbacksReq(LocationClientApiImpl *apiImpl) :
@@ -135,7 +137,6 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
                 }
                 LocationClientApiImpl *mApiImpl;
             };
-            mCallbacksMask = callBacksMask;
             mMsgTask->sendMsg(new (nothrow) UpdateCallbacksReq(this));
         } else {
             LOC_LOGd("Not registered yet \n");

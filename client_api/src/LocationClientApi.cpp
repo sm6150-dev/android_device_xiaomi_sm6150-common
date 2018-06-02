@@ -768,7 +768,6 @@ void LocationClientApi::locationClientApiImplCb(uint32_t  msgId, const void* msg
                     (LocAPILocationInfoIndMsg *)(msgData);
             GnssLocation gnssLocation =
                     parseLocationInfo(pLocationInfoIndMsg->gnssLocationInfoNotification);
-            mGnssReportCbs.gnssLocationCallback(gnssLocation);
             if (mGnssReportCbs.gnssLocationCallback) {
                 mGnssReportCbs.gnssLocationCallback(gnssLocation);
             } else {

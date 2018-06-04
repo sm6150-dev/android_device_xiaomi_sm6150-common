@@ -636,6 +636,7 @@ MM_VIDEO += mm-venc-omx-test720p
 MM_VIDEO += mm-video-driver-test
 MM_VIDEO += mm-video-encdrv-test
 MM_VIDEO += ExoplayerDemo
+MM_VIDEO += libaacwrapper
 
 #NQ_NFC
 NQ_NFC := NQNfcNci

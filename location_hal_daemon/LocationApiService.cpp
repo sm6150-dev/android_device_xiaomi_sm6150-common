@@ -39,14 +39,7 @@
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
 
-#define SERVICE_NAME "locapiservice"
-
 typedef void* (getLocationInterface)();
-
-/******************************************************************************
-LocHalDaemonClientHandler - static members
-******************************************************************************/
-LocHalDaemonIPCSender* LocHalDaemonClientHandler::mLocIpcSender = nullptr;
 
 /******************************************************************************
 LocationApiService - static members
@@ -65,42 +58,6 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
 
     LOC_LOGd("mAutoStartGnss=%u", mAutoStartGnss);
     LOC_LOGd("mGnssSessionTbfMs=%u", mGnssSessionTbfMs);
-
-    // set callback functions for Location API
-    mCallbacks.size = sizeof(mCallbacks);
-    // mandatory callback
-    mCallbacks.capabilitiesCb = [this](LocationCapabilitiesMask mask) {
-        onCapabilitiesCallback(mask);
-    };
-    mCallbacks.responseCb = [this](LocationError err, uint32_t id) {
-        onResponseCb(err, id);
-    };
-
-    mCallbacks.collectiveResponseCb =
-            [this](size_t count, LocationError* errs, uint32_t* ids) {
-        onCollectiveResponseCallback(count, errs, ids);
-    };
-
-    // optional
-    mCallbacks.trackingCb = [this](Location location) {
-        onTrackingCb(location);
-    };
-    mCallbacks.gnssLocationInfoCb = [this](GnssLocationInfoNotification notification) {
-        onGnssLocationInfoCb(notification);
-    };
-    mCallbacks.gnssSvCb = [this](GnssSvNotification notification) {
-        onGnssSvCb(notification);
-    };
-    mCallbacks.gnssNmeaCb = [this](GnssNmeaNotification notification) {
-        onGnssNmeaCb(notification);
-    };
-    mCallbacks.gnssMeasurementsCb = nullptr;
-    mCallbacks.gnssNiCb = nullptr;
-
-    mCallbacks.geofenceBreachCb = nullptr;
-    mCallbacks.geofenceStatusCb = nullptr;
-    mCallbacks.batchingCb = nullptr;
-    mCallbacks.batchingStatusCb = nullptr;
 
     // create Location control API
     mControlCallabcks.size = sizeof(mControlCallabcks);
@@ -132,7 +89,7 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     // create a default client if enabled by config
     if (mAutoStartGnss) {
         LOC_LOGd("--> Starting a default client...");
-        LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler("default", mCallbacks);
+        LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
         mClients.emplace("default", pClient);
 
         LocationOptions option = {0};
@@ -140,11 +97,11 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
         option.minDistance = 0;
         option.minInterval = mGnssSessionTbfMs;
         option.mode = GNSS_SUPL_MODE_STANDALONE;
-        uint32_t sessionid = pClient->mLocationApi->startTracking(option);
+        uint32_t sessionid = pClient->startTracking(option);
         LOC_LOGd("--> Starting a default client...sessionid=%d", sessionid);
 
         pClient->mSessionId = sessionid;
-        pClient->mSubscriptionMask = 0;
+        pClient->updateSubscription(0);
         pClient->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
     }
 
@@ -219,7 +176,12 @@ void LocationApiService::newClient(LocAPIClientRegisterReqMsg *pMsg) {
     }
 
     // store it in client property database
-    LocHalDaemonClientHandler *pClient = new LocHalDaemonClientHandler(clientname, mCallbacks);
+    LocHalDaemonClientHandler *pClient = new LocHalDaemonClientHandler(this, clientname);
+    if (!pClient) {
+        LOC_LOGe("failed to register client=%s", clientname.c_str());
+        return;
+    }
+
     mClients.emplace(clientname, pClient);
     LOC_LOGi(">-- registered new client=%s", clientname.c_str());
 }
@@ -228,19 +190,23 @@ void LocationApiService::deleteClient(LocAPIClientDeregisterReqMsg *pMsg) {
 
     std::lock_guard<std::mutex> lock(mMutex);
     std::string clientname(pMsg->mSocketName);
-    LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    deleteClientbyName(clientname);
+}
+
+void LocationApiService::deleteClientbyName(const std::string clientname) {
 
     // delete this client from property db
+    LocHalDaemonClientHandler* pClient = getClient(clientname);
     mClients.erase(clientname);
+
     if (!pClient) {
-        LOC_LOGe(">-- deleteClient invlalid client=%s", pMsg->mSocketName);
+        LOC_LOGe(">-- deleteClient invlalid client=%s", clientname.c_str());
         return;
     }
     delete pClient;
 
     LOC_LOGi(">-- deleteClient client=%s", clientname.c_str());
 }
-
 /******************************************************************************
 LocationApiService - implementation - tracking
 ******************************************************************************/
@@ -260,7 +226,7 @@ uint32_t LocationApiService::startTracking(LocAPIStartTrackingReqMsg *pMsg) {
     option.minInterval = pMsg->intervalInMs;
     option.mode = GNSS_SUPL_MODE_STANDALONE;
 
-    uint32_t sessionid = pClient->mLocationApi->startTracking(option);
+    uint32_t sessionid = pClient->startTracking(option);
     if (!sessionid) {
         LOC_LOGe("Failed to start session");
         return 0;
@@ -278,12 +244,12 @@ void LocationApiService::stopTracking(LocAPIStopTrackingReqMsg *pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (!pClient) {
-        LOC_LOGe(">-- start invlalid client=%s", pMsg->mSocketName);
+        LOC_LOGe(">-- stop invlalid client=%s", pMsg->mSocketName);
         return;
     }
 
-    pClient->mSubscriptionMask = 0;
-    pClient->mLocationApi->stopTracking(pClient->mSessionId);
+    pClient->updateSubscription(0);
+    pClient->stopTracking(pClient->mSessionId);
     pClient->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
 
     LOC_LOGi(">-- stop sessionid=%u", pClient->mSessionId);
@@ -298,35 +264,7 @@ void LocationApiService::updateSubscription(LocAPIUpdateCallbacksReqMsg *pMsg) {
         return;
     }
 
-    pClient->mSubscriptionMask = pMsg->locationCallbacks;
-
-    // update callback
-    mCallbacks.trackingCb = [this](Location location) {
-        onTrackingCb(location);
-    };
-    if (pClient->mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
-        mCallbacks.gnssLocationInfoCb = [this](GnssLocationInfoNotification notification) {
-            onGnssLocationInfoCb(notification);
-        };
-    } else {
-        mCallbacks.gnssLocationInfoCb = nullptr;
-    }
-    if (pClient->mSubscriptionMask & E_LOC_CB_GNSS_SV_BIT) {
-        mCallbacks.gnssSvCb = [this](GnssSvNotification notification) {
-            onGnssSvCb(notification);
-        };
-    } else {
-        mCallbacks.gnssSvCb = nullptr;
-    }
-    if (pClient->mSubscriptionMask & E_LOC_CB_GNSS_NMEA_BIT) {
-        mCallbacks.gnssNmeaCb = [this](GnssNmeaNotification notification) {
-            onGnssNmeaCb(notification);
-        };
-    } else {
-        mCallbacks.gnssNmeaCb = nullptr;
-    }
-
-    pClient->mLocationApi->updateCallbacks(mCallbacks);
+    pClient->updateSubscription(pMsg->locationCallbacks);
 
     LOC_LOGi(">-- update subscription client=%s mask=0x%x",
             pMsg->mSocketName, pMsg->locationCallbacks);
@@ -345,7 +283,7 @@ void LocationApiService::updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg
 
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (pClient) {
-        pClient->mLocationApi->updateTrackingOptions(pClient->mSessionId, option);
+        pClient->updateTrackingOptions(pClient->mSessionId, option);
         pClient->mPendingMessages.push(E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID);
     }
 
@@ -374,219 +312,6 @@ void LocationApiService::onControlCollectiveResponseCallback(
     size_t count, LocationError *errs, uint32_t *ids) {
     std::lock_guard<std::mutex> lock(mMutex);
     LOC_LOGd("--< onControlCollectiveResponseCallback");
-}
-
-/******************************************************************************
-LocationApiService - Location API response callback functions
-******************************************************************************/
-void LocationApiService::onResponseCb(LocationError err, uint32_t id) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onResponseCb err=%u id=%u", err, id);
-
-    // find matching client by session id
-    ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
-    LocHalDaemonClientHandler *client = nullptr;
-    std::string clientname = "";
-    for (auto each : mClients) {
-        if (id == each.second->mSessionId) {
-            clientname = each.first;
-            client = each.second;
-            if (!each.second->mPendingMessages.empty()) {
-                pendingMsgId = each.second->mPendingMessages.front();
-                each.second->mPendingMessages.pop();
-            }
-            break;
-        }
-    }
-    // exit if matching client is default or invalid
-    if (!client || clientname == "default") {
-        return;
-    }
-
-    int rc = 0;
-    // send corresponding indication message if pending
-    switch (pendingMsgId) {
-        case E_LOCAPI_START_TRACKING_MSG_ID: {
-            LOC_LOGd("<-- start resp err=%u id=%u pending=%u", err, id, pendingMsgId);
-            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_START_TRACKING_MSG_ID, err);
-            rc = client->sendMessage(msg);
-            break;
-        }
-        case E_LOCAPI_STOP_TRACKING_MSG_ID: {
-            LOC_LOGd("<-- stop resp err=%u id=%u pending=%u", err, id, pendingMsgId);
-            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_STOP_TRACKING_MSG_ID, err);
-            rc = client->sendMessage(msg);
-            client->mSessionId = 0;
-            break;
-        }
-        case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID: {
-            LOC_LOGd("<-- update resp err=%u id=%u pending=%u", err, id, pendingMsgId);
-            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID, err);
-            rc = client->sendMessage(msg);
-            break;
-        }
-        default: {
-            LOC_LOGe("no pending message for %s", clientname.c_str());
-            return;
-        }
-    }
-
-    // purge this client if failed
-    if (!rc) {
-        LOC_LOGe("failed rc=%d purging client=%s", rc, clientname.c_str());
-        mClients.erase(clientname);
-        delete client;
-    }
-}
-
-void LocationApiService::onCollectiveResponseCallback(
-        size_t count, LocationError *errs, uint32_t *ids) {
-    LOC_LOGd("--< onCollectiveResponseCallback");
-}
-
-/******************************************************************************
-LocationApiService - Location API callback functions
-******************************************************************************/
-void LocationApiService::onCapabilitiesCallback(LocationCapabilitiesMask mask) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    //LOC_LOGd("--< onCapabilitiesCallback=0x%" PRIx64" controlId=%u", mask, mLocationControlId);
-    LOC_LOGd("--< onCapabilitiesCallback=0x%x controlId=%u", mask, mLocationControlId);
-
-    // broadcast
-    LocAPICapabilitiesIndMsg msg(SERVICE_NAME, mask);
-    for (auto each : mClients) {
-        if ((nullptr != each.second) && (mask != each.second->mCapabilityMask)) {
-            LOC_LOGd("[%s] : mask old=0x%x new=0x%x",
-                    each.first.c_str(), each.second->mCapabilityMask, mask);
-            each.second->mCapabilityMask = mask;
-            if (each.first != "default") {
-                int rc = each.second->sendMessage(msg);
-                // purge this client if failed
-                if (!rc) {
-                    LOC_LOGe("failed rc=%d purging client=%s", rc, each.first.c_str());
-                    mClients.erase(each.first);
-                    delete each.second;
-                }
-            }
-        }
-    }
-}
-
-void LocationApiService::onTrackingCb(Location location) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onTrackingCb");
-
-    // broadcast
-    LocAPILocationIndMsg msg(SERVICE_NAME, location);
-    for (auto each : mClients) {
-        if ((each.first != "default") &&
-                (each.second->mSubscriptionMask & E_LOC_CB_TRACKING_BIT)) {
-            int rc = each.second->sendMessage(msg);
-            // purge this client if failed
-            if (!rc) {
-                LOC_LOGe("failed rc=%d purging client=%s", rc, each.first.c_str());
-                mClients.erase(each.first);
-                delete each.second;
-            }
-        }
-    }
-}
-
-void LocationApiService::onGnssLocationInfoCb(GnssLocationInfoNotification notification) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onGnssLocationInfoCb");
-
-    // broadcast
-    LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
-    for (auto each : mClients) {
-        if ((each.first != "default") &&
-                (each.second->mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT)) {
-            int rc = each.second->sendMessage(msg);
-            // purge this client if failed
-            if (!rc) {
-                LOC_LOGe("failed rc=%d purging client=%s", rc, each.first.c_str());
-                mClients.erase(each.first);
-                delete each.second;
-            }
-        }
-    }
-}
-
-void LocationApiService::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onGnssNiCb");
-}
-
-void LocationApiService::onGnssSvCb(GnssSvNotification notification) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onGnssSvCb");
-
-    // broadcast
-    LocAPISatelliteVehicleIndMsg msg(SERVICE_NAME, notification);
-    for (auto each : mClients) {
-        if ((each.first != "default") &&
-                (each.second->mSubscriptionMask & E_LOC_CB_GNSS_SV_BIT)) {
-            int rc = each.second->sendMessage(msg);
-            // purge this client if failed
-            if (!rc) {
-                LOC_LOGe("failed rc=%d purging client=%s", rc, each.first.c_str());
-                mClients.erase(each.first);
-                delete each.second;
-            }
-        }
-    }
-}
-
-void LocationApiService::onGnssNmeaCb(GnssNmeaNotification notification) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onGnssNmeaCb time=%" PRIu64" len=%zu nmea=%s",
-            notification.timestamp,
-            notification.length,
-            notification.nmea);
-
-    // serialize nmea string into ipc message payload
-    size_t msglen = sizeof(LocAPINmeaIndMsg) + notification.length;
-    uint8_t *msg = new(nothrow) uint8_t[msglen];
-    if (nullptr == msg) {
-        return;
-    }
-    memset(msg, 0, msglen);
-    LocAPINmeaIndMsg *pmsg = reinterpret_cast<LocAPINmeaIndMsg*>(msg);
-    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
-    pmsg->msgId = E_LOCAPI_NMEA_MSG_ID;
-    pmsg->gnssNmeaNotification.size = msglen;
-    pmsg->gnssNmeaNotification.timestamp = notification.timestamp;
-    pmsg->gnssNmeaNotification.length = notification.length;
-    memcpy(&(pmsg->gnssNmeaNotification.nmea[0]), notification.nmea, notification.length);
-
-    // broadcast
-    for (auto each : mClients) {
-        if ((each.first != "default") &&
-                (each.second->mSubscriptionMask & E_LOC_CB_GNSS_NMEA_BIT)) {
-            int rc = each.second->sendMessage(msg, msglen);
-            // purge this client if failed
-            if (!rc) {
-                LOC_LOGe("failed rc=%d purging client=%s", rc, each.first.c_str());
-                mClients.erase(each.first);
-                delete each.second;
-            }
-        }
-    }
-
-    delete[] msg;
-}
-
-void LocationApiService::onGnssMeasurementsCb(GnssMeasurementsNotification notification) {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onGnssMeasurementsCb");
 }
 
 /******************************************************************************

@@ -39,64 +39,46 @@ using namespace location_client;
 /******************************************************************************
 Callback functions
 ******************************************************************************/
-static void onCapabilitiesCb(location_client::LocationCapabilitiesMask mask) {
+static void onCapabilitiesCb(LocationCapabilitiesMask mask) {
     printf("<<< onCapabilitiesCb mask=0x%x \n", mask);
 }
 
-static void onResponseCb(location_client::LocationResponse response) {
+static void onResponseCb(LocationResponse response) {
     printf("<<< onResponseCb err=%u\n", response);
 }
 
-static void onLocationCb(const location_client::Location& location) {
-    static bool printMessage = true;
-    if (printMessage) {
+static void onLocationCb(const Location& location) {
     printf("<<< onLocationCb time=%" PRIu64" mask=0x%x lat=%f lon=%f alt=%f\n",
         location.timestamp,
         location.flags,
         location.latitude,
         location.longitude,
         location.altitude);
-        printMessage = false;
-    }
 }
 
-static void onGnssLocationCb(const location_client::GnssLocation& location) {
-    static bool printMessage = true;
-    if (printMessage) {
-        printf("<<< onGnssLocationCb time=%" PRIu64" mask=0x%x lat=%f lon=%f alt=%f\n",
-            location.timestamp,
-            location.flags,
-            location.latitude,
-            location.longitude,
-            location.altitude);
-        printMessage = false;
-    }
+static void onGnssLocationCb(const GnssLocation& location) {
+    printf("<<< onGnssLocationCb time=%" PRIu64" mask=0x%x lat=%f lon=%f alt=%f\n",
+        location.timestamp,
+        location.flags,
+        location.latitude,
+        location.longitude,
+        location.altitude);
 }
 
-static void onGnssSvCb(const std::vector<location_client::GnssSv>& gnssSvs) {
-    static bool printMessage = true;
-    if (printMessage) {
-        printf("<<< onGnssSvCb count=%u\n", gnssSvs.size());
-        for (int sv=0; sv < gnssSvs.size(); sv++) {
-            printf("type=%u svid=%u\n",
-                gnssSvs[sv].type,
-                gnssSvs[sv].svId);
-        }
-        printMessage = false;
+static void onGnssSvCb(const std::vector<GnssSv>& gnssSvs) {
+    printf("<<< onGnssSvCb[%u] ", gnssSvs.size());
+    for (auto sv : gnssSvs) {
+        printf("%u:%u(%.f) ", sv.type, sv.svId, sv.cN0Dbhz);
     }
+    printf("\n");
 }
 
 static void onGnssNmeaCb(uint64_t timestamp, const std::string& nmea) {
-    static bool printMessage = true;
-    if (printMessage) {
-        printf("<<< onGnssNmeaCb time=%" PRIu64" nmea=%s\n",
-            timestamp, nmea.c_str());
-        printMessage = false;
-    }
+    printf("<<< onGnssNmeaCb time=%" PRIu64" nmea=%s", timestamp, nmea.c_str());
 }
 
 static void help() {
-    printf("location_client_api_testapp - 0424:1\n");
+    printf("location_client_api_testapp - 0605a\n");
 
     printf("Test command format: client# actionType(g/l/s/u) "
            "interval(optional) distance(optional)\n");
@@ -111,8 +93,6 @@ static void help() {
     printf("u: Set network available \n");
     printf("d: Set network not available \n");
     printf("q: Quit\n");
-    printf("\nEnter Command:");
-    fflush (stdout);
 }
 
 #define BUFFERSIZE 50
@@ -148,14 +128,14 @@ int main(int argc, char *argv[]) {
 
     // main loop
     while (1) {
+
+        printf("command: ");
+        fflush (stdout);
+
         char str[BUFFERSIZE];
-        int len;
-
-        printf("#command: \n");
-
         fgets(str, BUFFERSIZE, stdin);
         /* remove newline, if present */
-        len = strlen(str)-1;
+        int len = strlen(str)-1;
         if( str[len] == '\n') {
             str[len] = '\0';
         }

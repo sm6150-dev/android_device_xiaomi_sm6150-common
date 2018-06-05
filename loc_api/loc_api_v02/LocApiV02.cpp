@@ -1334,7 +1334,7 @@ LocApiV02::registerMasterClient()
 
 /* Set UMTs SLP server URL */
 LocationError
-LocApiV02::setServerSync(const char* url, int len)
+LocApiV02::setServerSync(const char* url, int len, LocServerType type)
 {
   LocationError err = LOCATION_ERROR_SUCCESS;
   locClientReqUnionType req_union;
@@ -1344,8 +1344,7 @@ LocApiV02::setServerSync(const char* url, int len)
 
   if(len < 0 || (size_t)len > sizeof(set_server_req.urlAddr))
   {
-    LOC_LOGE("%s:%d]: len = %d greater than max allowed url length\n",
-                  __func__, __LINE__, len);
+    LOC_LOGe("len = %d greater than max allowed url length", len);
 
     return LOCATION_ERROR_INVALID_PARAMETER;
   }
@@ -1353,9 +1352,13 @@ LocApiV02::setServerSync(const char* url, int len)
   memset(&set_server_req, 0, sizeof(set_server_req));
   memset(&set_server_ind, 0, sizeof(set_server_ind));
 
-  LOC_LOGD("%s:%d]:, url = %s, len = %d\n", __func__, __LINE__, url, len);
+  LOC_LOGd("url = %s, len = %d type=%d", url, len, type);
 
-  set_server_req.serverType = eQMI_LOC_SERVER_TYPE_UMTS_SLP_V02;
+  if (LOC_AGPS_MO_SUPL_SERVER == type) {
+      set_server_req.serverType = eQMI_LOC_SERVER_TYPE_CUSTOM_SLP_V02;
+  } else {
+      set_server_req.serverType = eQMI_LOC_SERVER_TYPE_UMTS_SLP_V02;
+  }
 
   set_server_req.urlAddr_valid = 1;
 
@@ -1371,8 +1374,7 @@ LocApiV02::setServerSync(const char* url, int len)
   if (status != eLOC_CLIENT_SUCCESS ||
          eQMI_LOC_SUCCESS_V02 != set_server_ind.status)
   {
-    LOC_LOGE ("%s:%d]: error status = %s, set_server_ind.status = %s\n",
-              __func__,__LINE__,
+    LOC_LOGe ("error status = %s, set_server_ind.status = %s",
               loc_get_v02_client_status_name(status),
               loc_get_v02_qmi_status_name(set_server_ind.status));
     err = LOCATION_ERROR_GENERAL_FAILURE;

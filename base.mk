@@ -1118,6 +1118,9 @@ endif
 # Preloading QPerformance jar to ensure faster perflocks in Boost Framework
 PRODUCT_BOOT_JARS += QPerformance
 
+# Preloading UxPerformance jar to ensure faster UX invoke in Boost Framework
+PRODUCT_BOOT_JARS += UxPerformance
+
 # OEM Unlock reporting
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.oem_unlock_supported=true

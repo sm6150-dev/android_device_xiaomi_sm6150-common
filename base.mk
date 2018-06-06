@@ -947,7 +947,9 @@ PRODUCT_PACKAGES += android.hidl.manager@1.0-java
 
 PRODUCT_PACKAGES += android.hardware.drm@1.0-impl
 PRODUCT_PACKAGES += android.hardware.drm@1.0-service
-PRODUCT_PACKAGES += android.hardware.drm@1.0-service.widevine
+PRODUCT_PACKAGES += android.hardware.drm@1.1-service.widevine
+PRODUCT_PACKAGES += android.hardware.drm@1.1-service.clearkey
+PRODUCT_PACKAGES += move_widevine_data.sh
 
 # Live Wallpapers
 PRODUCT_PACKAGES += \

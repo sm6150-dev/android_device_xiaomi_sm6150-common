@@ -1954,6 +1954,9 @@ case "$target" in
             echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
 
             # Enable min frequency adjustment for big cluster
+            if [ -f /sys/module/big_cluster_min_freq_adjust/parameters/min_freq_cluster ]; then
+                echo "4-7" > /sys/module/big_cluster_min_freq_adjust/parameters/min_freq_cluster
+            fi
             echo 1 > /sys/module/big_cluster_min_freq_adjust/parameters/min_freq_adjust
 
             ;;

@@ -1015,9 +1015,6 @@ PRODUCT_COPY_FILES := \
     system/bluetooth/data/input.conf:system/etc/bluetooth/input.conf \
     system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
 
-ifeq ($(TARGET_USE_QTI_BT_STACK), true)
-    PRODUCT_PROPERTY_OVERRIDES += ro.bluetooth.library_name=libbluetooth_qti.so
-endif
 
 #ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ),true)
 #PRODUCT_COPY_FILES += \

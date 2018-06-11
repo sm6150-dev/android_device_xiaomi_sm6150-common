@@ -1126,6 +1126,9 @@ on property:init.svc.surfaceflinger=restarting
     stop  vendor.hwcomposer-2-1
     start vendor.hwcomposer-2-1
 
+on property:vendor.display.lcd_density=*
+    setprop ro.sf.lcd_density ${vendor.display.lcd_density}
+
 # Logcat dump daemon, dumps logs to logdump partition
 service logdumpd /system/bin/logcat -b all -v threadtime -D -w /dev/block/bootdevice/by-name/logdump
     class core

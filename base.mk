@@ -841,6 +841,7 @@ PRODUCT_PACKAGES := \
     FM2 \
     FMRecord \
     SnapdragonGallery \
+    SnapdragonMusic \
     VideoEditor \
     SnapdragonLauncher \
     a4wpservice \

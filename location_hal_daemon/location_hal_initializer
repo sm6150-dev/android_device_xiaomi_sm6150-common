@@ -38,14 +38,22 @@ wait_for_dir_mount() {
     done
 }
 
-# for location hal daemon
+wait_for_dir_mount
+
+# for location
 if [ ! -d /dev/socket/location ]
 then
-    wait_for_dir_mount
-    mkdir -p /dev/socket/loc_client
     mkdir -p /dev/socket/location
-    chown -R gps:gps /dev/socket/loc_client
     chown -R gps:gps /dev/socket/location
+    chmod 770 /dev/socket/location
+fi
+
+# for loc_client
+if [ ! -d /dev/socket/loc_client ]
+then
+    mkdir -p /dev/socket/loc_client
+    chown -R gps:locclient /dev/socket/loc_client
+    chmod 770 /dev/socket/loc_client
 fi
 
 # for engine hub
@@ -53,6 +61,7 @@ if [ ! -d /dev/socket/location/ehub ]
 then
     mkdir -p /dev/socket/location/ehub
     chown -R gps:gps /dev/socket/location/ehub
+    chmod 770 /dev/socket/location/ehub
 fi
 
 exit 0

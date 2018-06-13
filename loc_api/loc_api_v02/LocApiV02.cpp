@@ -2562,6 +2562,35 @@ void LocApiV02 :: reportPosition (
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
                locationExtended.upVelocityStdDeviation = location_report_ptr->velUncEnu[2];
             }
+            // fill in GnssSystemTime based on gps timestamp and time uncertainty
+            locationExtended.gnssSystemTime.gnssSystemTimeSrc = (Gnss_LocSvSystemEnumType)0;
+            if (location_report_ptr->gpsTime_valid)
+            {
+                locationExtended.gnssSystemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_GPS;
+                locationExtended.gnssSystemTime.u.gpsSystemTime.validityMask = 0x0;
+
+                locationExtended.gnssSystemTime.u.gpsSystemTime.systemWeek =
+                        locationExtended.gpsTime.gpsWeek;
+                locationExtended.gnssSystemTime.u.gpsSystemTime.validityMask |=
+                        GNSS_SYSTEM_TIME_WEEK_VALID;
+
+                locationExtended.gnssSystemTime.u.gpsSystemTime.systemMsec =
+                        locationExtended.gpsTime.gpsTimeOfWeekMs;
+                locationExtended.gnssSystemTime.u.gpsSystemTime.validityMask |=
+                        GNSS_SYSTEM_TIME_WEEK_MS_VALID;
+
+                locationExtended.gnssSystemTime.u.gpsSystemTime.systemClkTimeBias = 0.0f;
+                locationExtended.gnssSystemTime.u.gpsSystemTime.validityMask |=
+                        GNSS_SYSTEM_CLK_TIME_BIAS_VALID;
+
+                if (location_report_ptr->timeUnc_valid)
+                {
+                    locationExtended.gnssSystemTime.u.gpsSystemTime.systemClkTimeUncMs =
+                            locationExtended.timeUncMs;
+                    locationExtended.gnssSystemTime.u.gpsSystemTime.validityMask |=
+                            GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID;
+                }
+            }
 
             if (location_report_ptr->timeUnc_valid)
             {

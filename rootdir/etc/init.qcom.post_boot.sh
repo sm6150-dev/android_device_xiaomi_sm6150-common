@@ -3489,6 +3489,7 @@ case "$target" in
 	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 
         echo 120 > /proc/sys/vm/watermark_scale_factor
+        echo 1 > /proc/sys/vm/reap_mem_on_sigkill
 
         echo 0-3 > /dev/cpuset/background/cpus
         echo 0-3 > /dev/cpuset/system-background/cpus

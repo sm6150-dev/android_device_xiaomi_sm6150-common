@@ -2,11 +2,13 @@ AM_CFLAGS = \
     -DDEBUG \
     -I./ \
     $(LOCCORE_CFLAGS) \
+    $(PM_CFLAGS) \
     $(GPSUTILS_CFLAGS) \
     -std=c++11
 
 requiredlibs = \
     $(LOCATIONAPI_LIBS) \
+    $(PM_LIBS) \
     $(GPSUTILS_LIBS)
 
 h_sources = \
@@ -20,6 +22,7 @@ c_sources = \
     LocHalDaemonIPCReceiver.cpp \
     LocHalDaemonIPCSender.cpp \
     LocHalDaemonClientHandler.cpp \
+    PowerEvtHandler.cpp \
     LocationApiService.cpp \
     main.cpp
 

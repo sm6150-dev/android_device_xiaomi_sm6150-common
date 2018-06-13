@@ -36,6 +36,7 @@
 #include <MsgTask.h>
 #include <loc_cfg.h>
 #include <LocIpc.h>
+#include <PowerEvtHandler.h>
 #include <location_interface.h>
 #include <LocationAPI.h>
 #include <LocationApiMsg.h>
@@ -78,7 +79,7 @@ public:
     void newClient(LocAPIClientRegisterReqMsg*);
     void deleteClient(LocAPIClientDeregisterReqMsg*);
 
-    uint32_t startTracking(LocAPIStartTrackingReqMsg*);
+    void startTracking(LocAPIStartTrackingReqMsg*);
     void stopTracking(LocAPIStopTrackingReqMsg*);
     void updateSubscription(LocAPIUpdateCallbacksReqMsg*);
     void updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg*);
@@ -94,6 +95,11 @@ public:
 
     // from IPC receiver
     void onListenerReady();
+
+    // power event handler
+    void onSuspend();
+    void onResume();
+    void onShutdown();
 
     // other APIs
     void deleteClientbyName(const std::string name);
@@ -126,6 +132,9 @@ private:
 
     GnssInterface* getGnssInterface();
 
+    // power event observer
+    PowerEvtHandler* mPowerEventObserver;
+
     // singleton instance
     static LocationApiService *mInstance;
 
@@ -142,7 +151,6 @@ private:
 
     // Configration
     const uint32_t mAutoStartGnss;
-    const uint32_t mGnssSessionTbfMs;
 };
 
 #endif //LOCATIONAPISERVICE_H

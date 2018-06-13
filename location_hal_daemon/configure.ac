@@ -45,6 +45,10 @@ PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
 
+PKG_CHECK_MODULES([PM], [powermanager])
+AC_SUBST([PM_CFLAGS])
+AC_SUBST([PM_LIBS])
+
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))

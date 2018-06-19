@@ -1240,6 +1240,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="identify_high_definition_calls_in_call_log_bool" value="true" />
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
+        <string name="carrier_name_string">China Mobile</string>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -1304,6 +1305,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="identify_high_definition_calls_in_call_log_bool" value="true" />
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
+        <string name="carrier_name_string">China Mobile</string>
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">

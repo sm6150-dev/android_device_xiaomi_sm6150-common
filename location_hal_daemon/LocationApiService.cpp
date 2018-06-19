@@ -107,9 +107,11 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
         mClients.emplace("default", pClient);
 
+        pClient->updateSubscription(
+                E_LOC_CB_GNSS_LOCATION_INFO_BIT | E_LOC_CB_GNSS_SV_BIT);
+
         pClient->startTracking(0, sessiontbfms);
         pClient->mTracking = true;
-        pClient->updateSubscription(0);
         pClient->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
     }
 

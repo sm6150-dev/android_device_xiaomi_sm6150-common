@@ -118,15 +118,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <instance>default</instance>
         </interface>
     </hal>
-    <hal format="hidl" optional="true">
-        <name>android.hardware.radio.deprecated</name>
-        <version>1.0</version>
-        <interface>
-            <name>IOemHook</name>
-            <instance>slot1</instance>
-            <instance>slot2</instance>
-        </interface>
-    </hal>
    <hal format="hidl" optional="true">
        <name>android.hardware.radio</name>
        <version>1.0-2</version>
@@ -285,15 +276,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                <name>IImsRadio</name>
                <instance>imsradio0</instance>
                <instance>imsradio1</instance>
-           </interface>
-    </hal>
-    <hal format="hidl" optional="true">
-        <name>vendor.qti.hardware.radio.config</name>
-           <version>1.0</version>
-           <interface>
-               <name>IConfig</name>
-               <instance>radioconfig0</instance>
-               <instance>radioconfig1</instance>
            </interface>
     </hal>
     <hal format="hidl" optional="true">

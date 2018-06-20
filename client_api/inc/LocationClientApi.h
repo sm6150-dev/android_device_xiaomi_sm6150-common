@@ -127,7 +127,17 @@ enum GnssLocationPosDataMask {
     /** Navigation data has Heading Rate */
     LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3),
     /** Navigation data has Body pitch */
-    LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4)
+    LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4),
+    /** Navigation data has Forward Acceleration  */
+    LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT  = (1<<5),
+    /** Navigation data has Sideward Acceleration */
+    LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT   = (1<<6),
+    /** Navigation data has Vertical Acceleration */
+    LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT  = (1<<7),
+    /** Navigation data has Heading Rate */
+    LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT    = (1<<8),
+    /** Navigation data has Body pitch */
+    LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT       = (1<<9)
 };
 
 /** GNSS Signal Type and RF Band */
@@ -314,6 +324,16 @@ struct GnssLocationPositionDynamics {
     float           yawRate;
     /** Body pitch (Radians) */
     float           pitch;
+    /** Uncertainty of Forward Acceleration in body frame */
+    float           longAccelUnc;
+    /** Uncertainty of Side-ward Acceleration in body frame */
+    float           latAccelUnc;
+    /** Uncertainty of Vertical Acceleration in body frame */
+    float           vertAccelUnc;
+    /** Uncertainty of Heading Rate */
+    float           yawRateUnc;
+    /** Uncertainty of Body pitch */
+    float           pitchUnc;
 };
 
 struct GnssSystemTimeStructType {

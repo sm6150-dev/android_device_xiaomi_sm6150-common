@@ -78,7 +78,7 @@ int check_device(char *path, pps_handle *handle)
      int ret;
 
      /* Try to find the source by using the supplied "path" name */
-     ret = open(path, O_RDWR);
+     ret = open(path, O_RDONLY);
      if (ret < 0)
      {
          LOC_LOGV("%s:%d unable to open device %s", __func__, __LINE__, path);

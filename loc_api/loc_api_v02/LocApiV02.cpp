@@ -460,6 +460,10 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
              "newMask: 0x%" PRIx64 " mQmiMask: 0x%" PRIx64 " qmiMask: 0x%" PRIx64 "",
              clientHandle, mMask, mask, newMask, mQmiMask, qmiMask);
 
+    if ((mQmiMask ^ qmiMask) & qmiMask & QMI_LOC_EVENT_MASK_WIFI_REQ_V02) {
+        wifiStatusInformSync();
+    }
+
     if (newMask != mMask) {
       // it is important to cap the mask here, because not all LocApi's
       // can enable the same bits, e.g. foreground and background.
@@ -3980,6 +3984,16 @@ void LocApiV02::requestOdcpi(const qmiLocEventWifiReqIndMsgT_v02& qmiReq)
     }
 
     LocApiBase::requestOdcpi(req);
+}
+
+void LocApiV02::wifiStatusInformSync()
+{
+    qmiLocNotifyWifiStatusReqMsgT_v02 wifiStatusReq;
+    memset(&wifiStatusReq, 0, sizeof(wifiStatusReq));
+    wifiStatusReq.wifiStatus = eQMI_LOC_WIFI_STATUS_AVAILABLE_V02;
+
+    LOC_LOGv("Informing wifi status available.");
+    LOC_SEND_SYNC_REQ(NotifyWifiStatus, NOTIFY_WIFI_STATUS, wifiStatusReq);
 }
 
 #define FIRST_BDS_D2_SV_PRN 1

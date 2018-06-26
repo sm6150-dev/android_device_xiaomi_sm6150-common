@@ -441,6 +441,9 @@ on post-fs-data
     #Create dir for TUI
     mkdir /data/vendor/tui 0600 system drmrpc
 
+    #Start move time data to /data/vendor once post-fs-data done
+    start vendor.move_time_data
+
 service nqnfcinfo /system/vendor/bin/nqnfcinfo
     class late_start
     group nfc
@@ -1171,6 +1174,13 @@ service seemp_healthd /vendor/bin/seemp_healthd
 
 service power_off_alarm /vendor/bin/power_off_alarm
     class core
+    group system
+    disabled
+    oneshot
+
+service vendor.move_time_data /system/bin/move_time_data.sh
+    class main
+    user system
     group system
     disabled
     oneshot

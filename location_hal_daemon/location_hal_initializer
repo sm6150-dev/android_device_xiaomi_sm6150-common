@@ -32,37 +32,64 @@
 
 set -e
 wait_for_dir_mount() {
-    while ! [ -d /dev/socket ]
+    while ! [ -d /dev ]
     do
-        echo "waiting for /dev/socket to mount"
+        echo "waiting for /dev to mount"
     done
 }
 
-wait_for_dir_mount
+# for location hal daemon
+case "$1" in
+  start)
+        echo -n "Starting location_hal_initializer" > /dev/kmsg
+        wait_for_dir_mount
+        # create required directories for location services
+        if [ ! -d /dev/socket/location ]
+        then
+            mkdir -p /dev/socket/location
+            # change the ownership of directory to gps user/group.
+            chown -R gps:gps /dev/socket/location
+            chmod 770 /dev/socket/location
+        fi
 
-# for location
-if [ ! -d /dev/socket/location ]
-then
-    mkdir -p /dev/socket/location
-    chown -R gps:gps /dev/socket/location
-    chmod 770 /dev/socket/location
-fi
+        # for loc_client
+        if [ ! -d /dev/socket/loc_client ]
+        then
+            mkdir -p /dev/socket/loc_client
+            # change the ownership of directory to gps user/group.
+            chown -R gps:locclient /dev/socket/loc_client
+            chmod 770 /dev/socket/loc_client
+        fi
 
-# for loc_client
-if [ ! -d /dev/socket/loc_client ]
-then
-    mkdir -p /dev/socket/loc_client
-    chown -R gps:locclient /dev/socket/loc_client
-    chmod 770 /dev/socket/loc_client
-fi
+        # for engine hub
+        if [ ! -d /dev/socket/location/ehub ]
+        then
+            mkdir -p /dev/socket/location/ehub
+            # change the ownership of directory to gps user/group.
+            chown -R gps:gps /dev/socket/location/ehub
+            chmod 770 /dev/socket/location/ehub
+        fi
 
-# for engine hub
-if [ ! -d /dev/socket/location/ehub ]
-then
-    mkdir -p /dev/socket/location/ehub
-    chown -R gps:gps /dev/socket/location/ehub
-    chmod 770 /dev/socket/location/ehub
-fi
+        # start hal daemon
+        #start-stop-daemon -S -x /usr/bin/location_hal_daemon
+        ;;
+
+  stop)
+        echo -n "Stopping location_hal_initializer" > /dev/kmsg
+        #start-stop-daemon -K -x /usr/bin/location_hal_daemon
+        ;;
+
+  restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+
+  *)
+        echo -n "Usage location_hal_initializer { start | stop | restart}" >&2
+        exit 1
+        ;;
+esac
 
 exit 0
 

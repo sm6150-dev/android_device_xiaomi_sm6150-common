@@ -3555,8 +3555,7 @@ case "$target" in
 	    #Enable userspace governor for L3 cdsp nodes
 	    for l3cdsp in $device/*cdsp-cdsp-l3-lat/devfreq/*cdsp-cdsp-l3-lat
 	    do
-		echo "userspace" > $l3cdsp/governor
-		chown -h system $l3cdsp/userspace/set_freq
+		echo "cdspl3" > $l3cdsp/governor
 	    done
 
 	    #Enable compute governor for gold latfloor

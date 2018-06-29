@@ -207,6 +207,9 @@ private:
   void reportGnssSvTypeConfig
     (const qmiLocGetConstellationConfigIndMsgT_v02& getConstellationConfigIndMsg);
 
+  /* Inform ODCPI availability to Modem */
+  void wifiStatusInformSync();
+
 protected:
   virtual enum loc_api_adapter_err
     open(LOC_API_ADAPTER_EVENT_MASK_T mask);

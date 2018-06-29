@@ -144,6 +144,7 @@ void LocationApiService::onListenerReady() {
 
     struct dirent *dp = nullptr;
     struct stat sbuf = {0};
+    const std::string fnamebase = SOCKET_TO_LOCATION_CLIENT_BASE;
     while (nullptr != (dp = readdir(dirp))) {
         std::string fname = SOCKET_DIR_TO_CLIENT;
         fname += dp->d_name;
@@ -151,6 +152,9 @@ void LocationApiService::onListenerReady() {
             continue;
         }
         if ('.' == (dp->d_name[0])) {
+            continue;
+        }
+        if (0 != fname.compare(0, fnamebase.size(), fnamebase)) {
             continue;
         }
         if (S_ISSOCK((mode_t)sbuf.st_mode)) {

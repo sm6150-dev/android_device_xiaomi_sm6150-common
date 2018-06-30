@@ -2686,20 +2686,20 @@ void LocApiV02 :: reportPosition (
 
             if (location_report_ptr->velEnu_valid)
             {
-               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL;
-               locationExtended.northVelocity = location_report_ptr->velEnu[0];
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL;
-               locationExtended.eastVelocity = location_report_ptr->velEnu[1];
+               locationExtended.eastVelocity = location_report_ptr->velEnu[0];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL;
+               locationExtended.northVelocity = location_report_ptr->velEnu[1];
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL;
                locationExtended.upVelocity = location_report_ptr->velEnu[2];
             }
 
             if (location_report_ptr->velUncEnu_valid)
             {
-               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC;
-               locationExtended.northVelocityStdDeviation = location_report_ptr->velUncEnu[0];
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC;
-               locationExtended.eastVelocityStdDeviation = location_report_ptr->velUncEnu[1];
+               locationExtended.eastVelocityStdDeviation = location_report_ptr->velUncEnu[0];
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC;
+               locationExtended.northVelocityStdDeviation = location_report_ptr->velUncEnu[1];
                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
                locationExtended.upVelocityStdDeviation = location_report_ptr->velUncEnu[2];
             }

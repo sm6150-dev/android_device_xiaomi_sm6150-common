@@ -19,6 +19,7 @@ h_sources = \
 c_sources = \
     LocHalDaemonIPCReceiver.cpp \
     LocHalDaemonIPCSender.cpp \
+    LocHalDaemonClientHandler.cpp \
     LocationApiService.cpp \
     main.cpp
 

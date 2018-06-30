@@ -30,10 +30,14 @@
 #define LOCHALCLIENTHANDLER_H
 
 #include <queue>
+#include <mutex>
 #include <log_util.h>
 
 #include <LocationAPI.h>
 #include <LocHalDaemonIPCSender.h>
+
+// forward declaration
+class LocationApiService;
 
 /******************************************************************************
 LocHalDaemonClientHandler
@@ -41,22 +45,20 @@ LocHalDaemonClientHandler
 class LocHalDaemonClientHandler
 {
 public:
-    inline LocHalDaemonClientHandler(
-            const std::string& clientname, LocationCallbacks& callbacks) :
-            mCapabilityMask(0),
-            mSessionId(0),
-            mPendingMessages(),
-            mSubscriptionMask(0),
-            mLocationApi(LocationAPI::createInstance(callbacks)),
-            mIpcSender(nullptr) {
-        if (clientname != "default") {
-            if (!mLocIpcSender) {
-                mIpcSender = new LocHalDaemonIPCSender(clientname.c_str());
-                //mLocIpcSender = mIpcSender;
-            } else {
-                //mIpcSender = mLocIpcSender->replicate(clientname.c_str());
-            }
+    inline LocHalDaemonClientHandler(LocationApiService* service, const std::string& clientname) :
+                mService(service),
+                mName(clientname),
+                mCapabilityMask(0),
+                mSessionId(0),
+                mLocationApi(nullptr),
+                mPendingMessages(),
+                mSubscriptionMask(0),
+                mIpcSender(nullptr) {
+        if (mName != "default") {
+            mIpcSender = new LocHalDaemonIPCSender(mName.c_str());
         }
+        updateSubscription(0);
+        mLocationApi = LocationAPI::createInstance(mCallbacks);
     }
 
     inline ~LocHalDaemonClientHandler() {
@@ -67,6 +69,29 @@ public:
             mLocationApi->destroy();
         }
     }
+
+    // public APIs
+    void updateSubscription(uint32_t mask);
+    uint32_t startTracking(LocationOptions&);
+    void stopTracking(uint32_t id);
+    void updateTrackingOptions(uint32_t id, LocationOptions&);
+
+    uint32_t mSessionId;
+    std::queue<ELocMsgID> mPendingMessages;
+
+private:
+    // Location API callback functions
+    void onCapabilitiesCallback(LocationCapabilitiesMask capabilitiesMask);
+    void onResponseCb(LocationError err, uint32_t id);
+    void onCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
+
+    void onTrackingCb(Location location);
+    void onGnssLocationInfoCb(GnssLocationInfoNotification gnssLocationInfoNotification);
+
+    void onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification);
+    void onGnssSvCb(GnssSvNotification gnssSvNotification);
+    void onGnssNmeaCb(GnssNmeaNotification);
+    void onGnssMeasurementsCb(GnssMeasurementsNotification);
 
     // send ipc message to this client for general use
     template <typename MESSAGE>
@@ -84,18 +109,26 @@ public:
                 delete mIpcSender;
                 mIpcSender = nullptr;
             }
+        } else {
+            ret = true;
         }
         return ret;
     }
 
-    LocationCapabilitiesMask mCapabilityMask;
-    uint32_t mSessionId;
-    std::queue<ELocMsgID> mPendingMessages;
-    uint32_t mSubscriptionMask;
-    LocationAPI* mLocationApi;
+    // pointer to parent service
+    LocationApiService* mService;
 
-private:
-    static LocHalDaemonIPCSender* mLocIpcSender;
+    // name of this client
+    const std::string mName;
+
+    // LocationAPI interface
+    LocationCapabilitiesMask mCapabilityMask;
+    LocationAPI* mLocationApi;
+    LocationCallbacks mCallbacks;
+
+    // bitmask to hold this client's subscription
+    uint32_t mSubscriptionMask;
+
     LocHalDaemonIPCSender* mIpcSender;
 };
 

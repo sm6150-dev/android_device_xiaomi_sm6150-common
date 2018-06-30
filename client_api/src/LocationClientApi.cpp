@@ -673,7 +673,8 @@ bool LocationClientApi::startPositionSession(
    LocationCb locationCallback,
    ResponseCb responseCallback) {
     LocationCallbacks   callbacksOption = {0};
-    LocationOptions     locationOption = {0};
+    LocationOptions     locationOption;
+    TrackingOptions     trackingOption;
     bool                retVal = false;
 
     //Input parameter check
@@ -690,17 +691,18 @@ bool LocationClientApi::startPositionSession(
     callbacksOption.trackingCb = clientTrackingCb;
     locationOption.minInterval = intervalInMs;
     locationOption.minDistance = distanceInMeters;
+    trackingOption.setLocationOptions(locationOption);
 
     mApiImpl->updateCallbacks(callbacksOption);
     if (LOCATION_CLIENT_SESSION_ID_INVALID == mSessionId) {
         //start a new tracking session
-        mSessionId = mApiImpl->startTracking(locationOption);
+        mSessionId = mApiImpl->startTracking(trackingOption);
         if (LOCATION_CLIENT_SESSION_ID_INVALID != mSessionId) {
             retVal = true;
         }
     } else {
         //update a tracking session
-        mApiImpl->updateTrackingOptions(mSessionId, locationOption);
+        mApiImpl->updateTrackingOptions(mSessionId, trackingOption);
         retVal = true;
     }
 
@@ -718,7 +720,8 @@ bool LocationClientApi::startPositionSession(
     const GnssReportCbs& gnssReportCallbacks,
     ResponseCb responseCallback) {
     LocationCallbacks   callbacksOption = {0};
-    LocationOptions     locationOption = {0};
+    LocationOptions     locationOption;
+    TrackingOptions     trackingOption;
     bool                retVal = false;
 
     //Input parameter check
@@ -745,16 +748,17 @@ bool LocationClientApi::startPositionSession(
     }
     locationOption.minInterval = intervalInMs;
     locationOption.minDistance = 0;
+    trackingOption.setLocationOptions(locationOption);
 
     mApiImpl->updateCallbacks(callbacksOption);
     if (LOCATION_CLIENT_SESSION_ID_INVALID == mSessionId) {
         //start a new gnssReport session
-        mSessionId = mApiImpl->startTracking(locationOption);
+        mSessionId = mApiImpl->startTracking(trackingOption);
         if (LOCATION_CLIENT_SESSION_ID_INVALID != mSessionId) {
             retVal = true;
         }
     } else {
-        mApiImpl->updateTrackingOptions(mSessionId, locationOption);
+        mApiImpl->updateTrackingOptions(mSessionId, trackingOption);
     }
 
     if (true == retVal) {

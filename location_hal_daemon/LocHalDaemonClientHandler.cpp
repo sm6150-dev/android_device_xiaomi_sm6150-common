@@ -104,7 +104,9 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
 }
 
 uint32_t LocHalDaemonClientHandler::startTracking(LocationOptions& option) {
-    return (mLocationApi->startTracking(option));
+    TrackingOptions     trackingOption;
+    trackingOption.setLocationOptions(option);
+    return (mLocationApi->startTracking(trackingOption));
 }
 
 void LocHalDaemonClientHandler::stopTracking(uint32_t id) {
@@ -112,7 +114,9 @@ void LocHalDaemonClientHandler::stopTracking(uint32_t id) {
 }
 
 void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t id, LocationOptions& option) {
-    mLocationApi->updateTrackingOptions(id, option);
+    TrackingOptions     trackingOption;
+    trackingOption.setLocationOptions(option);
+    mLocationApi->updateTrackingOptions(id, trackingOption);
 }
 
 /******************************************************************************

@@ -50,7 +50,7 @@ LocationClientApiImpl - constructors
 ******************************************************************************/
 LocationClientApiImpl::LocationClientApiImpl(LocationClientApi* locationClientApi) :
     mLocationClient(locationClientApi), mHalRegistered(false),
-    mCallbacksMask(0), mLocationOptions({0}) {
+    mCallbacksMask(0), mLocationOptions() {
 
     mMsgTask = new MsgTask("ClientApiImpl", false);
 
@@ -147,8 +147,9 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
     }
 }
 
-uint32_t LocationClientApiImpl::startTracking(LocationOptions& option) {
-    mLocationOptions = option;
+uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
+    LocationOptions locOption = option.getLocationOptions();
+    mLocationOptions = locOption;
 
     if (mHalRegistered) {
         struct StartTrackingReq : public LocMsg {
@@ -199,10 +200,11 @@ void LocationClientApiImpl::stopTracking(uint32_t sessionId) {
     }
 }
 
-void LocationClientApiImpl::updateTrackingOptions(uint32_t, LocationOptions& option) {
+void LocationClientApiImpl::updateTrackingOptions(uint32_t, TrackingOptions& option) {
 
-    if ((mLocationOptions.minInterval != option.minInterval) ||
-        (mLocationOptions.minDistance != option.minDistance)) {
+    LocationOptions locOption = option.getLocationOptions();
+    if ((mLocationOptions.minInterval != locOption.minInterval) ||
+        (mLocationOptions.minDistance != locOption.minDistance)) {
         struct UpdateTrackingOptionsReq : public LocMsg {
             UpdateTrackingOptionsReq(LocationClientApiImpl *apiImpl) :
                 mApiImpl(apiImpl) {}
@@ -219,11 +221,11 @@ void LocationClientApiImpl::updateTrackingOptions(uint32_t, LocationOptions& opt
             }
             LocationClientApiImpl *mApiImpl;
         };
-        mLocationOptions = option;
+        mLocationOptions = locOption;
         mMsgTask->sendMsg(new (nothrow) UpdateTrackingOptionsReq(this));
     } else {
         LOC_LOGd("No UpdateTrackingOptions because same Interval=%d Distance=%d\n",
-                  option.minInterval, option.minDistance);
+                  locOption.minInterval, locOption.minDistance);
     }
 }
 
@@ -300,7 +302,9 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID  msgId, const void* ms
         }
 
         if (0 != mLocationOptions.minInterval) {
-            (void)startTracking(mLocationOptions);
+            TrackingOptions trackOption;
+            trackOption.setLocationOptions(mLocationOptions);
+            (void)startTracking(trackOption);
         }
     } else {
         LOC_LOGe("NULL mLocationClient\n");
@@ -454,15 +458,14 @@ void LocationClientApiImpl::onReceive(const string& data) {
 LocationClientApiImpl - Not implemented overrides
 ******************************************************************************/
 
-uint32_t LocationClientApiImpl::startBatching(LocationOptions&, BatchingOptions&) {
+uint32_t LocationClientApiImpl::startBatching(BatchingOptions&) {
     return 0;
 }
 
 void LocationClientApiImpl::stopBatching(uint32_t) {
 }
 
-void LocationClientApiImpl::updateBatchingOptions(
-        uint32_t id, LocationOptions&, BatchingOptions&) {
+void LocationClientApiImpl::updateBatchingOptions(uint32_t id, BatchingOptions&) {
 }
 
 void LocationClientApiImpl::getBatchedLocations(uint32_t id, size_t count) {

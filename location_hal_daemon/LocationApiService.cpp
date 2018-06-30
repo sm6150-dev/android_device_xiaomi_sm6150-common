@@ -92,12 +92,16 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
         mClients.emplace("default", pClient);
 
-        LocationOptions option = {0};
+        LocationOptions option;
+        TrackingOptions trackOption;
         option.size = sizeof(option);
         option.minDistance = 0;
         option.minInterval = mGnssSessionTbfMs;
         option.mode = GNSS_SUPL_MODE_STANDALONE;
-        uint32_t sessionid = pClient->startTracking(option);
+
+        trackOption.setLocationOptions(option);
+
+        uint32_t sessionid = pClient->startTracking(trackOption);
         LOC_LOGd("--> Starting a default client...sessionid=%d", sessionid);
 
         pClient->mSessionId = sessionid;
@@ -220,13 +224,15 @@ uint32_t LocationApiService::startTracking(LocAPIStartTrackingReqMsg *pMsg) {
     }
 
     // create option
-    LocationOptions option = { 0 };
+    LocationOptions option;
+    TrackingOptions trackOption;
     option.size = sizeof(option);
     option.minDistance = pMsg->distanceInMeters;
     option.minInterval = pMsg->intervalInMs;
     option.mode = GNSS_SUPL_MODE_STANDALONE;
+    trackOption.setLocationOptions(option);
 
-    uint32_t sessionid = pClient->startTracking(option);
+    uint32_t sessionid = pClient->startTracking(trackOption);
     if (!sessionid) {
         LOC_LOGe("Failed to start session");
         return 0;
@@ -275,15 +281,17 @@ void LocationApiService::updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg
     std::lock_guard<std::mutex> lock(mMutex);
 
     // create option
-    LocationOptions option = { 0 };
+    LocationOptions option;
+    TrackingOptions trackOption;
     option.size = sizeof(option);
     option.minDistance = pMsg->distanceInMeters;
     option.minInterval = pMsg->intervalInMs;
     option.mode = GNSS_SUPL_MODE_STANDALONE;
+    trackOption.setLocationOptions(option);
 
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (pClient) {
-        pClient->updateTrackingOptions(pClient->mSessionId, option);
+        pClient->updateTrackingOptions(pClient->mSessionId, trackOption);
         pClient->mPendingMessages.push(E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID);
     }
 

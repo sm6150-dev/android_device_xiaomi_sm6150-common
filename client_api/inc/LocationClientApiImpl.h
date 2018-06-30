@@ -56,19 +56,18 @@ public:
     // Tracking
     virtual void updateCallbacks(LocationCallbacks&) override;
 
-    virtual uint32_t startTracking(LocationOptions&) override;
+    virtual uint32_t startTracking(TrackingOptions&) override;
 
     virtual void stopTracking(uint32_t id) override;
 
-    virtual void updateTrackingOptions(uint32_t id, LocationOptions&) override;
+    virtual void updateTrackingOptions(uint32_t id, TrackingOptions&) override;
 
     //Batching
-    virtual uint32_t startBatching(LocationOptions&, BatchingOptions&) override;
+    virtual uint32_t startBatching(BatchingOptions&) override;
 
     virtual void stopBatching(uint32_t id) override;
 
-    virtual void updateBatchingOptions(uint32_t id, LocationOptions&,
-                                       BatchingOptions&) override;
+    virtual void updateBatchingOptions(uint32_t id, BatchingOptions&) override;
 
     virtual void getBatchedLocations(uint32_t id, size_t count) override;
 

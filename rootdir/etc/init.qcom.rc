@@ -749,7 +749,8 @@ service vendor.wigig_supplicant /vendor/bin/hw/wpa_supplicant \
 # FST Manager with hostapd (softap) - all settings inside ini file
 service fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini -a 1
     user wifi
-    group wifi net_admin net_raw
+    group wifi
+    capabilities NET_ADMIN NET_RAW
     class main
     disabled
     oneshot
@@ -758,16 +759,11 @@ service fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini -a 1
 service fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini \
     -a 0 @android:vendor_wpa_wlan0
     user wifi
-    group wifi net_admin net_raw
+    group wifi
+    capabilities NET_ADMIN NET_RAW
     class main
     disabled
     oneshot
-
-on property:netd.fstman.start=true
-    start fstman
-
-on property:netd.fstman.start=false
-    stop fstman
 
 service wigighalsvc /vendor/bin/wigighalsvc
     interface vendor.qti.hardware.wigig1.supptunnel@1.0::ISuppTunnelProvider default
@@ -783,7 +779,8 @@ service wigignpt /vendor/bin/wigignpt
     class hal
     socket wigignpt stream 660 system wifi
     user system
-    group wifi net_admin
+    group wifi
+    capabilities NET_ADMIN
     disabled
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG
@@ -968,15 +965,17 @@ service vendor.atfwd /vendor/bin/ATFWD-daemon
 service hostapd_fst /vendor/bin/hw/hostapd -dd -g /data/vendor/wifi/hostapd/global
     interface android.hardware.wifi.hostapd@1.0::IHostapd default
     class main
+    capabilities NET_ADMIN NET_RAW
     user wifi
-    group wifi net_raw net_admin
+    group wifi
     disabled
     oneshot
 
 service vendor.wigig_hostapd /vendor/bin/hw/hostapd -dd  -j wigighostapd /data/vendor/wifi/hostapd/wigig_hostapd.conf
     class late_start
+    capabilities NET_ADMIN NET_RAW
     user wifi
-    group wifi inet keystore net_admin net_raw
+    group wifi inet keystore
     oneshot
     disabled
 

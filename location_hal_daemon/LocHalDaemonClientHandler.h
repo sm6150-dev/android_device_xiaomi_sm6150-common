@@ -49,6 +49,7 @@ public:
                 mService(service),
                 mName(clientname),
                 mCapabilityMask(0),
+                mTracking(false),
                 mSessionId(0),
                 mLocationApi(nullptr),
                 mPendingMessages(),
@@ -72,11 +73,12 @@ public:
 
     // public APIs
     void updateSubscription(uint32_t mask);
-    uint32_t startTracking(LocationOptions&);
-    void stopTracking(uint32_t id);
-    void updateTrackingOptions(uint32_t id, LocationOptions&);
+    uint32_t startTracking();
+    uint32_t startTracking(uint32_t minDistance, uint32_t minInterval);
+    void stopTracking();
+    void updateTrackingOptions(uint32_t minDistance, uint32_t minInterval);
 
-    uint32_t mSessionId;
+    bool mTracking;
     std::queue<ELocMsgID> mPendingMessages;
 
 private:
@@ -123,8 +125,10 @@ private:
 
     // LocationAPI interface
     LocationCapabilitiesMask mCapabilityMask;
+    uint32_t mSessionId;
     LocationAPI* mLocationApi;
     LocationCallbacks mCallbacks;
+    TrackingOptions mOptions;
 
     // bitmask to hold this client's subscription
     uint32_t mSubscriptionMask;

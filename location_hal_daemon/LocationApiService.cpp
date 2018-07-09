@@ -34,6 +34,9 @@
 #include <LocationApiMsg.h>
 #include <gps_extended_c.h>
 
+#ifdef POWERMANAGER_ENABLED
+#include <PowerEvtHandler.h>
+#endif
 #include <LocHalDaemonIPCReceiver.h>
 #include <LocHalDaemonIPCSender.h>
 #include <LocHalDaemonClientHandler.h>
@@ -53,11 +56,14 @@ LocationApiService - constructors
 LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms) :
 
     mLocationControlId(0),
-    mAutoStartGnss(autostart),
-    mGnssSessionTbfMs(sessiontbfms) {
+    mAutoStartGnss(autostart)
+#ifdef POWERMANAGER_ENABLED
+    ,mPowerEventObserver(nullptr)
+#endif
+    {
 
-    LOC_LOGd("mAutoStartGnss=%u", mAutoStartGnss);
-    LOC_LOGd("mGnssSessionTbfMs=%u", mGnssSessionTbfMs);
+    LOC_LOGd("AutoStartGnss=%u", mAutoStartGnss);
+    LOC_LOGd("GnssSessionTbfMs=%u", sessiontbfms);
 
     // create Location control API
     mControlCallabcks.size = sizeof(mControlCallabcks);
@@ -86,25 +92,23 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
         return;
     }
 
+#ifdef POWERMANAGER_ENABLED
+    // register power event handler
+    mPowerEventObserver = PowerEvtHandler::getPwrEvtHandler(this);
+    if (nullptr == mPowerEventObserver) {
+        LOC_LOGe("Failed to regiseter Powerevent handler");
+        return;
+    }
+#endif
+
     // create a default client if enabled by config
     if (mAutoStartGnss) {
         LOC_LOGd("--> Starting a default client...");
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
         mClients.emplace("default", pClient);
 
-        LocationOptions option;
-        TrackingOptions trackOption;
-        option.size = sizeof(option);
-        option.minDistance = 0;
-        option.minInterval = mGnssSessionTbfMs;
-        option.mode = GNSS_SUPL_MODE_STANDALONE;
-
-        trackOption.setLocationOptions(option);
-
-        uint32_t sessionid = pClient->startTracking(trackOption);
-        LOC_LOGd("--> Starting a default client...sessionid=%d", sessionid);
-
-        pClient->mSessionId = sessionid;
+        pClient->startTracking(0, sessiontbfms);
+        pClient->mTracking = true;
         pClient->updateSubscription(0);
         pClient->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
     }
@@ -214,35 +218,25 @@ void LocationApiService::deleteClientbyName(const std::string clientname) {
 /******************************************************************************
 LocationApiService - implementation - tracking
 ******************************************************************************/
-uint32_t LocationApiService::startTracking(LocAPIStartTrackingReqMsg *pMsg) {
+void LocationApiService::startTracking(LocAPIStartTrackingReqMsg *pMsg) {
 
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (!pClient) {
         LOC_LOGe(">-- start invlalid client=%s", pMsg->mSocketName);
-        return 0;
+        return;
     }
 
-    // create option
-    LocationOptions option;
-    TrackingOptions trackOption;
-    option.size = sizeof(option);
-    option.minDistance = pMsg->distanceInMeters;
-    option.minInterval = pMsg->intervalInMs;
-    option.mode = GNSS_SUPL_MODE_STANDALONE;
-    trackOption.setLocationOptions(option);
-
-    uint32_t sessionid = pClient->startTracking(trackOption);
-    if (!sessionid) {
+    if (!pClient->startTracking(pMsg->distanceInMeters, pMsg->intervalInMs)) {
         LOC_LOGe("Failed to start session");
-        return 0;
+        return;
     }
     // success
-    pClient->mSessionId = sessionid;
+    pClient->mTracking = true;
     pClient->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
 
-    LOC_LOGi(">-- start started session id=%u", sessionid);
-    return sessionid;
+    LOC_LOGi(">-- start started session");
+    return;
 }
 
 void LocationApiService::stopTracking(LocAPIStopTrackingReqMsg *pMsg) {
@@ -254,11 +248,11 @@ void LocationApiService::stopTracking(LocAPIStopTrackingReqMsg *pMsg) {
         return;
     }
 
+    pClient->mTracking = false;
     pClient->updateSubscription(0);
-    pClient->stopTracking(pClient->mSessionId);
+    pClient->stopTracking();
     pClient->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
-
-    LOC_LOGi(">-- stop sessionid=%u", pClient->mSessionId);
+    LOC_LOGi(">-- stopping session");
 }
 
 void LocationApiService::updateSubscription(LocAPIUpdateCallbacksReqMsg *pMsg) {
@@ -280,18 +274,9 @@ void LocationApiService::updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg
 
     std::lock_guard<std::mutex> lock(mMutex);
 
-    // create option
-    LocationOptions option;
-    TrackingOptions trackOption;
-    option.size = sizeof(option);
-    option.minDistance = pMsg->distanceInMeters;
-    option.minInterval = pMsg->intervalInMs;
-    option.mode = GNSS_SUPL_MODE_STANDALONE;
-    trackOption.setLocationOptions(option);
-
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (pClient) {
-        pClient->updateTrackingOptions(pClient->mSessionId, trackOption);
+        pClient->updateTrackingOptions(pMsg->distanceInMeters, pMsg->intervalInMs);
         pClient->mPendingMessages.push(E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID);
     }
 
@@ -321,6 +306,55 @@ void LocationApiService::onControlCollectiveResponseCallback(
     std::lock_guard<std::mutex> lock(mMutex);
     LOC_LOGd("--< onControlCollectiveResponseCallback");
 }
+
+#ifdef POWERMANAGER_ENABLED
+/******************************************************************************
+LocationApiService - power event handlers
+******************************************************************************/
+void LocationApiService::onSuspend() {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    LOC_LOGd("--< onSuspend");
+
+    for (auto client : mClients) {
+        // stop session if running
+        if (client.second) {
+            client.second->stopTracking();
+            client.second->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
+            LOC_LOGi("--> suspended");
+        }
+    }
+}
+
+void LocationApiService::onResume() {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    LOC_LOGd("--< onResume");
+
+    for (auto client : mClients) {
+        // start session if not running
+        if (client.second && client.second->mTracking) {
+
+            // resume session with preserved options
+            if (!client.second->startTracking()) {
+                LOC_LOGe("Failed to start session");
+                return;
+            }
+            // success
+            client.second->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
+            LOC_LOGi("--> resumed");
+        }
+    }
+}
+
+void LocationApiService::onShutdown() {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    LOC_LOGd("--< onShutdown");
+    // stop session if running
+    onSuspend();
+}
+#endif
 
 /******************************************************************************
 LocationApiService - other utilities

@@ -23,6 +23,12 @@ c_sources = \
     LocationApiService.cpp \
     main.cpp
 
+if POWERMANAGER_ENABLED
+AM_CFLAGS += $(PM_CFLAGS) -DPOWERMANAGER_ENABLED
+c_sources += PowerEvtHandler.cpp
+requiredlibs += $(PM_LIBS)
+endif
+
 location_hal_daemon_SOURCES = \
     $(c_sources) $(h_sources)
 

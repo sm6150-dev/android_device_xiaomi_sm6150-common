@@ -103,20 +103,41 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
     }
 }
 
-uint32_t LocHalDaemonClientHandler::startTracking(LocationOptions& option) {
-    TrackingOptions     trackingOption;
-    trackingOption.setLocationOptions(option);
-    return (mLocationApi->startTracking(trackingOption));
+uint32_t LocHalDaemonClientHandler::startTracking() {
+    if (mSessionId == 0) {
+        mSessionId = mLocationApi->startTracking(mOptions);
+    }
+    return mSessionId;
 }
 
-void LocHalDaemonClientHandler::stopTracking(uint32_t id) {
-    mLocationApi->stopTracking(id);
+uint32_t LocHalDaemonClientHandler::startTracking(uint32_t minDistance, uint32_t minInterval) {
+    if (mSessionId == 0) {
+        // update option
+        mOptions.size = sizeof(mOptions);
+        mOptions.minDistance = minDistance;
+        mOptions.minInterval = minInterval;
+        mOptions.mode = GNSS_SUPL_MODE_STANDALONE;
+        mSessionId = mLocationApi->startTracking(mOptions);
+    }
+    return mSessionId;
 }
 
-void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t id, LocationOptions& option) {
-    TrackingOptions     trackingOption;
-    trackingOption.setLocationOptions(option);
-    mLocationApi->updateTrackingOptions(id, trackingOption);
+void LocHalDaemonClientHandler::stopTracking() {
+    if (mSessionId != 0) {
+        mLocationApi->stopTracking(mSessionId);
+        mSessionId = 0;
+    }
+}
+
+void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t minDistance, uint32_t minInterval) {
+    if (mSessionId != 0) {
+        // update option
+        mOptions.size = sizeof(mOptions);
+        mOptions.minDistance = minDistance;
+        mOptions.minInterval = minInterval;
+        mOptions.mode = GNSS_SUPL_MODE_STANDALONE;
+        mLocationApi->updateTrackingOptions(mSessionId, mOptions);
+    }
 }
 
 /******************************************************************************
@@ -126,11 +147,6 @@ void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
 
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onResponseCb err=%u id=%u", err, id);
-
-    if (id != mSessionId) {
-        LOC_LOGe("invalid session id", id);
-        return;
-    }
 
     ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
     if (!mPendingMessages.empty()) {
@@ -151,7 +167,6 @@ void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
             LOC_LOGd("<-- stop resp err=%u id=%u pending=%u", err, id, pendingMsgId);
             LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_STOP_TRACKING_MSG_ID, err);
             rc = sendMessage(msg);
-            mSessionId = 0;
             break;
         }
         case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID: {

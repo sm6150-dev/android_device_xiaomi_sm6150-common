@@ -770,7 +770,7 @@ on property:netd.fstman.start=false
     stop fstman
 
 service wigighalsvc /vendor/bin/wigighalsvc
-    interface vendor.qti.hardware.wigig1.supptunnel@1.0::ISuppTunnelProvider default
+    interface vendor.qti.hardware.wigig.supptunnel@1.0::ISuppTunnelProvider default
     class hal
     user system
     group wifi

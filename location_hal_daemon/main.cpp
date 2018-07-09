@@ -41,7 +41,7 @@
 #include <loc_misc_utils.h>
 #include "LocationApiService.h"
 
-#define HAL_DAEMON_VERSION "1.0.2"
+#define HAL_DAEMON_VERSION "1.0.3"
 
 static uint32_t gAutoStartGnss = 0;
 static uint32_t gGnssSessionTbfMs = 100;
@@ -102,9 +102,9 @@ int main(int argc, char *argv[])
 
         // groups
 #ifdef POWERMANAGER_ENABLED
-        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag powermgr";
+        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag powermgr locclient";
 #else
-        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag";
+        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag locclient";
 #endif
         gid_t groupIds[LOC_PROCESS_MAX_NUM_GROUPS] = {};
         char *splitGrpString[LOC_PROCESS_MAX_NUM_GROUPS];

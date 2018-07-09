@@ -136,6 +136,10 @@ void LocHalDaemonIPCReceiver::onReceive(const std::string& data) {
 }
 
 void LocHalDaemonIPCReceiver::onListenerReady() {
+    if (0 != chown(SOCKET_TO_LOCATION_HAL_DAEMON, UID_GPS, GID_LOCCLIENT)) {
+        LOC_LOGe("chown to group locclient failed %s", strerror(errno));
+    }
+
     mService->onListenerReady();
 }
 

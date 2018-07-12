@@ -58,4 +58,8 @@ It allows additional grants on top of privapp-permissions-platform.xml
         <permission name="android.permission.CAPTURE_AUDIO_OUTPUT"/>
     </privapp-permissions>
 
+    <privapp-permissions package="com.quicinc.voice.activation">
+        <permission name="android.permission.CAPTURE_AUDIO_HOTWORD"/>
+        <permission name="android.permission.MANAGE_SOUND_TRIGGER"/>
+    </privapp-permissions>
 </permissions>

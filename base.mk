@@ -942,6 +942,9 @@ PRODUCT_BOOT_JARS += com.nxp.nfc.nq
 endif
 ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
 PRODUCT_BOOT_JARS += qcom.fmradio
+# system prop for fm
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.hw.fm.init=0
 endif #BOARD_HAVE_QCOM_FM
 PRODUCT_PACKAGES += $(OPENCORE)
 PRODUCT_PACKAGES += $(PPP)

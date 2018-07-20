@@ -291,6 +291,10 @@ static const locClientEventIndTableStructT locClientEventIndTable[]= {
     sizeof(qmiLocEventPositionReportIndMsgT_v02),
     QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT_V02},
 
+  { QMI_LOC_EVENT_BS_OBS_DATA_SERVICE_REQ_IND_V02,
+    sizeof(qmiLocEventBsObsDataServiceReqIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ_V02},
+
 };
 
 /* table to relate the respInd Id with its size */
@@ -674,6 +678,9 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
 
    { QMI_LOC_INJECT_FDCL_DATA_IND_V02,
      sizeof(qmiLocInjectFdclDataIndMsgT_v02) },
+
+   { QMI_LOC_GET_BS_OBS_DATA_IND_V02,
+     sizeof(qmiLocGetBsObsDataIndMsgT_v02) },
 
    { QMI_LOC_SET_BLACKLIST_SV_IND_V02,
      sizeof(qmiLocGenReqStatusIndMsgT_v02) },
@@ -1685,6 +1692,12 @@ static bool validateRequest(
     case QMI_LOC_REGISTER_MASTER_CLIENT_REQ_V02 :
     {
         *pOutLen = sizeof(qmiLocRegisterMasterClientReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_GET_BS_OBS_DATA_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocGetBsObsDataReqMsgT_v02);
         break;
     }
 

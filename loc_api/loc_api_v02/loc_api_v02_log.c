@@ -412,6 +412,9 @@ static const loc_name_val_s_type loc_v02_event_name[] =
     NAME_VAL(QMI_LOC_SET_CONSTELLATION_CONTROL_RESP_V02),
     NAME_VAL(QMI_LOC_SET_CONSTELLATION_CONTROL_IND_V02),
     NAME_VAL(QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02),
+    NAME_VAL(QMI_LOC_GET_BS_OBS_DATA_REQ_V02),
+    NAME_VAL(QMI_LOC_GET_BS_OBS_DATA_RESP_V02),
+    NAME_VAL(QMI_LOC_GET_BS_OBS_DATA_IND_V02),
 };
 static const int loc_v02_event_num = sizeof(loc_v02_event_name) / sizeof(loc_name_val_s_type);
 

@@ -775,6 +775,9 @@ typedef union
 
     const qmiLocSetConstellationConfigReqMsgT_v02 *pSetConstellationConfigReq;
     /*QMI_LOC_SET_CONSTELLATION_CONTROL_REQ_V02*/
+
+    const qmiLocGetBsObsDataReqMsgT_v02 *pGetBsObsDataReq;
+    /*QMI_LOC_GET_BS_OBS_DATA_REQ_V02*/
 }locClientReqUnionType;
 
 
@@ -1054,6 +1057,10 @@ typedef union
    const qmiLocGetConstellationConfigIndMsgT_v02 *pGetConstellationConfigEvent;
    /**< Sent by the engine to provide current constellation control info.
         QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02. */
+
+   const qmiLocEventBsObsDataServiceReqIndMsgT_v02 *pBsObsDataServiceReqEvent;
+  /**< Sent by the engine to notify the client about BS CS data available
+    QMI_LOC_EVENT_BS_OBS_DATA_SERVICE_REQ_IND_V02. */
 
 }locClientEventIndUnionType;
 
@@ -1535,6 +1542,9 @@ typedef union
 
     const qmiLocInjectFdclDataIndMsgT_v02 *pInjectFdclDataInd;
     /* QMI_LOC_INJECT_FDCL_DATA_IND_V02 */
+
+    const qmiLocGetBsObsDataIndMsgT_v02 *pGetBsObsDataInd;
+    /* QMI_LOC_GET_BS_OBS_DATA_IND_V02 */
 
 }locClientRespIndUnionType;
 

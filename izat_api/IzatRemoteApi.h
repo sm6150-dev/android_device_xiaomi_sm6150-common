@@ -30,7 +30,6 @@
 #ifndef __IZATREMOTEAPIS_H__
 #define __IZATREMOTEAPIS_H__
 
-#include <gps_extended_c.h>
 #include <izat_remote_api.h>
 #include <string>
 #include <stdio.h>
@@ -53,44 +52,6 @@ public:
     virtual void handleMsg(qc_loc_fw::InPostcard * const in_card) = 0;
 };
 
-
-class LocationUpdaterBase : public IzatNotifier {
-    const remoteClientInfo *mClientInfo;
-    const void* mClientData;
-protected:
-    static OutCard* getLocSubscriptionCard(const char* name, uint32_t streamType);
-public:
-    const char* const mName;
-    LocationUpdaterBase(const char* const name,
-                        const OutCard* sSubscriptionCard,
-                        const remoteClientInfo *pClientInfo,
-                        const void* clientData);
-    virtual inline ~LocationUpdaterBase() {}
-    virtual void handleMsg(qc_loc_fw::InPostcard * const in_card) final;
-};
-
-class LocationUpdater : public LocationUpdaterBase {
-    static const OutCard* sSubscriptionCard;
-public:
-    static const char sName[];
-    inline LocationUpdater(remoteClientInfo *pClientInfo, const void* clientData) :
-                           LocationUpdaterBase(sName, sSubscriptionCard,
-                                               pClientInfo, clientData) {}
-
-    virtual inline ~LocationUpdater() {}
-};
-
-class RawLocationUpdater : public LocationUpdaterBase {
-    static const OutCard* sRawSubscriptionCard;
-public:
-    static const char sName[];
-    inline RawLocationUpdater(remoteClientInfo *pClientInfo, const void* clientData) :
-                              LocationUpdaterBase(sName, sRawSubscriptionCard,
-                                                  pClientInfo, clientData) {}
-
-    virtual inline ~RawLocationUpdater() {}
-};
-
 class SstpUpdater : public IzatNotifier {
     static const char* const sLatTag;
     static const char* const sLonTag;
@@ -108,46 +69,6 @@ public:
     virtual void siteUpdate(const char* name, double lat, double lon,
                             float unc, int32_t uncConfidence) = 0;
     virtual void mccUpdate(uint32_t mcc, const char* confidence) = 0;
-};
-
-class SvInfoUpdaterBase : public IzatNotifier {
-    const remoteClientInfo *mClientInfo;
-    const void* mClientData;
-
-protected:
-    static OutCard* getSvInfoSubscriptionCard(const char* name,
-                                              uint32_t streamType);
-public:
-    const char* const mName;
-    SvInfoUpdaterBase(const char* const name,
-                      const OutCard* sSubscriptionCard,
-                      remoteClientInfo *pClientInfo,
-                      const void* clientData);
-
-    virtual inline ~SvInfoUpdaterBase() {}
-    virtual void handleMsg(qc_loc_fw::InPostcard * const in_card) final;
-};
-
-class SvInfoUpdater : public SvInfoUpdaterBase {
-    static const OutCard* sSubscriptionCard;
-public:
-    static const char sName[];
-    inline SvInfoUpdater(remoteClientInfo *pClientInfo, const void* clientData) :
-                         SvInfoUpdaterBase(sName, sSubscriptionCard,
-                                           pClientInfo, clientData) {}
-
-    virtual inline ~SvInfoUpdater() {}
-};
-
-class RawSvInfoUpdater : public SvInfoUpdaterBase {
-    static const OutCard* sRawSubscriptionCard;
-public:
-    static const char sName[];
-    inline RawSvInfoUpdater(remoteClientInfo *pClientInfo, const void* clientData) :
-                            SvInfoUpdaterBase(sName, sRawSubscriptionCard,
-                                              pClientInfo, clientData) {}
-
-    virtual inline ~RawSvInfoUpdater() {}
 };
 
 } // izat_remote_api

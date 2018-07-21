@@ -184,27 +184,48 @@ static location_client::GnssLocationPositionDynamics parseLocationPositionDynami
 
     if (LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT & halPositionDynamics.bodyFrameDataMask) {
         bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT;
+        positionDynamics.longAccel = halPositionDynamics.longAccel;
     }
     if (LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT & halPositionDynamics.bodyFrameDataMask) {
         bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT;
+        positionDynamics.latAccel = halPositionDynamics.latAccel;
     }
     if (LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT & halPositionDynamics.bodyFrameDataMask) {
         bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
+        positionDynamics.vertAccel = halPositionDynamics.vertAccel;
     }
     if (LOCATION_NAV_DATA_HAS_YAW_RATE_BIT & halPositionDynamics.bodyFrameDataMask) {
         bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
+        positionDynamics.yawRate = halPositionDynamics.yawRate;
     }
     if (LOCATION_NAV_DATA_HAS_PITCH_BIT & halPositionDynamics.bodyFrameDataMask) {
         bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_PITCH_BIT;
+        positionDynamics.pitch = halPositionDynamics.pitch;
     }
+
+    if (LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT & halPositionDynamics.bodyFrameDataMask) {
+        bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT;
+        positionDynamics.longAccelUnc = halPositionDynamics.longAccelUnc;
+    }
+    if (LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT & halPositionDynamics.bodyFrameDataMask) {
+        bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT;
+        positionDynamics.latAccelUnc = halPositionDynamics.latAccelUnc;
+    }
+    if (LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT & halPositionDynamics.bodyFrameDataMask) {
+        bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT;
+        positionDynamics.vertAccelUnc = halPositionDynamics.vertAccelUnc;
+    }
+    if (LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT & halPositionDynamics.bodyFrameDataMask) {
+        bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT;
+        positionDynamics.yawRateUnc = halPositionDynamics.yawRateUnc;
+    }
+    if (LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT & halPositionDynamics.bodyFrameDataMask) {
+        bodyFrameDataMask |= location_client::LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT;
+        positionDynamics.pitchUnc = halPositionDynamics.pitchUnc;
+    }
+
     positionDynamics.bodyFrameDataMask =
             (location_client::GnssLocationPosDataMask)bodyFrameDataMask;
-
-    positionDynamics.longAccel = halPositionDynamics.longAccel;
-    positionDynamics.latAccel = halPositionDynamics.latAccel;
-    positionDynamics.vertAccel = halPositionDynamics.vertAccel;
-    positionDynamics.yawRate = halPositionDynamics.yawRate;
-    positionDynamics.pitch = halPositionDynamics.pitch;
 
     return positionDynamics;
 }

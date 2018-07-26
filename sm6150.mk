@@ -357,6 +357,7 @@ PRODUCT_PACKAGES += \
     init.qcom.usb.rc \
     init.qcom.usb.sh \
     ueventd.qcom.rc \
+    fstab.persist \
     fstab.qcom
 
 # RCS

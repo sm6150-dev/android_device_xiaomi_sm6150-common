@@ -14,6 +14,8 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_SRC_FILES += \
     libloc_loader.c
 
+LOCAL_HEADER_LIBRARIES := libcutils_headers libutils_headers
+
 LOCAL_COPY_HEADERS_TO:= libloc_loader/
 
 LOCAL_COPY_HEADERS:= \

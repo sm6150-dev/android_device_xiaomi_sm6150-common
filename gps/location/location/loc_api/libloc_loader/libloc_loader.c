@@ -1,5 +1,5 @@
 #include <dlfcn.h>
-#include <cutils/log.h>
+#include <log/log.h>
 
 #include "../include/qmi_client.h"
 #include "../include/qmi_idl_lib.h"

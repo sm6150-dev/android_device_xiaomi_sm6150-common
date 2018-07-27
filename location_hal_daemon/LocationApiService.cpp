@@ -340,6 +340,60 @@ void LocationApiService::getGnssEnergyConsumed(const char* clientSocketName) {
 }
 
 /******************************************************************************
+LocationApiService - implementation - batching
+******************************************************************************/
+void LocationApiService::startBatching(LocAPIStartBatchingReqMsg *pMsg) {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (!pClient) {
+        LOC_LOGe(">-- start invalid client=%s", pMsg->mSocketName);
+        return;
+    }
+
+    if (!pClient->startBatching(pMsg->intervalInMs, pMsg->distanceInMeters,
+                pMsg->batchingMode)) {
+        LOC_LOGe("Failed to start session");
+        return;
+    }
+    // success
+    pClient->mBatching = true;
+    pClient->mBatchingMode = pMsg->batchingMode;
+    pClient->mPendingMessages.push(E_LOCAPI_START_BATCHING_MSG_ID);
+
+    LOC_LOGi(">-- start batching session");
+    return;
+}
+
+void LocationApiService::stopBatching(LocAPIStopBatchingReqMsg *pMsg) {
+    std::lock_guard<std::mutex> lock(mMutex);
+    LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (!pClient) {
+        LOC_LOGe(">-- stop invalid client=%s", pMsg->mSocketName);
+        return;
+    }
+
+    pClient->mBatching = false;
+    pClient->mBatchingMode = BATCHING_MODE_NO_AUTO_REPORT;
+    pClient->updateSubscription(0);
+    pClient->stopBatching();
+    pClient->mPendingMessages.push(E_LOCAPI_STOP_BATCHING_MSG_ID);
+    LOC_LOGi(">-- stopping batching session");
+}
+
+void LocationApiService::updateBatchingOptions(LocAPIUpdateBatchingOptionsReqMsg *pMsg) {
+    std::lock_guard<std::mutex> lock(mMutex);
+    LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (pClient) {
+        pClient->updateBatchingOptions(pMsg->intervalInMs, pMsg->distanceInMeters,
+                pMsg->batchingMode);
+        pClient->mPendingMessages.push(E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID);
+    }
+
+    LOC_LOGi(">-- update batching options");
+}
+
+/******************************************************************************
 LocationApiService - Location Control API callback functions
 ******************************************************************************/
 void LocationApiService::onControlResponseCallback(LocationError err, uint32_t id) {

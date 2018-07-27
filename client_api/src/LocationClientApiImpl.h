@@ -125,6 +125,7 @@ private:
     static mutex            mMutex;
     uint32_t                mClientId;
     uint32_t                mSessionId;
+    uint32_t                mBatchingId;
     bool                    mHalRegistered;
     char                    mSocketName[MAX_SOCKET_PATHNAME_LENGTH];
 
@@ -133,9 +134,11 @@ private:
     ResponseCb              mResponseCb;
     LocationCb              mLocationCb;
     GnssReportCbs           mGnssReportCbs;
+    BatchingCb              mBatchingCb;
 
     LocationCallbacksMask   mCallbacksMask;
     LocationOptions         mLocationOptions;
+    BatchingOptions         mBatchingOptions;
 
     GnssEnergyConsumedCb    mGnssEnergyConsumedInfoCb;
     ResponseCb              mGnssEnergyConsumedResponseCb;

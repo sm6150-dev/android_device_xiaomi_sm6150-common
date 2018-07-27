@@ -61,6 +61,25 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         onTrackingCb(location);
     };
 
+    // batching
+    if (mSubscriptionMask & E_LOC_CB_BATCHING_BIT) {
+        mCallbacks.batchingCb = [this](size_t count, Location* location,
+                BatchingOptions batchingOptions) {
+            onBatchingCb(count, location, batchingOptions);
+        };
+    } else {
+        mCallbacks.batchingCb = nullptr;
+    }
+    // batchingStatus
+    if (mSubscriptionMask & E_LOC_CB_BATCHING_STATUS_BIT) {
+        mCallbacks.batchingStatusCb = [this](BatchingStatusInfo batchingStatus,
+                std::list<uint32_t>& listOfCompletedTrips) {
+            onBatchingStatusCb(batchingStatus, listOfCompletedTrips);
+        };
+    } else {
+        mCallbacks.batchingStatusCb = nullptr;
+    }
+
     // location info
     if (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
         mCallbacks.gnssLocationInfoCb = [this](GnssLocationInfoNotification notification) {
@@ -111,8 +130,6 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
     mCallbacks.gnssNiCb = nullptr;
     mCallbacks.geofenceBreachCb = nullptr;
     mCallbacks.geofenceStatusCb = nullptr;
-    mCallbacks.batchingCb = nullptr;
-    mCallbacks.batchingStatusCb = nullptr;
 
     // call location API if already created
     if (mLocationApi) {
@@ -163,6 +180,50 @@ void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t minDistance, uint
     }
 }
 
+uint32_t LocHalDaemonClientHandler::startBatching(uint32_t minInterval, uint32_t minDistance,
+        BatchingMode batchMode) {
+    if (mBatchingId == 0) {
+        // update option
+        LocationOptions locOption = {};
+        locOption.size = sizeof(locOption);
+        locOption.minInterval = minInterval;
+        locOption.minDistance = minDistance;
+        locOption.mode = GNSS_SUPL_MODE_STANDALONE;
+        mBatchOptions.size = sizeof(mBatchOptions);
+        mBatchOptions.batchingMode = batchMode;
+        mBatchOptions.setLocationOptions(locOption);
+
+        mBatchingId = mLocationApi->startBatching(mBatchOptions);
+    }
+    return mBatchingId;
+
+}
+
+void LocHalDaemonClientHandler::stopBatching() {
+    if (mBatchingId != 0) {
+        mLocationApi->stopBatching(mBatchingId);
+        mBatchingId = 0;
+    }
+}
+
+void LocHalDaemonClientHandler::updateBatchingOptions(uint32_t minInterval, uint32_t minDistance,
+        BatchingMode batchMode) {
+    if (mBatchingId != 0) {
+        // update option
+        LocationOptions locOption = {};
+        locOption.size = sizeof(locOption);
+        locOption.minInterval = minInterval;
+        locOption.minDistance = minDistance;
+        locOption.mode = GNSS_SUPL_MODE_STANDALONE;
+        mBatchOptions.size = sizeof(mBatchOptions);
+        mBatchOptions.batchingMode = batchMode;
+        mBatchOptions.setLocationOptions(locOption);
+
+        mLocationApi->updateBatchingOptions(mBatchingId, mBatchOptions);
+    }
+}
+
+
 /******************************************************************************
 LocHalDaemonClientHandler - Location API response callback functions
 ******************************************************************************/
@@ -195,6 +256,25 @@ void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
         case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID: {
             LOC_LOGd("<-- update resp err=%u id=%u pending=%u", err, id, pendingMsgId);
             LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID, err);
+            rc = sendMessage(msg);
+            break;
+        }
+        case E_LOCAPI_START_BATCHING_MSG_ID : {
+            LOC_LOGd("<-- start batching resp err=%u id=%u pending=%u", err, id, pendingMsgId);
+            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_START_BATCHING_MSG_ID , err);
+            rc = sendMessage(msg);
+            break;
+        }
+        case E_LOCAPI_STOP_BATCHING_MSG_ID: {
+            LOC_LOGd("<-- stop batching resp err=%u id=%u pending=%u", err, id, pendingMsgId);
+            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_STOP_BATCHING_MSG_ID, err);
+            rc = sendMessage(msg);
+            break;
+        }
+        case E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID: {
+            LOC_LOGd("<-- update batching options resp err=%u id=%u pending=%u", err, id,
+                    pendingMsgId);
+            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID, err);
             rc = sendMessage(msg);
             break;
         }
@@ -252,6 +332,63 @@ void LocHalDaemonClientHandler::onTrackingCb(Location location) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
             mService->deleteClientbyName(mName);
         }
+    }
+}
+
+void LocHalDaemonClientHandler::onBatchingCb(size_t count, Location* location,
+        BatchingOptions batchOptions) {
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    LOC_LOGd("--< onBatchingCb");
+
+    if (0 == count) {
+        return;
+    }
+    // serialize locations in batch into ipc message payload
+    size_t msglen = sizeof(LocAPIBatchingIndMsg) + sizeof(Location) * (count - 1);
+    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+    if (nullptr == msg) {
+        return;
+    }
+    memset(msg, 0, msglen);
+    LocAPIBatchingIndMsg *pmsg = reinterpret_cast<LocAPIBatchingIndMsg*>(msg);
+    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+    pmsg->msgId = E_LOCAPI_BATCHING_MSG_ID;
+    pmsg->batchNotification.size = msglen;
+    pmsg->batchNotification.count = count;
+    pmsg->batchNotification.status = BATCHING_STATUS_POSITION_AVAILABE;
+    memcpy(&(pmsg->batchNotification.location[0]), location, count * sizeof(Location));
+
+    if (mSubscriptionMask & E_LOC_CB_BATCHING_BIT) {
+        int rc = sendMessage(msg, msglen);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+
+    delete[] msg;
+}
+
+void LocHalDaemonClientHandler::onBatchingStatusCb(BatchingStatusInfo batchingStatus,
+                std::list<uint32_t>& listOfCompletedTrips) {
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    LOC_LOGd("--< onBatchingStatusCb");
+    if (BATCHING_MODE_TRIP == mBatchingMode &&
+                BATCHING_STATUS_TRIP_COMPLETED == batchingStatus.batchingStatus) {
+        // For trip batching, notify client to stop session when BATCHING_STATUS_TRIP_COMPLETED
+        LocAPIBatchNotification batchNotif = {};
+        batchNotif.status = BATCHING_STATUS_TRIP_COMPLETED;
+        LocAPIBatchingIndMsg msg(SERVICE_NAME, batchNotif);
+        if (mSubscriptionMask & E_LOC_CB_BATCHING_STATUS_BIT) {
+            int rc = sendMessage(msg);
+            // purge this client if failed
+            if (!rc) {
+                LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+                mService->deleteClientbyName(mName);
+            }
+        }
+
     }
 }
 

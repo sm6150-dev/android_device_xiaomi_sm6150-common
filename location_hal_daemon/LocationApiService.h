@@ -88,6 +88,10 @@ public:
     void updateNetworkAvailability(bool availability);
     void getGnssEnergyConsumed(const char* clientSocketName);
 
+    void startBatching(LocAPIStartBatchingReqMsg*);
+    void stopBatching(LocAPIStopBatchingReqMsg*);
+    void updateBatchingOptions(LocAPIUpdateBatchingOptionsReqMsg*);
+
     inline void gnssUpdateConfig(GnssConfig config) {
         mLocationControlApi->gnssUpdateConfig(config);
     }

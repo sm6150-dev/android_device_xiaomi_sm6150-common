@@ -50,7 +50,10 @@ public:
                 mName(clientname),
                 mCapabilityMask(0),
                 mTracking(false),
+                mBatching(false),
                 mSessionId(0),
+                mBatchingId(0),
+                mBatchingMode(BATCHING_MODE_NO_AUTO_REPORT),
                 mLocationApi(nullptr),
                 mPendingMessages(),
                 mSubscriptionMask(0),
@@ -81,7 +84,13 @@ public:
     bool hasPendingEngineInfoRequest(uint32_t mask);
     void addEngineInfoRequst(uint32_t mask);
 
+    uint32_t startBatching(uint32_t minInterval, uint32_t minDistance, BatchingMode batchMode);
+    void stopBatching();
+    void updateBatchingOptions(uint32_t minInterval, uint32_t minDistance, BatchingMode batchMode);
+
     bool mTracking;
+    bool mBatching;
+    BatchingMode mBatchingMode;
     std::queue<ELocMsgID> mPendingMessages;
 
 private:
@@ -91,6 +100,9 @@ private:
     void onCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
 
     void onTrackingCb(Location location);
+    void onBatchingCb(size_t count, Location* location, BatchingOptions batchOptions);
+    void onBatchingStatusCb(BatchingStatusInfo batchingStatus,
+            std::list<uint32_t>& listOfCompletedTrips);
     void onGnssLocationInfoCb(GnssLocationInfoNotification gnssLocationInfoNotification);
 
     void onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification);
@@ -131,9 +143,12 @@ private:
     // LocationAPI interface
     LocationCapabilitiesMask mCapabilityMask;
     uint32_t mSessionId;
+    uint32_t mBatchingId;
     LocationAPI* mLocationApi;
     LocationCallbacks mCallbacks;
     TrackingOptions mOptions;
+//    LocationOptions mBatchLocOptions;
+    BatchingOptions mBatchOptions;
 
     // bitmask to hold this client's subscription
     uint32_t mSubscriptionMask;

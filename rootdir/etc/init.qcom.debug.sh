@@ -2441,6 +2441,10 @@ enable_core_gladiator_hang_config()
     target=`getprop ro.board.platform`
 
     case "$target" in
+        "msmnile")
+            echo "Enabling core & gladiator config for msmnile"
+            enable_msmnile_core_hang_config
+        ;;
         "sdm845")
             echo "Enabling core & gladiator config for sdm845"
             enable_sdm845_core_hang_config

@@ -38,7 +38,7 @@ vendor_rild_status=`getprop init.svc.vendor.ril-daemon`
 
 case "$baseband" in
     "apq" | "sda" | "qcs" )
-    setprop ro.radio.noril yes
+    setprop ro.vendor.radio.noril yes
     if [ -n "$rild_status" ] || [ -n "$vendor_rild_status" ]; then
       stop ril-daemon
       stop vendor.ril-daemon

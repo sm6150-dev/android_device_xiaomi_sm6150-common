@@ -1150,6 +1150,9 @@ service vendor.vppservice /vendor/bin/vppservice
 on property:vendor.rild.libpath=*
     setprop rild.libpath ${vendor.rild.libpath}
 
+on property:ro.vendor.radio.noril=*
+    setprop ro.radio.noril ${ro.vendor.radio.noril}
+
 service seemp_healthd /vendor/bin/seemp_healthd
     class late_start
     user system

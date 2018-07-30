@@ -981,7 +981,9 @@ PRODUCT_PACKAGES += android.hardware.drm@1.0-service
 endif
 PRODUCT_PACKAGES += android.hardware.drm@1.1-service.widevine
 PRODUCT_PACKAGES += android.hardware.drm@1.1-service.clearkey
+ifeq ($(strip $(OTA_FLAG_FOR_DRM)),true)
 PRODUCT_PACKAGES += move_widevine_data.sh
+endif
 PRODUCT_PACKAGES += librs_jni
 
 # Filesystem management tools

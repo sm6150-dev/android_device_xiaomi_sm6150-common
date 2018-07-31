@@ -218,9 +218,9 @@ protected:
 
   LocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
             ContextBase *context = NULL);
-public:
-  ~LocApiV02();
+  virtual ~LocApiV02();
 
+public:
   static LocApiBase* createLocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
                                      ContextBase* context);
   /* event callback registered with the loc_api v02 interface */

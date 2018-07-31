@@ -4049,7 +4049,7 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
     measurementData.size = sizeof(GnssMeasurementsData);
 
     // flag initiation
-    GnssMeasurementsDataFlagsMask flags = 0;
+    measurementData.flags = 0;
 
     // constellation and svid
     switch (gnss_measurement_report_ptr.system)
@@ -4234,7 +4234,7 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
             gnss_measurement_report_ptr.jammerIndicator.agcMetricDb) {
             measurementData.agcLevelDb =
                 (double)gnss_measurement_report_ptr.jammerIndicator.agcMetricDb / 100.0;
-            flags |= GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
+            measurementData.flags |= GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
         }
         LOC_LOGv("AGC is valid: agcMetricDb = 0x%X bpMetricDb = 0x%X",
                  gnss_measurement_report_ptr.jammerIndicator.agcMetricDb,
@@ -4245,7 +4245,6 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         LOC_LOGv("AGC is invalid");
         bAgcIsPresent = false;
     }
-    measurementData.flags = flags;
 
     LOC_LOGV(" %s:%d]: GNSS measurement raw data received from modem:"
              " Input => gnssSvId=%d CNo=%d measurementStatus=0x%04x%04x"

@@ -311,6 +311,18 @@ case "$target" in
                 ;;
         esac
         ;;
+    "msm8953")
+        cap_ver = 1
+                if [ -e "/sys/devices/platform/soc/1d00000.qcom,vidc/capability_version" ]; then
+                    cap_ver=`cat /sys/devices/platform/soc/1d00000.qcom,vidc/capability_version` 2> /dev/null
+                else
+                    cap_ver=`cat /sys/devices/soc/1d00000.qcom,vidc/capability_version` 2> /dev/null
+                fi
+
+                if [ $cap_ver -eq 1 ]; then
+                    setprop vendor.media.msm8953.version 1
+                fi
+                ;;
 esac
 
 baseband=`getprop ro.baseband`

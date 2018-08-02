@@ -279,8 +279,6 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 
   LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = 0;
-  locClientEventMaskType initialQmiMask = 0;
-  bool bNeedToSetEventMask = false;
 
   LOC_LOGd("%p Enter mMask: 0x%" PRIx64 "  mQmiMask: 0x%" PRIx64 " mExcludedMask: 0x%" PRIx64 "",
            clientHandle, mMask, mQmiMask, mExcludedMask);
@@ -321,11 +319,11 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 
         bool gnssMeasurementSupported = false;
         if (isMaster()) {
-            bNeedToSetEventMask = checkRegisterMaster();
+            checkRegisterMaster();
             gnssMeasurementSupported = cacheGnssMeasurementSupport();
             if (gnssMeasurementSupported) {
                 /* Indicate that QMI LOC message for GNSS measurement was sent */
-                initialQmiMask = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
+                mQmiMask |= QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
             }
         }
 
@@ -459,17 +457,16 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
     LOC_LOGd("clientHandle = %p mMask: 0x%" PRIx64 " Adapter mask: 0x%" PRIx64 " "
              "newMask: 0x%" PRIx64 " mQmiMask: 0x%" PRIx64 " qmiMask: 0x%" PRIx64 "",
              clientHandle, mMask, mask, newMask, mQmiMask, qmiMask);
+    checkRegisterMaster();
 
     if ((mQmiMask ^ qmiMask) & qmiMask & QMI_LOC_EVENT_MASK_WIFI_REQ_V02) {
         wifiStatusInformSync();
     }
 
     if (newMask != mMask) {
+      locClientEventMaskType maskDiff = qmiMask ^ mQmiMask;
       // it is important to cap the mask here, because not all LocApi's
       // can enable the same bits, e.g. foreground and background.
-      if (!bNeedToSetEventMask) {
-        bNeedToSetEventMask = checkRegisterMaster();
-      }
       if (!registerEventMask(qmiMask)) {
         // we do not update mMask here, because it did not change
         // as the mask update has failed.
@@ -479,19 +476,18 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         mMask = newMask;
         mQmiMask = qmiMask;
       }
-    }
-    if (bNeedToSetEventMask) {
-      /* Set the SV Measurement Constellation when Measurement Report or Polynomial report is set */
-      /* Check if either measurement report or sv polynomial report bit is different in the new
-         mask compared to the old mask. If yes then turn that report on or off as requested */
-      locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
-                                            QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
-      locClientEventMaskType maskDiff = qmiMask ^ initialQmiMask;
-      LOC_LOGd("clientHandle = %p isMaster(): %d measOrSvPoly: 0x%" PRIx64 \
-               " maskDiff: 0x%" PRIx64 "",
-               clientHandle, isMaster(), measOrSvPoly, maskDiff);
-      if (((maskDiff & measOrSvPoly) != 0)) {
-        setSvMeasurementConstellation(qmiMask);
+      if (isMaster()) {
+        /* Set the SV Measurement Constellation when Measurement Report or Polynomial report is set */
+        /* Check if either measurement report or sv polynomial report bit is different in the new
+           mask compared to the old mask. If yes then turn that report on or off as requested */
+        locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
+                                              QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
+        LOC_LOGd("clientHandle = %p isMaster(): %d measOrSvPoly: 0x%" PRIx64 \
+                 " maskDiff: 0x%" PRIx64 "",
+                 clientHandle, isMaster(), measOrSvPoly, maskDiff);
+        if (((maskDiff & measOrSvPoly) != 0)) {
+          setSvMeasurementConstellation(qmiMask);
+        }
       }
     }
   }
@@ -4809,13 +4805,13 @@ int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
 
     memset(&setGNSSConstRepConfigReq, 0, sizeof(setGNSSConstRepConfigReq));
 
+    setGNSSConstRepConfigReq.measReportConfig_valid = true;
     if (mask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) {
-        setGNSSConstRepConfigReq.measReportConfig_valid = true;
         setGNSSConstRepConfigReq.measReportConfig = svConstellation;
     }
 
+    setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
     if (mask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02) {
-        setGNSSConstRepConfigReq.svPolyReportConfig_valid = true;
         setGNSSConstRepConfigReq.svPolyReportConfig = svConstellation;
     }
     req_union.pSetGNSSConstRepConfigReq = &setGNSSConstRepConfigReq;

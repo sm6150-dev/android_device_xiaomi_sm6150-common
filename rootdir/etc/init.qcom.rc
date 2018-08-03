@@ -1139,7 +1139,7 @@ service time_daemon /system/vendor/bin/time_daemon
 service vendor.qdmastatsd /system/vendor/bin/qdmastatsd
     class late_start
     user system
-    group readproc system net_bw_stats radio rfs_shared
+    group readproc system net_bw_stats radio vendor_rfs_shared
 
 service vendor.vppservice /vendor/bin/vppservice
     class main

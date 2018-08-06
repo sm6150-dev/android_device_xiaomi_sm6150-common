@@ -73,7 +73,9 @@ enum LocationFlagsMask {
     /** location has valid speed accuracy */
     LOCATION_HAS_SPEED_ACCURACY_BIT    = (1<<6),
     /** location has valid bearing accuracy */
-    LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7)
+    LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7),
+    /** location has valid timestamp */
+    LOCATION_HAS_TIMESTAMP_BIT         = (1<<8)
 };
 
 enum LocationTechnologyMask {

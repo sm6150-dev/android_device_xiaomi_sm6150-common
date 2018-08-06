@@ -102,6 +102,9 @@ static location_client::Location parseLocation(const Location &halLocation) {
     location.speedAccuracy = halLocation.speedAccuracy;
     location.bearingAccuracy = halLocation.bearingAccuracy;
 
+    if (0 != halLocation.timestamp) {
+        flags |= location_client::LOCATION_HAS_TIMESTAMP_BIT;
+    }
     if (LOCATION_HAS_LAT_LONG_BIT & halLocation.flags) {
         flags |= location_client::LOCATION_HAS_LAT_LONG_BIT;
     }
@@ -386,6 +389,9 @@ static location_client::GnssLocation parseLocationInfo(
     locationInfo.speedAccuracy = halLocation.speedAccuracy;
     locationInfo.bearingAccuracy = halLocation.bearingAccuracy;
 
+    if (halLocation.timestamp != 0) {
+        flags |= location_client::LOCATION_HAS_TIMESTAMP_BIT;
+    }
     if (LOCATION_HAS_LAT_LONG_BIT & halLocation.flags) {
         flags |= location_client::LOCATION_HAS_LAT_LONG_BIT;
     }

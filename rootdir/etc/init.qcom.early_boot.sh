@@ -240,11 +240,11 @@ case "$target" in
                 ;;
             303|307|308|309|320)
                 # Vulkan is not supported for 8917 variants
-                setprop ro.opengles.version 196608
+                setprop vendor.opengles.version 196608
                 setprop persist.graphics.vulkan.disable true
                 ;;
             *)
-                setprop ro.opengles.version 196608
+                setprop vendor.opengles.version 196608
                 ;;
         esac
         ;;

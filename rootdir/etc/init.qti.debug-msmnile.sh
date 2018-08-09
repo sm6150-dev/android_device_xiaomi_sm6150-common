@@ -59,6 +59,7 @@ enable_tracing_events()
     echo 1 > /sys/kernel/debug/tracing/events/power/clock_set_rate/enable
     echo 1 > /sys/kernel/debug/tracing/events/power/clock_enable/enable
     echo 1 > /sys/kernel/debug/tracing/events/power/clock_disable/enable
+    echo 1 > /sys/kernel/debug/tracing/events/power/cpu_frequency/enable
     # regulator
     echo 1 > /sys/kernel/debug/tracing/events/regulator/enable
     # power

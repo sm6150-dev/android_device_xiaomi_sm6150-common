@@ -183,7 +183,7 @@ static void globalRespCb(locClientHandleType clientHandle,
             locApiV02Instance->handleZppBestAvailableFixIndication(
                     *respPayload.pGetBestAvailablePositionInd);
         }
-        break;
+       // Call loc_sync_process_ind below also
     default:
       // process the sync call
       // use pDeleteAssistDataInd as a dummy pointer

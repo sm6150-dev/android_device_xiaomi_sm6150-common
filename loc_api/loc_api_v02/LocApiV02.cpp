@@ -1840,48 +1840,6 @@ LocApiV02::setLPPConfigSync(GnssConfigLppProfile profile)
   return err;
 }
 
-/* set the Sensor Configuration */
-enum loc_api_adapter_err LocApiV02 :: setSensorControlConfigSync(
-    int sensorsDisabled, int sensorProvider)
-{
-  locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
-  locClientReqUnionType req_union;
-
-  qmiLocSetSensorControlConfigReqMsgT_v02 sensor_config_req;
-  qmiLocSetSensorControlConfigIndMsgT_v02 sensor_config_ind;
-
-  LOC_LOGD("%s:%d]: sensors disabled = %d\n",  __func__, __LINE__, sensorsDisabled);
-
-  memset(&sensor_config_req, 0, sizeof(sensor_config_req));
-  memset(&sensor_config_ind, 0, sizeof(sensor_config_ind));
-
-  sensor_config_req.sensorsUsage_valid = 1;
-  sensor_config_req.sensorsUsage = (sensorsDisabled == 1) ? eQMI_LOC_SENSOR_CONFIG_SENSOR_USE_DISABLE_V02
-                                    : eQMI_LOC_SENSOR_CONFIG_SENSOR_USE_ENABLE_V02;
-
-  sensor_config_req.sensorProvider_valid = 1;
-  sensor_config_req.sensorProvider = (sensorProvider == 1 || sensorProvider == 4) ?
-      eQMI_LOC_SENSOR_CONFIG_USE_PROVIDER_SSC_V02 :
-      eQMI_LOC_SENSOR_CONFIG_USE_PROVIDER_NATIVE_V02;
-
-  req_union.pSetSensorControlConfigReq = &sensor_config_req;
-
-  result = locSyncSendReq(QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02,
-                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                          QMI_LOC_SET_SENSOR_CONTROL_CONFIG_IND_V02,
-                          &sensor_config_ind);
-
-  if(result != eLOC_CLIENT_SUCCESS ||
-     eQMI_LOC_SUCCESS_V02 != sensor_config_ind.status)
-  {
-    LOC_LOGE ("%s:%d]: Error status = %s, ind..status = %s ",
-              __func__, __LINE__,
-              loc_get_v02_client_status_name(result),
-              loc_get_v02_qmi_status_name(sensor_config_ind.status));
-  }
-
-  return convertErr(result);
-}
 
 /* set the Sensor Properties */
 enum loc_api_adapter_err LocApiV02 :: setSensorPropertiesSync(
@@ -1975,7 +1933,7 @@ enum loc_api_adapter_err LocApiV02 :: setSensorPerfControlConfigSync(int control
   memset(&sensor_perf_config_req, 0, sizeof(sensor_perf_config_req));
   memset(&sensor_perf_config_ind, 0, sizeof(sensor_perf_config_ind));
 
-  sensor_perf_config_req.performanceControlMode_valid = 1;
+  sensor_perf_config_req.performanceControlMode_valid = (controlMode == 2) ? 0 : 1;
   sensor_perf_config_req.performanceControlMode = (qmiLocSensorPerformanceControlModeEnumT_v02)controlMode;
   sensor_perf_config_req.accelSamplingSpec_valid = 1;
   sensor_perf_config_req.accelSamplingSpec.batchesPerSecond = accelBatchesPerSec;

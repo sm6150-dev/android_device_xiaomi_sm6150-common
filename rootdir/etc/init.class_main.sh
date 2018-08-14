@@ -94,7 +94,7 @@ case "$baseband" in
     rild_status=`getprop init.svc.ril-daemon`
     vendor_rild_status=`getprop init.svc.vendor.ril-daemon`
 
-    if [ -z "$rild_status" ] && [ -z "$vendor_rild_status" ]; then
+    if [[ -z "$rild_status" || "$rild_status" = "stopped" ]] && [[ -z "$vendor_rild_status" || "$vendor_rild_status" = "stopped" ]]; then
       start vendor.qcrild
     fi
     start vendor.ipacm-diag
@@ -115,13 +115,13 @@ case "$baseband" in
     multisim=`getprop persist.radio.multisim.config`
 
     if [ "$multisim" = "dsds" ] || [ "$multisim" = "dsda" ]; then
-        if [ -z "$rild_status" ] &&  [ -z "$vendor_rild_status" ]; then
+        if [[ -z "$rild_status" || "$rild_status" = "stopped" ]] && [[ -z "$vendor_rild_status" || "$vendor_rild_status" = "stopped" ]]; then
           start vendor.qcrild2
         else
           start vendor.ril-daemon2
         fi
     elif [ "$multisim" = "tsts" ]; then
-        if [ -z "$rild_status" ] && [ -z "$vendor_rild_status" ]; then
+        if [[ -z "$rild_status" || "$rild_status" = "stopped" ]] && [[ -z "$vendor_rild_status" || "$vendor_rild_status" = "stopped" ]]; then
           start vendor.qcrild2
           start vendor.qcrild3
         else

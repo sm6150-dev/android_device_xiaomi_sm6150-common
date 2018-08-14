@@ -52,7 +52,7 @@ case "$baseband" in
 esac
 
 case "$baseband" in
-    "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3" | "sdm" | "sdx")
+    "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3" | "sdm" | "sdx" | "sm6")
 
     if [ -f /vendor/firmware_mnt/verinfo/ver_info.txt ]; then
         modem=`cat /vendor/firmware_mnt/verinfo/ver_info.txt |

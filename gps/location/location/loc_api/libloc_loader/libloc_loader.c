@@ -1,12 +1,13 @@
 #include <dlfcn.h>
+
+#define LOG_TAG "LIBLOC_LOADER"
+
 #include <log/log.h>
 
 #include "../include/qmi_client.h"
 #include "../include/qmi_idl_lib.h"
 #include "../include/dsi_netctrl.h"
 #include "libloc_loader.h"
-
-#define LOG_TAG "LIBLOC_LOADER"
 
 void *lib_handle = NULL;
 

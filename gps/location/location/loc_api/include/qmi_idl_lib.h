@@ -116,7 +116,7 @@ typedef struct qmi_idl_service_object {
     uint32_t unk3;
     uint32_t unk4;
     uint16_t num_messages[QMI_IDL_NUM_MSG_TYPES];
-    const qmi_idl_message_table_entry *message_table[QMI_IDL_NUM_MSG_TYPES];
+    const qmi_idl_service_message_table_entry *message_table[QMI_IDL_NUM_MSG_TYPES];
     const struct qmi_idl_type_table_object *type_table;
     uint32_t unk5;
     struct qmi_idl_service_object *parent;

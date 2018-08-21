@@ -31,6 +31,8 @@ HERE=/vendor/bin
 source $HERE/init.qcom.debug-sdm660.sh
 source $HERE/init.qcom.debug-sdm710.sh
 source $HERE/init.qti.debug-msmnile.sh
+source $HERE/init.qti.debug-talos.sh
+
 enable_tracing_events()
 {
     # timer
@@ -2523,6 +2525,11 @@ case "$coresight_config" in
                 if [ "$ftrace_disable" != "Yes" ]; then
                     enable_ftrace_event_tracing
                 fi
+                setprop ro.dbg.coresight.stm_cfg_done 1
+            ;;
+            "talos")
+                echo "Enabling DCC/STM/Debug events for talos"
+                enable_talos_debug
                 setprop ro.dbg.coresight.stm_cfg_done 1
             ;;
             "msmnile")

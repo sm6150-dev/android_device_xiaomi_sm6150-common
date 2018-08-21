@@ -1,6 +1,6 @@
 AM_CFLAGS = \
     -DDEBUG \
-    -I./ \
+    -I src/ \
     -I inc/ \
     $(GPSUTILS_CFLAGS) \
     $(LOCHALDAEMON_CFLAGS) \
@@ -13,7 +13,7 @@ requiredlibs = \
     $(GPSUTILS_LIBS)
 
 h_sources = \
-    inc/LocationClientApiImpl.h \
+    src/LocationClientApiImpl.h \
     inc/LocationClientApi.h
 
 c_sources = \

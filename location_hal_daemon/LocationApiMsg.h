@@ -66,11 +66,12 @@ enum ELocMsgID {
     E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID = 10,
     E_LOCAPI_CONTROL_UPDATE_NETWORK_AVAILABILITY_MSG_ID = 11,
 
-    // Postion reports
+    // Position reports
     E_LOCAPI_LOCATION_MSG_ID = 12,
     E_LOCAPI_LOCATION_INFO_MSG_ID = 13,
     E_LOCAPI_SATELLITE_VEHICLE_MSG_ID = 14,
-    E_LOCAPI_NMEA_MSG_ID = 15
+    E_LOCAPI_NMEA_MSG_ID = 15,
+    E_LOCAPI_DATA_MSG_ID = 16
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -78,13 +79,14 @@ enum ELocationCallbacksOption {
     E_LOC_CB_TRACKING_BIT               = (1<<0), /**< Register for Location */
     E_LOC_CB_GNSS_LOCATION_INFO_BIT     = (1<<1), /**< Register for GNSS Location */
     E_LOC_CB_GNSS_SV_BIT                = (1<<2), /**< Register for GNSS SV */
-    E_LOC_CB_GNSS_NMEA_BIT              = (1<<3)  /**< Register for GNSS NMEA */
+    E_LOC_CB_GNSS_NMEA_BIT              = (1<<3), /**< Register for GNSS NMEA */
+    E_LOC_CB_GNSS_DATA_BIT              = (1<<4)  /**< Register for GNSS DATA */
 };
 
 /******************************************************************************
 Common data structure
 ******************************************************************************/
-struct LocAPINmeaSeriazliedPayload {
+struct LocAPINmeaSerializedPayload {
     size_t size;
     uint64_t timestamp;
     size_t length;
@@ -274,10 +276,21 @@ struct LocAPISatelliteVehicleIndMsg: LocAPIMsgHeader
 // defintion for message with msg id of E_LOCAPI_NMEA_MSG_ID
 struct LocAPINmeaIndMsg: LocAPIMsgHeader
 {
-    LocAPINmeaSeriazliedPayload gnssNmeaNotification;
+    LocAPINmeaSerializedPayload gnssNmeaNotification;
 
     inline LocAPINmeaIndMsg(const char* name) :
         LocAPIMsgHeader(name, E_LOCAPI_NMEA_MSG_ID) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_DATA_MSG_ID
+struct LocAPIDataIndMsg : LocAPIMsgHeader
+{
+    GnssDataNotification gnssDataNotification;
+
+    inline LocAPIDataIndMsg(const char* name,
+        GnssDataNotification& dataNotification) :
+        LocAPIMsgHeader(name, E_LOCAPI_DATA_MSG_ID),
+        gnssDataNotification(dataNotification) { }
 };
 
 #endif /* LOCATIONAPIMSG_H */

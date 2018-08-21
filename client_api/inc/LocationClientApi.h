@@ -531,6 +531,43 @@ struct GnssSv {
     GnssSvOptionsMask gnssSvOptionsMask;
 };
 
+enum GnssSignalTypes {
+    GNSS_SIGNAL_TYPE_GPS_L1CA = 0,          /**<  GPS L1CA Signal  */
+    GNSS_SIGNAL_TYPE_GPS_L1C = 1,           /**<  GPS L1C Signal  */
+    GNSS_SIGNAL_TYPE_GPS_L2C_L = 2,         /**<  GPS L2C_L RF Band  */
+    GNSS_SIGNAL_TYPE_GPS_L5_Q = 3,          /**<  GPS L5_Q RF Band  */
+    GNSS_SIGNAL_TYPE_GLONASS_G1 = 4,        /**<  GLONASS G1 (L1OF) RF Band  */
+    GNSS_SIGNAL_TYPE_GLONASS_G2 = 5,        /**<  GLONASS G2 (L2OF) RF Band  */
+    GNSS_SIGNAL_TYPE_GALILEO_E1_C = 6,      /**<  GALILEO E1_C RF Band  */
+    GNSS_SIGNAL_TYPE_GALILEO_E5A_Q = 7,     /**<  GALILEO E5A_Q RF Band  */
+    GNSS_SIGNAL_TYPE_GALILEO_E5B_Q = 8,     /**<  GALILEO E5B_Q RF Band  */
+    GNSS_SIGNAL_TYPE_BEIDOU_B1_I = 9,       /**<  BEIDOU B1_I RF Band  */
+    GNSS_SIGNAL_TYPE_BEIDOU_B1C = 10,       /**<  BEIDOU B1C RF Band  */
+    GNSS_SIGNAL_TYPE_BEIDOU_B2_I = 11,      /**<  BEIDOU B2_I RF Band  */
+    GNSS_SIGNAL_TYPE_BEIDOU_B2A_I = 12,     /**<  BEIDOU B2A_I RF Band  */
+    GNSS_SIGNAL_TYPE_QZSS_L1CA = 13,        /**<  QZSS L1CA RF Band  */
+    GNSS_SIGNAL_TYPE_QZSS_L1S = 14,         /**<  QZSS L1S RF Band  */
+    GNSS_SIGNAL_TYPE_QZSS_L2C_L = 15,       /**<  QZSS L2C_L RF Band  */
+    GNSS_SIGNAL_TYPE_QZSS_L5_Q = 16,        /**<  QZSS L5_Q RF Band  */
+    GNSS_SIGNAL_TYPE_SBAS_L1_CA = 17,       /**<  SBAS L1_CA RF Band  */
+    GNSS_MAX_NUMBER_OF_SIGNAL_TYPES = 18    /**< Maximum number of signal types */
+};
+
+typedef uint64_t GnssDataMask;
+
+enum GnssDataBits {
+    // Jammer Indicator is available
+    GNSS_DATA_JAMMER_IND_BIT = (1ULL << 0),
+    // AGC is available
+    GNSS_DATA_AGC_BIT = (1ULL << 1)
+};
+
+struct GnssData {
+    GnssDataMask  gnssDataMask[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];  // bitwise OR of GnssDataBits
+    double        jammerInd[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];     // Jammer Indication
+    double        agc[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];           // Automatic gain control
+};
+
 /** @fn
     @brief Provides the capabilities of the system,
 
@@ -581,10 +618,19 @@ typedef std::function<void(
     uint64_t timestamp, const std::string& nmea
 )> GnssNmeaCb;
 
+/** @fn
+    @brief
+    GnssDataCb is for receiving GnssData information
+*/
+typedef std::function<void(
+    const GnssData& gnssData
+)> GnssDataCb;
+
 struct GnssReportCbs {
     GnssLocationCb gnssLocationCallback;
     GnssSvCb gnssSvCallback;
     GnssNmeaCb gnssNmeaCallback;
+    GnssDataCb gnssDataCallback;
 };
 
 class LocationClientApiImpl;

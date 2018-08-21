@@ -59,6 +59,11 @@ static void clientGnssNmeaCb(GnssNmeaNotification gnssNmeaNotification) {
     return;
 }
 
+static void clientGnssDataCb(GnssDataNotification gnssDataNotification) {
+    LOC_LOGd("clientGnssDataCb\n");
+    return;
+}
+
 static location_client::LocationCapabilitiesMask parseCapabilitiesMask(
     LocationCapabilitiesMask mask) {
     uint64_t capsMask = 0;
@@ -648,6 +653,24 @@ static location_client::GnssSv parseGnssSv(const GnssSv &halGnssSv) {
     return gnssSv;
 }
 
+static location_client::GnssData parseGnssData(
+    const GnssDataNotification &halGnssData) {
+    location_client::GnssData gnssData;
+
+    for (int sig = GNSS_LOC_SIGNAL_TYPE_GPS_L1CA;
+         sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
+        gnssData.gnssDataMask[sig] = halGnssData.gnssDataMask[sig];
+        gnssData.jammerInd[sig] = halGnssData.jammerInd[sig];
+        gnssData.agc[sig] = halGnssData.agc[sig];
+        if (0 != gnssData.gnssDataMask[sig]) {
+            LOC_LOGv("gnssDataMask[%d]=0x%X", sig, gnssData.gnssDataMask[sig]);
+            LOC_LOGv("jammerInd[%d]=%f", sig, gnssData.jammerInd[sig]);
+            LOC_LOGv("agc[%d]=%f", sig, gnssData.agc[sig]);
+        }
+    }
+    return gnssData;
+}
+
 static location_client::LocationResponse parseLocationError(LocationError error) {
     location_client::LocationResponse response;
 
@@ -736,7 +759,7 @@ bool LocationClientApi::startPositionSession(
     if (true == retVal) {
         mLocationCb = locationCallback;
         mResponseCb = responseCallback;
-        mGnssReportCbs = {{nullptr}, {nullptr}, {nullptr}};
+        mGnssReportCbs = {{nullptr}, {nullptr}, {nullptr}, {nullptr}};
     }
 
     return retVal;
@@ -773,6 +796,11 @@ bool LocationClientApi::startPositionSession(
     if (gnssReportCallbacks.gnssNmeaCallback) {
         callbacksOption.gnssNmeaCb = clientGnssNmeaCb;
     }
+
+    if (gnssReportCallbacks.gnssDataCallback) {
+        callbacksOption.gnssDataCb = clientGnssDataCb;
+    }
+
     locationOption.minInterval = intervalInMs;
     locationOption.minDistance = 0;
     trackingOption.setLocationOptions(locationOption);
@@ -887,6 +915,19 @@ void LocationClientApi::locationClientApiImplCb(uint32_t  msgId, const void* msg
                 mGnssReportCbs.gnssNmeaCallback(timestamp,nmea);
             } else {
                 LOC_LOGe ("NULL gnssNmeaCallback\n");
+            }
+            break;
+        }
+
+        case E_LOCAPI_DATA_MSG_ID:
+        {
+            const LocAPIDataIndMsg *pDataIndMsg = (LocAPIDataIndMsg *)(msgData);
+            GnssData gnssData =
+                parseGnssData(pDataIndMsg->gnssDataNotification);
+            if (mGnssReportCbs.gnssDataCallback) {
+                mGnssReportCbs.gnssDataCallback(gnssData);
+            } else {
+                LOC_LOGe("NULL gnssDataCallback");
             }
             break;
         }

@@ -119,6 +119,10 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
         callBacksMask |= E_LOC_CB_GNSS_NMEA_BIT;
     }
 
+    if (callbacks.gnssDataCb) {
+        callBacksMask |= E_LOC_CB_GNSS_DATA_BIT;
+    }
+
     if (mCallbacksMask != callBacksMask) {
         mCallbacksMask = callBacksMask;
 
@@ -436,6 +440,22 @@ void LocationClientApiImpl::onReceive(const string& data) {
                             }
                         } else {
                             LOC_LOGe("NULL mLocationClient\n");
+                        }
+                        break;
+                    }
+
+                case E_LOCAPI_DATA_MSG_ID:
+                    {
+                        LOC_LOGd("<<< message = data");
+                        if (nullptr != mApiImpl->mLocationClient) {
+                            if (mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_DATA_BIT) {
+                                mApiImpl->mLocationClient->locationClientApiImplCb(
+                                        pMsg->msgId, (void *)pMsg);
+                            } else {
+                                LOC_LOGe("DATA Ind message not registered");
+                            }
+                        } else {
+                            LOC_LOGe("NULL mLocationClient");
                         }
                         break;
                     }

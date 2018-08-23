@@ -650,6 +650,7 @@ NQ_NFC += nfc_nci.nqx.default
 NQ_NFC += libp61-jcop-kit
 NQ_NFC += com.nxp.nfc.nq
 NQ_NFC += com.nxp.nfc.nq.xml
+NQ_NFC += com.gsma.services.nfc
 NQ_NFC += libpn547_fw.so
 NQ_NFC += libpn548ad_fw.so
 NQ_NFC += libnfc-brcm.conf

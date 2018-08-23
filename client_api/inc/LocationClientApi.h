@@ -633,6 +633,17 @@ struct GnssReportCbs {
     GnssDataCb gnssDataCallback;
 };
 
+/** @fn
+    @brief
+    Structure of all client callbacks
+*/
+struct ClientCallbacks {
+    CapabilitiesCb capabilitycb;
+    ResponseCb responsecb;
+    LocationCb locationcb;
+    GnssReportCbs gnssreportcbs;
+};
+
 class LocationClientApiImpl;
 
 class LocationClientApi
@@ -752,17 +763,7 @@ public:
     void updateNetworkAvailability(bool available);
 
 private:
-    void locationClientApiImplCb(uint32_t  msgId, const void* msgData);
-
     LocationClientApiImpl* mApiImpl;
-    uint32_t               mSessionId;
-    // callbacks
-    CapabilitiesCb         mCapabilitiesCb;
-    LocationCb             mLocationCb;
-    GnssReportCbs          mGnssReportCbs;
-    ResponseCb             mResponseCb;
-
-    friend                 LocationClientApiImpl;
 };
 
 } // namespace location_client

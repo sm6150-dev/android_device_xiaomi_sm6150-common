@@ -50,7 +50,7 @@ namespace location_client
 class LocationClientApiImpl : public LocIpc, public ILocationAPI,
                               public ILocationControlAPI {
 public:
-    LocationClientApiImpl(LocationClientApi* locationClientApi);
+    LocationClientApiImpl(CapabilitiesCb capabitiescb);
     ~LocationClientApiImpl();
 
     // Tracking
@@ -95,7 +95,9 @@ public:
     virtual void onListenerReady() override;
     virtual void onReceive(const string& data) override;
 
+    // other interface
     void updateNetworkAvailability(bool available);
+    void updateCallbackFunctions(const ClientCallbacks&);
 
 private:
     void capabilitesCallback(ELocMsgID  msgId, const void* msgData);
@@ -104,12 +106,18 @@ private:
     static uint32_t         mClientIdGenerator;
     static mutex            mMutex;
     uint32_t                mClientId;
+    uint32_t                mSessionId;
     bool                    mHalRegistered;
     char                    mSocketName[MAX_SOCKET_PATHNAME_LENGTH];
 
+    // callbacks
+    CapabilitiesCb          mCapabilitiesCb;
+    ResponseCb              mResponseCb;
+    LocationCb              mLocationCb;
+    GnssReportCbs           mGnssReportCbs;
+
     LocationCallbacksMask   mCallbacksMask;
     LocationOptions         mLocationOptions;
-    LocationClientApi*      mLocationClient;
 
     MsgTask*                mMsgTask;
     LocIpcSender*           mIpcSender;

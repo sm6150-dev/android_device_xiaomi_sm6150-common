@@ -237,6 +237,11 @@ case "$target" in
         case "$soc_hwid" in
             294|295|296|297|298|313|353|354|363|364)
                 setprop vendor.opengles.version 196610
+                if [ $soc_hwid = 354 ]
+                then
+                    setprop vendor.media.msm8937.version 1
+                    log -t BOOT -p i "SDM429 early_boot prop set for: HwID '$soc_hwid'"
+                fi
                 ;;
             303|307|308|309|320)
                 # Vulkan is not supported for 8917 variants

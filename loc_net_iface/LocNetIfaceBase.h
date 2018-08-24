@@ -30,6 +30,7 @@
 
 #include <IDataItemCore.h>
 #include <loc_gps.h>
+#include <loc_cfg.h>
 #include <algorithm>
 #include <vector>
 #include <list>
@@ -92,9 +93,6 @@ typedef void (*LocWwanCallStatusCb)(
 /* DataItem Notification callback */
 typedef void (*LocNetStatusChangeCb)(
         void* userDataPtr, std::list<IDataItemCore*>& itemList);
-
-/* Maximum length of APN Name config items */
-#define APN_NAME_MAX_LEN 255
 
 /*--------------------------------------------------------------------
  * CLASS LocNetIfaceBase
@@ -165,7 +163,7 @@ protected:
     LocNetConnType mLocNetConnType;
 
     /* Config items */
-    char mApnName[APN_NAME_MAX_LEN];
+    char mApnName[LOC_MAX_PARAM_STRING];
     int  mIpType;
 
     LocNetIfaceBase(LocNetConnType connType) :
@@ -173,7 +171,7 @@ protected:
         mWwanCbUserDataPtr(NULL), mLocNetConnType(connType),
         mIpType(0) {
 
-        memset(mApnName, 0, APN_NAME_MAX_LEN);
+        memset(mApnName, 0, LOC_MAX_PARAM_STRING);
         fetchConfigItems();
     }
 

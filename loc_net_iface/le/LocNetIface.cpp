@@ -630,9 +630,11 @@ bool LocNetIface::setupWwanCall() {
     LOC_LOGD("DSI_CALL_INFO_TECH_PREF = DSI_RADIO_TECH_UNKNOWN");
     dsi_set_data_call_param(mDsiHandle, DSI_CALL_INFO_TECH_PREF, &callParams);
 
-    /* APN from gps.conf */
+    /* APN from gps.conf 
+      As this is read using loc cfg routine, the buffer size
+      max is LOC_MAX_PARAM_STRING. */
     char* apnName = getApnNameFromConfig();
-    int apnNameLen = strnlen(apnName, APN_NAME_MAX_LEN);
+    int apnNameLen = strnlen(apnName, LOC_MAX_PARAM_STRING);
     if (apnName != NULL &&  apnNameLen > 0) {
         callParams.buf_val = apnName;
         callParams.num_val = apnNameLen;

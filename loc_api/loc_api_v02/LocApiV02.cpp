@@ -2339,7 +2339,7 @@ void LocApiV02 :: reportPosition (
     memset(&location, 0, sizeof (UlpLocation));
     location.size = sizeof(location);
     location.unpropagatedPosition = unpropagatedPosition;
-    GnssDataNotification dataNotify;
+    GnssDataNotification dataNotify = {};
     int msInWeek = -1;
 
     GpsLocationExtended locationExtended;

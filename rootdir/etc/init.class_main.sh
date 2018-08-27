@@ -84,6 +84,19 @@ case "$baseband" in
                     start vendor.ril-daemon
                 fi
             fi
+        # For older than JO 3.2 start ril-daemon
+        elif [ "$modem" = "JO" ]; then
+            version=`cat /vendor/firmware_mnt/verinfo/ver_info.txt |
+                    sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
+                    sed 's/.*JO.\(.*\)/\1/g' | cut -d \- -f 1`
+            if [ ! -z $version ]; then
+                if [ "$version" \< "3.2" ]; then
+                    # For OTA targets, ril-daemon will be defined and for new vendor.ril-daemon
+                    # To keep this script agnostic,start both of them as only valid one will start.
+                    start ril-daemon
+                    start vendor.ril-daemon
+                fi
+            fi
         else
             start ril-daemon
             start vendor.ril-daemon

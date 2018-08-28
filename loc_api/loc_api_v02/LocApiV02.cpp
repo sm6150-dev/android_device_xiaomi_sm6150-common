@@ -5437,13 +5437,26 @@ LocApiV02::getConstellationControl()
     locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
     locClientReqUnionType req_union = {};
 
+    qmiLocGetConstellationConfigIndMsgT_v02 getConstIndMsg;
+    memset(&getConstIndMsg, 0, sizeof(getConstIndMsg));
+
     // Nothing to update in request union
 
     // Send the request
-    status = locClientSendReq(QMI_LOC_GET_CONSTELLATION_CONTROL_REQ_V02, req_union);
-    if(status != eLOC_CLIENT_SUCCESS) {
-        LOC_LOGe("Get Constellation failed. status: %s",
-                 loc_get_v02_client_status_name(status));
+    status = loc_sync_send_req(clientHandle,
+                               QMI_LOC_GET_CONSTELLATION_CONTROL_REQ_V02,
+                               req_union,
+                               LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                               QMI_LOC_GET_CONSTELLATION_CONTROL_IND_V02,
+                               &getConstIndMsg);
+    if(status == eLOC_CLIENT_SUCCESS &&
+            getConstIndMsg.status == eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGd("GET constellation Ind");
+        reportGnssSvTypeConfig(getConstIndMsg);
+    } else {
+        LOC_LOGe("Get Constellation failed. status: %s, ind status: %s",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(getConstIndMsg.status));
     }
 
     }));
@@ -5542,6 +5555,7 @@ LocApiV02::convertToGnssSvTypeConfig(
         const qmiLocGetConstellationConfigIndMsgT_v02& ind,
         GnssSvTypeConfig& config)
 {
+    // Enabled Mask
     if (ind.bds_status_valid &&
             (ind.bds_status == eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY_V02 ||
                     ind.bds_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
@@ -5565,6 +5579,36 @@ LocApiV02::convertToGnssSvTypeConfig(
                     ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY_V02 ||
                     ind.qzss_status == eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT_V02)) {
         config.enabledSvTypesMask |= GNSS_SV_TYPES_MASK_QZSS_BIT;
+    }
+
+    // Disabled Mask
+    if (ind.bds_status_valid &&
+            (ind.bds_status == eQMI_LOC_CONSTELLATION_DISABLED_NOT_SUPPORTED_V02 ||
+                    ind.bds_status == eQMI_LOC_CONSTELLATION_DISABLED_INTERNALLY_V02 ||
+                    ind.bds_status == eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT_V02 ||
+                    ind.bds_status == eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY_V02)) {
+        config.blacklistedSvTypesMask |= GNSS_SV_TYPES_MASK_BDS_BIT;
+    }
+    if (ind.glonass_status_valid &&
+            (ind.glonass_status == eQMI_LOC_CONSTELLATION_DISABLED_NOT_SUPPORTED_V02 ||
+                    ind.glonass_status == eQMI_LOC_CONSTELLATION_DISABLED_INTERNALLY_V02 ||
+                    ind.glonass_status == eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT_V02 ||
+                    ind.glonass_status == eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY_V02)) {
+        config.blacklistedSvTypesMask |= GNSS_SV_TYPES_MASK_GLO_BIT;
+    }
+    if (ind.galileo_status_valid &&
+            (ind.galileo_status == eQMI_LOC_CONSTELLATION_DISABLED_NOT_SUPPORTED_V02 ||
+                    ind.galileo_status == eQMI_LOC_CONSTELLATION_DISABLED_INTERNALLY_V02 ||
+                    ind.galileo_status == eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT_V02 ||
+                    ind.galileo_status == eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY_V02)) {
+        config.blacklistedSvTypesMask |= GNSS_SV_TYPES_MASK_GAL_BIT;
+    }
+    if (ind.qzss_status_valid &&
+            (ind.qzss_status == eQMI_LOC_CONSTELLATION_DISABLED_NOT_SUPPORTED_V02 ||
+                    ind.qzss_status == eQMI_LOC_CONSTELLATION_DISABLED_INTERNALLY_V02 ||
+                    ind.qzss_status == eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT_V02 ||
+                    ind.qzss_status == eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY_V02)) {
+        config.blacklistedSvTypesMask |= GNSS_SV_TYPES_MASK_QZSS_BIT;
     }
 }
 

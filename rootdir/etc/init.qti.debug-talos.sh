@@ -345,6 +345,33 @@ config_talos_dcc_noc_err_regs()
     echo 0x9160034 > $DCC_PATH/config
     echo 0x9160038 > $DCC_PATH/config
     echo 0x916003C > $DCC_PATH/config
+
+    #NOC sensin Registers
+    #SNOC_CENTER_NIU_STATUS_SBM0_SENSEIN
+    echo 0x1620500 4 > $DCC_PATH/config
+    #SNOC_CENTER_NIU_STATUS_SBM1_SENSEIN
+    echo 0x1620700 4 > $DCC_PATH/config
+    #SNOC_CENTER_SBM_SENSEIN
+    echo 0x1620300 > $DCC_PATH/config
+    #SNOC_MONAQ_NIU_STATUS_SBM_SENSEIN
+    echo 0x1620F00 2 > $DCC_PATH/config
+    #SNOC_WEST_NIU_STATUS_SBM_SENSEIN
+    echo 0x1620B00 2 > $DCC_PATH/config
+    #A1NOC_MONAQ_SBM_SENSEIN
+    echo 0x1700B00 2 > $DCC_PATH/config
+    #A1NOC_WEST_SBM_SENSEIN
+    echo 0x1700700 3 > $DCC_PATH/config
+    #CNOC_CENTER_STATUS_SBM_SENSEIN
+    echo 0x1500500 7 > $DCC_PATH/config
+    #CNOC_MMNOC_STATUS_SBM_SENSEIN
+    echo 0x1500D00 4 > $DCC_PATH/config
+    #CNOC_WEST_STATUS_SBM_SENSEIN
+    echo 0x1501100 4 > $DCC_PATH/config
+    #DC_NOC_DISABLE_SBM_SENSEIN
+    echo 0x9163100 > $DCC_PATH/config
+    #GEM_NOC_SBM_MDSP_SAFE_SHAPING_SENSEIN
+    echo 0x96AA100 > $DCC_PATH/config
+
 }
 
 config_talos_dcc_shrm()
@@ -1328,7 +1355,11 @@ config_talos_dcc_ecc_llc()
 config_talos_dcc_cabo_llcc_shrm()
 {
     #LLCC/CABO
-
+    echo 0x9236028 > $DCC_PATH/config
+    echo 0x923602C > $DCC_PATH/config
+    echo 0x9236030 > $DCC_PATH/config
+    echo 0x9236034 > $DCC_PATH/config
+    echo 0x9236038 > $DCC_PATH/config
     echo 0x9232100 > $DCC_PATH/config
     echo 0x92360b0 > $DCC_PATH/config
     echo 0x9236044 > $DCC_PATH/config
@@ -1689,11 +1720,6 @@ enable_talos_stm_hw_events()
 {
    #TODO: Add HW events
 }
-
-ftrace_disable=`getprop persist.debug.ftrace_events_disable`
-srcenable="enable"
-sinkenable="curr_sink"
-etr_size="0x2000000"
 
 enable_talos_debug()
 {

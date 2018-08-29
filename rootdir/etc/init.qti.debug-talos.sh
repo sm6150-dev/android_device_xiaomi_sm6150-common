@@ -1666,7 +1666,13 @@ config_talos_dcc_apps_regs()
     #GOLD
 
 }
-
+config_talos_dcc_tsens_regs()
+{
+    echo 0x0C2630A0 4 > $DCC_PATH/config
+    echo 0x0C2630B0 4 > $DCC_PATH/config
+    echo 0x0C2630C0 4 > $DCC_PATH/config
+    echo 0x0C2630D0 4 > $DCC_PATH/config
+}
 # Function talos DCC configuration
 enable_talos_dcc_config()
 {
@@ -1683,7 +1689,7 @@ enable_talos_dcc_config()
     echo cap > $DCC_PATH/func_type
     echo sram > $DCC_PATH/data_sink
     echo 1 > $DCC_PATH/config_reset
-    echo 2 > $DCC_PATH/curr_list
+    echo 3 > $DCC_PATH/curr_list
 
     config_talos_dcc_gladiator
     config_talos_dcc_noc_err_regs
@@ -1708,7 +1714,7 @@ enable_talos_dcc_config()
     #config_talos_dcc_cx_mx
     config_talos_dcc_gcc_regs
     #config_talos_dcc_apps_regs
-
+    config_talos_dcc_tsens_regs
     #Enable below function with relaxed AC
     #config_talos_regs_no_ac
     #Apply configuration and enable DCC

@@ -298,6 +298,34 @@ static const locClientEventIndTableStructT locClientEventIndTable[]= {
     sizeof(qmiLocEventBsObsDataServiceReqIndMsgT_v02),
     QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ_V02},
 
+   //GPS Ephemeris Indication
+   { QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_IND_V02,
+    sizeof(qmiLocGpsEphemerisReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
+
+   //GLONASS Ephemeris Indication
+   { QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_IND_V02,
+    sizeof(qmiLocGloEphemerisReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
+
+   //BDS Ephemeris Indication
+   { QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02,
+    sizeof(qmiLocBdsEphemerisReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
+
+   //GAL Ephemeris Indication
+   { QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02,
+    sizeof(qmiLocGalEphemerisReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
+
+   //QZSS Ephemeris Indication
+   { QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02,
+    sizeof(qmiLocQzssEphemerisReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
+
+    {QMI_LOC_EVENT_REPORT_IND_V02,
+    sizeof(qmiLocEventReportIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02},
 };
 
 /* table to relate the respInd Id with its size */

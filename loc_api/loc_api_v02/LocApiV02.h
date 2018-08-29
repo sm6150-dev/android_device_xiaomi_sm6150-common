@@ -148,6 +148,23 @@ private:
   void  reportSvPolynomial (
   const qmiLocEventGnssSvPolyIndMsgT_v02 *gnss_sv_poly_ptr);
 
+  void reportSvEphemeris (
+  uint32_t eventId, const locClientEventIndUnionType &eventPayload);
+
+  void populateGpsEphemeris(const qmiLocGpsEphemerisReportIndMsgT_v02 *,
+          GnssSvEphemerisReport &);
+  void populateGlonassEphemeris(const qmiLocGloEphemerisReportIndMsgT_v02 *,
+          GnssSvEphemerisReport &);
+  void populateBdsEphemeris(const qmiLocBdsEphemerisReportIndMsgT_v02 *,
+          GnssSvEphemerisReport &);
+  void populateGalEphemeris(const qmiLocGalEphemerisReportIndMsgT_v02 *,
+          GnssSvEphemerisReport &);
+  void populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02 *,
+          GnssSvEphemerisReport &);
+  void populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &, GnssEphCommon &);
+
+  void reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_ptr);
+
   /* convert engine state report to loc eng format and send the converted
      report to loc eng */
   void reportEngineState (
@@ -184,6 +201,7 @@ private:
     const qmiLocEventWifiReqIndMsgT_v02& odcpiReq);
 
   bool registerEventMask(locClientEventMaskType qmiMask);
+  bool sendRequestForAidingData(locClientEventMaskType qmiMask);
   locClientEventMaskType adjustMaskForNoSession(locClientEventMaskType qmiMask);
   bool cacheGnssMeasurementSupport();
   void registerMasterClient();
@@ -304,6 +322,7 @@ public:
   virtual LocationError setConstrainedTuncMode(bool enabled, float tuncConstraint, uint32_t powerBudget);
   virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
   virtual LocationError getGnssEnergyConsumed();
+  virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
 
   /*
   Returns

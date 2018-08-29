@@ -1,30 +1,30 @@
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are
-* met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above
-*       copyright notice, this list of conditions and the following
-*       disclaimer in the documentation and/or other materials provided
-*       with the distribution.
-*     * Neither the name of The Linux Foundation, nor the names of its
-*       contributors may be used to endorse or promote products derived
-*       from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
-* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
-* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
-* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ *     * Neither the name of The Linux Foundation, nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 #ifndef LOC_SERVICE_02_H
 #define LOC_SERVICE_02_H
 /**
@@ -62,8 +62,8 @@
  *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
-/* This file was generated with Tool version 6.14.7
-   It was generated on: Wed Sep 26 2018 (Spin 0)
+/* This file was generated with Tool version 6.14.9
+   It was generated on: Tue Oct  2 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -20506,11 +20506,25 @@ typedef uint64_t qmiLocEventReportMaskT_v02;
 #define QMI_LOC_DELETE_BDS_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000004ull) /**<  BDS Ephemeris parameters have been deleted.  */
 #define QMI_LOC_DELETE_GAL_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000008ull) /**<  GALILEO Ephemeris parameters have been deleted.  */
 #define QMI_LOC_DELETE_QZSS_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000010ull) /**<  QZSS Ephemeris parameters have been deleted.  */
-#define QMI_LOC_DELETE_GPS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000020ull) /**<  GPS SV Polynomials have been deleted.  */
-#define QMI_LOC_DELETE_GLO_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000040ull) /**<  GLONASS SV Polynomials have been deleted.  */
-#define QMI_LOC_DELETE_BDS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000080ull) /**<  BDS SV Polynomials have been deleted.  */
-#define QMI_LOC_DELETE_GAL_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000100ull) /**<  GALILEO SV Polynomials have been deleted.  */
-#define QMI_LOC_DELETE_QZSS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000200ull) /**<  QZSS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_1_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000020ull) /**<  Reserved Delete Ephemeris Bit 1.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_2_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000040ull) /**<  Reserved Delete Ephemeris Bit 2.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_3_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000080ull) /**<  Reserved Delete Ephemeris Bit 3.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_4_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000100ull) /**<  Reserved Delete Ephemeris Bit 4.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_5_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000200ull) /**<  Reserved Delete Ephemeris Bit 5.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_6_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000400ull) /**<  Reserved Delete Ephemeris Bit 6.  */
+#define QMI_LOC_DELETE_RESERVED_EPHEMERIS_7_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000800ull) /**<  Reserved Delete Ephemeris Bit 7.  */
+#define QMI_LOC_DELETE_GPS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00001000ull) /**<  GPS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_GLO_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00002000ull) /**<  GLONASS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_BDS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00004000ull) /**<  BDS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_GAL_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00008000ull) /**<  GALILEO SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_QZSS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00010000ull) /**<  QZSS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_1_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00020000ull) /**<  Reserved Delete SV Poly Bit 1.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_2_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00040000ull) /**<  Reserved Delete SV Poly Bit 2.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_3_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00080000ull) /**<  Reserved Delete SV Poly Bit 3.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_4_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00100000ull) /**<  Reserved Delete SV Poly Bit 4.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00200000ull) /**<  Reserved Delete SV Poly Bit 5.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00400000ull) /**<  Reserved Delete SV Poly Bit 6.  */
+#define QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00800000ull) /**<  Reserved Delete SV Poly Bit 7.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -20527,11 +20541,25 @@ typedef struct {
       - QMI_LOC_DELETE_BDS_EPHEMERIS_ALL (0x00000004) --  BDS Ephemeris parameters have been deleted.
       - QMI_LOC_DELETE_GAL_EPHEMERIS_ALL (0x00000008) --  GALILEO Ephemeris parameters have been deleted.
       - QMI_LOC_DELETE_QZSS_EPHEMERIS_ALL (0x00000010) --  QZSS Ephemeris parameters have been deleted.
-      - QMI_LOC_DELETE_GPS_SV_POLY_ALL (0x00000020) --  GPS SV Polynomials have been deleted.
-      - QMI_LOC_DELETE_GLO_SV_POLY_ALL (0x00000040) --  GLONASS SV Polynomials have been deleted.
-      - QMI_LOC_DELETE_BDS_SV_POLY_ALL (0x00000080) --  BDS SV Polynomials have been deleted.
-      - QMI_LOC_DELETE_GAL_SV_POLY_ALL (0x00000100) --  GALILEO SV Polynomials have been deleted.
-      - QMI_LOC_DELETE_QZSS_SV_POLY_ALL (0x00000200) --  QZSS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_1_ALL (0x00000020) --  Reserved Delete Ephemeris Bit 1.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_2_ALL (0x00000040) --  Reserved Delete Ephemeris Bit 2.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_3_ALL (0x00000080) --  Reserved Delete Ephemeris Bit 3.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_4_ALL (0x00000100) --  Reserved Delete Ephemeris Bit 4.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_5_ALL (0x00000200) --  Reserved Delete Ephemeris Bit 5.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_6_ALL (0x00000400) --  Reserved Delete Ephemeris Bit 6.
+      - QMI_LOC_DELETE_RESERVED_EPHEMERIS_7_ALL (0x00000800) --  Reserved Delete Ephemeris Bit 7.
+      - QMI_LOC_DELETE_GPS_SV_POLY_ALL (0x00001000) --  GPS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_GLO_SV_POLY_ALL (0x00002000) --  GLONASS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_BDS_SV_POLY_ALL (0x00004000) --  BDS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_GAL_SV_POLY_ALL (0x00008000) --  GALILEO SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_QZSS_SV_POLY_ALL (0x00010000) --  QZSS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_1_ALL (0x00020000) --  Reserved Delete SV Poly Bit 1.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_2_ALL (0x00040000) --  Reserved Delete SV Poly Bit 2.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_3_ALL (0x00080000) --  Reserved Delete SV Poly Bit 3.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_4_ALL (0x00100000) --  Reserved Delete SV Poly Bit 4.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL (0x00200000) --  Reserved Delete SV Poly Bit 5.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL (0x00400000) --  Reserved Delete SV Poly Bit 6.
+      - QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL (0x00800000) --  Reserved Delete SV Poly Bit 7.
  */
 }qmiLocEventReportIndMsgT_v02;  /* Message */
 /**

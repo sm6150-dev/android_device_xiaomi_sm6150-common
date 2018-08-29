@@ -517,6 +517,51 @@ bool LocApiV02 :: registerEventMask(locClientEventMaskType qmiMask)
     return locClientRegisterEventMask(clientHandle, qmiMask, isMaster());
 }
 
+bool LocApiV02::sendRequestForAidingData(locClientEventMaskType qmiMask) {
+
+    qmiLocSetGNSSConstRepConfigReqMsgT_v02 aidingDataReq;
+    qmiLocSetGNSSConstRepConfigIndMsgT_v02 aidingDataReqInd;
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    LOC_LOGd("qmiMask = 0x%" PRIx64 "\n", qmiMask);
+
+    memset(&aidingDataReq, 0, sizeof(aidingDataReq));
+
+    if (qmiMask & QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02) {
+        aidingDataReq.reportFullSvPolyDb_valid = true;
+        aidingDataReq.reportFullSvPolyDb = true;
+    }
+
+    if (qmiMask & QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02) {
+        aidingDataReq.reportFullEphemerisDb_valid = true;
+        aidingDataReq.reportFullEphemerisDb = true;
+    }
+
+    req_union.pSetGNSSConstRepConfigReq = &aidingDataReq;
+    memset(&aidingDataReqInd, 0, sizeof(aidingDataReqInd));
+
+    status = locSyncSendReq(QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02,
+        req_union,
+        LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+        QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_IND_V02,
+        &aidingDataReqInd);
+
+    if (status != eLOC_CLIENT_SUCCESS ||
+        (aidingDataReqInd.status != eQMI_LOC_SUCCESS_V02 &&
+            aidingDataReqInd.status != eQMI_LOC_ENGINE_BUSY_V02)) {
+        LOC_LOGe("Request for aiding data failed status: %s, ind status:%s",
+            loc_get_v02_client_status_name(status),
+            loc_get_v02_qmi_status_name(aidingDataReqInd.status));
+    }
+    else {
+        LOC_LOGd("Request for aiding data succeeded");
+    }
+
+    return true;
+
+}
+
 locClientEventMaskType LocApiV02 :: adjustMaskForNoSession(locClientEventMaskType qmiMask)
 {
     LOC_LOGd("before qmiMask=0x%" PRIx64 "",qmiMask);
@@ -526,7 +571,8 @@ locClientEventMaskType LocApiV02 :: adjustMaskForNoSession(locClientEventMaskTyp
                                        QMI_LOC_EVENT_MASK_NMEA_V02 |
                                        QMI_LOC_EVENT_MASK_ENGINE_STATE_V02 |
                                        QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
-                                       QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
+                                       QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02 |
+                                       QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02;
 
     qmiMask = qmiMask & ~clearMask;
     LOC_LOGd("after qmiMask=0x%" PRIx64 "", qmiMask);
@@ -2434,6 +2480,9 @@ locClientEventMaskType LocApiV02 :: convertMask(
   if(mask & LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT)
       eventMask |= QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
 
+  if(mask & LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT)
+        eventMask |= QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02;
+
   // for GDT
   if(mask & LOC_API_ADAPTER_BIT_GDT_UPLOAD_BEGIN_REQ)
       eventMask |= QMI_LOC_EVENT_MASK_GDT_UPLOAD_BEGIN_REQ_V02;
@@ -3598,7 +3647,6 @@ void  LocApiV02 :: reportSvPolynomial (
   {
     svPolynomial.gnssSvId       = gnss_sv_poly_ptr->gnssSvId;
     svPolynomial.T0             = gnss_sv_poly_ptr->T0;
-    svPolynomial.svPolyFlags    = gnss_sv_poly_ptr->svPolyFlags;
 
     if(1 == gnss_sv_poly_ptr->gloFrequency_valid)
     {
@@ -3617,10 +3665,11 @@ void  LocApiV02 :: reportSvPolynomial (
       svPolynomial.svPosUnc = gnss_sv_poly_ptr->svPosUnc;
     }
 
-    if(1 == gnss_sv_poly_ptr->svPolyFlagValid)
+    if(0 != gnss_sv_poly_ptr->svPolyFlagValid)
     {
       svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_FLAG;
-      svPolynomial.svPolyFlags  = gnss_sv_poly_ptr->svPolyFlags;
+      svPolynomial.svPolyStatusMaskValidity = gnss_sv_poly_ptr->svPolyFlagValid;
+      svPolynomial.svPolyStatusMask = gnss_sv_poly_ptr->svPolyFlags;
     }
 
     if(1 == gnss_sv_poly_ptr->polyCoeffXYZ0_valid)
@@ -3716,7 +3765,308 @@ void  LocApiV02 :: reportSvPolynomial (
   }
 } //reportSvPolynomial
 
+void LocApiV02::reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_ptr)
+{
+    GnssAidingData aidingData;
+    memset(&aidingData, 0, sizeof(aidingData));
+    LOC_LOGd("Loc event report: %d", event_report_ptr->eventReport);
 
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GPS_EPHEMERIS_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GPS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GLO_EPHEMERIS_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GLONASS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_BDS_EPHEMERIS_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GAL_EPHEMERIS_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_QZSS_EPHEMERIS_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GPS_SV_POLY_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_POLY_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GPS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GLO_SV_POLY_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_POLY_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GLONASS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_BDS_SV_POLY_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_POLY_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GAL_SV_POLY_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_POLY_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_QZSS_SV_POLY_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_POLY_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT;
+    }
+
+    LocApiBase::reportDeleteAidingDataEvent(aidingData);
+}
+
+void LocApiV02::reportSvEphemeris (
+        uint32_t eventId, const locClientEventIndUnionType &eventPayload) {
+
+    GnssSvEphemerisReport svEphemeris;
+    memset(&svEphemeris, 0, sizeof(svEphemeris));
+
+    switch (eventId)
+    {
+        case QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_IND_V02:
+            svEphemeris.gnssConstellation = GNSS_LOC_SV_SYSTEM_GPS;
+            populateGpsEphemeris(eventPayload.pGpsEphemerisReportEvent, svEphemeris);
+            break;
+        case QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_IND_V02:
+            svEphemeris.gnssConstellation = GNSS_LOC_SV_SYSTEM_GLONASS;
+            populateGlonassEphemeris(eventPayload.pGloEphemerisReportEvent, svEphemeris);
+            break;
+        case QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02:
+            svEphemeris.gnssConstellation = GNSS_LOC_SV_SYSTEM_BDS;
+            populateBdsEphemeris(eventPayload.pBdsEphemerisReportEvent, svEphemeris);
+            break;
+        case QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02:
+            svEphemeris.gnssConstellation = GNSS_LOC_SV_SYSTEM_GALILEO;
+            populateGalEphemeris(eventPayload.pGalEphemerisReportEvent, svEphemeris);
+            break;
+        case QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02:
+            svEphemeris.gnssConstellation = GNSS_LOC_SV_SYSTEM_QZSS;
+            populateQzssEphemeris(eventPayload.pQzssEphemerisReportEvent, svEphemeris);
+    }
+
+    LocApiBase::reportSvEphemeris(svEphemeris);
+}
+
+void LocApiV02::populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &receivedEph,
+        GnssEphCommon &ephToFill)
+{
+    LOC_LOGv("Eph received for sv-id: %d action:%d", receivedEph.gnssSvId,
+            receivedEph.updateAction);
+
+    ephToFill.gnssSvId = receivedEph.gnssSvId;
+    switch(receivedEph.updateAction) {
+        case eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_UNKNOWN_V02;
+            break;
+        case eQMI_LOC_UPDATE_EPH_SRC_OTA_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_OTA_V02;
+            break;
+        case eQMI_LOC_UPDATE_EPH_SRC_NETWORK_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_NETWORK_V02;
+            break;
+        case eQMI_LOC_DELETE_EPH_SRC_UNKNOWN_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_UNKNOWN_V02;
+            break;
+        case eQMI_LOC_DELETE_EPH_SRC_NETWORK_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_NETWORK_V02;
+            break;
+        case eQMI_LOC_DELETE_EPH_SRC_OTA_V02:
+            ephToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_OTA_V02;
+            break;
+    }
+
+    ephToFill.IODE = receivedEph.IODE;
+    ephToFill.aSqrt = receivedEph.aSqrt;
+    ephToFill.deltaN = receivedEph.deltaN;
+    ephToFill.m0 = receivedEph.m0;
+    ephToFill.eccentricity = receivedEph.eccentricity;
+    ephToFill.omega0 = receivedEph.omega0;
+    ephToFill.i0 = receivedEph.i0;
+    ephToFill.omega = receivedEph.omega;
+    ephToFill.omegaDot = receivedEph.omegaDot;
+    ephToFill.iDot = receivedEph.iDot;
+    ephToFill.cUc = receivedEph.cUc;
+    ephToFill.cUs = receivedEph.cUs;
+    ephToFill.cRc = receivedEph.cRc;
+    ephToFill.cRs = receivedEph.cRs;
+    ephToFill.cIc = receivedEph.cIc;
+    ephToFill.cIs = receivedEph.cIs;
+    ephToFill.toe = receivedEph.toe;
+    ephToFill.toc = receivedEph.toc;
+    ephToFill.af0 = receivedEph.af0;
+    ephToFill.af1 = receivedEph.af1;
+    ephToFill.af2 = receivedEph.af2;
+}
+
+
+void LocApiV02::populateGpsEphemeris(
+        const qmiLocGpsEphemerisReportIndMsgT_v02 *gpsEphemeris,
+        GnssSvEphemerisReport &svEphemeris)
+{
+    LOC_LOGv("GPS Ephemeris Received: %d", gpsEphemeris->gpsEphemerisList_len);
+    svEphemeris.ephInfo.gpsEphemeris.numOfEphemeris = gpsEphemeris->gpsEphemerisList_len;
+
+    for (uint32_t i =0; i < gpsEphemeris->gpsEphemerisList_len; i++) {
+        const qmiLocGpsEphemerisT_v02 &receivedGpsEphemeris = gpsEphemeris->gpsEphemerisList[i];
+        GpsEphemeris &gpsEphemerisToFill = svEphemeris.ephInfo.gpsEphemeris.gpsEphemerisData[i];
+
+        populateCommonEphemeris(receivedGpsEphemeris.commonEphemerisData,
+                gpsEphemerisToFill.commonEphemerisData);
+
+        gpsEphemerisToFill.signalHealth = receivedGpsEphemeris.signalHealth;
+        gpsEphemerisToFill.URAI = receivedGpsEphemeris.URAI;
+        gpsEphemerisToFill.codeL2 = receivedGpsEphemeris.codeL2;
+        gpsEphemerisToFill.dataFlagL2P = receivedGpsEphemeris.dataFlagL2P;
+        gpsEphemerisToFill.tgd = receivedGpsEphemeris.tgd;
+        gpsEphemerisToFill.fitInterval = receivedGpsEphemeris.fitInterval;
+        gpsEphemerisToFill.IODC = receivedGpsEphemeris.IODC;
+    }
+}
+
+void LocApiV02::populateGlonassEphemeris(const qmiLocGloEphemerisReportIndMsgT_v02 *gloEphemeris,
+        GnssSvEphemerisReport &svEphemeris)
+{
+    LOC_LOGv("GLO Ephemeris Received: %d", gloEphemeris->gloEphemerisList_len);
+    svEphemeris.ephInfo.glonassEphemeris.numOfEphemeris = gloEphemeris->gloEphemerisList_len;
+
+    for (uint32_t i =0; i < gloEphemeris->gloEphemerisList_len; i++) {
+        const qmiLocGloEphemerisT_v02 &receivedGloEphemeris = gloEphemeris->gloEphemerisList[i];
+        GlonassEphemeris &gloEphemerisToFill = svEphemeris.ephInfo.glonassEphemeris.gloEphemerisData[i];
+
+        LOC_LOGv("Eph received for sv-id: %d action:%d", receivedGloEphemeris.gnssSvId,
+            receivedGloEphemeris.updateAction);
+
+        gloEphemerisToFill.gnssSvId = receivedGloEphemeris.gnssSvId;
+        switch(receivedGloEphemeris.updateAction) {
+            case eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_UNKNOWN_V02;
+                break;
+            case eQMI_LOC_UPDATE_EPH_SRC_OTA_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_OTA_V02;
+                break;
+            case eQMI_LOC_UPDATE_EPH_SRC_NETWORK_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_UPDATE_SRC_NETWORK_V02;
+                break;
+            case eQMI_LOC_DELETE_EPH_SRC_UNKNOWN_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_UNKNOWN_V02;
+                break;
+            case eQMI_LOC_DELETE_EPH_SRC_NETWORK_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_NETWORK_V02;
+                break;
+            case eQMI_LOC_DELETE_EPH_SRC_OTA_V02:
+                gloEphemerisToFill.updateAction = GNSS_EPH_ACTION_DELETE_SRC_OTA_V02;
+                break;
+        }
+
+        gloEphemerisToFill.bnHealth = receivedGloEphemeris.bnHealth;
+        gloEphemerisToFill.lnHealth = receivedGloEphemeris.lnHealth;
+        gloEphemerisToFill.tb = receivedGloEphemeris.tb;
+        gloEphemerisToFill.ft = receivedGloEphemeris.ft;
+        gloEphemerisToFill.gloM = receivedGloEphemeris.gloM;
+        gloEphemerisToFill.enAge = receivedGloEphemeris.enAge;
+        gloEphemerisToFill.gloFrequency = receivedGloEphemeris.gloFrequency;
+        gloEphemerisToFill.p1 = receivedGloEphemeris.p1;
+        gloEphemerisToFill.p2 = receivedGloEphemeris.p2;
+        gloEphemerisToFill.deltaTau = receivedGloEphemeris.deltaTau;
+        memcpy(gloEphemerisToFill.position, receivedGloEphemeris.position,
+              sizeof(*receivedGloEphemeris.position) * 3);
+        memcpy(gloEphemerisToFill.velocity, receivedGloEphemeris.velocity,
+              sizeof(*receivedGloEphemeris.velocity) * 3);
+        memcpy(gloEphemerisToFill.acceleration, receivedGloEphemeris.acceleration,
+              sizeof(*receivedGloEphemeris.acceleration) * 3);
+        gloEphemerisToFill.tauN = receivedGloEphemeris.tauN;
+        gloEphemerisToFill.gamma = receivedGloEphemeris.gamma;
+        gloEphemerisToFill.toe = receivedGloEphemeris.toe;
+        gloEphemerisToFill.nt = receivedGloEphemeris.nt;
+    }
+}
+
+void LocApiV02::populateBdsEphemeris(const qmiLocBdsEphemerisReportIndMsgT_v02 *bdsEphemeris,
+        GnssSvEphemerisReport &svEphemeris)
+{
+    LOC_LOGv("BDS Ephemeris Received: %d", bdsEphemeris->bdsEphemerisList_len);
+    svEphemeris.ephInfo.bdsEphemeris.numOfEphemeris = bdsEphemeris->bdsEphemerisList_len;
+
+    for (uint32_t i =0; i < bdsEphemeris->bdsEphemerisList_len; i++) {
+        const qmiLocBdsEphemerisT_v02 &receivedBdsEphemeris = bdsEphemeris->bdsEphemerisList[i];
+        BdsEphemeris &bdsEphemerisToFill = svEphemeris.ephInfo.bdsEphemeris.bdsEphemerisData[i];
+
+        populateCommonEphemeris(receivedBdsEphemeris.commonEphemerisData,
+                bdsEphemerisToFill.commonEphemerisData);
+
+        bdsEphemerisToFill.svHealth = receivedBdsEphemeris.svHealth;
+        bdsEphemerisToFill.AODC = receivedBdsEphemeris.AODC;
+        bdsEphemerisToFill.tgd1 = receivedBdsEphemeris.tgd1;
+        bdsEphemerisToFill.tgd2 = receivedBdsEphemeris.tgd2;
+        bdsEphemerisToFill.URAI = receivedBdsEphemeris.URAI;
+    }
+}
+
+void LocApiV02::populateGalEphemeris(const qmiLocGalEphemerisReportIndMsgT_v02 *galEphemeris,
+        GnssSvEphemerisReport &svEphemeris)
+{
+    LOC_LOGv("GAL Ephemeris Received: %d", galEphemeris->galEphemerisList_len);
+    svEphemeris.ephInfo.galileoEphemeris.numOfEphemeris = galEphemeris->galEphemerisList_len;
+
+    for (uint32_t i =0; i < galEphemeris->galEphemerisList_len; i++) {
+        const qmiLocGalEphemerisT_v02 &receivedGalEphemeris = galEphemeris->galEphemerisList[i];
+        GalileoEphemeris &galEphemerisToFill = svEphemeris.ephInfo.galileoEphemeris.galEphemerisData[i];
+
+        populateCommonEphemeris(receivedGalEphemeris.commonEphemerisData,
+                galEphemerisToFill.commonEphemerisData);
+
+        switch (receivedGalEphemeris.dataSourceSignal) {
+            case eQMI_LOC_GAL_EPH_SIGNAL_SRC_UNKNOWN_V02:
+                galEphemerisToFill.dataSourceSignal = GAL_EPH_SIGNAL_SRC_UNKNOWN_V02;
+                break;
+            case eQMI_LOC_GAL_EPH_SIGNAL_SRC_E1B_V02:
+                galEphemerisToFill.dataSourceSignal = GAL_EPH_SIGNAL_SRC_E1B_V02;
+                break;
+            case eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5A_V02:
+                galEphemerisToFill.dataSourceSignal = GAL_EPH_SIGNAL_SRC_E5A_V02;
+                break;
+            case eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5B_V02:
+                galEphemerisToFill.dataSourceSignal = GAL_EPH_SIGNAL_SRC_E5B_V02;
+        }
+
+        galEphemerisToFill.sisIndex = receivedGalEphemeris.sisIndex;
+        galEphemerisToFill.bgdE1E5a = receivedGalEphemeris.bgdE1E5a;
+        galEphemerisToFill.bgdE1E5b = receivedGalEphemeris.bgdE1E5b;
+        galEphemerisToFill.svHealth = receivedGalEphemeris.svHealth;
+    }
+}
+
+void LocApiV02::populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02 *qzssEphemeris,
+        GnssSvEphemerisReport &svEphemeris)
+{
+    LOC_LOGv("QZSS Ephemeris Received: %d", qzssEphemeris->qzssEphemerisList_len);
+    svEphemeris.ephInfo.qzssEphemeris.numOfEphemeris = qzssEphemeris->qzssEphemerisList_len;
+
+    for (uint32_t i =0; i < qzssEphemeris->qzssEphemerisList_len; i++) {
+        const qmiLocGpsEphemerisT_v02 &receivedQzssEphemeris = qzssEphemeris->qzssEphemerisList[i];
+        GpsEphemeris &qzssEphemerisToFill = svEphemeris.ephInfo.qzssEphemeris.qzssEphemerisData[i];
+
+        populateCommonEphemeris(receivedQzssEphemeris.commonEphemerisData,
+                qzssEphemerisToFill.commonEphemerisData);
+
+        qzssEphemerisToFill.signalHealth = receivedQzssEphemeris.signalHealth;
+        qzssEphemerisToFill.URAI = receivedQzssEphemeris.URAI;
+        qzssEphemerisToFill.codeL2 = receivedQzssEphemeris.codeL2;
+        qzssEphemerisToFill.dataFlagL2P = receivedQzssEphemeris.dataFlagL2P;
+        qzssEphemerisToFill.tgd = receivedQzssEphemeris.tgd;
+        qzssEphemerisToFill.fitInterval = receivedQzssEphemeris.fitInterval;
+        qzssEphemerisToFill.IODC = receivedQzssEphemeris.IODC;
+    }
+}
 
 /* convert engine state report to loc eng format and send the converted
    report to loc eng */
@@ -4743,6 +5093,14 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
       reportSvPolynomial(eventPayload.pGnssSvPolyInfoEvent);
       break;
 
+    case QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02:
+        reportSvEphemeris(eventId, eventPayload);
+    break;
+
     //Unpropagated position report
     case QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02:
       reportPosition(eventPayload.pPositionReportEvent, true);
@@ -4762,6 +5120,10 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
       LOC_LOGd("WIFI Req Ind");
       requestOdcpi(*eventPayload.pWifiReqEvent);
       break;
+
+    case QMI_LOC_EVENT_REPORT_IND_V02:
+        reportLocEvent(eventPayload.pLocEvent);
+        break;
   }
 }
 
@@ -4846,6 +5208,22 @@ LocationError LocApiV02 :: setGpsLockSync(GnssConfigGpsLock lock)
     LOC_LOGd("exit\n");
     return err;
 }
+
+void LocApiV02::requestForAidingData(GnssAidingDataSvMask svDataMask)
+{
+    sendMsg(new LocApiMsg([this, svDataMask] () {
+        locClientEventMaskType qmiMask = 0;
+
+        if (svDataMask & GNSS_AIDING_DATA_SV_POLY_BIT)
+            qmiMask |= QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
+
+        if (svDataMask & GNSS_AIDING_DATA_SV_EPHEMERIS_BIT)
+            qmiMask |= QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02;
+
+        sendRequestForAidingData(qmiMask);
+    }));
+}
+
 /*
   Returns
   Current value of GPS Lock on success

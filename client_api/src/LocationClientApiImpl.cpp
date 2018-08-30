@@ -36,6 +36,18 @@
 
 namespace location_client {
 
+static uint32_t gfIdGenerator = LOCATION_CLIENT_SESSION_ID_INVALID;
+mutex GeofenceImpl::mGfMutex;
+uint32_t GeofenceImpl::nextId() {
+    lock_guard<mutex> lock(mGfMutex);
+    uint32_t id = ++gfIdGenerator;
+    if (0xFFFFFFFF == id) {
+        id = 0;
+        gfIdGenerator = 0;
+    }
+    return id;
+}
+
 /******************************************************************************
 Utilities
 ******************************************************************************/
@@ -711,7 +723,7 @@ LocationClientApiImpl - constructors
 LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID),
         mBatchingId(LOCATION_CLIENT_SESSION_ID_INVALID),
-        mCapabilitiesCb(capabitiescb),
+        mCapabilitiesCb(capabitiescb), mLastAddedClientIds({}),
         mHalRegistered(false), mLocationCb(nullptr), mBatchingCb(nullptr),
         mCallbacksMask(0), mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
@@ -774,8 +786,10 @@ void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs) 
         void proc() const {
             // update callback functions
             mApiImpl->mResponseCb = mCbs.responsecb;
+            mApiImpl->mCollectiveResCb = mCbs.collectivecb;
             mApiImpl->mLocationCb = mCbs.locationcb;
             mApiImpl->mBatchingCb = mCbs.batchingcb;
+            mApiImpl->mGfBreachCb = mCbs.gfbreachcb;
             mApiImpl->mGnssReportCbs = mCbs.gnssreportcbs;
         }
         LocationClientApiImpl* mApiImpl;
@@ -818,6 +832,9 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             }
             if (mCallBacks.batchingStatusCb) {
                 callBacksMask |= E_LOC_CB_BATCHING_STATUS_BIT;
+            }
+            if (mCallBacks.geofenceBreachCb) {
+                callBacksMask |= E_LOC_CB_GEOFENCE_BREACH_BIT;
             }
 
             // update callback only when changed
@@ -1020,6 +1037,234 @@ void LocationClientApiImpl::updateBatchingOptions(uint32_t id, BatchingOptions& 
 }
 
 void LocationClientApiImpl::getBatchedLocations(uint32_t id, size_t count) {}
+
+bool LocationClientApiImpl::checkGeofenceMap(size_t count, uint32_t* ids) {
+    for (int i=0; i<count; ++i) {
+        auto got = mGeofenceMap.find(ids[i]);
+        if (got == mGeofenceMap.end()) {
+            return false;
+        }
+    }
+    return true;
+}
+void LocationClientApiImpl::addGeofenceMap(uint32_t id, Geofence& geofence) {
+    lock_guard<mutex> lock(mMutex);
+    mGeofenceMap.insert(make_pair(id, geofence));
+}
+void LocationClientApiImpl::eraseGeofenceMap(size_t count, uint32_t* ids) {
+    lock_guard<mutex> lock(mMutex);
+    for (int i=0; i<count; ++i) {
+        mGeofenceMap.erase(ids[i]);
+    }
+}
+
+uint32_t* LocationClientApiImpl::addGeofences(size_t count, GeofenceOption* options,
+        GeofenceInfo* infos) {
+    struct AddGeofencesReq : public LocMsg {
+        AddGeofencesReq(LocationClientApiImpl* apiImpl, uint32_t count, GeofenceOption* gfOptions,
+                GeofenceInfo* gfInfos, std::vector<uint32_t> clientIds) :
+                mApiImpl(apiImpl), mGfCount(count), mGfOptions(gfOptions), mGfInfos(gfInfos),
+                mClientIds(clientIds) {}
+        virtual ~AddGeofencesReq() {}
+        void proc() const {
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> addGeofences - Not registered yet");
+                return;
+            }
+
+            if (mGfCount > 0) {
+                //Add geofences, serialize geofence msg payload into ipc message payload
+                size_t msglen = sizeof(LocAPIAddGeofencesReqMsg) +
+                        sizeof(GeofencePayload) * (mGfCount - 1);
+                uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+                if (nullptr == msg) {
+                    return;
+                }
+                memset(msg, 0, msglen);
+                LocAPIAddGeofencesReqMsg *pMsg = reinterpret_cast<LocAPIAddGeofencesReqMsg*>(msg);
+                strlcpy(pMsg->mSocketName, mApiImpl->mSocketName, MAX_SOCKET_PATHNAME_LENGTH);
+                pMsg->msgId = E_LOCAPI_ADD_GEOFENCES_MSG_ID;
+                pMsg->geofences.count = mGfCount;
+                for (int i=0; i<mGfCount; ++i) {
+                    (*(pMsg->geofences.gfPayload + i)).gfClientId = mClientIds[i];
+                    (*(pMsg->geofences.gfPayload + i)).gfOption = mGfOptions[i];
+                    (*(pMsg->geofences.gfPayload + i)).gfInfo = mGfInfos[i];
+                }
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(msg),
+                        msglen);
+                LOC_LOGd(">>> AddGeofencesReq count=%zu", mGfCount);
+                delete[] msg;
+                free(mGfOptions);
+                free(mGfInfos);
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        uint32_t mGfCount;
+        GeofenceOption* mGfOptions;
+        GeofenceInfo* mGfInfos;
+        std::vector<uint32_t>  mClientIds;
+    };
+    mMsgTask->sendMsg(new (nothrow) AddGeofencesReq(this, count, options, infos,
+            mLastAddedClientIds));
+    return nullptr;
+}
+
+void LocationClientApiImpl::removeGeofences(size_t count, uint32_t* ids) {
+    struct RemoveGeofencesReq : public LocMsg {
+        RemoveGeofencesReq(LocationClientApiImpl* apiImpl, uint32_t count, uint32_t* gfIds) :
+                mApiImpl(apiImpl), mGfCount(count), mGfIds(gfIds) {}
+        virtual ~RemoveGeofencesReq() {}
+        void proc() const {
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> removeGeofences - Not registered yet");
+                return;
+            }
+            if (mGfCount > 0) {
+                //Remove geofences
+                size_t msglen = sizeof(LocAPIRemoveGeofencesReqMsg) +
+                        sizeof(uint32_t) * (mGfCount - 1);
+                uint8_t* msg = new uint8_t[msglen];
+                if (nullptr == msg) {
+                    return;
+                }
+                LocAPIRemoveGeofencesReqMsg* pMsg = (LocAPIRemoveGeofencesReqMsg*)msg;
+                pMsg->gfClientIds.count = mGfCount;
+                memcpy(pMsg->gfClientIds.gfIds, mGfIds, sizeof(uint32_t) * mGfCount);
+                pMsg->msgId = E_LOCAPI_REMOVE_GEOFENCES_MSG_ID;
+                strlcpy(pMsg->mSocketName, mApiImpl->mSocketName, MAX_SOCKET_PATHNAME_LENGTH);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(msg),
+                        msglen);
+                LOC_LOGd(">>> RemoveGeofencesReq count=%zu", mGfCount);
+                delete[] msg;
+                free(mGfIds);
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        uint32_t mGfCount;
+        uint32_t* mGfIds;
+    };
+    mMsgTask->sendMsg(new (nothrow) RemoveGeofencesReq(this, count, ids));
+}
+
+void LocationClientApiImpl::modifyGeofences(
+        size_t count, uint32_t* ids, GeofenceOption* options) {
+    struct ModifyGeofencesReq : public LocMsg {
+        ModifyGeofencesReq(LocationClientApiImpl* apiImpl, uint32_t count, uint32_t* gfIds,
+                GeofenceOption* gfOptions) :
+                mApiImpl(apiImpl), mGfCount(count), mGfIds(gfIds), mGfOptions(gfOptions) {}
+        virtual ~ModifyGeofencesReq() {}
+        void proc() const {
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> modifyGeofences - Not registered yet");
+                return;
+            }
+            if (mGfCount > 0) {
+                //Modify geofences
+                size_t msglen = sizeof(LocAPIModifyGeofencesReqMsg) +
+                        sizeof(GeofencePayload) * (mGfCount-1);
+                uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+                if (nullptr == msg) {
+                    return;
+                }
+                memset(msg, 0, msglen);
+                LocAPIModifyGeofencesReqMsg *pMsg =
+                        reinterpret_cast<LocAPIModifyGeofencesReqMsg*>(msg);
+                strlcpy(pMsg->mSocketName, mApiImpl->mSocketName, MAX_SOCKET_PATHNAME_LENGTH);
+                pMsg->msgId = E_LOCAPI_MODIFY_GEOFENCES_MSG_ID;
+                pMsg->geofences.count = mGfCount;
+                for (int i=0; i<mGfCount; ++i) {
+                    (*(pMsg->geofences.gfPayload + i)).gfClientId = mGfIds[i];
+                    (*(pMsg->geofences.gfPayload + i)).gfOption = mGfOptions[i];
+                }
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(msg),
+                        msglen);
+                LOC_LOGd(">>> ModifyGeofencesReq count=%zu", mGfCount);
+                delete[] msg;
+                free(mGfIds);
+                free(mGfOptions);
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        uint32_t mGfCount;
+        uint32_t* mGfIds;
+        GeofenceOption* mGfOptions;
+    };
+    mMsgTask->sendMsg(new (nothrow) ModifyGeofencesReq(this, count, ids, options));
+}
+
+void LocationClientApiImpl::pauseGeofences(size_t count, uint32_t* ids) {
+    struct PauseGeofencesReq : public LocMsg {
+        PauseGeofencesReq(LocationClientApiImpl* apiImpl, uint32_t count, uint32_t* gfIds) :
+                mApiImpl(apiImpl), mGfCount(count), mGfIds(gfIds) {}
+        virtual ~PauseGeofencesReq() {}
+        void proc() const {
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> pauseGeofences - Not registered yet");
+                return;
+            }
+            if (mGfCount > 0) {
+                //Pause geofences
+                size_t msglen = sizeof(LocAPIPauseGeofencesReqMsg) +
+                        sizeof(uint32_t) * (mGfCount - 1);
+                uint8_t* msg = new uint8_t[msglen];
+                if (nullptr == msg) {
+                    return;
+                }
+                LocAPIPauseGeofencesReqMsg* pMsg = (LocAPIPauseGeofencesReqMsg*)msg;
+                pMsg->gfClientIds.count = mGfCount;
+                memcpy(&(pMsg->gfClientIds.gfIds[0]), mGfIds, sizeof(uint32_t) * mGfCount);
+                pMsg->msgId = E_LOCAPI_PAUSE_GEOFENCES_MSG_ID;
+                strlcpy(pMsg->mSocketName, mApiImpl->mSocketName, MAX_SOCKET_PATHNAME_LENGTH);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(msg),
+                        msglen);
+                LOC_LOGd(">>> PauseGeofencesReq count=%zu", mGfCount);
+                delete[] msg;
+                free(mGfIds);
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        uint32_t mGfCount;
+        uint32_t* mGfIds;
+    };
+    mMsgTask->sendMsg(new (nothrow) PauseGeofencesReq(this, count, ids));
+}
+
+void LocationClientApiImpl::resumeGeofences(size_t count, uint32_t* ids) {
+    struct ResumeGeofencesReq : public LocMsg {
+        ResumeGeofencesReq(LocationClientApiImpl* apiImpl, uint32_t count, uint32_t* gfIds) :
+                mApiImpl(apiImpl), mGfCount(count), mGfIds(gfIds) {}
+        virtual ~ResumeGeofencesReq() {}
+        void proc() const {
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> resumeGeofences - Not registered yet");
+                return;
+            }
+            if (mGfCount > 0) {
+                //Resume geofences
+                size_t msglen = sizeof(LocAPIResumeGeofencesReqMsg) +
+                    sizeof(uint32_t) * (mGfCount - 1);
+                uint8_t* msg = new uint8_t[msglen];
+                if (nullptr == msg) {
+                    return;
+                }
+                LocAPIResumeGeofencesReqMsg* pMsg = (LocAPIResumeGeofencesReqMsg*)msg;
+                pMsg->gfClientIds.count = mGfCount;
+                memcpy(pMsg->gfClientIds.gfIds, mGfIds, sizeof(uint32_t) * mGfCount);
+                pMsg->msgId = E_LOCAPI_RESUME_GEOFENCES_MSG_ID;
+                strlcpy(pMsg->mSocketName, mApiImpl->mSocketName, MAX_SOCKET_PATHNAME_LENGTH);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(msg),
+                        msglen);
+                LOC_LOGd(">>> ResumeGeofencesReq count=%zu", mGfCount);
+                delete[] msg;
+                free(mGfIds);
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        uint32_t mGfCount;
+        uint32_t* mGfIds;
+    };
+    mMsgTask->sendMsg(new (nothrow) ResumeGeofencesReq(this, count, ids));
+}
 
 uint32_t* LocationClientApiImpl::gnssUpdateConfig(GnssConfig config) {
 
@@ -1256,6 +1501,33 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         }
                         break;
                     }
+                case E_LOCAPI_ADD_GEOFENCES_MSG_ID:
+                case E_LOCAPI_REMOVE_GEOFENCES_MSG_ID:
+                case E_LOCAPI_MODIFY_GEOFENCES_MSG_ID:
+                case E_LOCAPI_PAUSE_GEOFENCES_MSG_ID:
+                case E_LOCAPI_RESUME_GEOFENCES_MSG_ID:
+                    {
+                        LOC_LOGd("<<< collective response message, msgId = %d", pMsg->msgId);
+                        const LocAPICollectiveRespMsg* pRespMsg = (LocAPICollectiveRespMsg*)(pMsg);
+                        std::vector<pair<Geofence, LocationResponse>> responses{};
+                        for (int i=0; i<pRespMsg->collectiveRes.count; ++i) {
+                            responses.push_back(make_pair(
+                                    mApiImpl->mGeofenceMap.at(
+                                    (*(pRespMsg->collectiveRes.resp + i)).clientId),
+                                    parseLocationError(
+                                    (*(pRespMsg->collectiveRes.resp + i)).error)));
+                            if (LOCATION_ERROR_SUCCESS !=
+                                    (*(pRespMsg->collectiveRes.resp + i)).error ||
+                                    E_LOCAPI_REMOVE_GEOFENCES_MSG_ID == pMsg->msgId) {
+                                mApiImpl->eraseGeofenceMap(1, const_cast<uint32_t*>(
+                                        &((*(pRespMsg->collectiveRes.resp + i)).clientId)));
+                            }
+                        }
+                        if (mApiImpl->mCollectiveResCb) {
+                            mApiImpl->mCollectiveResCb(responses);
+                        }
+                        break;
+                    }
 
                 // async indication messages
                 case E_LOCAPI_LOCATION_MSG_ID:
@@ -1297,6 +1569,29 @@ void LocationClientApiImpl::onReceive(const string& data) {
 
                             if (mApiImpl->mBatchingCb) {
                                 mApiImpl->mBatchingCb(locationVector, status);
+                            }
+                        }
+                        break;
+                    }
+                case E_LOCAPI_GEOFENCE_BREACH_MSG_ID:
+                    {
+                        LOC_LOGd("<<< message = geofence breach");
+                        if (mApiImpl->mCallbacksMask & E_LOCAPI_GEOFENCE_BREACH_MSG_ID) {
+                            const LocAPIGeofenceBreachIndMsg* pGfBreachIndMsg =
+                                (LocAPIGeofenceBreachIndMsg*)(pMsg);
+                            std::vector<Geofence> geofences;
+                            for (int i=0; i<pGfBreachIndMsg->gfBreachNotification.count;
+                                    ++i) {
+                                geofences.push_back(mApiImpl->mGeofenceMap.at(
+                                        *(pGfBreachIndMsg->gfBreachNotification.id + i)));
+                            }
+                            if (mApiImpl->mGfBreachCb) {
+                                mApiImpl->mGfBreachCb(geofences,
+                                        parseLocation(
+                                                pGfBreachIndMsg->gfBreachNotification.location),
+                                        GeofenceBreachTypeMask(
+                                                pGfBreachIndMsg->gfBreachNotification.type),
+                                        pGfBreachIndMsg->gfBreachNotification.timestamp);
                             }
                         }
                         break;
@@ -1421,23 +1716,6 @@ void LocationClientApiImpl::onReceive(const string& data) {
 /******************************************************************************
 LocationClientApiImpl - Not implemented overrides
 ******************************************************************************/
-uint32_t* LocationClientApiImpl::addGeofences(size_t count,
-                                              GeofenceOption*, GeofenceInfo*) {
-    return nullptr;
-}
-
-void LocationClientApiImpl::removeGeofences(size_t count, uint32_t* ids) {
-}
-
-void LocationClientApiImpl::modifyGeofences(
-        size_t count, uint32_t* ids, GeofenceOption* options) {
-}
-
-void LocationClientApiImpl::pauseGeofences(size_t count, uint32_t* ids) {
-}
-
-void LocationClientApiImpl::resumeGeofences(size_t count, uint32_t* ids) {
-}
 
 void LocationClientApiImpl::gnssNiResponse(uint32_t id, GnssNiResponse response) {
 }

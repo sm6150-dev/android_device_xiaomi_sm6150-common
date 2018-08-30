@@ -29,7 +29,7 @@
 #define LOG_TAG "LocSvc_LocationClientApi"
 
 #include <loc_cfg.h>
-
+#include <cmath>
 #include <LocationDataTypes.h>
 #include <LocationClientApi.h>
 #include <LocationClientApiImpl.h>
@@ -44,6 +44,11 @@ static const loc_param_s_type gConfigTable[] =
 {
     {"DEBUG_LEVEL", &gDebug, NULL, 'n'}
 };
+
+bool Geofence::operator==(Geofence& other) {
+    return mGeofenceImpl != nullptr && other.mGeofenceImpl != nullptr &&
+            mGeofenceImpl == other.mGeofenceImpl;
+}
 
 /******************************************************************************
 LocationClientApi
@@ -242,6 +247,165 @@ void LocationClientApi::stopBatchingSession() {
     }
 }
 
+void LocationClientApi::addGeofences(std::vector<Geofence>& geofences,
+        GeofenceBreachCb gfBreachCb,
+        CollectiveResponseCb responseCallback) {
+    //Input parameter check
+    if (!gfBreachCb) {
+        LOC_LOGe ("NULL GeofenceBreachCb");
+        return;
+    }
+    if (!mApiImpl) {
+        LOC_LOGe ("NULL mApiImpl");
+        return;
+    }
+    // callback functions
+    ClientCallbacks cbs = {0};
+    cbs.collectivecb = responseCallback;
+    cbs.gfbreachcb = gfBreachCb;
+    mApiImpl->updateCallbackFunctions(cbs);
+
+    // callback masks
+    LocationCallbacks callbacksOption = {0};
+    callbacksOption.responseCb = [](LocationError err, uint32_t id) {};
+    callbacksOption.collectiveResponseCb = [](size_t, LocationError*, uint32_t*) {};
+    callbacksOption.geofenceBreachCb = [](GeofenceBreachNotification geofenceBreachNotification)
+            {};
+    mApiImpl->updateCallbacks(callbacksOption);
+    size_t count = geofences.size();
+    mApiImpl->mLastAddedClientIds.clear();
+    if (count > 0) {
+        GeofenceOption* gfOptions = (GeofenceOption*)malloc(sizeof(GeofenceOption) * count);
+        GeofenceInfo* gfInfos = (GeofenceInfo*)malloc(sizeof(GeofenceInfo) * count);
+
+        for (int i=0; i<count; ++i) {
+            if (geofences[i].mGeofenceImpl) {
+                continue;
+            }
+            gfOptions[i].breachTypeMask = geofences[i].getBreachType();
+            gfOptions[i].responsiveness = geofences[i].getResponsiveness();
+            gfOptions[i].dwellTime = geofences[i].getDwellTime();
+            gfOptions[i].size = sizeof(gfOptions[i]);
+            gfInfos[i].latitude = geofences[i].getLatitude();
+            gfInfos[i].longitude = geofences[i].getLongitude();
+            gfInfos[i].radius = geofences[i].getRadius();
+            gfInfos[i].size = sizeof(gfInfos[i]);
+            std::shared_ptr<GeofenceImpl> gfImpl(new GeofenceImpl(&geofences[i]));
+            gfImpl->bindGeofence(&geofences[i]);
+            mApiImpl->mLastAddedClientIds.push_back(gfImpl->getClientId());
+            mApiImpl->addGeofenceMap(mApiImpl->mLastAddedClientIds[i], geofences[i]);
+        }
+
+        mApiImpl->addGeofences(geofences.size(), reinterpret_cast<GeofenceOption*>(gfOptions),
+                reinterpret_cast<GeofenceInfo*>(gfInfos));
+    }
+}
+void LocationClientApi::removeGeofences(std::vector<Geofence>& geofences) {
+    if (!mApiImpl) {
+        LOC_LOGe ("NULL mApiImpl");
+        return;
+    }
+    size_t count = geofences.size();
+    if (count > 0) {
+        uint32_t* gfIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            if (!geofences[i].mGeofenceImpl) {
+                LOC_LOGe ("Geofence not added yet");
+                free(gfIds);
+                return;
+            }
+            gfIds[i] = geofences[i].mGeofenceImpl->getClientId();
+        }
+        if (!mApiImpl->checkGeofenceMap(geofences.size(), gfIds)) {
+            LOC_LOGe ("Wrong geofence IDs");
+            free(gfIds);
+            return;
+        }
+        mApiImpl->removeGeofences(count, gfIds);
+    }
+}
+void LocationClientApi::modifyGeofences(std::vector<Geofence>& geofences) {
+    if (!mApiImpl) {
+        LOC_LOGe ("NULL mApiImpl");
+        return;
+    }
+    size_t count = geofences.size();
+    if (count > 0) {
+        GeofenceOption* gfOptions = (GeofenceOption*)malloc(sizeof(GeofenceOption) * count);
+        uint32_t* gfIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            gfOptions[i].breachTypeMask = geofences[i].getBreachType();
+            gfOptions[i].responsiveness = geofences[i].getResponsiveness();
+            gfOptions[i].dwellTime = geofences[i].getDwellTime();
+            gfOptions[i].size = sizeof(gfOptions[i]);
+            if (!geofences[i].mGeofenceImpl) {
+                LOC_LOGe ("Geofence not added yet");
+                free(gfIds);
+                free(gfOptions);
+                return;
+            }
+            gfIds[i] = geofences[i].mGeofenceImpl->getClientId();
+        }
+        if (!mApiImpl->checkGeofenceMap(geofences.size(), gfIds)) {
+            LOC_LOGe ("Wrong geofence IDs");
+            free(gfIds);
+            free(gfOptions);
+            return;
+        }
+        mApiImpl->modifyGeofences(geofences.size(), const_cast<uint32_t*>(gfIds),
+                reinterpret_cast<GeofenceOption*>(gfOptions));
+    }
+}
+
+void LocationClientApi::pauseGeofences(std::vector<Geofence>& geofences) {
+    if (!mApiImpl) {
+        LOC_LOGe ("NULL mApiImpl");
+        return;
+    }
+    size_t count = geofences.size();
+    if (count > 0) {
+        uint32_t* gfIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            if (!geofences[i].mGeofenceImpl) {
+                LOC_LOGe ("Geofence not added yet");
+                free(gfIds);
+                return;
+            }
+            gfIds[i] = geofences[i].mGeofenceImpl->getClientId();
+        }
+        if (!mApiImpl->checkGeofenceMap(geofences.size(), gfIds)) {
+            LOC_LOGe ("Wrong geofence IDs");
+            free(gfIds);
+            return;
+        }
+        mApiImpl->pauseGeofences(count, gfIds);
+    }
+}
+
+void LocationClientApi::resumeGeofences(std::vector<Geofence>& geofences) {
+    if (!mApiImpl) {
+        LOC_LOGe ("NULL mApiImpl");
+        return;
+    }
+    size_t count = geofences.size();
+    if (count > 0) {
+        uint32_t* gfIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            if (!geofences[i].mGeofenceImpl) {
+                LOC_LOGe ("Geofence not added yet");
+                free(gfIds);
+                return;
+            }
+            gfIds[i] = geofences[i].mGeofenceImpl->getClientId();
+        }
+        if (!mApiImpl->checkGeofenceMap(geofences.size(), gfIds)) {
+            LOC_LOGe ("Wrong geofence IDs");
+            free(gfIds);
+            return;
+        }
+        mApiImpl->resumeGeofences(count, gfIds);
+    }
+}
 
 void LocationClientApi::updateNetworkAvailability(bool available) {
     if (mApiImpl) {

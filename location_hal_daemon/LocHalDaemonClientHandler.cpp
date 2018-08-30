@@ -79,6 +79,14 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
     } else {
         mCallbacks.batchingStatusCb = nullptr;
     }
+    //Geofence Breach
+    if (mSubscriptionMask & E_LOC_CB_GEOFENCE_BREACH_BIT) {
+        mCallbacks.geofenceBreachCb = [this](GeofenceBreachNotification geofenceBreachNotif) {
+            onGeofenceBreachCb(geofenceBreachNotif);
+        };
+    } else {
+        mCallbacks.geofenceBreachCb = nullptr;
+    }
 
     // location info
     if (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
@@ -128,7 +136,6 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
     // following callbacks are not supported
     mCallbacks.gnssMeasurementsCb = nullptr;
     mCallbacks.gnssNiCb = nullptr;
-    mCallbacks.geofenceBreachCb = nullptr;
     mCallbacks.geofenceStatusCb = nullptr;
 
     // call location API if already created
@@ -225,7 +232,79 @@ void LocHalDaemonClientHandler::updateBatchingOptions(uint32_t minInterval, uint
         mLocationApi->updateBatchingOptions(mBatchingId, mBatchOptions);
     }
 }
+void LocHalDaemonClientHandler::setGeofenceIds(size_t count, uint32_t* clientIds,
+        uint32_t* sessionIds) {
+    for (int i=0; i<count; ++i) {
+        mGfIdsMap[clientIds[i]] = sessionIds[i];
+    }
+}
 
+void LocHalDaemonClientHandler::eraseGeofenceIds(size_t count, uint32_t* clientIds) {
+    for (int i=0; i<count; ++i) {
+        mGfIdsMap.erase(clientIds[i]);
+    }
+}
+uint32_t* LocHalDaemonClientHandler::getSessionIds(size_t count, uint32_t* clientIds) {
+    uint32_t* sessionIds = nullptr;
+    if (count > 0) {
+        sessionIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        memset(sessionIds, 0, sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            sessionIds[i] = mGfIdsMap[clientIds[i]];
+        }
+    }
+    return sessionIds;
+}
+
+uint32_t* LocHalDaemonClientHandler::getClientIds(size_t count, uint32_t* sessionIds) {
+    uint32_t* clientIds = nullptr;
+    if (count > 0) {
+        clientIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        memset(clientIds, 0, sizeof(uint32_t) * count);
+        for (int i=0; i<count; ++i) {
+            for(auto itor = mGfIdsMap.begin(); itor != mGfIdsMap.end(); itor++) {
+                if (itor->second == sessionIds[i]) {
+                    clientIds[i] = itor->first;
+                }
+            }
+        }
+    }
+    return clientIds;
+}
+
+uint32_t* LocHalDaemonClientHandler::addGeofences(size_t count, GeofenceOption* options,
+        GeofenceInfo* info) {
+    if (count > 0) {
+        mGeofenceIds = mLocationApi->addGeofences(count, options, info);
+        if (mGeofenceIds) {
+            LOC_LOGi("start new geofence sessions: %p", mGeofenceIds);
+        }
+    }
+    return mGeofenceIds;
+}
+
+void LocHalDaemonClientHandler::removeGeofences(size_t count, uint32_t* ids) {
+    if (count > 0) {
+        mLocationApi->removeGeofences(count, ids);
+    }
+}
+
+void LocHalDaemonClientHandler::modifyGeofences(size_t count, uint32_t* ids,
+        GeofenceOption* options) {
+    if (count >0) {
+        mLocationApi->modifyGeofences(count, ids, options);
+    }
+}
+void LocHalDaemonClientHandler::pauseGeofences(size_t count, uint32_t* ids) {
+    if (count > 0) {
+        mLocationApi->pauseGeofences(count, ids);
+    }
+}
+void LocHalDaemonClientHandler::resumeGeofences(size_t count, uint32_t* ids) {
+    if (count > 0) {
+        mLocationApi->resumeGeofences(count, ids);
+    }
+}
 
 /******************************************************************************
 LocHalDaemonClientHandler - Location API response callback functions
@@ -296,7 +375,92 @@ void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
 
 void LocHalDaemonClientHandler::onCollectiveResponseCallback(
         size_t count, LocationError *errs, uint32_t *ids) {
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onCollectiveResponseCallback");
+
+    ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
+    if (!mGfPendingMessages.empty()) {
+        pendingMsgId = mGfPendingMessages.front();
+        mGfPendingMessages.pop();
+    }
+    if (0 == count) {
+        return;
+    }
+    // serialize LocationError and ids into ipc message payload
+    size_t msglen = sizeof(LocAPICollectiveRespMsg) + sizeof(GeofenceResponse) * (count - 1);
+    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+    if (nullptr == msg) {
+        return;
+    }
+    memset(msg, 0, msglen);
+    LocAPICollectiveRespMsg *pmsg = reinterpret_cast<LocAPICollectiveRespMsg*>(msg);
+    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+    pmsg->collectiveRes.size = msglen;
+    pmsg->collectiveRes.count = count;
+
+    int rc = 0;
+    uint32_t* clientIds = getClientIds(count, ids);
+    if (nullptr == clientIds) {
+        delete[] msg;
+        return;
+    }
+    GeofenceResponse gfResponse = {};
+    for (int i=0; i<count; ++i) {
+        gfResponse.clientId = clientIds[i];
+        gfResponse.error = errs[i];
+        *(pmsg->collectiveRes.resp+i) = gfResponse;
+        if (errs[i] != LOCATION_ERROR_SUCCESS) {
+            eraseGeofenceIds(1, &clientIds[i]);
+        }
+    }
+
+    // send corresponding indication message if pending
+    switch (pendingMsgId) {
+        case E_LOCAPI_ADD_GEOFENCES_MSG_ID: {
+            LOC_LOGd("<-- addGeofence resp pending=%u", pendingMsgId);
+            pmsg->msgId = E_LOCAPI_ADD_GEOFENCES_MSG_ID;
+            rc = sendMessage(msg, msglen);
+            break;
+        }
+        case E_LOCAPI_REMOVE_GEOFENCES_MSG_ID: {
+            LOC_LOGd("<-- removeGeofence resp pending=%u", pendingMsgId);
+            pmsg->msgId = E_LOCAPI_REMOVE_GEOFENCES_MSG_ID;
+            eraseGeofenceIds(count, clientIds);
+            rc = sendMessage(msg, msglen);
+            break;
+        }
+        case E_LOCAPI_MODIFY_GEOFENCES_MSG_ID: {
+            LOC_LOGd("<-- modifyGeofence resp pending=%u", pendingMsgId);
+            pmsg->msgId = E_LOCAPI_MODIFY_GEOFENCES_MSG_ID;
+            rc = sendMessage(msg, msglen);
+            break;
+        }
+        case E_LOCAPI_PAUSE_GEOFENCES_MSG_ID: {
+            LOC_LOGd("<-- pauseGeofence resp pending=%u", pendingMsgId);
+            pmsg->msgId = E_LOCAPI_PAUSE_GEOFENCES_MSG_ID;
+            rc = sendMessage(msg, msglen);
+            break;
+        }
+        case E_LOCAPI_RESUME_GEOFENCES_MSG_ID: {
+            LOC_LOGd("<-- resumeGeofence resp pending=%u", pendingMsgId);
+            pmsg->msgId = E_LOCAPI_RESUME_GEOFENCES_MSG_ID;
+            rc = sendMessage(msg, msglen);
+            break;
+        }
+        default: {
+            LOC_LOGe("no pending geofence message for %s", mName.c_str());
+            free(clientIds);
+            return;
+        }
+    }
+
+    // purge this client if failed
+    if (!rc) {
+        LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+        mService->deleteClientbyName(mName);
+    }
+    delete[] msg;
+    free(clientIds);
 }
 
 /******************************************************************************
@@ -393,6 +557,50 @@ void LocHalDaemonClientHandler::onBatchingStatusCb(BatchingStatusInfo batchingSt
         }
 
     }
+}
+
+void LocHalDaemonClientHandler::onGeofenceBreachCb(GeofenceBreachNotification gfBreachNotif) {
+    LOC_LOGd("--< onGeofenceBreachCallback");
+    uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * gfBreachNotif.count);
+    if (clientIds == NULL) {
+        LOC_LOGE("%s:%d] Failed to alloc %zu bytes",
+                __FUNCTION__, __LINE__,
+                sizeof(uint32_t) * gfBreachNotif.count);
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    clientIds = getClientIds(gfBreachNotif.count, gfBreachNotif.ids);
+    // serialize GeofenceBreachNotification into ipc message payload
+    size_t msglen = sizeof(LocAPIGeofenceBreachIndMsg) +
+            sizeof(uint32_t) * (gfBreachNotif.count - 1);
+    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+    if (nullptr == msg) {
+        free(clientIds);
+        return;
+    }
+    memset(msg, 0, msglen);
+    LocAPIGeofenceBreachIndMsg *pmsg = reinterpret_cast<LocAPIGeofenceBreachIndMsg*>(msg);
+    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+    pmsg->msgId = E_LOCAPI_GEOFENCE_BREACH_MSG_ID;
+    pmsg->gfBreachNotification.size = msglen;
+    pmsg->gfBreachNotification.count = gfBreachNotif.count;
+    pmsg->gfBreachNotification.timestamp = gfBreachNotif.timestamp;
+    pmsg->gfBreachNotification.location = gfBreachNotif.location;
+    pmsg->gfBreachNotification.type = gfBreachNotif.type;
+    memcpy(&(pmsg->gfBreachNotification.id[0]), clientIds, sizeof(uint32_t)*gfBreachNotif.count);
+
+    if (mSubscriptionMask & E_LOCAPI_GEOFENCE_BREACH_MSG_ID) {
+        int rc = sendMessage(msg, msglen);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+
+    delete[] msg;
+    free(clientIds);
 }
 
 void LocHalDaemonClientHandler::onGnssLocationInfoCb(GnssLocationInfoNotification notification) {

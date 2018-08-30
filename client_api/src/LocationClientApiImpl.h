@@ -30,6 +30,8 @@
 #define LOCATIONCLIENTAPIIMPL_H
 
 #include <mutex>
+#include <unordered_set>
+#include <unordered_map>
 
 #include <LocIpc.h>
 #include <LocationDataTypes.h>
@@ -59,6 +61,19 @@ struct ClientCallbacks {
 
 namespace location_client
 {
+class GeofenceImpl: public std::enable_shared_from_this<GeofenceImpl> {
+    uint32_t mId;
+    Geofence mGeofence;
+    static uint32_t nextId();
+    static mutex mGfMutex;
+public:
+    GeofenceImpl(Geofence* geofence) : mId(nextId()), mGeofence(*geofence) {
+    }
+    void bindGeofence(Geofence* geofence) {
+        geofence->mGeofenceImpl = shared_from_this();
+    }
+    inline uint32_t getClientId() { return mId; }
+};
 
 class LocationClientApiImpl : public LocIpc, public ILocationAPI,
                               public ILocationControlAPI {
@@ -116,6 +131,12 @@ public:
     void updateLocationSystemInfoListener(LocationSystemInfoCb locSystemInfoCallback,
                                           ResponseCb responseCallback);
 
+    bool checkGeofenceMap(size_t count, uint32_t* ids);
+    void addGeofenceMap(uint32_t id, Geofence& geofence);
+    void eraseGeofenceMap(size_t count, uint32_t* ids);
+
+    std::vector<uint32_t>               mLastAddedClientIds;
+    std::unordered_map<uint32_t, Geofence> mGeofenceMap; //clientId --> Geofence object
 
 private:
     void capabilitesCallback(ELocMsgID  msgId, const void* msgData);
@@ -132,9 +153,11 @@ private:
     // callbacks
     CapabilitiesCb          mCapabilitiesCb;
     ResponseCb              mResponseCb;
+    CollectiveResponseCb    mCollectiveResCb;
     LocationCb              mLocationCb;
     GnssReportCbs           mGnssReportCbs;
     BatchingCb              mBatchingCb;
+    GeofenceBreachCb        mGfBreachCb;
 
     LocationCallbacksMask   mCallbacksMask;
     LocationOptions         mLocationOptions;

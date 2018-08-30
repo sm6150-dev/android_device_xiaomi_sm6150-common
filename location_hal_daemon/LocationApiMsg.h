@@ -84,6 +84,16 @@ enum ELocMsgID {
 
     //batching reports
     E_LOCAPI_BATCHING_MSG_ID = 23,
+
+    // geofence session
+    E_LOCAPI_ADD_GEOFENCES_MSG_ID = 24,
+    E_LOCAPI_REMOVE_GEOFENCES_MSG_ID = 25,
+    E_LOCAPI_MODIFY_GEOFENCES_MSG_ID = 26,
+    E_LOCAPI_PAUSE_GEOFENCES_MSG_ID = 27,
+    E_LOCAPI_RESUME_GEOFENCES_MSG_ID = 28,
+
+    //geofence breach
+    E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -96,6 +106,7 @@ enum ELocationCallbacksOption {
     E_LOC_CB_SYSTEM_INFO_BIT            = (1<<5),  /**< Register for Location system info */
     E_LOC_CB_BATCHING_BIT               = (1<<6), /**< Register for Batching */
     E_LOC_CB_BATCHING_STATUS_BIT        = (1<<7), /**< Register for Batching  Status*/
+    E_LOC_CB_GEOFENCE_BREACH_BIT        = (1<<8), /**< Register for Geofence Breach */
 };
 // Mask related to all info that are tied with a position session and need to be unsubscribed
 // when session is stopped
@@ -127,6 +138,41 @@ struct LocAPIBatchNotification {
     Location location[1];
 };
 
+struct LocAPIGeofenceBreachNotification {
+    size_t size;
+    size_t count;
+    uint64_t timestamp;
+    GeofenceBreachTypeMask type; //type of breach
+    Location location;   //location associated with breach
+    uint32_t id[1];
+};
+
+struct GeofencePayload {
+    uint32_t gfClientId;
+    GeofenceOption gfOption;
+    GeofenceInfo gfInfo;
+};
+
+struct GeofencesAddedReqPayload {
+    uint32_t count;
+    GeofencePayload gfPayload[1];
+};
+
+struct GeofencesReqClientIdPayload {
+    uint32_t count;
+    uint32_t gfIds[1];
+};
+
+struct GeofenceResponse {
+    uint32_t clientId;
+    LocationError error;
+};
+
+struct CollectiveResPayload {
+    size_t size;
+    uint32_t count;
+    GeofenceResponse resp[1];
+};
 /******************************************************************************
 IPC message header structure
 ******************************************************************************/
@@ -189,6 +235,16 @@ struct LocAPIGenericRespMsg: LocAPIMsgHeader
         LocAPIMsgHeader(name, msgId),
         err(err) { }
 };
+struct LocAPICollectiveRespMsg: LocAPIMsgHeader
+{
+    CollectiveResPayload collectiveRes;
+
+    inline LocAPICollectiveRespMsg(const char* name, ELocMsgID msgId,
+            CollectiveResPayload& response) :
+        LocAPIMsgHeader(name, msgId),
+        collectiveRes(response) { }
+};
+
 
 /******************************************************************************
 IPC message structure - tracking
@@ -283,6 +339,52 @@ struct LocAPIUpdateBatchingOptionsReqMsg: LocAPIMsgHeader
         batchingMode(batchMode) { }
 };
 
+/******************************************************************************
+IPC message structure - geofence
+******************************************************************************/
+// defintion for message with msg id of E_LOCAPI_ADD_GEOFENCES_MSG_ID
+struct LocAPIAddGeofencesReqMsg: LocAPIMsgHeader
+{
+    GeofencesAddedReqPayload geofences;
+    inline LocAPIAddGeofencesReqMsg(const char* name, GeofencesAddedReqPayload& geofencesAdded):
+        LocAPIMsgHeader(name, E_LOCAPI_ADD_GEOFENCES_MSG_ID),
+        geofences(geofencesAdded) { }
+};
+// defintion for message with msg id of E_LOCAPI_REMOVE_GEOFENCES_MSG_ID
+struct LocAPIRemoveGeofencesReqMsg: LocAPIMsgHeader
+{
+    GeofencesReqClientIdPayload gfClientIds;
+    inline LocAPIRemoveGeofencesReqMsg(const char* name, GeofencesReqClientIdPayload& ids):
+        LocAPIMsgHeader(name, E_LOCAPI_REMOVE_GEOFENCES_MSG_ID), gfClientIds(ids) { }
+};
+// defintion for message with msg id of E_LOCAPI_MODIFY_GEOFENCES_MSG_ID
+struct LocAPIModifyGeofencesReqMsg: LocAPIMsgHeader
+{
+    GeofencesAddedReqPayload geofences;
+
+    inline LocAPIModifyGeofencesReqMsg(const char* name,
+                                       GeofencesAddedReqPayload& geofencesModified):
+        LocAPIMsgHeader(name, E_LOCAPI_MODIFY_GEOFENCES_MSG_ID),
+        geofences(geofencesModified) { }
+};
+// defintion for message with msg id of E_LOCAPI_PAUSE_GEOFENCES_MSG_ID
+struct LocAPIPauseGeofencesReqMsg: LocAPIMsgHeader
+{
+    GeofencesReqClientIdPayload gfClientIds;
+    inline LocAPIPauseGeofencesReqMsg(const char* name,
+                                      GeofencesReqClientIdPayload& ids):
+        LocAPIMsgHeader(name, E_LOCAPI_PAUSE_GEOFENCES_MSG_ID),
+        gfClientIds(ids) { }
+};
+// defintion for message with msg id of E_LOCAPI_RESUME_GEOFENCES_MSG_ID
+struct LocAPIResumeGeofencesReqMsg: LocAPIMsgHeader
+{
+    GeofencesReqClientIdPayload gfClientIds;
+    inline LocAPIResumeGeofencesReqMsg(const char* name,
+                                      GeofencesReqClientIdPayload& ids):
+        LocAPIMsgHeader(name, E_LOCAPI_RESUME_GEOFENCES_MSG_ID),
+        gfClientIds(ids) { }
+};
 
 /******************************************************************************
 IPC message structure - control
@@ -344,6 +446,17 @@ struct LocAPIBatchingIndMsg: LocAPIMsgHeader
     inline LocAPIBatchingIndMsg(const char* name, LocAPIBatchNotification& batchNotif) :
         LocAPIMsgHeader(name, E_LOCAPI_BATCHING_MSG_ID),
         batchNotification(batchNotif) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_GEOFENCE_BREACH_MSG_ID
+struct LocAPIGeofenceBreachIndMsg: LocAPIMsgHeader
+{
+    LocAPIGeofenceBreachNotification gfBreachNotification;
+
+    inline LocAPIGeofenceBreachIndMsg(const char* name,
+            LocAPIGeofenceBreachNotification& gfBreachNotif) :
+        LocAPIMsgHeader(name, E_LOCAPI_GEOFENCE_BREACH_MSG_ID),
+        gfBreachNotification(gfBreachNotif) { }
 };
 
 // defintion for message with msg id of E_LOCAPI_LOCATION_INFO_MSG_ID

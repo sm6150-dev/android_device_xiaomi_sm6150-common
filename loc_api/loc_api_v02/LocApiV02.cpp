@@ -2628,66 +2628,72 @@ void LocApiV02 :: reportPosition (
                 locationExtended.numOfMeasReceived = gnssSvUsedList_len;
                 memset(locationExtended.measUsageInfo, 0, sizeof(locationExtended.measUsageInfo));
                 // Set of used_in_fix SV ID
-                for (idx = 0; idx < gnssSvUsedList_len; idx++)
-                {
-                    gnssSvIdUsed = svUsedList[idx];
-                    locationExtended.measUsageInfo[idx].gnssSvId = gnssSvIdUsed;
-                    locationExtended.measUsageInfo[idx].carrierPhaseAmbiguityType =
-                        CARRIER_PHASE_AMBIGUITY_RESOLUTION_NONE;
-                    if (gnssSvIdUsed <= GPS_SV_PRN_MAX)
+                bool reported = LocApiBase::needReport(location,
+                                                       eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ?
+                                                       LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS,
+                                                       tech_Mask);
+                if (reported) {
+                    for (idx = 0; idx < gnssSvUsedList_len; idx++)
                     {
-                        locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask |=
-                                                    (1 << (gnssSvIdUsed - GPS_SV_PRN_MIN));
-                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                        gnssSvIdUsed = svUsedList[idx];
+                        locationExtended.measUsageInfo[idx].gnssSvId = gnssSvIdUsed;
+                        locationExtended.measUsageInfo[idx].carrierPhaseAmbiguityType =
+                            CARRIER_PHASE_AMBIGUITY_RESOLUTION_NONE;
+                        if (gnssSvIdUsed <= GPS_SV_PRN_MAX)
+                        {
+                            locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask |=
+                                (1 << (gnssSvIdUsed - GPS_SV_PRN_MIN));
+                            locationExtended.measUsageInfo[idx].gnssConstellation =
                                 GNSS_LOC_SV_SYSTEM_GPS;
-                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                            locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
-                                location_report_ptr->gnssSvUsedSignalTypeList[idx]:
-                                GNSS_SIGNAL_GPS_L1CA);
-                    }
-                    else if ((gnssSvIdUsed >= GLO_SV_PRN_MIN) && (gnssSvIdUsed <= GLO_SV_PRN_MAX))
-                    {
-                        locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask |=
-                                                    (1 << (gnssSvIdUsed - GLO_SV_PRN_MIN));
-                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                    location_report_ptr->gnssSvUsedSignalTypeList[idx] :
+                                    GNSS_SIGNAL_GPS_L1CA);
+                        }
+                        else if ((gnssSvIdUsed >= GLO_SV_PRN_MIN) && (gnssSvIdUsed <= GLO_SV_PRN_MAX))
+                        {
+                            locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask |=
+                                (1 << (gnssSvIdUsed - GLO_SV_PRN_MIN));
+                            locationExtended.measUsageInfo[idx].gnssConstellation =
                                 GNSS_LOC_SV_SYSTEM_GLONASS;
-                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                            locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
-                                location_report_ptr->gnssSvUsedSignalTypeList[idx]:
-                                GNSS_SIGNAL_GLONASS_G1);
-                    }
-                    else if ((gnssSvIdUsed >= BDS_SV_PRN_MIN) && (gnssSvIdUsed <= BDS_SV_PRN_MAX))
-                    {
-                        locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask |=
-                                                    (1 << (gnssSvIdUsed - BDS_SV_PRN_MIN));
-                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                    location_report_ptr->gnssSvUsedSignalTypeList[idx] :
+                                    GNSS_SIGNAL_GLONASS_G1);
+                        }
+                        else if ((gnssSvIdUsed >= BDS_SV_PRN_MIN) && (gnssSvIdUsed <= BDS_SV_PRN_MAX))
+                        {
+                            locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask |=
+                                (1 << (gnssSvIdUsed - BDS_SV_PRN_MIN));
+                            locationExtended.measUsageInfo[idx].gnssConstellation =
                                 GNSS_LOC_SV_SYSTEM_BDS;
-                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                            locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
-                                location_report_ptr->gnssSvUsedSignalTypeList[idx]:
-                                GNSS_SIGNAL_BEIDOU_B1);
-                    }
-                    else if ((gnssSvIdUsed >= GAL_SV_PRN_MIN) && (gnssSvIdUsed <= GAL_SV_PRN_MAX))
-                    {
-                        locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask |=
-                                                    (1 << (gnssSvIdUsed - GAL_SV_PRN_MIN));
-                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                    location_report_ptr->gnssSvUsedSignalTypeList[idx] :
+                                    GNSS_SIGNAL_BEIDOU_B1);
+                        }
+                        else if ((gnssSvIdUsed >= GAL_SV_PRN_MIN) && (gnssSvIdUsed <= GAL_SV_PRN_MAX))
+                        {
+                            locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask |=
+                                (1 << (gnssSvIdUsed - GAL_SV_PRN_MIN));
+                            locationExtended.measUsageInfo[idx].gnssConstellation =
                                 GNSS_LOC_SV_SYSTEM_GALILEO;
-                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                            locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
-                                location_report_ptr->gnssSvUsedSignalTypeList[idx]:
-                                GNSS_SIGNAL_GALILEO_E1);
-                    }
-                    else if ((gnssSvIdUsed >= QZSS_SV_PRN_MIN) && (gnssSvIdUsed <= QZSS_SV_PRN_MAX))
-                    {
-                        locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask |=
-                                                    (1 << (gnssSvIdUsed - QZSS_SV_PRN_MIN));
-                        locationExtended.measUsageInfo[idx].gnssConstellation =
+                                    location_report_ptr->gnssSvUsedSignalTypeList[idx] :
+                                    GNSS_SIGNAL_GALILEO_E1);
+                        }
+                        else if ((gnssSvIdUsed >= QZSS_SV_PRN_MIN) && (gnssSvIdUsed <= QZSS_SV_PRN_MAX))
+                        {
+                            locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask |=
+                                (1 << (gnssSvIdUsed - QZSS_SV_PRN_MIN));
+                            locationExtended.measUsageInfo[idx].gnssConstellation =
                                 GNSS_LOC_SV_SYSTEM_QZSS;
-                        locationExtended.measUsageInfo[idx].gnssSignalType =
+                            locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
-                                location_report_ptr->gnssSvUsedSignalTypeList[idx]:
-                                GNSS_SIGNAL_QZSS_L1CA);
+                                    location_report_ptr->gnssSvUsedSignalTypeList[idx] :
+                                    GNSS_SIGNAL_QZSS_L1CA);
+                        }
                     }
                 }
             }

@@ -259,12 +259,6 @@ case "$target" in
         case "$soc_hwplatform" in
             *)
                 setprop vendor.display.lcd_density 560
-                if [ ! -e /dev/kgsl-3d0 ]; then
-                    setprop persist.sys.force_sw_gles 1
-                    setprop vendor.display.idle_time 0
-                else
-                    setprop persist.sys.force_sw_gles 0
-                fi
                 ;;
         esac
         ;;
@@ -277,13 +271,6 @@ case "$target" in
                 else
                     setprop vendor.display.lcd_density 640
                     setprop dalvik.vm.heapgrowthlimit 512m
-                fi
-
-                if [ ! -e /dev/kgsl-3d0 ]; then
-                    setprop persist.sys.force_sw_gles 1
-                    setprop vendor.display.idle_time 0
-                else
-                    setprop persist.sys.force_sw_gles 0
                 fi
                 ;;
         esac

@@ -160,7 +160,7 @@ static void parseGnssMeasUsageInfo(const ::GnssLocationInfoNotification &halLoca
 
 static GnssLocationPositionDynamics parseLocationPositionDynamics(
         const ::GnssLocationPositionDynamics &halPositionDynamics) {
-    GnssLocationPositionDynamics positionDynamics;
+    GnssLocationPositionDynamics positionDynamics = {};
     uint32_t bodyFrameDataMask = 0;
 
     if (LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT & halPositionDynamics.bodyFrameDataMask) {

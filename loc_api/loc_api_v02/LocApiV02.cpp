@@ -35,6 +35,7 @@
 #include <sstream>
 #include <math.h>
 #include <dlfcn.h>
+#include <algorithm>
 
 #include <LocApiV02.h>
 #include <loc_api_v02_log.h>
@@ -2908,13 +2909,12 @@ void  LocApiV02 :: reportSv (
 
     num_svs_max = 0;
     if (1 == gnss_report_ptr->expandedSvList_valid) {
-        num_svs_max = gnss_report_ptr->expandedSvList_len;
+        num_svs_max = std::min((uint32_t)QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                                gnss_report_ptr->expandedSvList_len);
     }
     else if (1 == gnss_report_ptr->svList_valid) {
-        num_svs_max = gnss_report_ptr->svList_len;
-    }
-    if (num_svs_max > GNSS_SV_MAX) {
-        num_svs_max = GNSS_SV_MAX;
+        num_svs_max = std::min((uint32_t)QMI_LOC_MAX_SV_USED_LIST_LENGTH_V02,
+                                gnss_report_ptr->svList_len);
     }
 
     SvNotify.size = sizeof(GnssSvNotification);

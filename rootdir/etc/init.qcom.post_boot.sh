@@ -3639,6 +3639,11 @@ case "$target" in
 	# Turn off scheduler boost at the end
 	echo 0 > /proc/sys/kernel/sched_boost
 
+	# Affinity settings for unity engine
+	echo 0x80 > /proc/sys/kernel/sched_lib_mask_check
+	echo 0xf0 > /proc/sys/kernel/sched_lib_mask_force
+	echo "libunity.so" > /proc/sys/kernel/sched_lib_name
+
 	# configure governor settings for silver cluster
 	echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 	echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rate_limit_us

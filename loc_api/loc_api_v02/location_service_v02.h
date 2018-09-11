@@ -1,30 +1,30 @@
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials provided
- *       with the distribution.
- *     * Neither the name of The Linux Foundation, nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above
+*       copyright notice, this list of conditions and the following
+*       disclaimer in the documentation and/or other materials provided
+*       with the distribution.
+*     * Neither the name of The Linux Foundation, nor the names of its
+*       contributors may be used to endorse or promote products derived
+*       from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 #ifndef LOC_SERVICE_02_H
 #define LOC_SERVICE_02_H
 /**
@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Fri Jul 20 2018 (Spin 0)
+   It was generated on: Thu Aug 23 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x5C
+#define LOC_V02_IDL_MINOR_VERS 0x5F
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00C4
+#define LOC_V02_MAX_MESSAGE_ID 0x00C7
 /**
     @}
   */
@@ -371,6 +371,7 @@ extern "C" {
 
 /**  Maximum length of Disaster & Crisis Report. Corresponds to 512 bits of storage  */
 #define QMI_LOC_MAX_DCREPORT_LEN_V02 64
+#define QMI_LOC_DEFAULT_CONSTRAINED_TUNC_MS_V02 9.5
 /**
     @}
   */
@@ -5199,7 +5200,8 @@ typedef enum {
   eQMI_LOC_POSITION_SRC_WIFI_V02 = 3, /**<  Position source is Wi-Fi  */
   eQMI_LOC_POSITION_SRC_TERRESTRIAL_V02 = 4, /**<  Position source is Terrestrial  */
   eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID_V02 = 5, /**<  Position source is GNSS Terrestrial Hybrid  */
-  eQMI_LOC_POSITION_SRC_OTHER_V02 = 6, /**<  Other sources  */
+  eQMI_LOC_POSITION_SRC_OTHER_V02 = 6, /**<  Position source is Dead Reckoning Engine  */
+  eQMI_LOC_POSITION_SRC_DRE_V02 = 7,
   QMILOCPOSITIONSRCENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocPositionSrcEnumT_v02;
 /**
@@ -5374,7 +5376,8 @@ typedef struct {
       - eQMI_LOC_POSITION_SRC_WIFI (3) --  Position source is Wi-Fi
       - eQMI_LOC_POSITION_SRC_TERRESTRIAL (4) --  Position source is Terrestrial
       - eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID (5) --  Position source is GNSS Terrestrial Hybrid
-      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Other sources
+      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Position source is Dead Reckoning Engine
+      - eQMI_LOC_POSITION_SRC_DRE (7) --
 
  If altitude is specified and the altitude source is not specified, the engine
  assumes that the altitude was obtained using the specified position source. \n
@@ -5422,6 +5425,51 @@ typedef struct {
       - eQMI_LOC_POSITION_SRC_PROVIDER_EXTERNAL (0) --  Position is sourced from an external module
       - eQMI_LOC_POSITION_SRC_PROVIDER_INTERNAL (1) --  Position is sourced from an internal module
  */
+
+  /* Optional */
+  /*  GPS Time */
+  uint8_t gpsTime_valid;  /**< Must be set to true if gpsTime is being passed */
+  qmiLocGPSTimeStructT_v02 gpsTime;
+  /**<   \vspace{0.06in} \n The number of weeks since Jan. 5, 1980, and
+       milliseconds into the current week. This is the GPS Time Stamp
+       for this injected position. */
+
+  /* Optional */
+  /*  Time Uncertainty */
+  uint8_t timeUnc_valid;  /**< Must be set to true if timeUnc is being passed */
+  float timeUnc;
+  /**<   Time uncertainty associated with this injected position. \n
+       - Units: Milliseconds */
+
+  /* Optional */
+  /*  Velocity ENU (East, North, Up) */
+  uint8_t velEnu_valid;  /**< Must be set to true if velEnu is being passed */
+  float velEnu[QMI_LOC_ENU_ARRAY_LENGTH_V02];
+  /**<   East, North, Up velocity.\n
+       - Units: Meters/second */
+
+  /* Optional */
+  /*  Velocity Uncertainty ENU */
+  uint8_t velUncEnu_valid;  /**< Must be set to true if velUncEnu is being passed */
+  float velUncEnu[QMI_LOC_ENU_ARRAY_LENGTH_V02];
+  /**<   East, North, Up velocity uncertainty.\n
+       - Units: Meters/second */
+
+  /* Optional */
+  /*  Expanded SVs Used to Calculate the Fix */
+  uint8_t expandedGnssSvUsedList_valid;  /**< Must be set to true if expandedGnssSvUsedList is being passed */
+  uint32_t expandedGnssSvUsedList_len;  /**< Must be set to # of elements in expandedGnssSvUsedList */
+  uint16_t expandedGnssSvUsedList[QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02];
+  /**<   Each entry in the list contains the SV ID of a satellite
+      used for calculating this position report. The following
+      information is associated with each SV ID: \n
+      Range: \n
+      - For GPS:     1 to 32 \n
+      - For GLONASS: 65 to 96 \n
+      - For QZSS:    193 to 197 \n
+      - For BDS:     201 to 237 \n
+      - For GAL:     301 to 336
+      */
 }qmiLocInjectPositionReqMsgT_v02;  /* Message */
 /**
     @}
@@ -5640,7 +5688,7 @@ typedef struct {
        \begin{itemize1}
        \item    0x01 (TRUE) -- SBAS configuration is enabled
        \item    0x00 (FALSE) -- SBAS configuration is disabled
-       \vspace{-0.18in} \end{itemize1}	*/
+       \vspace{-0.18in} \end{itemize1}    */
 
   /* Optional */
   /*  QZSS-L1S Config */
@@ -5650,7 +5698,7 @@ typedef struct {
        \begin{itemize1}
        \item    0x01 (TRUE) -- QZSS-L1S configuration is enabled
        \item    0x00 (FALSE) -- QZSS-L1S configuration is disabled
-       \vspace{-0.18in} \end{itemize1}	   */
+       \vspace{-0.18in} \end{itemize1}       */
 }qmiLocSetSbasConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -12846,7 +12894,7 @@ typedef struct {
 
   char ssid[QMI_LOC_MAX_WIFI_AP_SSID_STR_LENGTH_V02 + 1];
   /**<   The NULL-terminated SSID of the Wi-Fi AP.
-       Its maximum length according to the ASCII standard is 32 octets.	\n
+       Its maximum length according to the ASCII standard is 32 octets.    \n
        Type: string */
 
   int32_t apHighResolutionRssi;
@@ -16114,7 +16162,8 @@ typedef struct {
       - eQMI_LOC_POSITION_SRC_WIFI (3) --  Position source is Wi-Fi
       - eQMI_LOC_POSITION_SRC_TERRESTRIAL (4) --  Position source is Terrestrial
       - eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID (5) --  Position source is GNSS Terrestrial Hybrid
-      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Other sources
+      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Position source is Dead Reckoning Engine
+      - eQMI_LOC_POSITION_SRC_DRE (7) --
  */
 
   /* Optional */
@@ -17949,7 +17998,7 @@ typedef struct {
     @{
   */
 /** Request Message; Used by the control point to request the location engine to send crowd sourced data
-    				to the control point. */
+                    to the control point. */
 typedef struct {
 
   /* Optional */
@@ -19726,6 +19775,180 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to put the engine in or out of a
+                     constrained Time Unc Mode where the engine keeps its Time
+                     Unc below the specified constraint. */
+typedef struct {
+
+  /* Mandatory */
+  /*  tuncConstraintOn */
+  uint8_t tuncConstraintOn;
+  /**<   Specifies the constrained tunc mode desired by the control point.
+       \begin{itemize1}
+       \item    True: Engine shall maintain Tunc below specified constraint.
+       \item    False: Engine shall not maintain Tunc.
+       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+
+  /* Optional */
+  /*  tuncConstraint */
+  uint8_t tuncConstraint_valid;  /**< Must be set to true if tuncConstraint is being passed */
+  float tuncConstraint;
+  /**<   If tuncConstraintOn is set to ON, the engine shall maintain its time
+       uncertainty below the specified constraint in tuncConstraint. The units
+       are in ms. If this parameter is not specified and tuncConstraint is set
+       to ON, the Engine picks up the default tuncConstraint.
+       */
+
+  /* Optional */
+  /*  energyBudget */
+  uint8_t energyBudget_valid;  /**< Must be set to true if energyBudget is being passed */
+  uint32_t energyBudget;
+  /**<   If tuncConstraintOn is set to ON, and if energyBudget is specified, the
+       Engine shall use this as the maximum energy to be used while keeping the
+       engine in constrained tunc mode. If no energy budget is specified, the
+       engine shall assume the budget to be infinite. \n
+       - Units: 0.1 milli watt second \n
+       */
+}qmiLocSetConstrainedTuncModeReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to put the engine in or out of a
+                     constrained Time Unc Mode where the engine keeps its Time
+                     Unc below the specified constraint. */
+typedef struct {
+
+  /* Mandatory */
+  /*  status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Set Tunc Constrained Mode Req.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it has timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+
+ */
+}qmiLocSetConstrainedTuncModeIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to enable position assisted clock
+                     estimation mode in the location engine. */
+typedef struct {
+
+  /* Mandatory */
+  /*  enablePositionAssistedClockEst */
+  uint8_t enablePositionAssistedClockEst;
+  /**<   Specifies the position assisted clock estimation mode desired by the control point.
+       \begin{itemize1}
+       \item    True: Engine shall enable position assisted clock estimation mode.
+       \item    False: Engine shall disable position assisted clock estimation mode.
+       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+}qmiLocEnablePositionAssistedClockEstReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to enable position assisted clock
+                     estimation mode in the location engine. */
+typedef struct {
+
+  /* Mandatory */
+  /*  status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the enable position assisted clock estimator mode Req.
+
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it has timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+
+ */
+}qmiLocEnablePositionAssistedClockEstIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to query the energy consumed by
+                     the GNSS engine.  */
+typedef struct {
+  /* This element is a placeholder to prevent the declaration of
+     an empty struct.  DO NOT USE THIS FIELD UNDER ANY CIRCUMSTANCE */
+  char __placeholder;
+}qmiLocQueryGNSSEnergyConsumedReqMsgT_v02;
+
+  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to query the energy consumed by
+                     the GNSS engine.  */
+typedef struct {
+
+  /* Mandatory */
+  /*  energyConsumedSinceLastBoot */
+  uint64_t energyConsumedSinceLastBoot;
+  /**<   Energy consumed by the GNSS engine since bootup in units of 0.1 milli watt seconds.
+       A value of 0xffffffffffffffff indicates an invalid reading
+       Valid values: \n
+       @ENUM()
+
+       */
+
+  /* Mandatory */
+  /*  energyConsumedSinceFirstBoot */
+  uint64_t energyConsumedSinceFirstBoot;
+  /**<   Energy consumed by the GNSS engine since the first bootup in units of 0.1 milli watt seconds.
+       A value of 0xffffffffffffffff indicates an invalid reading
+       Valid values: \n
+       @ENUM()
+
+       */
+}qmiLocQueryGNSSEnergyConsumedIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -19852,6 +20075,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_PEDOMETER_REPORT_V02
 //#define REMOVE_QMI_LOC_QUERY_AON_CONFIG_V02
 //#define REMOVE_QMI_LOC_QUERY_GEOFENCE_V02
+//#define REMOVE_QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_V02
 //#define REMOVE_QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_V02
 //#define REMOVE_QMI_LOC_QUERY_XTRA_INFO_V02
 //#define REMOVE_QMI_LOC_READ_FROM_BATCH_V02
@@ -19861,6 +20085,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_SECURE_GET_AVAILABLE_POSITION_V02
 //#define REMOVE_QMI_LOC_SET_BLACKLIST_SV_V02
 //#define REMOVE_QMI_LOC_SET_CONSTELLATION_CONTROL_V02
+//#define REMOVE_QMI_LOC_SET_CONSTRAINED_TUNC_MODE_V02
 //#define REMOVE_QMI_LOC_SET_CRADLE_MOUNT_CONFIG_V02
 //#define REMOVE_QMI_LOC_SET_ENGINE_LOCK_V02
 //#define REMOVE_QMI_LOC_SET_EXTERNAL_POWER_CONFIG_V02
@@ -20302,6 +20527,15 @@ typedef struct {
 #define QMI_LOC_GET_BS_OBS_DATA_REQ_V02 0x00C4
 #define QMI_LOC_GET_BS_OBS_DATA_RESP_V02 0x00C4
 #define QMI_LOC_GET_BS_OBS_DATA_IND_V02 0x00C4
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_REQ_V02 0x00C5
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_RESP_V02 0x00C5
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_IND_V02 0x00C5
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_REQ_V02 0x00C6
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_RESP_V02 0x00C6
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_IND_V02 0x00C6
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02 0x00C7
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02 0x00C7
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02 0x00C7
 /**
     @}
   */

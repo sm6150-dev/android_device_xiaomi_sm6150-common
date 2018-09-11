@@ -41,6 +41,7 @@
 #include <LocHalDaemonIPCSender.h>
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
+#include <location_interface.h>
 
 typedef void* (getLocationInterface)();
 
@@ -299,6 +300,43 @@ void LocationApiService::updateNetworkAvailability(bool availability) {
     }
 }
 
+void LocationApiService::getGnssEnergyConsumed(const char* clientSocketName) {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    LOC_LOGi(">-- getGnssEnergyConsumed by=%s", clientSocketName);
+
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (!gnssInterface) {
+        LOC_LOGe(">-- getGnssEnergyConsumed null GnssInterface");
+        return;
+    }
+
+    bool requestAlreadyPending = false;
+    for (auto each : mClients) {
+        if (each.second->hasPendingEngineInfoRequest(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT)) {
+            requestAlreadyPending = true;
+            break;
+        }
+    }
+
+    std::string clientname(clientSocketName);
+    LocHalDaemonClientHandler* pClient = getClient(clientname);
+    pClient->addEngineInfoRequst(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT);
+
+    // this is first client coming to request GNSS energy consumed
+    if (requestAlreadyPending == false) {
+        LOC_LOGd("--< issue request to GNSS HAL");
+
+        // callback function for engine hub to report back sv event
+        GnssEnergyConsumedCallback reportEnergyCb =
+            [this](uint64_t total) {
+                onGnssEnergyConsumedCb(total);
+            };
+
+        gnssInterface->getGnssEnergyConsumed(reportEnergyCb);
+    }
+}
+
 /******************************************************************************
 LocationApiService - Location Control API callback functions
 ******************************************************************************/
@@ -361,6 +399,20 @@ void LocationApiService::onShutdown() {
     onSuspend();
 }
 #endif
+
+/******************************************************************************
+LocationApiService - on query callback from location engines
+******************************************************************************/
+void LocationApiService::onGnssEnergyConsumedCb(uint64_t totalGnssEnergyConsumedSinceFirstBoot) {
+    std::lock_guard<std::mutex> lock(mMutex);
+    LOC_LOGd("--< onGnssEnergyConsumedCb");
+
+    LocAPIGnssEnergyConsumedIndMsg msg(SERVICE_NAME, totalGnssEnergyConsumedSinceFirstBoot);
+    for (auto each : mClients) {
+        // deliver the engergy info to registered client
+        each.second->onGnssEnergyConsumedInfoAvailable(msg);
+    }
+}
 
 /******************************************************************************
 LocationApiService - other utilities

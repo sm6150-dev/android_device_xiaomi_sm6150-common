@@ -349,3 +349,36 @@ void LocHalDaemonClientHandler::onGnssMeasurementsCb(GnssMeasurementsNotificatio
     LOC_LOGd("--< onGnssMeasurementsCb");
 }
 
+
+
+/******************************************************************************
+LocHalDaemonClientHandler - Engine info related functionality
+******************************************************************************/
+// called to deliver GNSS energy consumed info to the requesting client
+// as this is single shot request, the corresponding mask will be cleared
+// as well
+void LocHalDaemonClientHandler::onGnssEnergyConsumedInfoAvailable(
+   LocAPIGnssEnergyConsumedIndMsg &msg) {
+
+    if (mEngineInfoRequestMask & E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT) {
+        sendMessage(msg);
+        mEngineInfoRequestMask &= ~E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT;
+    }
+}
+
+// return true if the client has pending request to retrieve
+// GNSS energy consumed
+bool LocHalDaemonClientHandler::hasPendingEngineInfoRequest(uint32_t mask) {
+    if (mEngineInfoRequestMask & E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// set up the bit to indicating the engine info request
+// is pending.
+void LocHalDaemonClientHandler::addEngineInfoRequst(uint32_t mask) {
+    mEngineInfoRequestMask |= E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT;
+}
+

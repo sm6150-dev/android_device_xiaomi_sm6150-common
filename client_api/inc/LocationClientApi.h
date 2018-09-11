@@ -644,6 +644,29 @@ struct ClientCallbacks {
     GnssReportCbs gnssreportcbs;
 };
 
+enum GnssEnergyConsumedInfoMask {
+    /** total energy consumed since device first ever boot */
+    ENERGY_CONSUMED_SINCE_FIRST_BOOT_BIT = (1<<0),
+};
+
+struct GnssEnergyConsumedInfo {
+    GnssEnergyConsumedInfoMask flags;
+
+    // Energy consumed by the GNSS engine since bootup
+    // in units of 0.1 milli watt seconds
+    uint64_t totalEnergyConsumedSinceFirstBoot;
+};
+
+/** @fn
+    @brief Used by query API that retrieves energy consumed by
+           modem GNSS engine.
+
+    @param gnssEneryConsumed: check for the flags for valid info returned.
+*/
+typedef std::function<void(
+    const GnssEnergyConsumedInfo& gnssEneryConsumed
+)> GnssEnergyConsumedCb;
+
 class LocationClientApiImpl;
 
 class LocationClientApi
@@ -761,6 +784,21 @@ public:
         available, true if available, false otherwise
     */
     void updateNetworkAvailability(bool available);
+
+    /** @brief get info related to energy consumed by modem GNSS
+               engine. If called while the previous call is still
+               being processed, then the callback will be updated,
+               and the processing continues and info will be
+               delivered via the new callbacks.
+
+        @param
+        gnssEnergyConsumedCallback, callback to receive energy consumed
+            info.
+        responseCallback, callback to receive system responses;
+            optional.
+    */
+    void getGnssEnergyConsumed(GnssEnergyConsumedCb gnssEnergyConsumedCallback,
+                               ResponseCb responseCallback);
 
 private:
     LocationClientApiImpl* mApiImpl;

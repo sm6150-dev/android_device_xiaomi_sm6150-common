@@ -948,19 +948,11 @@ void LocationClientApiImpl::getGnssEnergyConsumed(
 
         virtual ~GetGnssEnergyConsumedReq() {}
         void proc() const {
-            bool requestAlreadyPending = false;
-
-            if (mApiImpl->mGnssEnergyConsumedInfoCb) {
-                requestAlreadyPending = true;
-            }
-
             mApiImpl->mGnssEnergyConsumedInfoCb = mGnssEnergyConsumedCb;
             mApiImpl->mGnssEnergyConsumedResponseCb = mResponseCb;
 
-            // send msg to the hal daemon if the power consumption query
-            // is not already pending and the new callback is not null
-            if ((requestAlreadyPending == false) &&
-                (nullptr != mApiImpl->mGnssEnergyConsumedInfoCb)) {
+            // send msg to the hal daemon
+            if (nullptr != mApiImpl->mGnssEnergyConsumedInfoCb) {
                 LocAPIGetGnssEnergyConsumedReqMsg msg(mApiImpl->mSocketName);
                 mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
                                            sizeof(msg));

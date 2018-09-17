@@ -2671,7 +2671,7 @@ void LocApiV02 :: reportPosition (
                             locationExtended.measUsageInfo[idx].gnssSignalType =
                                 (multiBandTypesAvailable ?
                                     location_report_ptr->gnssSvUsedSignalTypeList[idx] :
-                                    GNSS_SIGNAL_BEIDOU_B1);
+                                    GNSS_SIGNAL_BEIDOU_B1I);
                         }
                         else if ((gnssSvIdUsed >= GAL_SV_PRN_MIN) && (gnssSvIdUsed <= GAL_SV_PRN_MAX))
                         {

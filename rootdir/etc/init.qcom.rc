@@ -234,6 +234,7 @@ on boot
     # Create vpp directory
     mkdir /mnt/vendor/persist/vpp 0770 media media
 
+
     # Create hvdcp_opti directory
     mkdir /mnt/vendor/persist/hvdcp_opti 0770 root system
 
@@ -415,9 +416,6 @@ on post-fs-data
 
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
-
-    #Create FTM_AP dir for factory test
-    mkdir /data/FTM_AP 0775 system system
 
     #Create dir for TUI
     mkdir /data/vendor/tui 0600 system drmrpc

@@ -313,7 +313,8 @@ void LocationApiService::getGnssEnergyConsumed(const char* clientSocketName) {
 
     bool requestAlreadyPending = false;
     for (auto each : mClients) {
-        if (each.second->hasPendingEngineInfoRequest(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT)) {
+        if ((each.second != nullptr) &&
+            (each.second->hasPendingEngineInfoRequest(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT))) {
             requestAlreadyPending = true;
             break;
         }
@@ -321,19 +322,21 @@ void LocationApiService::getGnssEnergyConsumed(const char* clientSocketName) {
 
     std::string clientname(clientSocketName);
     LocHalDaemonClientHandler* pClient = getClient(clientname);
-    pClient->addEngineInfoRequst(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT);
+    if (pClient) {
+        pClient->addEngineInfoRequst(E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT);
 
-    // this is first client coming to request GNSS energy consumed
-    if (requestAlreadyPending == false) {
-        LOC_LOGd("--< issue request to GNSS HAL");
+        // this is first client coming to request GNSS energy consumed
+        if (requestAlreadyPending == false) {
+            LOC_LOGd("--< issue request to GNSS HAL");
 
-        // callback function for engine hub to report back sv event
-        GnssEnergyConsumedCallback reportEnergyCb =
-            [this](uint64_t total) {
-                onGnssEnergyConsumedCb(total);
-            };
+            // callback function for engine hub to report back sv event
+            GnssEnergyConsumedCallback reportEnergyCb =
+                [this](uint64_t total) {
+                    onGnssEnergyConsumedCb(total);
+                };
 
-        gnssInterface->getGnssEnergyConsumed(reportEnergyCb);
+            gnssInterface->getGnssEnergyConsumed(reportEnergyCb);
+        }
     }
 }
 

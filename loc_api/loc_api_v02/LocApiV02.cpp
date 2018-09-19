@@ -2814,7 +2814,6 @@ void LocApiV02 :: reportPosition (
                 const uint16_t *svUsedList;
                 bool multiBandTypesAvailable = false;
 
-                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA;
                 if (location_report_ptr->expandedGnssSvUsedList_valid)
                 {
                     gnssSvUsedList_len = location_report_ptr->expandedGnssSvUsedList_len;
@@ -2835,8 +2834,9 @@ void LocApiV02 :: reportPosition (
                 memset(locationExtended.measUsageInfo, 0, sizeof(locationExtended.measUsageInfo));
                 // Set of used_in_fix SV ID
                 bool reported = LocApiBase::needReport(location,
-                                                       eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ?
-                                                       LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS,
+                                                       (eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ==
+                                                       location_report_ptr->sessionStatus ?
+                                                       LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
                                                        tech_Mask);
                 if (reported) {
                     for (idx = 0; idx < gnssSvUsedList_len; idx++)
@@ -2901,6 +2901,7 @@ void LocApiV02 :: reportPosition (
                                     GNSS_SIGNAL_QZSS_L1CA);
                         }
                     }
+                    locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA;
                 }
             }
 

@@ -75,6 +75,8 @@ enum ELocMsgID {
 
     // Get API to retrieve info from GNSS engine
     E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID = 17,
+
+    E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID = 18,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -83,8 +85,14 @@ enum ELocationCallbacksOption {
     E_LOC_CB_GNSS_LOCATION_INFO_BIT     = (1<<1), /**< Register for GNSS Location */
     E_LOC_CB_GNSS_SV_BIT                = (1<<2), /**< Register for GNSS SV */
     E_LOC_CB_GNSS_NMEA_BIT              = (1<<3), /**< Register for GNSS NMEA */
-    E_LOC_CB_GNSS_DATA_BIT              = (1<<4)  /**< Register for GNSS DATA */
+    E_LOC_CB_GNSS_DATA_BIT              = (1<<4), /**< Register for GNSS DATA */
+    E_LOC_CB_SYSTEM_INFO_BIT            = (1<<5)  /**< Register for Location system info */
 };
+// Mask related to all info that are tied with a position session and need to be unsubscribed
+// when session is stopped
+#define LOCATION_SESSON_ALL_INFO_MASK (E_LOC_CB_TRACKING_BIT|E_LOC_CB_GNSS_LOCATION_INFO_BIT|\
+                                       E_LOC_CB_GNSS_SV_BIT|E_LOC_CB_GNSS_NMEA_BIT|\
+                                       E_LOC_CB_GNSS_DATA_BIT)
 
 typedef uint32_t EngineInfoCallbacksMask;
 enum EEngineInfoCallbacksMask {
@@ -318,5 +326,16 @@ struct LocAPIGnssEnergyConsumedIndMsg: LocAPIMsgHeader
         LocAPIMsgHeader(name, E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID),
         totalGnssEnergyConsumedSinceFirstBoot(energyConsumed) { }
 };
+
+// defintion for message with msg id of E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID
+struct LocAPILocationSystemInfoIndMsg: LocAPIMsgHeader
+{
+    LocationSystemInfo locationSystemInfo;
+
+    inline LocAPILocationSystemInfoIndMsg(const char* name, const LocationSystemInfo & systemInfo) :
+        LocAPIMsgHeader(name, E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID),
+        locationSystemInfo(systemInfo) { }
+};
+
 
 #endif /* LOCATIONAPIMSG_H */

@@ -2516,6 +2516,10 @@ locClientEventMaskType LocApiV02 :: convertMask(
   if (mask & LOC_API_ADAPTER_BIT_BS_OBS_DATA_SERVICE_REQ)
       eventMask |= QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ_V02;
 
+  if (mask & LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO) {
+      eventMask |= QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT_V02;
+  }
+
   return eventMask;
 }
 
@@ -4079,6 +4083,75 @@ void LocApiV02::populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02
     }
 }
 
+/* convert system info to GnssDataNotification format and dispatch
+   to the registered adapter */
+void  LocApiV02 :: reportSystemInfo(
+    const qmiLocSystemInfoIndMsgT_v02* system_info_ptr){
+
+    if (system_info_ptr == nullptr) {
+        return;
+    }
+
+    LOC_LOGe("system info type: %d, leap second valid: %d "
+             "current gps time:valid:%d, week: %d, msec: %d,"
+             "current leap second:valid %d, seconds %d, "
+             "next gps time: valid %d, week: %d, msec: %d,"
+             "next leap second: valid %d, seconds %d",
+             system_info_ptr->systemInfo,
+             system_info_ptr->nextLeapSecondInfo_valid,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeCurrent_valid,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeCurrent.gpsWeek,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeCurrent.gpsTimeOfWeekMs,
+             system_info_ptr->nextLeapSecondInfo.leapSecondsCurrent_valid,
+             system_info_ptr->nextLeapSecondInfo.leapSecondsCurrent,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeNextLsEvent_valid,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeNextLsEvent.gpsWeek,
+             system_info_ptr->nextLeapSecondInfo.gpsTimeNextLsEvent.gpsTimeOfWeekMs,
+             system_info_ptr->nextLeapSecondInfo.leapSecondsNext_valid,
+             system_info_ptr->nextLeapSecondInfo.leapSecondsNext);
+
+    LocationSystemInfo systemInfo = {};
+    if ((system_info_ptr->systemInfo == eQMI_LOC_NEXT_LEAP_SECOND_INFO_V02) &&
+        (system_info_ptr->nextLeapSecondInfo_valid == 1)) {
+
+        const qmiLocNextLeapSecondInfoStructT_v02 &nextLeapSecondInfo =
+            system_info_ptr->nextLeapSecondInfo;
+
+        if (nextLeapSecondInfo.gpsTimeNextLsEvent_valid &&
+                nextLeapSecondInfo.leapSecondsCurrent_valid &&
+                nextLeapSecondInfo.leapSecondsNext_valid) {
+
+            systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
+            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
+                    LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT;
+
+            LeapSecondChangeInfo &leapSecondChangeInfo =
+                    systemInfo.leapSecondSysInfo.leapSecondChangeInfo;
+            leapSecondChangeInfo.gpsTimestampLsChange.systemWeek =
+                    nextLeapSecondInfo.gpsTimeNextLsEvent.gpsWeek;
+            leapSecondChangeInfo.gpsTimestampLsChange.systemMsec =
+                    nextLeapSecondInfo.gpsTimeNextLsEvent.gpsTimeOfWeekMs;
+            leapSecondChangeInfo.gpsTimestampLsChange.validityMask =
+                    (GNSS_SYSTEM_TIME_WEEK_VALID | GNSS_SYSTEM_TIME_WEEK_MS_VALID);
+
+            leapSecondChangeInfo.leapSecondsBeforeChange =
+                    nextLeapSecondInfo.leapSecondsCurrent;
+            leapSecondChangeInfo.leapSecondsAfterChange =
+                    nextLeapSecondInfo.leapSecondsNext;
+        } else if (nextLeapSecondInfo.leapSecondsCurrent_valid) {
+            systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
+            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
+                    LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;
+            systemInfo.leapSecondSysInfo.leapSecondCurrent =
+                    nextLeapSecondInfo.leapSecondsCurrent;
+        }
+    }
+
+    if (systemInfo.systemInfoMask) {
+        LocApiBase::reportLocationSystemInfo(systemInfo);
+    }
+}
+
 /* convert engine state report to loc eng format and send the converted
    report to loc eng */
 void LocApiV02 :: reportEngineState (
@@ -5135,6 +5208,11 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
     case QMI_LOC_EVENT_REPORT_IND_V02:
         reportLocEvent(eventPayload.pLocEvent);
         break;
+
+    // System info event regarding next leap second
+    case QMI_LOC_SYSTEM_INFO_IND_V02:
+      reportSystemInfo(eventPayload.pLocSystemInfoEvent);
+      break;
   }
 }
 

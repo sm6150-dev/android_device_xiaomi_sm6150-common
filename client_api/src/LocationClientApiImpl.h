@@ -44,6 +44,19 @@ using namespace std;
 using loc_util::LocIpc;
 using loc_util::LocIpcSender;
 
+/** @fn
+    @brief
+    Structure of all client callbacks
+*/
+struct ClientCallbacks {
+    location_client::CapabilitiesCb capabilitycb;
+    location_client::ResponseCb responsecb;
+    location_client::LocationCb locationcb;
+    location_client::GnssReportCbs gnssreportcbs;
+    // used for rare system event
+    location_client::LocationSystemInfoCb systemInfoCb;
+};
+
 namespace location_client
 {
 
@@ -100,6 +113,8 @@ public:
     void updateCallbackFunctions(const ClientCallbacks&);
     void getGnssEnergyConsumed(GnssEnergyConsumedCb gnssEnergyConsumedCallback,
                                ResponseCb responseCallback);
+    void updateLocationSystemInfoListener(LocationSystemInfoCb locSystemInfoCallback,
+                                          ResponseCb responseCallback);
 
 
 private:
@@ -124,6 +139,9 @@ private:
 
     GnssEnergyConsumedCb    mGnssEnergyConsumedInfoCb;
     ResponseCb              mGnssEnergyConsumedResponseCb;
+
+    LocationSystemInfoCb    mLocationSysInfoCb;
+    ResponseCb              mLocationSysInfoResponseCb;
 
     MsgTask*                mMsgTask;
     LocIpcSender*           mIpcSender;

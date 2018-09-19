@@ -98,6 +98,7 @@ private:
     void onGnssNmeaCb(GnssNmeaNotification);
     void onGnssDataCb(GnssDataNotification gnssDataNotification);
     void onGnssMeasurementsCb(GnssMeasurementsNotification);
+    void onLocationSystemInfoCb(LocationSystemInfo);
 
     // send ipc message to this client for general use
     template <typename MESSAGE>

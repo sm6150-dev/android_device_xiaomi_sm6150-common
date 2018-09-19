@@ -1107,6 +1107,10 @@ typedef union
     /** Sent by engine for modem events to the control point
     QMI_LOC_EVENT_REPORT_IND_V02 */
 
+   const qmiLocSystemInfoIndMsgT_v02 *pLocSystemInfoEvent;
+   /** Sent by the engine to inform of location system info event
+    QMI_LOC_SYSTEM_INFO_IND_V02 */
+
 }locClientEventIndUnionType;
 
 

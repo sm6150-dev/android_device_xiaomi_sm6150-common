@@ -662,6 +662,41 @@ static LocationResponse parseLocationError(::LocationError error) {
     return response;
 }
 
+static LocationSystemInfo parseLocationSystemInfo(
+        const::LocationSystemInfo &halSystemInfo) {
+    LocationSystemInfo systemInfo = {0};
+
+    if (halSystemInfo.systemInfoMask & LOCATION_SYS_INFO_LEAP_SECOND) {
+        systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
+
+        if (halSystemInfo.leapSecondSysInfo.leapSecondInfoMask &
+                LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT) {
+            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
+                    LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT;
+
+            LeapSecondChangeInfo &clientInfo =
+                    systemInfo.leapSecondSysInfo.leapSecondChangeInfo;
+            const::LeapSecondChangeInfo &halInfo =
+                    halSystemInfo.leapSecondSysInfo.leapSecondChangeInfo;
+
+            clientInfo.gpsTimestampLsChange = parseGnssTime(halInfo.gpsTimestampLsChange);
+            clientInfo.leapSecondsBeforeChange = halInfo.leapSecondsBeforeChange;
+            clientInfo.leapSecondsAfterChange = halInfo.leapSecondsAfterChange;
+        }
+
+        if (halSystemInfo.leapSecondSysInfo.leapSecondInfoMask &
+            LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT) {
+            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
+                    LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;
+            systemInfo.leapSecondSysInfo.leapSecondCurrent =
+                    halSystemInfo.leapSecondSysInfo.leapSecondCurrent;
+
+        }
+    }
+
+    return systemInfo;
+}
+
 /******************************************************************************
 LocationClientApiImpl
 ******************************************************************************/
@@ -679,7 +714,9 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mCallbacksMask(0), mLocationOptions(),
         mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID),
         mGnssEnergyConsumedInfoCb(nullptr),
-        mGnssEnergyConsumedResponseCb(nullptr) {
+        mGnssEnergyConsumedResponseCb(nullptr),
+        mLocationSysInfoCb(nullptr),
+        mLocationSysInfoResponseCb(nullptr) {
 
     mMsgTask = new MsgTask("ClientApiImpl", false);
 
@@ -771,6 +808,10 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             if (mCallBacks.gnssDataCb) {
                 callBacksMask |= E_LOC_CB_GNSS_DATA_BIT;
             }
+            // handle callbacks that are not related to a fix session
+            if (mApiImpl->mLocationSysInfoCb) {
+                callBacksMask |= E_LOC_CB_SYSTEM_INFO_BIT;
+            }
 
             // update callback only when changed
             if (mApiImpl->mCallbacksMask != callBacksMask) {
@@ -839,6 +880,10 @@ void LocationClientApiImpl::stopTracking(uint32_t) {
                 mApiImpl->mLocationOptions.minInterval = 0;
                 mApiImpl->mLocationOptions.minDistance = 0;
                 mApiImpl->mCallbacksMask = 0;
+                // handle callback that are not tied with fix session
+                if (mApiImpl->mLocationSysInfoCb) {
+                    mApiImpl->mCallbacksMask |= E_LOC_CB_SYSTEM_INFO_BIT;
+                }
                 LocAPIStopTrackingReqMsg msg(mApiImpl->mSocketName);
                 bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
                                                     sizeof(msg));
@@ -940,9 +985,9 @@ void LocationClientApiImpl::getGnssEnergyConsumed(
         ResponseCb responseCallback) {
 
     struct GetGnssEnergyConsumedReq : public LocMsg {
-    GetGnssEnergyConsumedReq(LocationClientApiImpl *apiImpl,
-                             GnssEnergyConsumedCb gnssEnergyConsumedCb,
-                             ResponseCb responseCb) :
+        GetGnssEnergyConsumedReq(LocationClientApiImpl *apiImpl,
+                                 GnssEnergyConsumedCb gnssEnergyConsumedCb,
+                                 ResponseCb responseCb) :
         mApiImpl(apiImpl),
         mGnssEnergyConsumedCb(gnssEnergyConsumedCb),
         mResponseCb(responseCb) {}
@@ -968,6 +1013,65 @@ void LocationClientApiImpl::getGnssEnergyConsumed(
     LOC_LOGd(">>> getGnssEnergyConsumed \n");
     mMsgTask->sendMsg(new (nothrow)GetGnssEnergyConsumedReq(
             this, gnssEnergyConsumedCallback, responseCallback));
+}
+
+void LocationClientApiImpl::updateLocationSystemInfoListener(
+    LocationSystemInfoCb locSystemInfoCallback,
+    ResponseCb responseCallback) {
+
+    struct UpdateLocationSystemInfoListenerReq : public LocMsg {
+        UpdateLocationSystemInfoListenerReq(LocationClientApiImpl *apiImpl,
+                                       LocationSystemInfoCb sysInfoCb,
+                                       ResponseCb responseCb) :
+        mApiImpl(apiImpl),
+        mLocSysInfoCb(sysInfoCb),
+        mResponseCb(responseCb) {}
+
+        virtual ~UpdateLocationSystemInfoListenerReq() {}
+        void proc() const {
+            bool needIpc = false;
+            LocationCallbacksMask callbackMaskCopy = mApiImpl->mCallbacksMask;
+            // send msg to the hal daemon if the registration changes
+            if ((nullptr != mLocSysInfoCb) &&
+                (nullptr == mApiImpl->mLocationSysInfoCb)) {
+                // client registers for system info, set up the bit
+                mApiImpl->mCallbacksMask |= E_LOC_CB_SYSTEM_INFO_BIT;
+                needIpc = true;
+            } else if ((nullptr == mLocSysInfoCb) &&
+                       (nullptr != mApiImpl->mLocationSysInfoCb)) {
+                // system info is no longer needed, clear the bit
+                mApiImpl->mCallbacksMask &= ~E_LOC_CB_SYSTEM_INFO_BIT;
+                needIpc = true;
+            }
+
+            // save the new callback
+            mApiImpl->mLocationSysInfoCb = mLocSysInfoCb;
+            mApiImpl->mLocationSysInfoResponseCb = mResponseCb;
+
+            // inform hal daemon of updated callback only when changed
+            if (needIpc == true) {
+                if (mApiImpl->mHalRegistered) {
+                    LocAPIUpdateCallbacksReqMsg msg(mApiImpl->mSocketName,
+                                                    mApiImpl->mCallbacksMask);
+                    bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
+                                                         sizeof(msg));
+                    LOC_LOGd(">>> UpdateCallbacksReq new callBacksMask=0x%x, "
+                             "old mask =0x%x, rc=%d",
+                             mApiImpl->mCallbacksMask, callbackMaskCopy, rc);
+                }
+            } else {
+                LOC_LOGd("No updateCallbacks because same callback");
+            }
+        }
+
+        LocationClientApiImpl *mApiImpl;
+        LocationSystemInfoCb   mLocSysInfoCb;
+        ResponseCb             mResponseCb;
+    };
+
+    LOC_LOGd(">>> updateLocationSystemInfoListener \n");
+    mMsgTask->sendMsg(new (nothrow)UpdateLocationSystemInfoListenerReq(
+            this, locSystemInfoCallback, responseCallback));
 }
 
 /******************************************************************************
@@ -1156,6 +1260,19 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         }
                         break;
                     }
+
+                case E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID:
+                        LOC_LOGd("<<< message = location system info");
+                        if (mApiImpl->mCallbacksMask & E_LOC_CB_SYSTEM_INFO_BIT) {
+                            const LocAPILocationSystemInfoIndMsg * pDataIndMsg =
+                                    (LocAPILocationSystemInfoIndMsg*)(pMsg);
+                            LocationSystemInfo locationSystemInfo =
+                                parseLocationSystemInfo(pDataIndMsg->locationSystemInfo);
+                            if (mApiImpl->mLocationSysInfoCb) {
+                                mApiImpl->mLocationSysInfoCb(locationSystemInfo);
+                            }
+                        }
+                        break;
 
                 default:
                     {

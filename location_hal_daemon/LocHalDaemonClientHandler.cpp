@@ -97,6 +97,15 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         mCallbacks.gnssDataCb = nullptr;
     }
 
+    // system info
+    if (mSubscriptionMask & E_LOC_CB_SYSTEM_INFO_BIT) {
+        mCallbacks.locationSystemInfoCb = [this](LocationSystemInfo notification) {
+            onLocationSystemInfoCb(notification);
+        };
+    } else {
+        mCallbacks.locationSystemInfoCb = nullptr;
+    }
+
     // following callbacks are not supported
     mCallbacks.gnssMeasurementsCb = nullptr;
     mCallbacks.gnssNiCb = nullptr;
@@ -132,6 +141,11 @@ uint32_t LocHalDaemonClientHandler::startTracking(uint32_t minDistance, uint32_t
 }
 
 void LocHalDaemonClientHandler::stopTracking() {
+    uint32_t subscriptionMask = mSubscriptionMask;
+
+    subscriptionMask &= ~LOCATION_SESSON_ALL_INFO_MASK;
+    updateSubscription(subscriptionMask);
+
     if (mSessionId != 0) {
         mLocationApi->stopTracking(mSessionId);
         mSessionId = 0;
@@ -349,7 +363,22 @@ void LocHalDaemonClientHandler::onGnssMeasurementsCb(GnssMeasurementsNotificatio
     LOC_LOGd("--< onGnssMeasurementsCb");
 }
 
+void LocHalDaemonClientHandler::onLocationSystemInfoCb(LocationSystemInfo notification) {
 
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    LOC_LOGd("--< onLocationSystemInfoCb");
+
+    LocAPILocationSystemInfoIndMsg msg(SERVICE_NAME, notification);
+    if (mSubscriptionMask & E_LOC_CB_SYSTEM_INFO_BIT) {
+        LOC_LOGv("Sending location system info message");
+        int rc = sendMessage(msg);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+}
 
 /******************************************************************************
 LocHalDaemonClientHandler - Engine info related functionality

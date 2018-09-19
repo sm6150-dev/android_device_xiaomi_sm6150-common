@@ -165,6 +165,9 @@ private:
   void populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &, GnssEphCommon &);
 
   void reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_ptr);
+  /* convert system info to location api format and dispatch to
+     the registered adapter */
+  void reportSystemInfo(const qmiLocSystemInfoIndMsgT_v02* system_info_ptr);
 
   /* convert engine state report to loc eng format and send the converted
      report to loc eng */

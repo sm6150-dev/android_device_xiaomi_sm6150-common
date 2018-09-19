@@ -556,16 +556,73 @@ enum GnssSignalTypes {
 typedef uint64_t GnssDataMask;
 
 enum GnssDataBits {
-    // Jammer Indicator is available
+    /** Jammer Indicator is available */
     GNSS_DATA_JAMMER_IND_BIT = (1ULL << 0),
-    // AGC is available
+    /** AGC is available */
     GNSS_DATA_AGC_BIT = (1ULL << 1)
 };
 
 struct GnssData {
-    GnssDataMask  gnssDataMask[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];  // bitwise OR of GnssDataBits
-    double        jammerInd[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];     // Jammer Indication
-    double        agc[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];           // Automatic gain control
+    /** bitwise OR of GnssDataBits */
+    GnssDataMask  gnssDataMask[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
+    /** Jammer Indication */
+    double        jammerInd[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
+    /** Automatic gain control */
+    double        agc[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
+};
+
+typedef uint32_t LeapSecondSysInfoMask;
+enum LeapSecondSysInfoDataBits{
+    /** Current leap second info is available. This info will only
+      be available if the leap second change info is not available
+      If leap second change info is avaiable, to figure out the
+      current leap second info, compare current gps time with the
+      gps timestamp of leap second change to know whether to choose
+      leapSecondBefore or leapSecondAfter as current leap second. */
+    LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT = (1ULL << 0),
+    /** the last known leap change event is available.
+        The info can be available on two scenario:
+        1: this leap second change event has been scheduled and yet
+           to happen
+        2: this leap second change event has already happened and
+           next leap second change event has not yet been scheduled.
+    */
+    LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT = (1ULL << 1)
+};
+
+struct LeapSecondChangeInfo {
+    /** GPS timestamp that corrresponds to the last known leap
+        second change event.
+        The info can be available on two scenario:
+        1: this leap second change event has been scheduled and yet
+           to happen
+        2: this leap second change event has already happened and
+           next leap second change event has not yet been
+           scheduled. */
+    GnssSystemTimeStructType gpsTimestampLsChange;
+    /** Number of leap seconds prior to the leap second change event
+      that corresponds to the timestamp at gpsTimestampLsChange. */
+    uint8_t leapSecondsBeforeChange;
+    /** Number of leap seconds after the leap second change event
+      that corresponds to the timestamp at gpsTimestampLsChange. */
+    uint8_t leapSecondsAfterChange;
+};
+
+struct LeapSecondSystemInfo {
+    LeapSecondSysInfoMask leapSecondInfoMask;
+    uint8_t               leapSecondCurrent;
+    LeapSecondChangeInfo  leapSecondChangeInfo;
+};
+
+typedef uint32_t LocationSystemInfoMask;
+enum LocationSystemInfoDataBits{
+    /** contains current leap second or leap second change info */
+    LOCATION_SYS_INFO_LEAP_SECOND = (1ULL << 0),
+};
+
+struct LocationSystemInfo {
+    LocationSystemInfoMask systemInfoMask;
+    LeapSecondSystemInfo   leapSecondSysInfo;
 };
 
 /** @fn
@@ -626,22 +683,22 @@ typedef std::function<void(
     const GnssData& gnssData
 )> GnssDataCb;
 
+/** @fn
+    @brief
+    LocationSystemInfoCb is for receiving rare occuring location
+    system information update
+    @param locationSystemInfo: rare location system event, e.g.:
+           leap second change
+*/
+typedef std::function<void(
+    const LocationSystemInfo & locationSystemInfo
+)> LocationSystemInfoCb;
+
 struct GnssReportCbs {
     GnssLocationCb gnssLocationCallback;
     GnssSvCb gnssSvCallback;
     GnssNmeaCb gnssNmeaCallback;
     GnssDataCb gnssDataCallback;
-};
-
-/** @fn
-    @brief
-    Structure of all client callbacks
-*/
-struct ClientCallbacks {
-    CapabilitiesCb capabilitycb;
-    ResponseCb responsecb;
-    LocationCb locationcb;
-    GnssReportCbs gnssreportcbs;
 };
 
 enum GnssEnergyConsumedInfoMask {
@@ -799,6 +856,22 @@ public:
     */
     void getGnssEnergyConsumed(GnssEnergyConsumedCb gnssEnergyConsumedCallback,
                                ResponseCb responseCallback);
+
+    /** @brief Update the listener callback to receive info related
+               to location system info that are not tied with
+               location fix session, e.g.: next leap second event.
+               One set of callbacks can be registered per location
+               api client. The callback may be invoked multiple
+               times to update same or different piece of system
+               info.
+
+        @param
+        locSystemInfoCallback, callback to receive system info update.
+            Pass a null callback to stop receiving the update.
+        responseCallback, callback to receive system responses; optional.
+    */
+    void updateLocationSystemInfoListener(LocationSystemInfoCb locSystemInfoCallback,
+                                          ResponseCb responseCallback);
 
 private:
     LocationClientApiImpl* mApiImpl;

@@ -256,7 +256,6 @@ void LocationApiService::stopTracking(LocAPIStopTrackingReqMsg *pMsg) {
     }
 
     pClient->mTracking = false;
-    pClient->updateSubscription(0);
     pClient->stopTracking();
     pClient->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
     LOC_LOGi(">-- stopping session");

@@ -311,6 +311,14 @@ case "$target" in
                     setprop vendor.media.msm8953.version 1
                 fi
                 ;;
+    #Set property to differentiate SDM660 & SDM455
+    #SOC ID for SDM455 is 385
+    "sdm660")
+        case "$soc_hwid" in
+           385)
+               setprop vendor.media.sdm660.version 1
+        esac
+        ;;
 esac
 
 baseband=`getprop ro.baseband`

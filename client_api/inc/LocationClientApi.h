@@ -437,9 +437,9 @@ struct Location {
     LocationFlagsMask flags;
     /** UTC timestamp for location fix, milliseconds since January 1, 1970 */
     uint64_t timestamp;
-    /** in degrees */
+    /** in degrees; range [-90.0, 90.0] */
     double latitude;
-    /** in degrees */
+    /** in degrees; range [-180.0, 180.0] */
     double longitude;
     /** in meters above the WGS 84 reference ellipsoid */
     double altitude;

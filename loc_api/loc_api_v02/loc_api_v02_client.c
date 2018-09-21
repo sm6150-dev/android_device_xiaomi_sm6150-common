@@ -65,6 +65,9 @@
 #define LOC_CLIENT_MAX_OPEN_RETRIES (20)
 #define LOC_CLIENT_TIME_BETWEEN_OPEN_RETRIES (1)
 
+#define LOC_CLIENT_MAX_SYNC_RETRIES (50)
+#define LOC_CLIENT_TIME_BETWEEN_SYNC_RETRIES (20*1000)
+
 enum
 {
   //! Special value for selecting any available service
@@ -2184,6 +2187,7 @@ locClientStatusEnumType locClientSendReq(
   void *pReqData = NULL;
   locClientCallbackDataType *pCallbackData =
         (locClientCallbackDataType *)handle;
+  int tries;
 
   // check the input handle for sanity
    if(NULL == pCallbackData ||
@@ -2207,36 +2211,43 @@ locClientStatusEnumType locClientSendReq(
     return(eLOC_CLIENT_FAILURE_INVALID_PARAMETER);
   }
 
-  LOC_LOGV("%s:%d] sending reqId= %d, len = %d\n", __func__,
-                __LINE__, reqId, reqLen);
+  LOC_LOGv("sending reqId= %d, len = %d", reqId, reqLen);
+  for (tries = 1; tries <= LOC_CLIENT_MAX_SYNC_RETRIES; tries++) {
+    // NEXT call goes out to modem. We log the callflow before it
+    // actually happens to ensure the this comes before resp callflow
+    // back from the modem, to avoid confusing log order. We trust
+    // that the QMI framework is robust.
+    EXIT_LOG_CALLFLOW(%s, loc_get_v02_event_name(reqId));
+    memset(&resp, 0, sizeof(resp));
+    rc = qmi_client_send_msg_sync(
+           pCallbackData->userHandle,
+           reqId,
+           pReqData,
+           reqLen,
+           &resp,
+           sizeof(resp),
+           LOC_CLIENT_ACK_TIMEOUT);
 
-  // NEXT call goes out to modem. We log the callflow before it
-  // actually happens to ensure the this comes before resp callflow
-  // back from the modem, to avoid confusing log order. We trust
-  // that the QMI framework is robust.
-  EXIT_LOG_CALLFLOW(%s, loc_get_v02_event_name(reqId));
-  memset(&resp, 0, sizeof(resp));
-  rc = qmi_client_send_msg_sync(
-      pCallbackData->userHandle,
-      reqId,
-      pReqData,
-      reqLen,
-      &resp,
-      sizeof(resp),
-      LOC_CLIENT_ACK_TIMEOUT);
+    LOC_LOGv("qmi_client_send_msg_sync returned %d", rc);
 
-  LOC_LOGV("%s:%d] qmi_client_send_msg_sync returned %d\n", __func__,
-                __LINE__, rc);
+    if (QMI_SERVICE_ERR == rc)
+    {
+      LOC_LOGe("send_msg_sync error: QMI_SERVICE_ERR");
+      return(eLOC_CLIENT_FAILURE_PHONE_OFFLINE);
+    }
+    else if (rc != QMI_NO_ERR)
+    {
+      LOC_LOGe("send_msg_sync error: %d\n", rc);
+      return(eLOC_CLIENT_FAILURE_INTERNAL);
+    }
 
-  if (QMI_SERVICE_ERR == rc)
-  {
-    LOC_LOGE("%s:%d]: send_msg_sync error: QMI_SERVICE_ERR\n",__func__, __LINE__);
-    return(eLOC_CLIENT_FAILURE_PHONE_OFFLINE);
+    if (QMI_ERR_SESSION_OWNERSHIP_V01 != resp.resp.error) {
+      break;
+    }
+    usleep(LOC_CLIENT_TIME_BETWEEN_SYNC_RETRIES);
   }
-  else if (rc != QMI_NO_ERR)
-  {
-    LOC_LOGE("%s:%d]: send_msg_sync error: %d\n",__func__, __LINE__, rc);
-    return(eLOC_CLIENT_FAILURE_INTERNAL);
+  if (tries > 1) {
+      LOC_LOGe("failed with QMI_ERR_SESSION_OWNERSHIP_V01 on try %d", tries);
   }
 
   // map the QCCI response to Loc API v02 status

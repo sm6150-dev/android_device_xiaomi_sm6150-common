@@ -77,6 +77,9 @@ public:
     uint32_t startTracking(uint32_t minDistance, uint32_t minInterval);
     void stopTracking();
     void updateTrackingOptions(uint32_t minDistance, uint32_t minInterval);
+    void onGnssEnergyConsumedInfoAvailable(LocAPIGnssEnergyConsumedIndMsg &msg);
+    bool hasPendingEngineInfoRequest(uint32_t mask);
+    void addEngineInfoRequst(uint32_t mask);
 
     bool mTracking;
     std::queue<ELocMsgID> mPendingMessages;
@@ -133,6 +136,9 @@ private:
 
     // bitmask to hold this client's subscription
     uint32_t mSubscriptionMask;
+    // bitmask to hold this client's request to engine info related subscription
+    uint32_t mEngineInfoRequestMask;
+
 
     LocHalDaemonIPCSender* mIpcSender;
 };

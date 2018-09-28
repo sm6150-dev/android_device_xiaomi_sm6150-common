@@ -251,6 +251,9 @@ public:
     injectPosition(const Location& location, bool onDemandCpi);
 
   virtual void
+    injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi);
+
+  virtual void
     deleteAidingData(const GnssAidingData& data, LocApiResponse *adapterResponse);
 
   virtual void
@@ -298,6 +301,9 @@ public:
       handleZppBestAvailableFixIndication(const qmiLocGetBestAvailablePositionIndMsgT_v02 &zpp_ind);
   virtual void getBestAvailableZppFix();
   virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
+  virtual LocationError setConstrainedTuncMode(bool enabled, float tuncConstraint, uint32_t powerBudget);
+  virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
+  virtual LocationError getGnssEnergyConsumed();
 
   /*
   Returns

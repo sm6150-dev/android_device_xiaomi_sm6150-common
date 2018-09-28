@@ -676,7 +676,9 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mCapabilitiesCb(capabitiescb),
         mHalRegistered(false),
         mCallbacksMask(0), mLocationOptions(),
-        mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID) {
+        mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID),
+        mGnssEnergyConsumedInfoCb(nullptr),
+        mGnssEnergyConsumedResponseCb(nullptr) {
 
     mMsgTask = new MsgTask("ClientApiImpl", false);
 
@@ -932,6 +934,49 @@ void LocationClientApiImpl::updateNetworkAvailability(bool available) {
     mMsgTask->sendMsg(new (nothrow) UpdateNetworkAvailabilityReq(this, available));
 }
 
+void LocationClientApiImpl::getGnssEnergyConsumed(
+        GnssEnergyConsumedCb gnssEnergyConsumedCallback,
+        ResponseCb responseCallback) {
+
+    struct GetGnssEnergyConsumedReq : public LocMsg {
+    GetGnssEnergyConsumedReq(LocationClientApiImpl *apiImpl,
+                             GnssEnergyConsumedCb gnssEnergyConsumedCb,
+                             ResponseCb responseCb) :
+        mApiImpl(apiImpl),
+        mGnssEnergyConsumedCb(gnssEnergyConsumedCb),
+        mResponseCb(responseCb) {}
+
+        virtual ~GetGnssEnergyConsumedReq() {}
+        void proc() const {
+            bool requestAlreadyPending = false;
+
+            if (mApiImpl->mGnssEnergyConsumedInfoCb) {
+                requestAlreadyPending = true;
+            }
+
+            mApiImpl->mGnssEnergyConsumedInfoCb = mGnssEnergyConsumedCb;
+            mApiImpl->mGnssEnergyConsumedResponseCb = mResponseCb;
+
+            // send msg to the hal daemon if the power consumption query
+            // is not already pending and the new callback is not null
+            if ((requestAlreadyPending == false) &&
+                (nullptr != mApiImpl->mGnssEnergyConsumedInfoCb)) {
+                LocAPIGetGnssEnergyConsumedReqMsg msg(mApiImpl->mSocketName);
+                mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
+                                           sizeof(msg));
+            }
+        }
+
+        LocationClientApiImpl *mApiImpl;
+        GnssEnergyConsumedCb   mGnssEnergyConsumedCb;
+        ResponseCb             mResponseCb;
+    };
+
+    LOC_LOGd(">>> getGnssEnergyConsumed \n");
+    mMsgTask->sendMsg(new (nothrow)GetGnssEnergyConsumedReq(
+            this, gnssEnergyConsumedCallback, responseCallback));
+}
+
 /******************************************************************************
 LocationClientApiImpl - LocIpc onReceive handler
 ******************************************************************************/
@@ -1087,6 +1132,30 @@ void LocationClientApiImpl::onReceive(const string& data) {
                             if (mApiImpl->mGnssReportCbs.gnssDataCallback) {
                                 mApiImpl->mGnssReportCbs.gnssDataCallback(gnssData);
                             }
+                        }
+                        break;
+                    }
+
+                case E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID:
+                    {
+                        LOC_LOGd("<<< message = GNSS power consumption\n");
+                        LocAPIGnssEnergyConsumedIndMsg* pEnergyMsg =
+                                (LocAPIGnssEnergyConsumedIndMsg*) pMsg;
+                        uint64_t energyNumber =
+                                pEnergyMsg->totalGnssEnergyConsumedSinceFirstBoot;
+                        uint32_t flags = 0;
+                        if (energyNumber != 0xffffffffffffffff) {
+                            flags = ENERGY_CONSUMED_SINCE_FIRST_BOOT_BIT;
+                        }
+                        GnssEnergyConsumedInfo energyConsumedInfo = {};
+                        energyConsumedInfo.flags =
+                                (location_client::GnssEnergyConsumedInfoMask) flags;
+                        energyConsumedInfo.totalEnergyConsumedSinceFirstBoot = energyNumber;
+                        if (flags == 0 && mApiImpl->mGnssEnergyConsumedResponseCb) {
+                            mApiImpl->mGnssEnergyConsumedResponseCb(
+                                    LOCATION_RESPONSE_UNKOWN_FAILURE);
+                        } else if (mApiImpl->mGnssEnergyConsumedInfoCb){
+                            mApiImpl->mGnssEnergyConsumedInfoCb(energyConsumedInfo);
                         }
                         break;
                     }

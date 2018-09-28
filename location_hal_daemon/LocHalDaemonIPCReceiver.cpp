@@ -128,6 +128,15 @@ void LocHalDaemonIPCReceiver::onReceive(const std::string& data) {
                     <LocAPIUpdateNetworkAvailabilityReqMsg*>(pMsg)->mAvailability);
             break;
         }
+        case E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID: {
+            if (sizeof(LocAPIGetGnssEnergyConsumedReqMsg) != data.length()) {
+                LOC_LOGe("invalid message");
+                break;
+            }
+            mService->getGnssEnergyConsumed(reinterpret_cast
+                    <LocAPIGetGnssEnergyConsumedReqMsg*>(pMsg)->mSocketName);
+            break;
+        }
         default: {
             LOC_LOGe("Unknown message");
             break;

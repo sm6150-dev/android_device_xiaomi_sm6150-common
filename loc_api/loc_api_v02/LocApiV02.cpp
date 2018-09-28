@@ -76,7 +76,14 @@ using namespace loc_core;
 #define C_GPS_WEEK_UNKNOWN      (65535)
 
 /* seconds per week*/
-#define WEEK_MSECS              (60*60*24*7*1000)
+#define WEEK_MSECS              (60*60*24*7*1000LL)
+#define DAY_MSECS               (60*60*24*1000LL)
+/* Num days elapsed since GLONASS started from GPS start day 1980->1996 */
+#define GPS_GLONASS_DAYS_DIFF    5838
+/* number of glonass days in a 4-year interval */
+#define GLONASS_DAYS_IN_4YEARS   1461
+/* glonass and UTC offset: 3 hours */
+#define GLONASS_UTC_OFFSET_HOURS 3
 
 /* number of QMI_LOC messages that need to be checked*/
 #define NUMBER_OF_MSG_TO_BE_CHECKED        (3)
@@ -895,6 +902,204 @@ void LocApiV02::injectPosition(const Location& location, bool onDemandCpi)
              injectPositionReq.horUncCircular, injectPositionReq.rawHorUncCircular,
              injectPositionReq.horConfidence, injectPositionReq.rawHorConfidence,
              injectPositionReq.onDemandCpi);
+
+    LOC_SEND_SYNC_REQ(InjectPosition, INJECT_POSITION, injectPositionReq);
+
+    }));
+}
+
+/* This is utility routine that fills in sv id from svUsedIdsMask
+   into the svUsedList.
+ */
+void setSvUsedIds (uint16_t *svUsedList, unsigned int svUsedListSize,
+                   unsigned int &svUsedListIndex, uint64_t svUsedIdsMask,
+                   unsigned int svStartIndex, unsigned int svEndIndex) {
+
+    if (svEndIndex < svStartIndex) {
+        return;
+    }
+
+    unsigned int maxSvCnt = svEndIndex - svStartIndex + 1;
+    // each bit in the svUsedIdsMask can only encode one SV used info
+    if (maxSvCnt > (sizeof(svUsedIdsMask) * 8)) {
+        maxSvCnt = sizeof(svUsedIdsMask) * 8;
+    }
+    uint64_t svBitValue = 1;
+    for (unsigned int i = 0; ((i < maxSvCnt) && (svUsedListIndex < svUsedListSize)); i++) {
+        if (svUsedIdsMask & svBitValue) {
+            *(svUsedList + svUsedListIndex) = svStartIndex + i;
+            svUsedListIndex++;
+        }
+        svBitValue <<= 1;
+    }
+}
+
+void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi)
+{
+    sendMsg(new LocApiMsg([this, locationInfo, onDemandCpi] () {
+
+    qmiLocInjectPositionReqMsgT_v02 injectPositionReq;
+    memset(&injectPositionReq, 0, sizeof(injectPositionReq));
+    const Location &location = locationInfo.location;
+
+    if (location.timestamp > 0) {
+        injectPositionReq.timestampUtc_valid = 1;
+        injectPositionReq.timestampUtc = location.timestamp;
+    }
+
+    if (LOCATION_HAS_LAT_LONG_BIT & location.flags) {
+        injectPositionReq.latitude_valid = 1;
+        injectPositionReq.longitude_valid = 1;
+        injectPositionReq.latitude = location.latitude;
+        injectPositionReq.longitude = location.longitude;
+    }
+
+    if (LOCATION_HAS_ACCURACY_BIT & location.flags) {
+        injectPositionReq.horUncCircular_valid = 1;
+        injectPositionReq.horUncCircular = location.accuracy;
+        injectPositionReq.horConfidence_valid = 1;
+        injectPositionReq.horConfidence = 68;
+        injectPositionReq.rawHorUncCircular_valid = 1;
+        injectPositionReq.rawHorUncCircular = location.accuracy;
+        injectPositionReq.rawHorConfidence_valid = 1;
+        injectPositionReq.rawHorConfidence = 68;
+
+        // We don't wish to advertise accuracy better than 1000 meters to Modem
+        if (injectPositionReq.horUncCircular < 1000) {
+            injectPositionReq.horUncCircular = 1000;
+        }
+    }
+
+    if (LOCATION_HAS_ALTITUDE_BIT & location.flags) {
+        injectPositionReq.altitudeWrtEllipsoid_valid = 1;
+        injectPositionReq.altitudeWrtEllipsoid = location.altitude;
+    }
+
+    if (LOCATION_HAS_VERTICAL_ACCURACY_BIT & location.flags) {
+        injectPositionReq.vertUnc_valid = 1;
+        injectPositionReq.vertUnc = location.verticalAccuracy;
+        injectPositionReq.vertConfidence_valid = 1;
+        injectPositionReq.vertConfidence = 68;
+    }
+
+    // GPS time
+    if (locationInfo.gnssSystemTime.gnssSystemTimeSrc == GNSS_LOC_SV_SYSTEM_GPS) {
+        injectPositionReq.gpsTime_valid = 1;
+        injectPositionReq.gpsTime.gpsWeek =
+                locationInfo.gnssSystemTime.u.gpsSystemTime.systemWeek;
+        injectPositionReq.gpsTime.gpsTimeOfWeekMs =
+                locationInfo.gnssSystemTime.u.gpsSystemTime.systemMsec;
+    } else if (locationInfo.gnssSystemTime.gnssSystemTimeSrc == GNSS_LOC_SV_SYSTEM_GALILEO) {
+        injectPositionReq.gpsTime_valid = 1;
+        injectPositionReq.gpsTime.gpsWeek =
+                locationInfo.gnssSystemTime.u.galSystemTime.systemWeek;
+        injectPositionReq.gpsTime.gpsTimeOfWeekMs =
+                locationInfo.gnssSystemTime.u.gpsSystemTime.systemMsec;
+    } else if (locationInfo.gnssSystemTime.gnssSystemTimeSrc == GNSS_LOC_SV_SYSTEM_BDS) {
+        injectPositionReq.gpsTime_valid = 1;
+        injectPositionReq.gpsTime.gpsWeek =
+                locationInfo.gnssSystemTime.u.bdsSystemTime.systemWeek;
+        injectPositionReq.gpsTime.gpsTimeOfWeekMs =
+                locationInfo.gnssSystemTime.u.bdsSystemTime.systemMsec;
+    } else if (locationInfo.gnssSystemTime.gnssSystemTimeSrc == GNSS_LOC_SV_SYSTEM_QZSS) {
+        injectPositionReq.gpsTime_valid = 1;
+        injectPositionReq.gpsTime.gpsWeek =
+                locationInfo.gnssSystemTime.u.qzssSystemTime.systemWeek;
+        injectPositionReq.gpsTime.gpsTimeOfWeekMs =
+                locationInfo.gnssSystemTime.u.qzssSystemTime.systemMsec;
+     } else if (locationInfo.gnssSystemTime.gnssSystemTimeSrc == GNSS_LOC_SV_SYSTEM_GLONASS) {
+         if (GNSS_LOCATION_INFO_LEAP_SECONDS_BIT & locationInfo.flags) {
+             const GnssGloTimeStructType &gloSystemTime =
+                     locationInfo.gnssSystemTime.u.gloSystemTime;
+             unsigned long long msecTotal =
+                     gloSystemTime.gloFourYear * GLONASS_DAYS_IN_4YEARS * DAY_MSECS +
+                     gloSystemTime.gloDays * DAY_MSECS +
+                     gloSystemTime.gloMsec;
+             // compensate the glonnass msec with difference between GPS time
+             msecTotal += (GPS_GLONASS_DAYS_DIFF * DAY_MSECS -
+                           GLONASS_UTC_OFFSET_HOURS * 3600 * 1000 +
+                           locationInfo.leapSeconds * 1000);
+             injectPositionReq.gpsTime_valid = 1;
+             injectPositionReq.gpsTime.gpsWeek = msecTotal / WEEK_MSECS;
+             injectPositionReq.gpsTime.gpsTimeOfWeekMs = msecTotal % WEEK_MSECS;
+         }
+    }
+
+    // velocity enu
+    if ((GNSS_LOCATION_INFO_EAST_VEL_BIT & locationInfo.flags) &&
+        (GNSS_LOCATION_INFO_NORTH_VEL_BIT & locationInfo.flags) &&
+        (GNSS_LOCATION_INFO_UP_VEL_BIT & locationInfo.flags)) {
+        injectPositionReq.velEnu_valid = 1;
+        injectPositionReq.velEnu[0] = locationInfo.eastVelocity;
+        injectPositionReq.velEnu[1] = locationInfo.northVelocity;
+        injectPositionReq.velEnu[2] = locationInfo.upVelocity;
+    }
+
+    // velocity uncertainty enu
+    if ((GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT & locationInfo.flags) &&
+        (GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT & locationInfo.flags) &&
+        (GNSS_LOCATION_INFO_UP_VEL_UNC_BIT & locationInfo.flags)) {
+        injectPositionReq.velUncEnu_valid = 1;
+        injectPositionReq.velUncEnu[0] = locationInfo.eastVelocityStdDeviation;
+        injectPositionReq.velUncEnu[1] = locationInfo.northVelocityStdDeviation;
+        injectPositionReq.velUncEnu[2]  = locationInfo.upVelocityStdDeviation;
+    }
+
+    // time uncertainty
+    if (GNSS_LOCATION_INFO_TIME_UNC_BIT & locationInfo.flags) {
+        injectPositionReq.timeUnc_valid = 1;
+        injectPositionReq.timeUnc = locationInfo.timeUncMs;
+    }
+
+    // SV used info
+    if (GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT & locationInfo.flags) {
+        unsigned int svUsedListIndex = 0;
+        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
+                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                     svUsedListIndex, locationInfo.svUsedInPosition.gpsSvUsedIdsMask,
+                     GPS_SV_PRN_MIN, GPS_SV_PRN_MAX);
+
+        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
+                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                     svUsedListIndex, locationInfo.svUsedInPosition.gloSvUsedIdsMask,
+                     GLO_SV_PRN_MIN, GLO_SV_PRN_MAX);
+
+        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
+                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                     svUsedListIndex, locationInfo.svUsedInPosition.qzssSvUsedIdsMask,
+                     QZSS_SV_PRN_MIN, QZSS_SV_PRN_MAX);
+
+        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
+                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                     svUsedListIndex, locationInfo.svUsedInPosition.bdsSvUsedIdsMask,
+                     BDS_SV_PRN_MIN, BDS_SV_PRN_MAX);
+
+        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
+                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
+                     svUsedListIndex, locationInfo.svUsedInPosition.galSvUsedIdsMask,
+                     GAL_SV_PRN_MIN, GAL_SV_PRN_MAX);
+
+        injectPositionReq.expandedGnssSvUsedList_len = svUsedListIndex;
+        injectPositionReq.expandedGnssSvUsedList_valid = true;
+    }
+
+    // mark fix as from DRE for modem to distinguish from others
+    if (LOCATION_TECHNOLOGY_SENSORS_BIT & locationInfo.location.techMask) {
+        injectPositionReq.positionSrc_valid = 1;
+        injectPositionReq.positionSrc = eQMI_LOC_POSITION_SRC_DRE_V02;
+    }
+
+    if (onDemandCpi) {
+        injectPositionReq.onDemandCpi_valid = 1;
+        injectPositionReq.onDemandCpi = 1;
+    }
+
+    LOC_LOGv("Lat=%lf, Lon=%lf, Acc=%.2lf rawAcc=%.2lf horConfidence=%d"
+             "rawHorConfidence=%d onDemandCpi=%d, position src=%d",
+             injectPositionReq.latitude, injectPositionReq.longitude,
+             injectPositionReq.horUncCircular, injectPositionReq.rawHorUncCircular,
+             injectPositionReq.horConfidence, injectPositionReq.rawHorConfidence,
+             injectPositionReq.onDemandCpi, injectPositionReq.positionSrc);
 
     LOC_SEND_SYNC_REQ(InjectPosition, INJECT_POSITION, injectPositionReq);
 
@@ -4898,6 +5103,106 @@ int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
     return ret_val;
 }
 
+LocationError LocApiV02::setConstrainedTuncMode(bool enabled,
+                                                float tuncConstraint,
+                                                uint32_t energyBudget) {
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    qmiLocSetConstrainedTuncModeReqMsgT_v02 req;
+    qmiLocSetConstrainedTuncModeIndMsgT_v02 ind;
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    memset(&req, 0, sizeof(req));
+    memset(&ind, 0, sizeof(ind));
+    req.tuncConstraintOn = enabled;
+    if (tuncConstraint > 0.0) {
+        req.tuncConstraint_valid = true;
+        req.tuncConstraint = tuncConstraint;
+    }
+    if (energyBudget != 0) {
+        req.energyBudget_valid = true;
+        req.energyBudget = energyBudget;
+    }
+
+    LOC_LOGd("Enter. enabled %d, tuncConstraint (%d, %f),"
+             "energyBudget (%d, %d)", req.tuncConstraintOn,
+             req.tuncConstraint_valid, req.tuncConstraint,
+             req.energyBudget_valid, req.energyBudget);
+
+    req_union.pSetConstrainedTuncModeReq = &req;
+    status = locSyncSendReq(QMI_LOC_SET_CONSTRAINED_TUNC_MODE_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_SET_CONSTRAINED_TUNC_MODE_IND_V02,
+                            &ind);
+    if(status != eLOC_CLIENT_SUCCESS || ind.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("failed, status: %s, ind status:%s\n",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(ind.status));
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    LOC_LOGd("Exit. err: %u", err);
+    return err;
+}
+
+LocationError LocApiV02::setPositionAssistedClockEstimatorMode(bool enabled) {
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    qmiLocEnablePositionAssistedClockEstReqMsgT_v02 req;
+    qmiLocEnablePositionAssistedClockEstIndMsgT_v02 ind;
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    LOC_LOGd("Enter. enabled %d", enabled);
+    memset(&req, 0, sizeof(req));
+    memset(&ind, 0, sizeof(ind));
+    req.enablePositionAssistedClockEst = enabled;
+
+    req_union.pSetEnablePositionAssistedClockEstReq = &req;
+    status = locSyncSendReq(QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_IND_V02,
+                            &ind);
+    if(status != eLOC_CLIENT_SUCCESS || ind.status != eQMI_LOC_SUCCESS_V02) {
+        LOC_LOGe("failed. status: %s, ind status:%s\n",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(ind.status));
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    LOC_LOGd("Exit. err: %u", err);
+    return err;
+}
+
+LocationError LocApiV02::getGnssEnergyConsumed() {
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    qmiLocQueryGNSSEnergyConsumedReqMsgT_v02 req;
+    qmiLocQueryGNSSEnergyConsumedIndMsgT_v02 ind;
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    LOC_LOGd("Enter. ");
+    memset(&req, 0, sizeof(req));
+    memset(&ind, 0, sizeof(ind));
+
+    req_union.pQueryGNSSEnergyConsumedReq = &req;
+    status = locSyncSendReq(QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02,
+                            &ind);
+
+    if(status != eLOC_CLIENT_SUCCESS) {
+        LOC_LOGe("failed. status: %s\n", loc_get_v02_client_status_name(status));
+        // report invalid read to indicate error (based on QMI message)
+        LocApiBase::reportGnssEngEnergyConsumedEvent(0xffffffffffffffff);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    } else {
+        LocApiBase::reportGnssEngEnergyConsumedEvent(ind.energyConsumedSinceFirstBoot);
+    }
+
+    LOC_LOGd("Exit. err: %u", err);
+    return err;
+}
 
 bool LocApiV02 :: cacheGnssMeasurementSupport()
 {

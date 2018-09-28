@@ -71,7 +71,10 @@ enum ELocMsgID {
     E_LOCAPI_LOCATION_INFO_MSG_ID = 13,
     E_LOCAPI_SATELLITE_VEHICLE_MSG_ID = 14,
     E_LOCAPI_NMEA_MSG_ID = 15,
-    E_LOCAPI_DATA_MSG_ID = 16
+    E_LOCAPI_DATA_MSG_ID = 16,
+
+    // Get API to retrieve info from GNSS engine
+    E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID = 17,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -81,6 +84,13 @@ enum ELocationCallbacksOption {
     E_LOC_CB_GNSS_SV_BIT                = (1<<2), /**< Register for GNSS SV */
     E_LOC_CB_GNSS_NMEA_BIT              = (1<<3), /**< Register for GNSS NMEA */
     E_LOC_CB_GNSS_DATA_BIT              = (1<<4)  /**< Register for GNSS DATA */
+};
+
+typedef uint32_t EngineInfoCallbacksMask;
+enum EEngineInfoCallbacksMask {
+    // gnss energy consumed, once the info is delivered,
+    // this bit will be cleared
+    E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT = (1<<0) /**< GNSS energy consumed */
 };
 
 /******************************************************************************
@@ -237,6 +247,12 @@ struct LocAPIUpdateNetworkAvailabilityReqMsg: LocAPIMsgHeader
         mAvailability(availability) { }
 };
 
+struct LocAPIGetGnssEnergyConsumedReqMsg: LocAPIMsgHeader
+{
+    inline LocAPIGetGnssEnergyConsumedReqMsg(const char* name) :
+        LocAPIMsgHeader(name, E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID) { }
+};
+
 /******************************************************************************
 IPC message structure - indications
 ******************************************************************************/
@@ -291,6 +307,16 @@ struct LocAPIDataIndMsg : LocAPIMsgHeader
         GnssDataNotification& dataNotification) :
         LocAPIMsgHeader(name, E_LOCAPI_DATA_MSG_ID),
         gnssDataNotification(dataNotification) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_GET_TOTAL_ENGERY_CONSUMED_BY_GPS_ENGINE_MSG_ID
+struct LocAPIGnssEnergyConsumedIndMsg: LocAPIMsgHeader
+{
+    uint64_t totalGnssEnergyConsumedSinceFirstBoot;
+
+    inline LocAPIGnssEnergyConsumedIndMsg(const char* name, uint64_t energyConsumed) :
+        LocAPIMsgHeader(name, E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID),
+        totalGnssEnergyConsumedSinceFirstBoot(energyConsumed) { }
 };
 
 #endif /* LOCATIONAPIMSG_H */

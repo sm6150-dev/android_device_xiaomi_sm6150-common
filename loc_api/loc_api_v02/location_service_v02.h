@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Thu Aug 23 2018 (Spin 0)
+   It was generated on: Wed Sep 26 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x5F
+#define LOC_V02_IDL_MINOR_VERS 0x61
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00C7
+#define LOC_V02_MAX_MESSAGE_ID 0x00CD
 /**
     @}
   */
@@ -371,6 +371,9 @@ extern "C" {
 
 /**  Maximum length of Disaster & Crisis Report. Corresponds to 512 bits of storage  */
 #define QMI_LOC_MAX_DCREPORT_LEN_V02 64
+
+/**  Maximum number of satellites in an ephemeris report.  */
+#define QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02 8
 #define QMI_LOC_DEFAULT_CONSTRAINED_TUNC_MS_V02 9.5
 /**
     @}
@@ -583,6 +586,10 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
 #define QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x4000000000ull) /**<  The control point must enable this mask to receive unpropagated fix  */
 #define QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ_V02 ((qmiLocEventRegMaskT_v02)0x8000000000ull) /**<  The control point must enable this mask to receive the base station
        observed data service request  */
+#define QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x10000000000ull) /**<  The control point must enable this mask to receive the ephemeris data
+       for all GNSS constellations  */
+#define QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x20000000000ull) /**<  The control point must enable this mask to receive the upcoming
+       leap second info from service  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -699,6 +706,10 @@ typedef struct {
       - QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT (0x4000000000) --  The control point must enable this mask to receive unpropagated fix
       - QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ (0x8000000000) --  The control point must enable this mask to receive the base station
        observed data service request
+      - QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT (0x10000000000) --  The control point must enable this mask to receive the ephemeris data
+       for all GNSS constellations
+      - QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT (0x20000000000) --  The control point must enable this mask to receive the upcoming
+       leap second info from service
 
  Multiple events can be registered by ORing the individual masks and
  sending them in this TLV. All unused bits in this mask must be set to 0.
@@ -5200,8 +5211,8 @@ typedef enum {
   eQMI_LOC_POSITION_SRC_WIFI_V02 = 3, /**<  Position source is Wi-Fi  */
   eQMI_LOC_POSITION_SRC_TERRESTRIAL_V02 = 4, /**<  Position source is Terrestrial  */
   eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID_V02 = 5, /**<  Position source is GNSS Terrestrial Hybrid  */
-  eQMI_LOC_POSITION_SRC_OTHER_V02 = 6, /**<  Position source is Dead Reckoning Engine  */
-  eQMI_LOC_POSITION_SRC_DRE_V02 = 7,
+  eQMI_LOC_POSITION_SRC_OTHER_V02 = 6, /**<  Other sources  */
+  eQMI_LOC_POSITION_SRC_DRE_V02 = 7, /**<  Position source is Dead Reckoning Engine  */
   QMILOCPOSITIONSRCENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocPositionSrcEnumT_v02;
 /**
@@ -5376,8 +5387,8 @@ typedef struct {
       - eQMI_LOC_POSITION_SRC_WIFI (3) --  Position source is Wi-Fi
       - eQMI_LOC_POSITION_SRC_TERRESTRIAL (4) --  Position source is Terrestrial
       - eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID (5) --  Position source is GNSS Terrestrial Hybrid
-      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Position source is Dead Reckoning Engine
-      - eQMI_LOC_POSITION_SRC_DRE (7) --
+      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Other sources
+      - eQMI_LOC_POSITION_SRC_DRE (7) --  Position source is Dead Reckoning Engine
 
  If altitude is specified and the altitude source is not specified, the engine
  assumes that the altitude was obtained using the specified position source. \n
@@ -5812,6 +5823,7 @@ typedef uint32_t qmiLocNmeaSentenceMaskT_v02;
 #define QMI_LOC_NMEA_MASK_GNGGA_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00080000) /**<  Enable GNGGA type  */
 #define QMI_LOC_NMEA_MASK_GNRMC_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00100000) /**<  Enable GNRMC type  */
 #define QMI_LOC_NMEA_MASK_GNVTG_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00200000) /**<  Enable GNVTG type  */
+#define QMI_LOC_NMEA_MASK_GAGNS_V02 ((qmiLocNmeaSentenceMaskT_v02)0x00400000) /**<  Enable GAGNS type  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5846,6 +5858,7 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_GNGGA (0x00080000) --  Enable GNGGA type
       - QMI_LOC_NMEA_MASK_GNRMC (0x00100000) --  Enable GNRMC type
       - QMI_LOC_NMEA_MASK_GNVTG (0x00200000) --  Enable GNVTG type
+      - QMI_LOC_NMEA_MASK_GAGNS (0x00400000) --  Enable GAGNS type
  */
 }qmiLocSetNmeaTypesReqMsgT_v02;  /* Message */
 /**
@@ -5952,6 +5965,7 @@ typedef struct {
       - QMI_LOC_NMEA_MASK_GNGGA (0x00080000) --  Enable GNGGA type
       - QMI_LOC_NMEA_MASK_GNRMC (0x00100000) --  Enable GNRMC type
       - QMI_LOC_NMEA_MASK_GNVTG (0x00200000) --  Enable GNVTG type
+      - QMI_LOC_NMEA_MASK_GAGNS (0x00400000) --  Enable GAGNS type
  */
 }qmiLocGetNmeaTypesIndMsgT_v02;  /* Message */
 /**
@@ -7136,6 +7150,10 @@ typedef struct {
       - QMI_LOC_EVENT_MASK_UNPROPAGATED_POSITION_REPORT (0x4000000000) --  The control point must enable this mask to receive unpropagated fix
       - QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ (0x8000000000) --  The control point must enable this mask to receive the base station
        observed data service request
+      - QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT (0x10000000000) --  The control point must enable this mask to receive the ephemeris data
+       for all GNSS constellations
+      - QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT (0x20000000000) --  The control point must enable this mask to receive the upcoming
+       leap second info from service
  */
 }qmiLocGetRegisteredEventsIndMsgT_v02;  /* Message */
 /**
@@ -13893,6 +13911,18 @@ typedef struct {
       - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo
       - eQMI_SYSTEM_QZSS (0x10) --  Enable QZSS
  */
+
+  /* Optional */
+  /*  Request Full Ephemeris Data */
+  uint8_t reportFullEphemerisDb_valid;  /**< Must be set to true if reportFullEphemerisDb is being passed */
+  uint8_t reportFullEphemerisDb;
+  /**<   Request indicating client needs complete ephemeris */
+
+  /* Optional */
+  /*  Request Complete SV Polynomial Data */
+  uint8_t reportFullSvPolyDb_valid;  /**< Must be set to true if reportFullSvPolyDb is being passed */
+  uint8_t reportFullSvPolyDb;
+  /**<   Request indicating client needs complete SV polynomials */
 }qmiLocSetGNSSConstRepConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -14584,9 +14614,11 @@ typedef struct {
 typedef uint16_t qmiLocSvPolyStatusMaskT_v02;
 #define QMI_LOC_SV_POLY_SRC_ALM_CORR_V02 ((qmiLocSvPolyStatusMaskT_v02)0x01) /**<  Polynomials based on XTRA  */
 #define QMI_LOC_SV_POLY_GLO_STR4_V02 ((qmiLocSvPolyStatusMaskT_v02)0x02) /**<  GLONASS string 4 has been received  */
+#define QMI_LOC_SV_POLY_DELETE_V02 ((qmiLocSvPolyStatusMaskT_v02)0x04) /**<  Polynomials are invalid and should be deleted  */
 typedef uint16_t qmiLocSvPolyStatusMaskValidityT_v02;
 #define QMI_LOC_SV_POLY_SRC_ALM_CORR_VALID_V02 ((qmiLocSvPolyStatusMaskValidityT_v02)0x01) /**<  Validity status for QMI_LOC_SV_POLY_SRC_ALM_CORR  */
 #define QMI_LOC_SV_POLY_GLO_STR4_VALID_V02 ((qmiLocSvPolyStatusMaskValidityT_v02)0x02) /**<  Validity status for QMI_LOC_SV_POLY_GLO_STR4   */
+#define QMI_LOC_SV_POLY_DELETE_VALID_V02 ((qmiLocSvPolyStatusMaskValidityT_v02)0x04) /**<  Validity status for QMI_LOC_SV_POLY_DELETE  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -14624,7 +14656,8 @@ typedef struct {
 
  Valid bitmasks: \n
       - QMI_LOC_SV_POLY_SRC_ALM_CORR_VALID (0x01) --  Validity status for QMI_LOC_SV_POLY_SRC_ALM_CORR
-      - QMI_LOC_SV_POLY_GLO_STR4_VALID (0x02) --  Validity status for QMI_LOC_SV_POLY_GLO_STR4   */
+      - QMI_LOC_SV_POLY_GLO_STR4_VALID (0x02) --  Validity status for QMI_LOC_SV_POLY_GLO_STR4
+      - QMI_LOC_SV_POLY_DELETE_VALID (0x04) --  Validity status for QMI_LOC_SV_POLY_DELETE  */
 
   /* Mandatory */
   /*  SV Polynomial Report Status */
@@ -14633,7 +14666,8 @@ typedef struct {
 
  Valid bitmasks: \n
       - QMI_LOC_SV_POLY_SRC_ALM_CORR (0x01) --  Polynomials based on XTRA
-      - QMI_LOC_SV_POLY_GLO_STR4 (0x02) --  GLONASS string 4 has been received  */
+      - QMI_LOC_SV_POLY_GLO_STR4 (0x02) --  GLONASS string 4 has been received
+      - QMI_LOC_SV_POLY_DELETE (0x04) --  Polynomials are invalid and should be deleted  */
 
   /* Optional */
   /*  Polynomial Coefficient's 0th Term for X, Y, and Z Coordinates */
@@ -16162,8 +16196,8 @@ typedef struct {
       - eQMI_LOC_POSITION_SRC_WIFI (3) --  Position source is Wi-Fi
       - eQMI_LOC_POSITION_SRC_TERRESTRIAL (4) --  Position source is Terrestrial
       - eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID (5) --  Position source is GNSS Terrestrial Hybrid
-      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Position source is Dead Reckoning Engine
-      - eQMI_LOC_POSITION_SRC_DRE (7) --
+      - eQMI_LOC_POSITION_SRC_OTHER (6) --  Other sources
+      - eQMI_LOC_POSITION_SRC_DRE (7) --  Position source is Dead Reckoning Engine
  */
 
   /* Optional */
@@ -18539,8 +18573,7 @@ typedef struct {
   /*  Maximum number of BS to send */
   uint8_t maxNumBs_valid;  /**< Must be set to true if maxNumBs is being passed */
   uint16_t maxNumBs;
-  /**<   Specifies the maximum number of BS to be sent by TLE. Send all
-        available if this optional field is not included. \n
+  /**<   Specifies the maximum number of BS to be sent by TLE. All the available BS are sent if this optional field is not included. \n
         - Range: 1 to 65,535 */
 }qmiLocGetFdclBsListReqMsgT_v02;  /* Message */
 /**
@@ -18614,7 +18647,7 @@ typedef struct {
   uint32_t bsLocalTimestampList_len;  /**< Must be set to # of elements in bsLocalTimestampList */
   uint32_t bsLocalTimestampList[QMI_LOC_FDCL_BS_LIST_MAX_SIZE_V02];
   /**<   A list of last observed local timestamps for each cell in BsList. \n
-       The list shall be aligned with the Base Stations in BsList. */
+       The list is aligned with the base stations in the BsList. */
 
   /* Optional */
   /*  Base Station Best Position */
@@ -19574,7 +19607,7 @@ typedef struct {
   /*  Position source */
   uint8_t positionSource_valid;  /**< Must be set to true if positionSource is being passed */
   qmiLocPositionSourceEnumT_v02 positionSource;
-  /**<   Position source
+  /**<   Position source \n
  Valid values: \n
       - eQMI_LOC_POS_SRC_GNSS (1) --  Source of the position is GNSS
  */
@@ -19616,7 +19649,7 @@ typedef struct {
 /** @addtogroup loc_qmi_messages
     @{
   */
-/** Indication Message; Requests the control point for uploading observed BS data */
+/** Indication Message; Requests the control point to upload observed BS data. */
 typedef struct {
 
   /* Mandatory */
@@ -19632,8 +19665,8 @@ typedef struct {
 /** @addtogroup loc_qmi_messages
     @{
   */
-/** Request Message; Used by the control point to request BS observed location
-                     data from TLE */
+/** Request Message; Used by the control point to request the BS observed location
+                     data from TLE. */
 typedef struct {
 
   /* Optional */
@@ -19732,8 +19765,8 @@ typedef struct {
 /** @addtogroup loc_qmi_messages
     @{
   */
-/** Indication Message; Used by the control point to request BS observed location
-                     data from TLE */
+/** Indication Message; Used by the control point to request the BS observed location
+                     data from TLE. */
 typedef struct {
 
   /* Mandatory */
@@ -19771,6 +19804,526 @@ typedef struct {
        If not specified, moreBsAvailable defaults to FALSE.
   */
 }qmiLocGetBsObsDataIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCEPHUPDATEACTIONENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN_V02 = 0, /**<  Update ephemeris. Source of ephemeris is unknown  */
+  eQMI_LOC_UPDATE_EPH_SRC_OTA_V02 = 1, /**<  Update ephemeris. Source of ephemeris is OTA  */
+  eQMI_LOC_UPDATE_EPH_SRC_NETWORK_V02 = 2, /**<  Update ephemeris. Source of ephemeris is Network  */
+  eQMI_LOC_UPDATE_EPH_SRC_MAX_V02 = 999, /**<  Max value for update ephemeris action. DO NOT USE  */
+  eQMI_LOC_DELETE_EPH_SRC_UNKNOWN_V02 = 1000, /**<  Delete previous ephemeris from unknown source  */
+  eQMI_LOC_DELETE_EPH_SRC_NETWORK_V02 = 1001, /**<  Delete previous ephemeris from network  */
+  eQMI_LOC_DELETE_EPH_SRC_OTA_V02 = 1002, /**<  Delete previous ephemeris from OTA  */
+  eQMI_LOC_DELETE_EPH_SRC_MAX_V02 = 1999, /**<  Max value for delete ephemeris action. DO NOT USE  */
+  QMILOCEPHUPDATEACTIONENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocEphUpdateActionEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  uint16_t gnssSvId;
+  /**<   GNSS SV ID.
+       - Type: uint16
+       \begin{itemize1}
+       \item    Range:    \begin{itemize1}
+         \item    For GPS:     1 to 32
+         \item    For QZSS:    193 to 197
+         \item    For BDS:     201 to 237
+         \item    For GAL:     301 to 336
+       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+
+  qmiLocEphUpdateActionEnumT_v02 updateAction;
+  /**<   Specifies the source of ephemeris. \n
+ - Type: int32 enum
+ Valid Values: \n
+      - eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN (0) --  Update ephemeris. Source of ephemeris is unknown
+      - eQMI_LOC_UPDATE_EPH_SRC_OTA (1) --  Update ephemeris. Source of ephemeris is OTA
+      - eQMI_LOC_UPDATE_EPH_SRC_NETWORK (2) --  Update ephemeris. Source of ephemeris is Network
+      - eQMI_LOC_UPDATE_EPH_SRC_MAX (999) --  Max value for update ephemeris action. DO NOT USE
+      - eQMI_LOC_DELETE_EPH_SRC_UNKNOWN (1000) --  Delete previous ephemeris from unknown source
+      - eQMI_LOC_DELETE_EPH_SRC_NETWORK (1001) --  Delete previous ephemeris from network
+      - eQMI_LOC_DELETE_EPH_SRC_OTA (1002) --  Delete previous ephemeris from OTA
+      - eQMI_LOC_DELETE_EPH_SRC_MAX (1999) --  Max value for delete ephemeris action. DO NOT USE
+ */
+
+  uint16_t IODE;
+  /**<   Issue of data ephemeris used (unit-less). \n
+         GPS: IODE 8 bits.\n
+         BDS: AODE 5 bits. \n
+         GAL: SIS IOD 10 bits. \n
+         - Type: uint16
+         - Units: Unit-less */
+
+  double aSqrt;
+  /**<   Square root of semi-major axis. \n
+       - Type: double
+       - Units: Square Root of Meters */
+
+  double deltaN;
+  /**<   Mean motion difference from computed value. \n
+       - Type: double
+       - Units: Radians/Second */
+
+  double m0;
+  /**<   Mean anomaly at reference time. \n
+       - Type: double
+       - Units: Radians */
+
+  double eccentricity;
+  /**<   Eccentricity . \n
+       - Type: double
+       - Units: Unit-less */
+
+  double omega0;
+  /**<   Longitude of ascending node of orbital plane at the weekly epoch. \n
+       - Type: double
+       - Units: Radians */
+
+  double i0;
+  /**<   Inclination angle at reference time. \n
+       - Type: double
+       - Units: Radians */
+
+  double omega;
+  /**<   Argument of Perigee. \n
+       - Type: double
+       - Units: Radians */
+
+  double omegaDot;
+  /**<   Rate of change of right ascension. \n
+       - Type: double
+       - Units: Radians/Second */
+
+  double iDot;
+  /**<   Rate of change of inclination angle. \n
+       - Type: double
+       - Units: Radians/Second */
+
+  double cUc;
+  /**<   Amplitude of the cosine harmonic correction term to the argument of latitude. \n
+       - Type: double
+       - Units: Radians */
+
+  double cUs;
+  /**<   Amplitude of the sine harmonic correction term to the argument of latitude. \n
+       - Type: double
+       - Units: Radians */
+
+  double cRc;
+  /**<   Amplitude of the cosine harmonic correction term to the orbit radius. \n
+       - Type: double
+       - Units: Meters */
+
+  double cRs;
+  /**<   Amplitude of the sine harmonic correction term to the orbit radius. \n
+       - Type: double
+       - Units: Meters */
+
+  double cIc;
+  /**<   Amplitude of the cosine harmonic correction term to the angle of inclination. \n
+       - Type: double
+       - Units: Radians */
+
+  double cIs;
+  /**<   Amplitude of the sine harmonic correction term to the angle of inclination. \n
+       - Type: double
+       - Units: Radians */
+
+  uint32_t toe;
+  /**<   Reference time of ephemeris. \n
+       - Type: uint32
+       - Units: Seconds */
+
+  uint32_t toc;
+  /**<   Clock data reference time of week.  \n
+       - Type: uint32
+       - Units: Seconds */
+
+  double af0;
+  /**<   Clock bias correction coefficient. \n
+       - Type: double
+       - Units: Seconds */
+
+  double af1;
+  /**<   Clock drift coefficient. \n
+       - Type: double
+       - Units: Seconds/Second */
+
+  double af2;
+  /**<   Clock drift rate correction coefficient. \n
+       - Type: double
+       - Units: Seconds/Seconds^2 */
+}qmiLocEphGnssDataStructT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocEphGnssDataStructT_v02 commonEphemerisData;
+  /**<   Common ephemeris data.   */
+
+  uint8_t signalHealth;
+  /**<   Signal health. \n
+       Bit 0 : L5 Signal Health. \n
+       Bit 1 : L2 Signal Health. \n
+       Bit 2 : L1 Signal Health. \n
+       - Type: uint8
+       - Values: 3 bit mask of signal health, where set bit indicates unhealthy signal */
+
+  uint8_t URAI;
+  /**<   User Range Accuracy Index. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+  uint8_t codeL2;
+  /**<   Indicates which codes are commanded ON for the L2 channel (2-bits). \n
+       - Type: uint8
+       Valid Values: \n
+       - 00 : Reserved
+       - 01 : P code ON
+       - 10 : C/A code ON */
+
+  uint8_t dataFlagL2P;
+  /**<   L2 P-code indication flag. \n
+       - Type: uint8
+       - Value 1 indicates that the Nav data stream was commanded OFF on the P-code of the L2 channel. */
+
+  double tgd;
+  /**<   Time of group delay. \n
+       - Type: double
+       - Units: Seconds */
+
+  uint8_t fitInterval;
+  /**<   Indicates the curve-fit interval used by the CS. \n
+       - Type: uint8
+       Valid Values:
+       - 0 : Four hours
+       - 1 : Greater than four hours */
+
+  uint16_t IODC;
+  /**<   Issue of Data, Clock. \n
+       - Type: uint16
+       - Units: Unit-less */
+}qmiLocGpsEphemerisT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends GPS ephemeris report for all signal types (L1/L2/L5)
+                    to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  GPS Ephemeris Data */
+  uint32_t gpsEphemerisList_len;  /**< Must be set to # of elements in gpsEphemerisList */
+  qmiLocGpsEphemerisT_v02 gpsEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
+  /**<   GPS ephemeris parameters. */
+}qmiLocGpsEphemerisReportIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  uint16_t gnssSvId;
+  /**<   GNSS SV ID.
+       - Type: uint16
+       - Range: 65 to 96 if known. When the slot number to SV ID mapping is unknown, set to 255 */
+
+  qmiLocEphUpdateActionEnumT_v02 updateAction;
+  /**<   Specifies the source of ephemeris. \n
+ - Type: int32 enum
+ Valid Values: \n
+      - eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN (0) --  Update ephemeris. Source of ephemeris is unknown
+      - eQMI_LOC_UPDATE_EPH_SRC_OTA (1) --  Update ephemeris. Source of ephemeris is OTA
+      - eQMI_LOC_UPDATE_EPH_SRC_NETWORK (2) --  Update ephemeris. Source of ephemeris is Network
+      - eQMI_LOC_UPDATE_EPH_SRC_MAX (999) --  Max value for update ephemeris action. DO NOT USE
+      - eQMI_LOC_DELETE_EPH_SRC_UNKNOWN (1000) --  Delete previous ephemeris from unknown source
+      - eQMI_LOC_DELETE_EPH_SRC_NETWORK (1001) --  Delete previous ephemeris from network
+      - eQMI_LOC_DELETE_EPH_SRC_OTA (1002) --  Delete previous ephemeris from OTA
+      - eQMI_LOC_DELETE_EPH_SRC_MAX (1999) --  Max value for delete ephemeris action. DO NOT USE
+ */
+
+  uint8_t bnHealth;
+  /**<   SV health flags. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+
+  uint8_t lnHealth;
+  /**<   Ln SV health flags. GLONASS-M. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+
+  uint8_t tb;
+  /**<   Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+  uint8_t ft;
+  /**<   SV accuracy index. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+  uint8_t gloM;
+  /**<   GLONASS-M flag. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : GLONASS
+       - 1 : GLONASS-M */
+
+  uint8_t enAge;
+  /**<   Characterizes "Age" of current information. \n
+       - Type: uint8
+       - Units: Days */
+
+  uint8_t gloFrequency;
+  /**<   GLONASS frequency number + 8. \n
+       - Type: uint8
+       - Range: 1 to 14
+  */
+
+  uint8_t p1;
+  /**<   Time interval between two adjacent values of tb parameter. \n
+       - Type: uint8
+       - Units: Minutes */
+
+  uint8_t p2;
+  /**<   Flag of oddness ("1") or evenness ("0") of the value of tb \n
+       for intervals 30 or 60 minutes. \n
+       - Type: uint8 */
+
+  float deltaTau;
+  /**<   Time difference between navigation RF signal transmitted in L2 sub-band \n
+       and aviation RF signal transmitted in L1 sub-band. \n
+       - Type: floating point
+       - Units: Seconds */
+
+  double position[3];
+  /**<   Satellite XYZ position. \n
+       - Type: array of doubles
+       - Units: Meters */
+
+  double velocity[3];
+  /**<   Satellite XYZ velocity. \n
+       - Type: array of doubles
+       - Units: Meters/Second */
+
+  double acceleration[3];
+  /**<   Satellite XYZ sola-luni acceleration. \n
+       - Type: array of doubles
+       - Units: Meters/Second^2 */
+
+  float tauN;
+  /**<   Satellite clock correction relative to GLONASS time. \n
+       - Type: floating point
+       - Units: Seconds */
+
+  float gamma;
+  /**<   Relative deviation of predicted carrier frequency value \n
+       from nominal value at the instant tb. \n
+       - Type: floating point
+       - Units: Unit-less */
+
+  double toe;
+  /**<   Complete ephemeris time, including N4, NT and Tb. \n
+       [(N4-1)*1461 + (NT-1)]*86400 + tb*900 \n
+       - Type: double
+       - Units: Seconds */
+
+  uint16_t nt;
+  /**<   Current date, calendar number of day within four-year interval. \n
+       Starting from the 1-st of January in a leap year. \n
+       - Type: uint16
+       - Units: Days */
+}qmiLocGloEphemerisT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends GLONASS ephemeris report to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  GLONASS Ephemeris Data */
+  uint32_t gloEphemerisList_len;  /**< Must be set to # of elements in gloEphemerisList */
+  qmiLocGloEphemerisT_v02 gloEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
+  /**<   GLONASS ephemeris parameters. */
+}qmiLocGloEphemerisReportIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocEphGnssDataStructT_v02 commonEphemerisData;
+  /**<   Common ephemeris data.   */
+
+  uint8_t svHealth;
+  /**<   Satellite health information applied to both B1 and B2 (SatH1). \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+
+  uint8_t AODC;
+  /**<   Age of data clock. \n
+       - Type: uint8
+       - Units: Hours */
+
+  double tgd1;
+  /**<   Equipment group delay differential on B1 signal. \n
+       - Type: double
+       - Units: Nano-Seconds */
+
+  double tgd2;
+  /**<   Equipment group delay differential on B2 signal. \n
+       - Type: double
+       - Units: Nano-Seconds */
+
+  uint8_t URAI;
+  /**<   User range accuracy index (4-bits). \n
+       - Type: uint8
+       - Units: Unit-less */
+}qmiLocBdsEphemerisT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends BDS ephemeris report to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  BDS Ephemeris Data */
+  uint32_t bdsEphemerisList_len;  /**< Must be set to # of elements in bdsEphemerisList */
+  qmiLocBdsEphemerisT_v02 bdsEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
+  /**<   BDS ephemeris parameters. */
+}qmiLocBdsEphemerisReportIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCGALEPHSOURCESIGNAL_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_GAL_EPH_SIGNAL_SRC_UNKNOWN_V02 = 0, /**<  GALILEO signal is unknown  */
+  eQMI_LOC_GAL_EPH_SIGNAL_SRC_E1B_V02 = 1, /**<  GALILEO signal is E1B  */
+  eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5A_V02 = 2, /**<  GALILEO signal is E5A  */
+  eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5B_V02 = 3, /**<  GALILEO signal is E5B  */
+  QMILOCGALEPHSOURCESIGNAL_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocGalEphSourceSignal_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocEphGnssDataStructT_v02 commonEphemerisData;
+  /**<   Common ephemeris data.   */
+
+  qmiLocGalEphSourceSignal_v02 dataSourceSignal;
+  /**<   Galileo Signal Source. \n
+ Valid Values: \n
+      - eQMI_LOC_GAL_EPH_SIGNAL_SRC_UNKNOWN (0) --  GALILEO signal is unknown
+      - eQMI_LOC_GAL_EPH_SIGNAL_SRC_E1B (1) --  GALILEO signal is E1B
+      - eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5A (2) --  GALILEO signal is E5A
+      - eQMI_LOC_GAL_EPH_SIGNAL_SRC_E5B (3) --  GALILEO signal is E5B  */
+
+  uint8_t sisIndex;
+  /**<   Signal-in-space index for dual frequency E1-E5b/E5a depending on dataSignalSource. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+  double bgdE1E5a;
+  /**<   E1-E5a Broadcast group delay from F/Nav (E5A). \n
+       - Type: double
+       - Units: Seconds */
+
+  double bgdE1E5b;
+  /**<   E1-E5b Broadcast group delay from I/Nav (E1B or E5B). \n
+       For E1B or E5B signal, both bgdE1E5a and bgdE1E5b are valid. \n
+       For E5A signal, only bgdE1E5a is valid. \n
+       Signal source identified using dataSignalSource. \n
+       - Type: double
+       - Units: Seconds */
+
+  uint8_t svHealth;
+  /**<   SV health status of signal identified by dataSourceSignal. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+}qmiLocGalEphemerisT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends GALILEO ephemeris report to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  GALILEO Ephemeris Data */
+  uint32_t galEphemerisList_len;  /**< Must be set to # of elements in galEphemerisList */
+  qmiLocGalEphemerisT_v02 galEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
+  /**<   GALILEO ephemeris parameters. */
+}qmiLocGalEphemerisReportIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends QZSS ephemeris report to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  QZSS Ephemeris Data */
+  uint32_t qzssEphemerisList_len;  /**< Must be set to # of elements in qzssEphemerisList */
+  qmiLocGpsEphemerisT_v02 qzssEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
+  /**<   QZSS ephemeris parameters. */
+}qmiLocQzssEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
   */
@@ -19931,7 +20484,6 @@ typedef struct {
   /**<   Energy consumed by the GNSS engine since bootup in units of 0.1 milli watt seconds.
        A value of 0xffffffffffffffff indicates an invalid reading
        Valid values: \n
-       @ENUM()
 
        */
 
@@ -19941,10 +20493,47 @@ typedef struct {
   /**<   Energy consumed by the GNSS engine since the first bootup in units of 0.1 milli watt seconds.
        A value of 0xffffffffffffffff indicates an invalid reading
        Valid values: \n
-       @ENUM()
 
        */
 }qmiLocQueryGNSSEnergyConsumedIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+typedef uint64_t qmiLocEventReportMaskT_v02;
+#define QMI_LOC_DELETE_GPS_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000001ull) /**<  GPS Ephemeris parameters have been deleted.  */
+#define QMI_LOC_DELETE_GLO_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000002ull) /**<  GLONASS Ephemeris parameters have been deleted.  */
+#define QMI_LOC_DELETE_BDS_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000004ull) /**<  BDS Ephemeris parameters have been deleted.  */
+#define QMI_LOC_DELETE_GAL_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000008ull) /**<  GALILEO Ephemeris parameters have been deleted.  */
+#define QMI_LOC_DELETE_QZSS_EPHEMERIS_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000010ull) /**<  QZSS Ephemeris parameters have been deleted.  */
+#define QMI_LOC_DELETE_GPS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000020ull) /**<  GPS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_GLO_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000040ull) /**<  GLONASS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_BDS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000080ull) /**<  BDS SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_GAL_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000100ull) /**<  GALILEO SV Polynomials have been deleted.  */
+#define QMI_LOC_DELETE_QZSS_SV_POLY_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00000200ull) /**<  QZSS SV Polynomials have been deleted.  */
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Sends report of modem events to the control point. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Event Report */
+  qmiLocEventReportMaskT_v02 eventReport;
+  /**<   Bitmask indicating the modem event. \n
+ Valid bitmasks: \n
+      - QMI_LOC_DELETE_GPS_EPHEMERIS_ALL (0x00000001) --  GPS Ephemeris parameters have been deleted.
+      - QMI_LOC_DELETE_GLO_EPHEMERIS_ALL (0x00000002) --  GLONASS Ephemeris parameters have been deleted.
+      - QMI_LOC_DELETE_BDS_EPHEMERIS_ALL (0x00000004) --  BDS Ephemeris parameters have been deleted.
+      - QMI_LOC_DELETE_GAL_EPHEMERIS_ALL (0x00000008) --  GALILEO Ephemeris parameters have been deleted.
+      - QMI_LOC_DELETE_QZSS_EPHEMERIS_ALL (0x00000010) --  QZSS Ephemeris parameters have been deleted.
+      - QMI_LOC_DELETE_GPS_SV_POLY_ALL (0x00000020) --  GPS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_GLO_SV_POLY_ALL (0x00000040) --  GLONASS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_BDS_SV_POLY_ALL (0x00000080) --  BDS SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_GAL_SV_POLY_ALL (0x00000100) --  GALILEO SV Polynomials have been deleted.
+      - QMI_LOC_DELETE_QZSS_SV_POLY_ALL (0x00000200) --  QZSS SV Polynomials have been deleted.
+ */
+}qmiLocEventReportIndMsgT_v02;  /* Message */
 /**
     @}
   */
@@ -19964,6 +20553,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCHING_STATUS_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_V02
+//#define REMOVE_QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_BS_OBS_DATA_SERVICE_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_DBT_POSITION_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_DBT_SESSION_STATUS_V02
@@ -19971,6 +20561,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_EVENT_ENGINE_STATE_V02
 //#define REMOVE_QMI_LOC_EVENT_FDCL_SERVICE_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_FIX_SESSION_STATE_V02
+//#define REMOVE_QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_GDT_DOWNLOAD_BEGIN_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_GDT_DOWNLOAD_END_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_GDT_RECEIVE_DONE_V02
@@ -19982,8 +20573,10 @@ typedef struct {
 //#define REMOVE_QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_V02
 //#define REMOVE_QMI_LOC_EVENT_GEOFENCE_PROXIMITY_NOTIFICATION_V02
 //#define REMOVE_QMI_LOC_EVENT_GET_TIME_ZONE_INFO_V02
+//#define REMOVE_QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_GNSS_MEASUREMENT_REPORT_IND_V02
 //#define REMOVE_QMI_LOC_EVENT_GNSS_SV_INFO_V02
+//#define REMOVE_QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_INJECT_POSITION_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_INJECT_PREDICTED_ORBITS_REQ_V02
 //#define REMOVE_QMI_LOC_EVENT_INJECT_SRN_AP_DATA_REQ_V02
@@ -19998,6 +20591,8 @@ typedef struct {
 //#define REMOVE_QMI_LOC_EVENT_NMEA_V02
 //#define REMOVE_QMI_LOC_EVENT_PEDOMETER_CONTROL_V02
 //#define REMOVE_QMI_LOC_EVENT_POSITION_REPORT_V02
+//#define REMOVE_QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_V02
+//#define REMOVE_QMI_LOC_EVENT_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_SENSOR_STREAMING_READY_STATUS_V02
 //#define REMOVE_QMI_LOC_EVENT_SET_SPI_STREAMING_REPORT_V02
 //#define REMOVE_QMI_LOC_EVENT_SV_POLYNOMIAL_REPORT_IND_V02
@@ -20527,15 +21122,21 @@ typedef struct {
 #define QMI_LOC_GET_BS_OBS_DATA_REQ_V02 0x00C4
 #define QMI_LOC_GET_BS_OBS_DATA_RESP_V02 0x00C4
 #define QMI_LOC_GET_BS_OBS_DATA_IND_V02 0x00C4
-#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_REQ_V02 0x00C5
-#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_RESP_V02 0x00C5
-#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_IND_V02 0x00C5
-#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_REQ_V02 0x00C6
-#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_RESP_V02 0x00C6
-#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_IND_V02 0x00C6
-#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02 0x00C7
-#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02 0x00C7
-#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02 0x00C7
+#define QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_IND_V02 0x00C5
+#define QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_IND_V02 0x00C6
+#define QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02 0x00C7
+#define QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02 0x00C8
+#define QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02 0x00C9
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_REQ_V02 0x00CA
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_RESP_V02 0x00CA
+#define QMI_LOC_SET_CONSTRAINED_TUNC_MODE_IND_V02 0x00CA
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_REQ_V02 0x00CB
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_RESP_V02 0x00CB
+#define QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_IND_V02 0x00CB
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02 0x00CC
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02 0x00CC
+#define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02 0x00CC
+#define QMI_LOC_EVENT_REPORT_IND_V02 0x00CD
 /**
     @}
   */

@@ -250,7 +250,7 @@ LocApiV02 :: LocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
     clientHandle(LOC_CLIENT_INVALID_HANDLE_VALUE),
     mQmiMask(0), mInSession(false), mPowerMode(GNSS_POWER_MODE_INVALID),
     mEngineOn(false), mMeasurementsStarted(false),
-    mIsMasterRegistered(false)
+    mIsMasterRegistered(false), mMasterRegisterNotSupported(false)
 {
   // initialize loc_sync_req interface
   loc_sync_req_init();
@@ -1539,6 +1539,13 @@ LocApiV02::registerMasterClient()
     LOC_LOGw ("error status = %s, reg_master_client_ind.status = %s",
               loc_get_v02_client_status_name(status),
               loc_get_v02_qmi_reg_mk_status_name(reg_master_client_ind.status));
+    if (eLOC_CLIENT_FAILURE_INVALID_MESSAGE_ID == status ||
+        eLOC_CLIENT_FAILURE_UNSUPPORTED == status) {
+      mMasterRegisterNotSupported = true;
+    } else {
+      mMasterRegisterNotSupported = false;
+    }
+    LOC_LOGv("mMasterRegisterNotSupported = %d", mMasterRegisterNotSupported);
     err = LOCATION_ERROR_GENERAL_FAILURE;
   }
 }
@@ -5070,7 +5077,8 @@ int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
     memset(&setGNSSConstRepConfigReq, 0, sizeof(setGNSSConstRepConfigReq));
 
     setGNSSConstRepConfigReq.measReportConfig_valid = true;
-    if (mask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) {
+    if ((mask & QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02) ||
+        mMasterRegisterNotSupported) {
         setGNSSConstRepConfigReq.measReportConfig = svConstellation;
     }
 

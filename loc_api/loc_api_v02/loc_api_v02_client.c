@@ -867,6 +867,10 @@ static locClientStatusEnumType convertQmiResponseToLocStatus(
         status = eLOC_CLIENT_FAILURE_UNSUPPORTED;
         break;
 
+      case QMI_ERR_INVALID_MESSAGE_ID_V01:
+        status = eLOC_CLIENT_FAILURE_INVALID_MESSAGE_ID;
+        break;
+
       default:
         status = eLOC_CLIENT_FAILURE_INTERNAL;
         break;

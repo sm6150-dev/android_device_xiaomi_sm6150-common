@@ -747,6 +747,10 @@ void LocApiV02 :: startFix(const LocPosMode& fixCriteria, LocApiResponse *adapte
                   GNSS_POWER_MODE_M5 == fixCriteria.powerMode) {
               start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_LOW_V02;
           }
+          // Force TBM = TBF for power mode M4
+          if (GNSS_POWER_MODE_M4 == fixCriteria.powerMode) {
+              start_msg.powerMode.timeBetweenMeasurement = start_msg.minInterval;
+          }
       }
 
       req_union.pStartReq = &start_msg;

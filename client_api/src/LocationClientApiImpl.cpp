@@ -32,6 +32,7 @@
 #include <log_util.h>
 #include <gps_extended_c.h>
 #include <unistd.h>
+#include <sstream>
 
 namespace location_client {
 
@@ -1101,14 +1102,18 @@ void LocationClientApiImpl::onReceive(const string& data) {
 
                 case E_LOCAPI_NMEA_MSG_ID:
                     {
-                        LOC_LOGd("<<< message = nmea\n");
-                        if (mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_NMEA_BIT) {
+                        if ((mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_NMEA_BIT) &&
+                                (mApiImpl->mGnssReportCbs.gnssNmeaCallback)) {
                             const LocAPINmeaIndMsg* pNmeaIndMsg = (LocAPINmeaIndMsg*)(pMsg);
                             uint64_t timestamp = pNmeaIndMsg->gnssNmeaNotification.timestamp;
                             std::string nmea(pNmeaIndMsg->gnssNmeaNotification.nmea,
-                                              pNmeaIndMsg->gnssNmeaNotification.length);
-                            if (mApiImpl->mGnssReportCbs.gnssNmeaCallback) {
-                                mApiImpl->mGnssReportCbs.gnssNmeaCallback(timestamp, nmea);
+                                             pNmeaIndMsg->gnssNmeaNotification.length);
+                            LOC_LOGd("<<< message = nmea[%s]", nmea.c_str());
+                            std::stringstream ss(nmea);
+                            std::string each;
+                            while(std::getline(ss, each, '\n')) {
+                                each += '\n';
+                                mApiImpl->mGnssReportCbs.gnssNmeaCallback(timestamp, each);
                             }
                         }
                         break;

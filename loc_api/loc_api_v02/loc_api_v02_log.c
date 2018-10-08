@@ -458,6 +458,7 @@ static const loc_name_val_s_type loc_v02_client_status_name[] =
     NAME_VAL(eLOC_CLIENT_FAILURE_INTERNAL),
     NAME_VAL(eLOC_CLIENT_FAILURE_NOT_INITIALIZED),
     NAME_VAL(eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY),
+    NAME_VAL(eLOC_CLIENT_FAILURE_INVALID_MESSAGE_ID),
 };
 static const int loc_v02_client_status_num = sizeof(loc_v02_client_status_name) / sizeof(loc_name_val_s_type);
 

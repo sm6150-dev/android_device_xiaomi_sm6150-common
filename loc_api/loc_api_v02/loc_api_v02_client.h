@@ -115,7 +115,10 @@ typedef enum
   eLOC_CLIENT_FAILURE_NOT_INITIALIZED              = 12,
   /**< Failed because the service has not been initialized. */
 
-  eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY             = 13
+  eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY             = 13,
+  /**< Failed because there is not enough memory to do the operation. */
+
+  eLOC_CLIENT_FAILURE_INVALID_MESSAGE_ID            = 14
   /**< Failed because there is not enough memory to do the operation. */
 
 }locClientStatusEnumType;

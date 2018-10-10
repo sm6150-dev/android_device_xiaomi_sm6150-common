@@ -140,12 +140,15 @@ uint32_t LocHalDaemonClientHandler::startTracking(uint32_t minDistance, uint32_t
     return mSessionId;
 }
 
-void LocHalDaemonClientHandler::stopTracking() {
+void LocHalDaemonClientHandler::unsubscribeLocationSessionCb() {
+
     uint32_t subscriptionMask = mSubscriptionMask;
 
     subscriptionMask &= ~LOCATION_SESSON_ALL_INFO_MASK;
     updateSubscription(subscriptionMask);
+}
 
+void LocHalDaemonClientHandler::stopTracking() {
     if (mSessionId != 0) {
         mLocationApi->stopTracking(mSessionId);
         mSessionId = 0;

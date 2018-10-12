@@ -199,6 +199,11 @@ PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-service \
     android.hardware.drm@1.2-service.clearkey
 
+# Fastbootd
+PRODUCT_PACKAGES += \
+    fastbootd \
+    android.hardware.fastboot@1.0-impl.xiaomi_sm6150
+
 # Fingerprint feature
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml

@@ -53,7 +53,7 @@ LocationClientApi::LocationClientApi(CapabilitiesCb capabitiescb) :
 
     // read configuration file
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, gConfigTable);
-    LOC_LOGd("gDebug=%u\n", gDebug);
+    LOC_LOGd("gDebug=%u", gDebug);
 }
 
 LocationClientApi::~LocationClientApi() {
@@ -70,12 +70,12 @@ bool LocationClientApi::startPositionSession(
 
     //Input parameter check
     if (!locationCallback) {
-        LOC_LOGe ("NULL locationCallback\n");
+        LOC_LOGe ("NULL locationCallback");
         return false;
     }
 
     if (!mApiImpl) {
-        LOC_LOGe ("NULL mApiImpl\n");
+        LOC_LOGe ("NULL mApiImpl");
         return false;
     }
 
@@ -108,12 +108,12 @@ bool LocationClientApi::startPositionSession(
 
     //Input parameter check
     if (!gnssReportCallbacks.gnssLocationCallback) {
-        LOC_LOGe ("gnssLocation Callbacks can't be NULL\n");
+        LOC_LOGe ("gnssLocation Callbacks can't be NULL");
         return false;
     }
 
     if (!mApiImpl) {
-        LOC_LOGe ("NULL mApiImpl\n");
+        LOC_LOGe ("NULL mApiImpl");
         return false;
     }
 

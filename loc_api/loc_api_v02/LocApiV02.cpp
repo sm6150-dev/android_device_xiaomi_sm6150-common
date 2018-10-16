@@ -4523,12 +4523,10 @@ bool LocApiV02 :: convertNiNotifyVerifyType (
 void LocApiV02 :: reportGnssMeasurementData(
   const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr)
 {
-    LOC_LOGV ("%s:%d]: entering\n", __func__, __LINE__);
+    LOC_LOGv("entering");
 
     static GnssMeasurementsNotification measurementsNotify = {};
 
-    int svMeasurement_len = 0;
-    static int meas_index = 0;
     static bool bGPSreceived = false;
     static int msInWeek = -1;
     bool bAgcIsPresent = false;
@@ -4538,13 +4536,12 @@ void LocApiV02 :: reportGnssMeasurementData(
         gnss_measurement_report_ptr.maxMessageNum);
 
     if (gnss_measurement_report_ptr.seqNum > gnss_measurement_report_ptr.maxMessageNum) {
-        LOC_LOGe("%s:%d]: Invalid seqNum, do not proceed");
+        LOC_LOGe("Invalid seqNum, do not proceed");
         return;
     }
 
     if (1 == gnss_measurement_report_ptr.seqNum)
     {
-        meas_index = 0;
         bGPSreceived = false;
         msInWeek = -1;
         memset(&measurementsNotify, 0, sizeof(GnssMeasurementsNotification));
@@ -4553,48 +4550,41 @@ void LocApiV02 :: reportGnssMeasurementData(
 
     // number of measurements
     if (gnss_measurement_report_ptr.svMeasurement_valid) {
-        svMeasurement_len =
-            gnss_measurement_report_ptr.svMeasurement_len;
-        measurementsNotify.count += svMeasurement_len;
-        if (measurementsNotify.count > GNSS_MEASUREMENTS_MAX) {
-            LOC_LOGv("count should not be > 64, limiting it");
-            measurementsNotify.count = GNSS_MEASUREMENTS_MAX;
-        }
-        LOC_LOGv("there are %d SV measurements now, total=%zu\n",
-                  svMeasurement_len,
-                  measurementsNotify.count);
-        if (svMeasurement_len != 0) {
+        if (gnss_measurement_report_ptr.svMeasurement_len != 0) {
             // the array of measurements
             LOC_LOGv("Measurements received for GNSS system %d",
                      gnss_measurement_report_ptr.system);
 
-            for (int index = 0; index < svMeasurement_len; index++) {
-                LOC_LOGv("index=%d meas_index=%d", index, meas_index);
-                if (convertGnssMeasurements(measurementsNotify.measurements[meas_index],
+            for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
+                    measurementsNotify.count < GNSS_MEASUREMENTS_MAX;
+                    index++) {
+                LOC_LOGv("index=%u count=%zu", index, measurementsNotify.count);
+                if (convertGnssMeasurements(
+                        measurementsNotify.measurements[measurementsNotify.count],
                     gnss_measurement_report_ptr,
                     index)) {
                     bAgcIsPresent = true;
                 }
-                meas_index++;
-                if (GNSS_MEASUREMENTS_MAX == meas_index) {
-                    LOC_LOGv("meas_index cannot exceed 64, limiting it");
-                    break;
-                }
+                measurementsNotify.count++;
             }
+            LOC_LOGv("there are %d SV measurements now, total=%zu",
+                     gnss_measurement_report_ptr.svMeasurement_len,
+                     measurementsNotify.count);
         }
     } else {
-        LOC_LOGv("there is no valid GNSS measurement for system %d",
-                 gnss_measurement_report_ptr.system);
+        LOC_LOGv("there is no valid GNSS measurement for system %d, total=%zu",
+                 gnss_measurement_report_ptr.system,
+                 measurementsNotify.count);
     }
-
     // the GPS clock time reading
     if (eQMI_LOC_SV_SYSTEM_GPS_V02 == gnss_measurement_report_ptr.system) {
         bGPSreceived = true;
         msInWeek = convertGnssClock(measurementsNotify.clock,
-                                gnss_measurement_report_ptr);
+                                    gnss_measurement_report_ptr);
     }
+
     if (gnss_measurement_report_ptr.maxMessageNum == gnss_measurement_report_ptr.seqNum
-            && meas_index > 0 && true == bGPSreceived) {
+            && measurementsNotify.count != 0 && true == bGPSreceived) {
         // calling the base
         if (bAgcIsPresent) {
             /* If we can get AGC from QMI LOC there is no need to get it from NMEA */

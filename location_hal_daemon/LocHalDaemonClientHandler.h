@@ -73,6 +73,9 @@ public:
 
     // public APIs
     void updateSubscription(uint32_t mask);
+    // when client stops the location session, then all callbacks
+    // related to location session need to be unsubscribed
+    void unsubscribeLocationSessionCb();
     uint32_t startTracking();
     uint32_t startTracking(uint32_t minDistance, uint32_t minInterval);
     void stopTracking();

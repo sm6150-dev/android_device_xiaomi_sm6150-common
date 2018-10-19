@@ -709,11 +709,11 @@ mutex LocationClientApiImpl::mMutex;
 LocationClientApiImpl - constructors
 ******************************************************************************/
 LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
-        mCapabilitiesCb(capabitiescb),
-        mHalRegistered(false),
-        mCallbacksMask(0), mLocationOptions(),
         mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID),
-        mGnssEnergyConsumedInfoCb(nullptr),
+        mBatchingId(LOCATION_CLIENT_SESSION_ID_INVALID),
+        mCapabilitiesCb(capabitiescb),
+        mHalRegistered(false), mLocationCb(nullptr), mBatchingCb(nullptr),
+        mCallbacksMask(0), mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
         mLocationSysInfoCb(nullptr),
         mLocationSysInfoResponseCb(nullptr) {
@@ -775,6 +775,7 @@ void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs) 
             // update callback functions
             mApiImpl->mResponseCb = mCbs.responsecb;
             mApiImpl->mLocationCb = mCbs.locationcb;
+            mApiImpl->mBatchingCb = mCbs.batchingcb;
             mApiImpl->mGnssReportCbs = mCbs.gnssreportcbs;
         }
         LocationClientApiImpl* mApiImpl;
@@ -811,6 +812,12 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             // handle callbacks that are not related to a fix session
             if (mApiImpl->mLocationSysInfoCb) {
                 callBacksMask |= E_LOC_CB_SYSTEM_INFO_BIT;
+            }
+            if (mCallBacks.batchingCb) {
+                callBacksMask |= E_LOC_CB_BATCHING_BIT;
+            }
+            if (mCallBacks.batchingStatusCb) {
+                callBacksMask |= E_LOC_CB_BATCHING_STATUS_BIT;
             }
 
             // update callback only when changed
@@ -922,6 +929,97 @@ void LocationClientApiImpl::updateTrackingOptions(uint32_t, TrackingOptions& opt
     };
     mMsgTask->sendMsg(new (nothrow) UpdateTrackingOptionsReq(this, option));
 }
+
+//Batching
+uint32_t LocationClientApiImpl::startBatching(BatchingOptions& batchOptions) {
+    struct StartBatchingReq : public LocMsg {
+        StartBatchingReq(LocationClientApiImpl *apiImpl, BatchingOptions& batchOptions) :
+            mApiImpl(apiImpl), mBatchOptions(batchOptions) {}
+        virtual ~StartBatchingReq() {}
+        void proc() const {
+            mApiImpl->mBatchingOptions = mBatchOptions;
+            if (!mApiImpl->mHalRegistered) {
+                LOC_LOGe(">>> startBatching - Not registered yet");
+                return;
+            }
+            if (LOCATION_CLIENT_SESSION_ID_INVALID == mApiImpl->mSessionId) {
+                //start a new batching session
+                mApiImpl->mBatchingId = mApiImpl->mClientId;
+                LocAPIStartBatchingReqMsg msg(mApiImpl->mSocketName,
+                        mApiImpl->mBatchingOptions.minInterval,
+                        mApiImpl->mBatchingOptions.minDistance,
+                        mApiImpl->mBatchingOptions.batchingMode);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
+                        sizeof(msg));
+                LOC_LOGd(">>> StartBatchingReq Interval=%d Distance=%d BatchingMode=%d",
+                        mApiImpl->mBatchingOptions.minInterval,
+                        mApiImpl->mBatchingOptions.minDistance,
+                        mApiImpl->mBatchingOptions.batchingMode);
+            } else {
+                mApiImpl->updateBatchingOptions(mApiImpl->mBatchingId,
+                        const_cast<BatchingOptions&>(mBatchOptions));
+            }
+        }
+        LocationClientApiImpl *mApiImpl;
+        BatchingOptions mBatchOptions;
+    };
+    mMsgTask->sendMsg(new (nothrow) StartBatchingReq(this, batchOptions));
+    return 0;
+}
+
+void LocationClientApiImpl::stopBatching(uint32_t id) {
+    struct StopBatchingReq : public LocMsg {
+        StopBatchingReq(LocationClientApiImpl *apiImpl) :
+            mApiImpl(apiImpl) {}
+        virtual ~StopBatchingReq() {}
+        void proc() const {
+            if (mApiImpl->mBatchingId == mApiImpl->mClientId) {
+                mApiImpl->mBatchingOptions = {};
+                LocAPIStopBatchingReqMsg msg(mApiImpl->mSocketName);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
+                        sizeof(msg));
+                LOC_LOGd(">>> StopBatchingReq rc=%d", rc);
+            }
+            mApiImpl->mBatchingId = LOCATION_CLIENT_SESSION_ID_INVALID;
+        }
+        LocationClientApiImpl *mApiImpl;
+    };
+    mMsgTask->sendMsg(new (nothrow) StopBatchingReq(this));
+}
+
+void LocationClientApiImpl::updateBatchingOptions(uint32_t id, BatchingOptions& batchOptions) {
+    struct UpdateBatchingOptionsReq : public LocMsg {
+        UpdateBatchingOptionsReq(LocationClientApiImpl* apiImpl, BatchingOptions& batchOptions) :
+            mApiImpl(apiImpl), mBatchOptions(batchOptions) {}
+        virtual ~UpdateBatchingOptionsReq() {}
+        void proc() const {
+            mApiImpl->mBatchingOptions = mBatchOptions;
+            LocAPIUpdateBatchingOptionsReqMsg msg(mApiImpl->mSocketName,
+                    mApiImpl->mBatchingOptions.minInterval,
+                    mApiImpl->mBatchingOptions.minDistance,
+                    mApiImpl->mBatchingOptions.batchingMode);
+            bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
+                    sizeof(msg));
+            LOC_LOGd(">>> StartBatchingReq Interval=%d Distance=%d BatchingMode=%d",
+                    mApiImpl->mBatchingOptions.minInterval,
+                    mApiImpl->mBatchingOptions.minDistance,
+                    mApiImpl->mBatchingOptions.batchingMode);
+        }
+        LocationClientApiImpl *mApiImpl;
+        BatchingOptions mBatchOptions;
+    };
+
+    if ((mBatchingOptions.minInterval != batchOptions.minInterval) ||
+            (mBatchingOptions.minDistance != batchOptions.minDistance) ||
+            mBatchingOptions.batchingMode != batchOptions.batchingMode) {
+        mMsgTask->sendMsg(new (nothrow) UpdateBatchingOptionsReq(this, batchOptions));
+    } else {
+        LOC_LOGd("No UpdateBatchingOptions because same Interval=%d Distance=%d, BatchingMode=%d",
+                batchOptions.minInterval, batchOptions.minDistance, batchOptions.batchingMode);
+    }
+}
+
+void LocationClientApiImpl::getBatchedLocations(uint32_t id, size_t count) {}
 
 uint32_t* LocationClientApiImpl::gnssUpdateConfig(GnssConfig config) {
 
@@ -1146,8 +1244,11 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_START_TRACKING_MSG_ID:
                 case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID:
                 case E_LOCAPI_STOP_TRACKING_MSG_ID:
+                case E_LOCAPI_START_BATCHING_MSG_ID:
+                case E_LOCAPI_STOP_BATCHING_MSG_ID:
+                case E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID:
                     {
-                        LOC_LOGd("<<< response message %d", pMsg->msgId);
+                        LOC_LOGd("<<< response message, msgId = %d", pMsg->msgId);
                         const LocAPIGenericRespMsg* pRespMsg = (LocAPIGenericRespMsg*)(pMsg);
                         LocationResponse response = parseLocationError(pRespMsg->err);
                         if (mApiImpl->mResponseCb) {
@@ -1169,7 +1270,37 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         }
                         break;
                     }
+                case E_LOCAPI_BATCHING_MSG_ID:
+                    {
+                        LOC_LOGd("<<< message = batching");
+                        if (mApiImpl->mCallbacksMask & E_LOC_CB_BATCHING_BIT) {
+                            const LocAPIBatchingIndMsg* pBatchingIndMsg =
+                                    (LocAPIBatchingIndMsg*)(pMsg);
+                            std::vector<Location> locationVector;
+                            BatchingStatus status = BATCHING_STATUS_INACTIVE;
+                            if (BATCHING_STATUS_POSITION_AVAILABE ==
+                                    pBatchingIndMsg->batchNotification.status) {
+                                for (int i=0; i<pBatchingIndMsg->batchNotification.count; ++i) {
+                                    locationVector.push_back(parseLocation(
+                                                *(pBatchingIndMsg->batchNotification.location +
+                                                i)));
+                                }
+                                status = BATCHING_STATUS_ACTIVE;
+                            } else if (BATCHING_STATUS_TRIP_COMPLETED ==
+                                    pBatchingIndMsg->batchNotification.status) {
+                                mApiImpl->stopBatching(0);
+                                status = BATCHING_STATUS_DONE;
+                            } else {
+                                LOC_LOGe("invalid Batching Status!");
+                                break;
+                            }
 
+                            if (mApiImpl->mBatchingCb) {
+                                mApiImpl->mBatchingCb(locationVector, status);
+                            }
+                        }
+                        break;
+                    }
                 case E_LOCAPI_LOCATION_INFO_MSG_ID:
                     {
                         LOC_LOGd("<<< message = location info");
@@ -1290,20 +1421,6 @@ void LocationClientApiImpl::onReceive(const string& data) {
 /******************************************************************************
 LocationClientApiImpl - Not implemented overrides
 ******************************************************************************/
-
-uint32_t LocationClientApiImpl::startBatching(BatchingOptions&) {
-    return 0;
-}
-
-void LocationClientApiImpl::stopBatching(uint32_t) {
-}
-
-void LocationClientApiImpl::updateBatchingOptions(uint32_t id, BatchingOptions&) {
-}
-
-void LocationClientApiImpl::getBatchedLocations(uint32_t id, size_t count) {
-}
-
 uint32_t* LocationClientApiImpl::addGeofences(size_t count,
                                               GeofenceOption*, GeofenceInfo*) {
     return nullptr;

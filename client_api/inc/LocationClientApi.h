@@ -290,6 +290,12 @@ enum GnssGloTimeStructTypeFlags {
     GNSS_GLO_FOUR_YEAR_VALID                = (1 << 6)
 };
 
+enum BatchingStatus {
+    BATCHING_STATUS_INACTIVE    = 0,
+    BATCHING_STATUS_ACTIVE      = 1,
+    BATCHING_STATUS_DONE        = 2
+};
+
 struct GnssLocationSvUsedInPosition {
     uint64_t gpsSvUsedIdsMask;
     uint64_t gloSvUsedIdsMask;
@@ -637,7 +643,7 @@ typedef std::function<void(
 /** @fn
     @brief Used by positioning, batching, and miscellanous APIs
 
-    @param err: if not SUCCESS, then id is not valid
+    @param response: if not LOCATION_RESPONSE_SUCCESS, then the last API called failed
 */
 typedef std::function<void(
     LocationResponse response
@@ -646,6 +652,7 @@ typedef std::function<void(
 /** @fn
     @brief
     LocationCb is for receiving a location in a positioning session
+    @param location: received location
 */
 typedef std::function<void(
     const Location& location
@@ -654,6 +661,7 @@ typedef std::function<void(
 /** @fn
     @brief
     GnssLocationCb is for receiving a GNSS location in a positioning session
+    @param gnssLocation: received GNSS Location when positioning
 */
 typedef std::function<void(
     const GnssLocation& gnssLocation
@@ -662,6 +670,7 @@ typedef std::function<void(
 /** @fn
     @brief
     GnssNmeaCb is for receiving GNSS SV information
+    @param gnssSvs: received GNSS SV info
 */
 typedef std::function<void(
     const std::vector<GnssSv>& gnssSvs
@@ -670,6 +679,7 @@ typedef std::function<void(
 /** @fn
     @brief
     GnssNmeaCb is for receiving NMEA sentences
+    @param locations: the locations batched in a session
 */
 typedef std::function<void(
     uint64_t timestamp, const std::string& nmea
@@ -678,6 +688,7 @@ typedef std::function<void(
 /** @fn
     @brief
     GnssDataCb is for receiving GnssData information
+    @param gnssData: the GnssData info in a session
 */
 typedef std::function<void(
     const GnssData& gnssData
@@ -693,6 +704,20 @@ typedef std::function<void(
 typedef std::function<void(
     const LocationSystemInfo & locationSystemInfo
 )> LocationSystemInfoCb;
+
+/** @fn
+    @brief
+    BatchingCb is for delivering locations in a batching session
+    @param locations: the locations batched in a session
+    @param batchStatus: BatchingStatus of the batching session, which is
+        BATCHING_STATUS_INACTIVE when unable to compute positions for batching;
+        BATCHING_STATUS_DONE when trip distance has been traversed for tripBatching;
+        BATCHING_STATUS_ACTIVE when able to compute positions for batching.
+*/
+typedef std::function<void(
+    const std::vector<Location>& locations,
+    BatchingStatus batchStatus
+)> BatchingCb;
 
 struct GnssReportCbs {
     GnssLocationCb gnssLocationCallback;
@@ -723,6 +748,14 @@ struct GnssEnergyConsumedInfo {
 typedef std::function<void(
     const GnssEnergyConsumedInfo& gnssEneryConsumed
 )> GnssEnergyConsumedCb;
+
+struct ClientCallbacks {
+    CapabilitiesCb capabilitycb;
+    ResponseCb responsecb;
+    LocationCb locationcb;
+    BatchingCb batchingcb;
+    GnssReportCbs gnssreportcbs;
+};
 
 class LocationClientApiImpl;
 
@@ -758,33 +791,36 @@ public:
            parameters / callback will be updated, and the session continues but with
            the new set of parameters / callback.
 
-        @param
-        intervalInMs, time between fixes, or TBF, in milliseconds. The actual interval
-                      of reports recieved will be no larger than milliseconds being
-                      rounded up the next interval granularity supported by the underlying
-                      system.
-                      0 to indicate don't care.
-                      1)  The underlying system may have a minimum interval threshold
-                      (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
-                      than this lower bound.
-                      2) The effective intervals may have a granularity level higher
-                      than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
-                      may be honored at 1600 or 2000 ms, depending on the system.
-                      3) Where there is anotehr application in they system having a
-                      session with shorter interval, this client may benefit and
-                      receive reports at that interval.
-        distanceInMeters, distance between fixes, in meters. 0 to indicate don't care.
-                      1)  The underlying system may have a minimum distance threshold
-                      (e.g. 1 meter). Effective distance will not be smaller
-                      than this lower bound.
-                      2) The effective distance may have a granularity level higher
-                      than 1 m, e.g. 5 m. So distanceInMeters being 59 may be honored
-                      at 60 m, depending on the system.
-                      3) Where there is anotehr application in they system having a
-                      session with shorter distance, this client may benefit and
-                      receive reports at that distance.
-        locationCallback, callback to receive positions
-        responseCallback, callback to receive system responses; optional.
+        @param intervalInMs
+        time between fixes, or TBF, in milliseconds. The actual interval
+        of reports recieved will be no larger than milliseconds being
+        rounded up the next interval granularity supported by the underlying
+        system.
+        0 to indicate don't care.
+        1)  The underlying system may have a minimum interval threshold
+        (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
+        than this lower bound.
+        2) The effective intervals may have a granularity level higher
+        than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
+        may be honored at 1600 or 2000 ms, depending on the system.
+        3) Where there is anotehr application in they system having a
+        session with shorter interval, this client may benefit and
+        receive reports at that interval.
+        @param distanceInMeters
+        distance between fixes, in meters. 0 to indicate don't care.
+        1)  The underlying system may have a minimum distance threshold
+        (e.g. 1 meter). Effective distance will not be smaller
+        than this lower bound.
+        2) The effective distance may have a granularity level higher
+        than 1 m, e.g. 5 m. So distanceInMeters being 59 may be honored
+        at 60 m, depending on the system.
+        3) Where there is anotehr application in they system having a
+        session with shorter distance, this client may benefit and
+        receive reports at that distance.
+        @param locationCallback
+        callback to receive positions
+        @param responseCallback
+        callback to receive system responses; optional.
 
         @return True, if a session is successfully started.
                 False, if no session is started, i.e. when locationCallback is nullptr.
@@ -806,23 +842,25 @@ public:
            parameters / callback will be updated, and the session continues but with
            the new set of parameters / callback.
 
-        @param
-        intervalInMs, time between fixes, or TBF, in milliseconds. The actual interval
-                      of reports recieved will be no larger than milliseconds being
-                      rounded up the next interval granularity supported by the underlying
-                      system.
-                      0 to indicate don't care.
-                      1)  The underlying system may have a minimum interval threshold
-                      (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
-                      than this lower bound.
-                      2) The effective intervals may have a granularity level higher
-                      than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
-                      may be honored at 1600 or 2000 ms, depending on the system.
-                      3) Where there is anotehr application in they system having a
-                      session with shorter interval, this client may benefit and
-                      receive reports at that interval.
-        gnssReportCallbacks, table of callbacks to receive GNSS locations / SV / NMEA
-        responseCallback, callback to receive system responses; optional.
+        @param intervalInMs
+        time between fixes, or TBF, in milliseconds. The actual interval
+        of reports recieved will be no larger than milliseconds being
+        rounded up the next interval granularity supported by the underlying
+        system.
+        0 to indicate don't care.
+        1)  The underlying system may have a minimum interval threshold
+        (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
+        than this lower bound.
+        2) The effective intervals may have a granularity level higher
+        than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
+        may be honored at 1600 or 2000 ms, depending on the system.
+        3) Where there is anotehr application in they system having a
+        session with shorter interval, this client may benefit and
+        receive reports at that interval.
+        @param gnssReportCallbacks
+        table of callbacks to receive GNSS locations / SV / NMEA
+        @param responseCallback
+        callback to receive system responses; optional.
 
         @return True, if a session is successfully started.
                 False, if no session is started, i.e. when gnssReportCallbacks is
@@ -835,6 +873,96 @@ public:
     */
     void stopPositionSession();
 
+    /* ================================== BATCHING ================================== */
+
+    /** @brief starts an outdoor trip mode batching session with specified parameters.
+        Trip mode batching completes on its own when trip distance is covered.
+        The behavior of the call is non contextual. The current state or the history of
+        actions does not influence the end result of this call. For example, calling
+        this function when idle, or calling this function after another startTripBatchingSession()
+        or startRoutineBatchingSession(), or calling this function after stopBatchingSession()
+        achieve the same result, which is one of the below:
+        If batchingCallback is nullptr, this call is no op. Otherwise...
+        If both minInterval and tripDistance are don't care, this call is no op.
+           Otherwise...
+        If called during a session (no matter from which startTripBatchingSession()/
+        startRoutineBatchingSession() API), parameters / callback will be updated,
+        and the session continues but with the new set of parameters / callback.
+        locations are reported on the batchingCallback in batches when batch is full.
+        @param minInterval
+        time between fixes, or TBF, in milliseconds. The actual interval
+        of reports recieved will be no larger than milliseconds being
+        rounded up the next interval granularity supported by the underlying
+        system.
+        0 to indicate don't care.
+        1)  The underlying system may have a minimum interval threshold
+        (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
+        than this lower bound.
+        2) The effective intervals may have a granularity level higher
+        than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
+        may be honored at 1600 or 2000 ms, depending on the system.
+        3) Where there is anotehr application in they system having a
+        session with shorter interval, this client may benefit and
+        receive reports at that interval.
+        @param tripDistance
+        the trip distance from the start of outdoor trip batching; 0 means don't care
+        @param batchingCallback
+        callback to receive batching positions and status
+        @param responseCallback
+        callback to receive system responses; optional.
+        @return True, if a batching session is successfully started.
+                False, if no session is started, i.e. when batchingCallback is nullptr.
+    */
+    bool startTripBatchingSession(uint32_t minInterval, uint32_t tripDistance,
+                                  BatchingCb batchingCallback, ResponseCb responseCallback);
+
+    /** @brief starts a routine mode batching session with specified parameters.
+        The behavior of the call is non contextual. The current state or the history of
+        actions does not influence the end result of this call. For example, calling
+        this function when idle, or calling this function after another startTripBatchingSession()
+        or startRoutineBatchingSession(), or calling this function after stopBatchingSession()
+        achieve the same result, which is one of the below:
+        If batchingCallback is nullptr, this call is no op. Otherwise...
+        If both minInterval and minDistance are don't care, this call is no op.
+           Otherwise...
+        If called during a session (no matter from which startTripBatchingSession()/
+        startRoutineBatchingSession() API), parameters / callback will be updated,
+        and the session continues but with the new set of parameters / callback.
+        locations are reported on the batchingCallback in batches when batch is full.
+        @param minInterval
+        time between fixes, or TBF, in milliseconds. The actual interval
+        of reports recieved will be no larger than milliseconds being
+        rounded up the next interval granularity supported by the underlying
+        system.
+        0 to indicate don't care.
+        1)  The underlying system may have a minimum interval threshold
+        (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
+        than this lower bound.
+        2) The effective intervals may have a granularity level higher
+        than 1 ms, e.g. 100 ms or 1000 ms. So milliseconds being 1559
+        may be honored at 1600 or 2000 ms, depending on the system.
+        3) Where there is anotehr application in they system having a
+        session with shorter interval, this client may benefit and
+        receive reports at that interval.
+        @param minDistance
+        specifies the minimum distance that should be traversed before a
+        position should be batched.
+        If 0, the positions are batched after the minInterval period expires.
+        If both minInterval and minDistance are specified, the position are batched only after
+        minInterval has expired AND minDistance has been traversed.
+        - Units: Meters
+        @param batchingCallback
+        callback to receive batching positions and status
+        @param responseCallback
+        callback to receive system responses; optional.
+        @return True, if a batching session is successfully started.
+                False, if no session is started, i.e. when batchingCallback is nullptr.
+    */
+    bool startRoutineBatchingSession(uint32_t minInterval, uint32_t minDistance,
+                                     BatchingCb batchingCallback, ResponseCb responseCallback);
+    /** @brief Stops the batching session.
+    */
+    void stopBatchingSession();
 
     /** @brief Updatee network availability.
         @param

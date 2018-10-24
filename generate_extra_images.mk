@@ -149,7 +149,7 @@ INSTALLED_METADATAIMAGE_TARGET := $(PRODUCT_OUT)/metadata.img
 define build-metadataimage-target
     $(call pretty,"Target metadata fs image: $(INSTALLED_METADATAIMAGE_TARGET)")
     @mkdir -p $(TARGET_OUT_METADATA)
-    $(hide) $(MKEXTUSERIMG) -s $(TARGET_OUT_METADATA) $@ ext4 metadata $(BOARD_METADATAIMAGE_PARTITION_SIZE)
+    $(hide)PATH=$(HOST_OUT_EXECUTABLES):$${PATH} $(MKEXTUSERIMG) -s $(TARGET_OUT_METADATA) $@ ext4 metadata $(BOARD_METADATAIMAGE_PARTITION_SIZE)
     $(hide) chmod a+r $@
 endef
 

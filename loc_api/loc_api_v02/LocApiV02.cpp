@@ -4134,7 +4134,9 @@ void  LocApiV02 :: reportSystemInfo(
                     nextLeapSecondInfo.leapSecondsCurrent;
             leapSecondChangeInfo.leapSecondsAfterChange =
                     nextLeapSecondInfo.leapSecondsNext;
-        } else if (nextLeapSecondInfo.leapSecondsCurrent_valid) {
+        }
+
+        if (nextLeapSecondInfo.leapSecondsCurrent_valid) {
             systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
             systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
                     LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;

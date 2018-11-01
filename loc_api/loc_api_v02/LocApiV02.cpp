@@ -110,6 +110,15 @@ using namespace loc_core;
 #define QZSS_L5_Q_CARRIER_FREQUENCY     1176450000.0
 #define SBAS_L1_CA_CARRIER_FREQUENCY    1575420000.0
 
+const float CarrierFrequencies[] = {
+    0.0,                                // UNKNOWN
+    GPS_L1C_CARRIER_FREQUENCY,          // L1C
+    SBAS_L1_CA_CARRIER_FREQUENCY,       // SBAS_L1
+    GLONASS_G1_CARRIER_FREQUENCY,       // GLONASS_G1
+    QZSS_L1CA_CARRIER_FREQUENCY,        // QZSS_L1CA
+    BEIDOU_B1_I_CARRIER_FREQUENCY,      // BEIDOU_B1
+    GALILEO_E1_C_CARRIER_FREQUENCY };   // GALILEO_E1
+
 /* Gaussian 2D scaling table - scale from x% to 68% confidence */
 struct conf_scaler_to_68_pair {
     uint8_t confidence;
@@ -3301,6 +3310,9 @@ void  LocApiV02 :: reportSv (
                                 gnss_report_ptr->gnssSignalTypeList[SvNotify.count];
                         }
                     }
+                } else {
+                    mask |= GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT;
+                    gnssSv_ref.carrierFrequencyHz = CarrierFrequencies[gnssSv_ref.type];
                 }
 
                 gnssSv_ref.gnssSvOptionsMask = mask;
@@ -4901,6 +4913,16 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         measurementData.flags |= GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT;
     }
     else {
+        measurementData.carrierFrequencyHz = 0;
+        // GLONASS is FDMA system, so each channel has its own carrier frequency
+        // The formula is f(k) = fc + k * 0.5625;
+        // This is applicable for GLONASS G1 only, where fc = 1602MHz
+        if ((gloFrequency >= 1 && gloFrequency <= 14)) {
+            measurementData.carrierFrequencyHz += ((gloFrequency - 8) * 562500);
+        }
+        measurementData.carrierFrequencyHz += CarrierFrequencies[measurementData.svType];
+        measurementData.flags |= GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT;
+
         LOC_LOGv("gnss_measurement_report_ptr.gnssSignalType_valid = 0");
     }
     // multipath_indicator

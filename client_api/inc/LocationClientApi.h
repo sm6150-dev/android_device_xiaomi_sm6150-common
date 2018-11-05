@@ -944,6 +944,57 @@ public:
     */
     void stopPositionSession();
 
+    /** @example example1:testTrackingApi
+    * <pre>
+    * <code>
+    *    // Sample Code
+    * static void onCapabilitiesCb(location_client::LocationCapabilitiesMask mask) {
+    *     //...
+    * }
+    * static void onResponseCb(location_client::LocationResponse response) {
+    *     //...
+    * }
+    * static void onGnssLocationCb(const location_client::GnssLocation& location) {
+    *     //...
+    * }
+    *
+    * static void onGnssSvCb(const std::vector<location_client::GnssSv>& gnssSvs) {
+    *     //...
+    * }
+    *
+    * static void onGnssNmeaCb(uint64_t timestamp, const std::string& nmea) {
+    *     //...
+    * }
+    * void testTrackingApi() {
+    *     LocationClientApi *pClient = new LocationClientApi(onCapabilitiesCb);
+    *     if (nullptr == pClient) {
+    *         LOC_LOGe("failed to create LocationClientApi instance");
+    *         return;
+    *     }
+    *
+    *     uint32_t option = 0x111;
+    *     uint32_t interval = 1000;
+    *     // set callbacks
+    *     GnssReportCbs reportcbs;
+    *     if (option & 1<<0) {
+    *         reportcbs.gnssLocationCallback = GnssLocationCb(onGnssLocationCb);
+    *     }
+    *     if (option & 1<<1) {
+    *         reportcbs.gnssSvCallback = GnssSvCb(onGnssSvCb);
+    *     }
+    *     if (option & 1<<2) {
+    *         reportcbs.gnssNmeaCallback = GnssNmeaCb(onGnssNmeaCb);
+    *     }
+    *
+    *     // start tracking session
+    *     pClient->startPositionSession(interval, reportcbs, onResponseCb);
+    *     //...
+    *     // stop session
+    *     pClient->stopPositionSession();
+    * </code>
+    * </pre>
+    */
+
     /* ================================== BATCHING ================================== */
 
     /** @brief starts an outdoor trip mode batching session with specified parameters.
@@ -1035,6 +1086,27 @@ public:
     */
     void stopBatchingSession();
 
+    /** @example example2:testBatchingApi
+    * <pre>
+    * <code>
+    *    // Sample Code
+    * static void onBatchingCb(const std::vector<location_client::Location>& locations,
+    *         location_client::BatchingStatus status) {
+    *     //...
+    * }
+    * void testBatchingApi() {
+    *     // batching session
+    *     uint32_t intervalInMs = 0;
+    *     uint32_t distanceInMeters = 0;
+    *     pClient->startRoutineBatchingSession(
+    *             intervalInMs, distanceInMeters, onBatchingCb, onResponseCb);
+    *     // ...
+    *     pClient->stopBatchingSession();
+    * }
+    * </code>
+    * </pre>
+    */
+
     /* ================================== Geofence ================================== */
     /** @brief Adds any number of geofences. The geofenceBreachCallback will
         deliver the status of each geofence according to the Geofence parameter for each.
@@ -1080,6 +1152,49 @@ public:
     */
     void resumeGeofences(std::vector<Geofence>& geofences);
 
+    /** @example example3:testGeofenceApi
+    * <pre>
+    * <code>
+    *    // Sample Code
+    *
+    * vector<Geofence> sGeofences;
+    * static void onGeofenceBreachCb( const std::vector<Geofence>& geofences,
+    *         location_client::Location location, location_client::GeofenceBreachTypeMask type,
+    *         uint64_t timestamp) {
+    *     //...
+    * }
+    * static void onCollectiveResponseCb(std::vector<pair<Geofence, LocationResponse>>& responses) {
+    *     //...
+    * }
+    *
+    * void testGeofenceApi() {
+    *     double latitude = 32.896535;
+    *     double longitude = -117.201025;
+    *     double radius = 50;
+    *     GeofenceBreachTypeMask type = (GeofenceBreachTypeMask)3;
+    *     uint32_t responsiveness = 4000;
+    *     uint32_t time = 0;
+    *     Geofence gf(latitude, longitude, radius, type, responsiveness, time);
+    *     sGeofences.push_back(gf);
+    *
+    *     pClient->addGeofences(sGeofences, onGeofenceBreachCb, onCollectiveResponseCb);
+    *     vector<Geofence> pauseGeofences;
+    *     pauseGeofences.push_back(sGeofences[0]);
+    *     pClient->pauseGeofences(pauseGeofences);
+    *     vector<Geofence> resumeGeofences;
+    *     resumeGeofences.push_back(sGeofences[0]);
+    *     pClient->resumeGeofences(resumeGeofences);
+    *     vector<Geofence> removeGeofences;
+    *     for (int i=0; i<sGeofences.size(); ++i) {
+    *         removeGeofences.push_back(sGeofences[i]);
+    *     }
+    *     pClient->removeGeofences(removeGeofences);
+    * }
+    * </code>
+    * </pre>
+    */
+
+    /* ================================== Other APIs ================================== */
     /** @brief Updatee network availability.
         @param
         available, true if available, false otherwise

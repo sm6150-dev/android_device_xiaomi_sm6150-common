@@ -29,6 +29,8 @@
 
 # Minimal configuration definition for basic boot to shell
 
+ANDROID_BUILD_EMBEDDED := true
+
 ifneq ($(BOARD_FRP_PARTITION_NAME),)
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/$(BOARD_FRP_PARTITION_NAME)
 else
@@ -139,13 +141,88 @@ PRODUCT_PACKAGES += liboemaids_system
 PRODUCT_PACKAGES += liboemaids_vendor
 
 # Include the AOSP embedded configuration but strip display related modules out
-include build/target/product/embedded.mk
-_DISPLAY_FRAMEOWRK_MODULES := blank_screen \
+include build/target/product/base_system.mk
+include build/target/product/base_vendor.mk
+include build/target/product/core_64_bit.mk
+_MINIMAL_STRIP_MODULES := blank_screen \
                               bootanimation \
                               libgui \
                               libpixelflinger \
                               libsurfaceflinger \
                               libsurfaceflinger_ddmconnection \
+                              surfaceflinger \
                               libui \
-                              surfaceflinger
-PRODUCT_PACKAGES := $(filter-out $(_DISPLAY_FRAMEOWRK_MODULES),$(PRODUCT_PACKAGES))
+                              surfaceflinger \
+                              appwidget \
+                              BackupRestoreConfirmation \
+                              android.test.base \
+                              android.test.mock \
+                              android.test.runner \
+                              audioserver \
+                              app_process \
+                              cameraserver \
+                              com.android.location.provider \
+                              ContactsProvider \
+                              DefaultContainerService \
+                              DownloadProvider \
+                              ExtServices \
+                              ExtShared \
+                              ims-common \
+                              libaaudio \
+                              libamidi \
+                              libandroid \
+                              libandroidfw \
+                              libandroid_runtime \
+                              libandroid_servers \
+                              libaudioeffect_jni \
+                              libaudioflinger \
+                              libaudiopolicymanager \
+                              libaudiopolicyservice \
+                              libaudioutils \
+                              libcamera2ndk \
+                              libcamera_client \
+                              libcameraservice \
+                              libdrmframework \
+                              libdrmframework_jni \
+                              libEGL \
+                              libETC1 \
+                              libFFTEm \
+                              libGLESv1_CM \
+                              libGLESv2 \
+                              libGLESv3 \
+                              libgui \
+                              libmedia \
+                              libmedia_jni \
+                              libmediandk \
+                              libmediaplayerservice \
+                              libsoundpool \
+                              libsoundtrigger \
+                              libsoundtriggerservice \
+                              libstagefright \
+                              libstagefright_amrnb_common \
+                              libstagefright_enc_common \
+                              libstagefright_foundation \
+                              libstagefright_omx \
+                              libwifi-service \
+                              media \
+                              media_cmd \
+                              mediadrmserver \
+                              mediaextractor \
+                              mediametrics \
+                              MediaProvider \
+                              mediaserver \
+                              PackageInstaller \
+                              PermissionController \
+                              SettingsProvider \
+                              telecom \
+                              telephony-common \
+                              voip-common \
+                              WallpaperBackup \
+                              wificond \
+                              wifi-service \
+                              wm \
+                              @inherit:build/target/product/runtime_libart.mk
+
+PRODUCT_PACKAGES := $(filter-out $(_MINIMAL_STRIP_MODULES),$(PRODUCT_PACKAGES))
+#PRODUCT_BOOT_JARS := $(filter-out telephony-common voip-common ims-common,$(PRODUCT_BOOT_JARS))
+PRODUCT_BOOT_JARS :=

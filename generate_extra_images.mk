@@ -186,10 +186,8 @@ define build-dtboimage-target
     $(hide) chmod a+r $@
 endef
 
-ifeq ($(BOARD_AVB_ENABLE),true)
 $(BOARD_PREBUILT_DTBOIMAGE): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET)
 	$(build-dtboimage-target)
-endif
 
 endif
 endif

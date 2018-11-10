@@ -773,6 +773,20 @@ struct locClientCbDataStructT
    locClientCallbackDataType *pMe;
 };
 
+static uint32_t LOC_MODEM_EMULATOR = 0;
+static const loc_param_s_type loc_cfgs[] =
+{
+    {"LOC_MODEM_EMULATOR", &LOC_MODEM_EMULATOR, NULL,    'n'},
+};
+
+static int getEmulatorCfg() {
+    static bool getEmulatorCfg_called = false;
+    if (!getEmulatorCfg_called) {
+        getEmulatorCfg_called = true;
+        UTIL_READ_CONF(LOC_PATH_GPS_CONF, loc_cfgs);
+    }
+    return LOC_MODEM_EMULATOR;
+}
 
 /*===========================================================================
  *
@@ -2099,7 +2113,7 @@ locClientStatusEnumType locClientOpen (
   locClientStatusEnumType status;
   int tries = 1;
 
-  if (loc_modem_emulator_enabled()) {
+  if (getEmulatorCfg()) {
       instanceId = eLOC_CLIENT_INSTANCE_ID_MODEM_EMULATOR;
   } else {
     #ifdef _ANDROID_

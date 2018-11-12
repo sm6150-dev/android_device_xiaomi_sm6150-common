@@ -1444,6 +1444,23 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID msgId, const void* msg
     }
 }
 
+void LocationClientApiImpl::pingTest(PingTestCb pingTestCallback) {
+
+    mPingTestCb = pingTestCallback;
+
+    struct PingTestReq : public LocMsg {
+        PingTestReq(LocationClientApiImpl *apiImpl) : mApiImpl(apiImpl){}
+        virtual ~PingTestReq() {}
+        void proc() const {
+            LocAPIPingTestReqMsg msg(mApiImpl->mSocketName);
+            bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+        }
+        LocationClientApiImpl *mApiImpl;
+    };
+    mMsgTask->sendMsg(new (nothrow) PingTestReq(this));
+    return;
+}
+
 /******************************************************************************
 LocationClientApiImpl - LocIpc overrides
 ******************************************************************************/
@@ -1699,6 +1716,17 @@ void LocationClientApiImpl::onReceive(const string& data) {
                             }
                         }
                         break;
+
+                case E_LOCAPI_PINGTEST_MSG_ID:
+                    {
+                        LOC_LOGd("<<< ping message %d", pMsg->msgId);
+                        const LocAPIPingTestIndMsg* pIndMsg = (LocAPIPingTestIndMsg*)(pMsg);
+                        if (mApiImpl->mPingTestCb) {
+                            uint32_t response = pIndMsg->data[0];
+                            mApiImpl->mPingTestCb(response);
+                        }
+                        break;
+                    }
 
                 default:
                     {

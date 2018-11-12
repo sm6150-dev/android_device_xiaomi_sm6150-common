@@ -190,6 +190,14 @@ void LocHalDaemonIPCReceiver::onReceive(const std::string& data) {
                     <LocAPIGetGnssEnergyConsumedReqMsg*>(pMsg)->mSocketName);
             break;
         }
+        case E_LOCAPI_PINGTEST_MSG_ID: {
+            if (sizeof(LocAPIPingTestReqMsg) != data.length()) {
+                LOC_LOGe("invalid message");
+                break;
+            }
+            mService->pingTest(reinterpret_cast<LocAPIPingTestReqMsg*>(pMsg));
+            break;
+        }
         default: {
             LOC_LOGe("Unknown message");
             break;

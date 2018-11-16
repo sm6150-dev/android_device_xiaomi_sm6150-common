@@ -97,6 +97,9 @@ public:
     void modifyGeofences(LocAPIModifyGeofencesReqMsg*);
     void pauseGeofences(LocAPIPauseGeofencesReqMsg*);
     void resumeGeofences(LocAPIResumeGeofencesReqMsg*);
+
+    void pingTest(LocAPIPingTestReqMsg*);
+
     inline void gnssUpdateConfig(GnssConfig config) {
         mLocationControlApi->gnssUpdateConfig(config);
     }

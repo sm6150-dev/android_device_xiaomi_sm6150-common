@@ -123,6 +123,9 @@ private:
   /* Convert GnssPowerMode to QMI Loc Power Mode Enum */
   static qmiLocPowerModeEnumT_v02 convertPowerMode(GnssPowerMode powerMode);
 
+  /* get sv used count from sv mask */
+  static int getNumSvUsed (uint64_t svUsedIdsMask, int totalSvCntInOneConstellation);
+
   /*convert LocGnssClock type from QMI LOC to loc eng format*/
   int convertGnssClock (GnssMeasurementsClock& clock,
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_info);

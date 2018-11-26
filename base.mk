@@ -308,6 +308,9 @@ GPS_HARDWARE += android.hardware.gnss@1.0-service-qti
 GPS_HARDWARE += android.hardware.gnss@1.1-impl-qti
 GPS_HARDWARE += android.hardware.gnss@1.1-service-qti
 
+HIDL_WRAPPER := qti-telephony-hidl-wrapper
+HIDL_WRAPPER += qti_telephony_hidl_wrapper.xml
+
 #HDMID
 HDMID := hdmid
 
@@ -962,6 +965,7 @@ PRODUCT_PACKAGES += $(FM)
 PRODUCT_PACKAGES += $(GPS_HARDWARE)
 PRODUCT_PACKAGES += $(HDMID)
 PRODUCT_PACKAGES += $(HOSTAPD)
+PRODUCT_PACKAGES += $(HIDL_WRAPPER)
 PRODUCT_PACKAGES += $(I420CC)
 PRODUCT_PACKAGES += $(INIT)
 PRODUCT_PACKAGES += $(IPROUTE2)

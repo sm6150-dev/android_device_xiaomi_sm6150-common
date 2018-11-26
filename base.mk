@@ -308,6 +308,9 @@ GPS_HARDWARE += android.hardware.gnss@1.0-service-qti
 GPS_HARDWARE += android.hardware.gnss@1.1-impl-qti
 GPS_HARDWARE += android.hardware.gnss@1.1-service-qti
 
+QTI_TELEPHONY_UTILS := qti-telephony-utils
+QTI_TELEPHONY_UTILS += qti_telephony_utils.xml
+
 #HDMID
 HDMID := hdmid
 
@@ -1007,6 +1010,7 @@ PRODUCT_PACKAGES += $(OPENCORE)
 PRODUCT_PACKAGES += $(PPP)
 PRODUCT_PACKAGES += $(PROTOBUF)
 PRODUCT_PACKAGES += $(PVOMX)
+PRODUCT_PACKAGES += $(QTI_TELEPHONY_UTILS)
 PRODUCT_PACKAGES += $(RF4CE)
 PRODUCT_PACKAGES += $(SENSORS_HARDWARE)
 #PRODUCT_PACKAGES += $(SOFTAP)

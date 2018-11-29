@@ -129,10 +129,10 @@ LocationApiService::~LocationApiService() {
         delete mIpcReceiver;
     }
 
-    // delete client
+    // free resource associated with the client
     for (auto each : mClients) {
         LOC_LOGd(">-- deleted client [%s]", each.first.c_str());
-        delete each.second;
+        each.second->cleanup();
     }
 
     // delete location contorol API handle
@@ -212,13 +212,13 @@ void LocationApiService::deleteClientbyName(const std::string clientname) {
 
     // delete this client from property db
     LocHalDaemonClientHandler* pClient = getClient(clientname);
-    mClients.erase(clientname);
 
     if (!pClient) {
         LOC_LOGe(">-- deleteClient invlalid client=%s", clientname.c_str());
         return;
     }
-    delete pClient;
+    mClients.erase(clientname);
+    pClient->cleanup();
 
     LOC_LOGi(">-- deleteClient client=%s", clientname.c_str());
 }

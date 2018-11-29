@@ -146,14 +146,14 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
 }
 
 uint32_t LocHalDaemonClientHandler::startTracking() {
-    if (mSessionId == 0) {
+    if (mSessionId == 0 && mLocationApi) {
         mSessionId = mLocationApi->startTracking(mOptions);
     }
     return mSessionId;
 }
 
 uint32_t LocHalDaemonClientHandler::startTracking(uint32_t minDistance, uint32_t minInterval) {
-    if (mSessionId == 0) {
+    if (mSessionId == 0 && mLocationApi) {
         // update option
         mOptions.size = sizeof(mOptions);
         mOptions.minDistance = minDistance;
@@ -173,14 +173,14 @@ void LocHalDaemonClientHandler::unsubscribeLocationSessionCb() {
 }
 
 void LocHalDaemonClientHandler::stopTracking() {
-    if (mSessionId != 0) {
+    if (mSessionId != 0 && mLocationApi) {
         mLocationApi->stopTracking(mSessionId);
         mSessionId = 0;
     }
 }
 
 void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t minDistance, uint32_t minInterval) {
-    if (mSessionId != 0) {
+    if (mSessionId != 0 && mLocationApi) {
         // update option
         mOptions.size = sizeof(mOptions);
         mOptions.minDistance = minDistance;
@@ -192,7 +192,7 @@ void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t minDistance, uint
 
 uint32_t LocHalDaemonClientHandler::startBatching(uint32_t minInterval, uint32_t minDistance,
         BatchingMode batchMode) {
-    if (mBatchingId == 0) {
+    if (mBatchingId == 0 && mLocationApi) {
         // update option
         LocationOptions locOption = {};
         locOption.size = sizeof(locOption);
@@ -210,7 +210,7 @@ uint32_t LocHalDaemonClientHandler::startBatching(uint32_t minInterval, uint32_t
 }
 
 void LocHalDaemonClientHandler::stopBatching() {
-    if (mBatchingId != 0) {
+    if (mBatchingId != 0 && mLocationApi) {
         mLocationApi->stopBatching(mBatchingId);
         mBatchingId = 0;
     }
@@ -218,7 +218,7 @@ void LocHalDaemonClientHandler::stopBatching() {
 
 void LocHalDaemonClientHandler::updateBatchingOptions(uint32_t minInterval, uint32_t minDistance,
         BatchingMode batchMode) {
-    if (mBatchingId != 0) {
+    if (mBatchingId != 0 && mLocationApi) {
         // update option
         LocationOptions locOption = {};
         locOption.size = sizeof(locOption);
@@ -274,7 +274,7 @@ uint32_t* LocHalDaemonClientHandler::getClientIds(size_t count, uint32_t* sessio
 
 uint32_t* LocHalDaemonClientHandler::addGeofences(size_t count, GeofenceOption* options,
         GeofenceInfo* info) {
-    if (count > 0) {
+    if (count > 0 && mLocationApi) {
         mGeofenceIds = mLocationApi->addGeofences(count, options, info);
         if (mGeofenceIds) {
             LOC_LOGi("start new geofence sessions: %p", mGeofenceIds);
@@ -284,36 +284,54 @@ uint32_t* LocHalDaemonClientHandler::addGeofences(size_t count, GeofenceOption* 
 }
 
 void LocHalDaemonClientHandler::removeGeofences(size_t count, uint32_t* ids) {
-    if (count > 0) {
+    if (count > 0 && mLocationApi) {
         mLocationApi->removeGeofences(count, ids);
     }
 }
 
 void LocHalDaemonClientHandler::modifyGeofences(size_t count, uint32_t* ids,
         GeofenceOption* options) {
-    if (count >0) {
+    if (count >0 && mLocationApi) {
         mLocationApi->modifyGeofences(count, ids, options);
     }
 }
 void LocHalDaemonClientHandler::pauseGeofences(size_t count, uint32_t* ids) {
-    if (count > 0) {
+    if (count > 0 && mLocationApi) {
         mLocationApi->pauseGeofences(count, ids);
     }
 }
 void LocHalDaemonClientHandler::resumeGeofences(size_t count, uint32_t* ids) {
-    if (count > 0) {
+    if (count > 0 && mLocationApi) {
         mLocationApi->resumeGeofences(count, ids);
     }
 }
 
 void LocHalDaemonClientHandler::pingTest() {
-    LocAPIPingTestIndMsg msg(SERVICE_NAME);
-    int rc = sendMessage(msg);
 
-    // purge this client if failed
-    if (!rc) {
-        LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-        mService->deleteClientbyName(mName);
+    if (nullptr != mIpcSender) {
+        LocAPIPingTestIndMsg msg(SERVICE_NAME);
+        int rc = sendMessage(msg);
+
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+}
+
+void LocHalDaemonClientHandler::cleanup() {
+    // please do not attempt to hold the lock, as the caller of this function
+    // already holds the lock
+
+    if (mIpcSender) {
+        delete mIpcSender;
+        mIpcSender = nullptr;
+    }
+
+    if (mLocationApi) {
+        mLocationApi->destroy([this]() {onLocationApiDestroyCompleteCb();});
+        mLocationApi = nullptr;
     }
 }
 
@@ -323,23 +341,25 @@ LocHalDaemonClientHandler - Location API response callback functions
 void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
 
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
-    LOC_LOGd("--< onResponseCb err=%u id=%u", err, id);
 
-    ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
-    if (!mPendingMessages.empty()) {
-        pendingMsgId = mPendingMessages.front();
-        mPendingMessages.pop();
-    }
+    if (nullptr != mIpcSender) {
+        LOC_LOGd("--< onResponseCb err=%u id=%u", err, id);
 
-    int rc = 0;
-    // send corresponding indication message if pending
-    switch (pendingMsgId) {
-        case E_LOCAPI_START_TRACKING_MSG_ID: {
-            LOC_LOGd("<-- start resp err=%u id=%u pending=%u", err, id, pendingMsgId);
-            LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_START_TRACKING_MSG_ID, err);
-            rc = sendMessage(msg);
-            break;
+        ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
+        if (!mPendingMessages.empty()) {
+            pendingMsgId = mPendingMessages.front();
+            mPendingMessages.pop();
         }
+
+        int rc = 0;
+        // send corresponding indication message if pending
+        switch (pendingMsgId) {
+            case E_LOCAPI_START_TRACKING_MSG_ID: {
+                LOC_LOGd("<-- start resp err=%u id=%u pending=%u", err, id, pendingMsgId);
+                LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_START_TRACKING_MSG_ID, err);
+                rc = sendMessage(msg);
+                break;
+            }
         case E_LOCAPI_STOP_TRACKING_MSG_ID: {
             LOC_LOGd("<-- stop resp err=%u id=%u pending=%u", err, id, pendingMsgId);
             LocAPIGenericRespMsg msg(SERVICE_NAME, E_LOCAPI_STOP_TRACKING_MSG_ID, err);
@@ -374,13 +394,14 @@ void LocHalDaemonClientHandler::onResponseCb(LocationError err, uint32_t id) {
         default: {
             LOC_LOGe("no pending message for %s", mName.c_str());
             return;
+            }
         }
-    }
 
-    // purge this client if failed
-    if (!rc) {
-        LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-        mService->deleteClientbyName(mName);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
     }
 }
 
@@ -388,6 +409,10 @@ void LocHalDaemonClientHandler::onCollectiveResponseCallback(
         size_t count, LocationError *errs, uint32_t *ids) {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onCollectiveResponseCallback");
+
+    if (nullptr == mIpcSender) {
+        return;
+    }
 
     ELocMsgID pendingMsgId = E_LOCAPI_UNDEFINED_MSG_ID;
     if (!mGfPendingMessages.empty()) {
@@ -482,16 +507,18 @@ void LocHalDaemonClientHandler::onCapabilitiesCallback(LocationCapabilitiesMask 
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onCapabilitiesCallback=0x%x", mask);
 
-    // broadcast
-    LocAPICapabilitiesIndMsg msg(SERVICE_NAME, mask);
-    if (mask != mCapabilityMask) {
-        LOC_LOGd("mask old=0x%x new=0x%x", mCapabilityMask, mask);
-        mCapabilityMask = mask;
-        int rc = sendMessage(msg);
-        // purge this client if failed
-        if (!rc) {
-            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-            mService->deleteClientbyName(mName);
+    if (nullptr != mIpcSender) {
+        // broadcast
+        LocAPICapabilitiesIndMsg msg(SERVICE_NAME, mask);
+        if (mask != mCapabilityMask) {
+            LOC_LOGd("mask old=0x%x new=0x%x", mCapabilityMask, mask);
+            mCapabilityMask = mask;
+            int rc = sendMessage(msg);
+            // purge this client if failed
+            if (!rc) {
+                LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+                mService->deleteClientbyName(mName);
+            }
         }
     }
 }
@@ -501,9 +528,9 @@ void LocHalDaemonClientHandler::onTrackingCb(Location location) {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onTrackingCb");
 
-    // broadcast
-    LocAPILocationIndMsg msg(SERVICE_NAME, location);
-    if (mSubscriptionMask & E_LOC_CB_TRACKING_BIT) {
+    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_TRACKING_BIT)) {
+        // broadcast
+        LocAPILocationIndMsg msg(SERVICE_NAME, location);
         int rc = sendMessage(msg);
         // purge this client if failed
         if (!rc) {
@@ -518,100 +545,102 @@ void LocHalDaemonClientHandler::onBatchingCb(size_t count, Location* location,
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onBatchingCb");
 
-    if (0 == count) {
-        return;
-    }
-    // serialize locations in batch into ipc message payload
-    size_t msglen = sizeof(LocAPIBatchingIndMsg) + sizeof(Location) * (count - 1);
-    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
-    if (nullptr == msg) {
-        return;
-    }
-    memset(msg, 0, msglen);
-    LocAPIBatchingIndMsg *pmsg = reinterpret_cast<LocAPIBatchingIndMsg*>(msg);
-    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
-    pmsg->msgId = E_LOCAPI_BATCHING_MSG_ID;
-    pmsg->batchNotification.size = msglen;
-    pmsg->batchNotification.count = count;
-    pmsg->batchNotification.status = BATCHING_STATUS_POSITION_AVAILABE;
-    memcpy(&(pmsg->batchNotification.location[0]), location, count * sizeof(Location));
+    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_BATCHING_BIT)) {
+        if (0 == count) {
+            return;
+        }
 
-    if (mSubscriptionMask & E_LOC_CB_BATCHING_BIT) {
+        // serialize locations in batch into ipc message payload
+        size_t msglen = sizeof(LocAPIBatchingIndMsg) + sizeof(Location) * (count - 1);
+        uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+        if (nullptr == msg) {
+            return;
+        }
+        memset(msg, 0, msglen);
+        LocAPIBatchingIndMsg *pmsg = reinterpret_cast<LocAPIBatchingIndMsg*>(msg);
+        strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+        pmsg->msgId = E_LOCAPI_BATCHING_MSG_ID;
+        pmsg->batchNotification.size = msglen;
+        pmsg->batchNotification.count = count;
+        pmsg->batchNotification.status = BATCHING_STATUS_POSITION_AVAILABE;
+        memcpy(&(pmsg->batchNotification.location[0]), location, count * sizeof(Location));
+
         int rc = sendMessage(msg, msglen);
         // purge this client if failed
         if (!rc) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
             mService->deleteClientbyName(mName);
         }
-    }
 
-    delete[] msg;
+        delete[] msg;
+    }
 }
 
 void LocHalDaemonClientHandler::onBatchingStatusCb(BatchingStatusInfo batchingStatus,
                 std::list<uint32_t>& listOfCompletedTrips) {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onBatchingStatusCb");
-    if (BATCHING_MODE_TRIP == mBatchingMode &&
-                BATCHING_STATUS_TRIP_COMPLETED == batchingStatus.batchingStatus) {
+    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_BATCHING_STATUS_BIT) &&
+                (BATCHING_MODE_TRIP == mBatchingMode) &&
+                (BATCHING_STATUS_TRIP_COMPLETED == batchingStatus.batchingStatus)) {
         // For trip batching, notify client to stop session when BATCHING_STATUS_TRIP_COMPLETED
         LocAPIBatchNotification batchNotif = {};
         batchNotif.status = BATCHING_STATUS_TRIP_COMPLETED;
         LocAPIBatchingIndMsg msg(SERVICE_NAME, batchNotif);
-        if (mSubscriptionMask & E_LOC_CB_BATCHING_STATUS_BIT) {
-            int rc = sendMessage(msg);
-            // purge this client if failed
-            if (!rc) {
-                LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-                mService->deleteClientbyName(mName);
-            }
-        }
-
-    }
-}
-
-void LocHalDaemonClientHandler::onGeofenceBreachCb(GeofenceBreachNotification gfBreachNotif) {
-    LOC_LOGd("--< onGeofenceBreachCallback");
-    uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * gfBreachNotif.count);
-    if (clientIds == NULL) {
-        LOC_LOGE("%s:%d] Failed to alloc %zu bytes",
-                __FUNCTION__, __LINE__,
-                sizeof(uint32_t) * gfBreachNotif.count);
-        return;
-    }
-
-    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
-    clientIds = getClientIds(gfBreachNotif.count, gfBreachNotif.ids);
-    // serialize GeofenceBreachNotification into ipc message payload
-    size_t msglen = sizeof(LocAPIGeofenceBreachIndMsg) +
-            sizeof(uint32_t) * (gfBreachNotif.count - 1);
-    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
-    if (nullptr == msg) {
-        free(clientIds);
-        return;
-    }
-    memset(msg, 0, msglen);
-    LocAPIGeofenceBreachIndMsg *pmsg = reinterpret_cast<LocAPIGeofenceBreachIndMsg*>(msg);
-    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
-    pmsg->msgId = E_LOCAPI_GEOFENCE_BREACH_MSG_ID;
-    pmsg->gfBreachNotification.size = msglen;
-    pmsg->gfBreachNotification.count = gfBreachNotif.count;
-    pmsg->gfBreachNotification.timestamp = gfBreachNotif.timestamp;
-    pmsg->gfBreachNotification.location = gfBreachNotif.location;
-    pmsg->gfBreachNotification.type = gfBreachNotif.type;
-    memcpy(&(pmsg->gfBreachNotification.id[0]), clientIds, sizeof(uint32_t)*gfBreachNotif.count);
-
-    if (mSubscriptionMask & E_LOCAPI_GEOFENCE_BREACH_MSG_ID) {
-        int rc = sendMessage(msg, msglen);
+        int rc = sendMessage(msg);
         // purge this client if failed
         if (!rc) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
             mService->deleteClientbyName(mName);
         }
     }
+}
 
-    delete[] msg;
-    free(clientIds);
+void LocHalDaemonClientHandler::onGeofenceBreachCb(GeofenceBreachNotification gfBreachNotif) {
+    LOC_LOGd("--< onGeofenceBreachCallback");
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOCAPI_GEOFENCE_BREACH_MSG_ID)) {
+
+        uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * gfBreachNotif.count);
+        if (clientIds == NULL) {
+            LOC_LOGE("%s:%d] Failed to alloc %zu bytes",
+                     __FUNCTION__, __LINE__,
+                     sizeof(uint32_t) * gfBreachNotif.count);
+            return;
+        }
+
+        clientIds = getClientIds(gfBreachNotif.count, gfBreachNotif.ids);
+        // serialize GeofenceBreachNotification into ipc message payload
+        size_t msglen = sizeof(LocAPIGeofenceBreachIndMsg) +
+                sizeof(uint32_t) * (gfBreachNotif.count - 1);
+        uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+        if (nullptr == msg) {
+            free(clientIds);
+            return;
+        }
+        memset(msg, 0, msglen);
+        LocAPIGeofenceBreachIndMsg *pmsg = reinterpret_cast<LocAPIGeofenceBreachIndMsg*>(msg);
+        strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+        pmsg->msgId = E_LOCAPI_GEOFENCE_BREACH_MSG_ID;
+        pmsg->gfBreachNotification.size = msglen;
+        pmsg->gfBreachNotification.count = gfBreachNotif.count;
+        pmsg->gfBreachNotification.timestamp = gfBreachNotif.timestamp;
+        pmsg->gfBreachNotification.location = gfBreachNotif.location;
+        pmsg->gfBreachNotification.type = gfBreachNotif.type;
+        memcpy(&(pmsg->gfBreachNotification.id[0]), clientIds, sizeof(uint32_t)*gfBreachNotif.count);
+
+        int rc = sendMessage(msg, msglen);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+
+        delete[] msg;
+        free(clientIds);
+    }
 }
 
 void LocHalDaemonClientHandler::onGnssLocationInfoCb(GnssLocationInfoNotification notification) {
@@ -619,8 +648,9 @@ void LocHalDaemonClientHandler::onGnssLocationInfoCb(GnssLocationInfoNotificatio
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onGnssLocationInfoCb");
 
-    LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
-    if (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT)) {
+        LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
         int rc = sendMessage(msg);
         // purge this client if failed
         if (!rc) {
@@ -641,9 +671,10 @@ void LocHalDaemonClientHandler::onGnssSvCb(GnssSvNotification notification) {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onGnssSvCb");
 
-    // broadcast
-    LocAPISatelliteVehicleIndMsg msg(SERVICE_NAME, notification);
-    if (mSubscriptionMask & E_LOC_CB_GNSS_SV_BIT) {
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOC_CB_GNSS_SV_BIT)) {
+        // broadcast
+        LocAPISatelliteVehicleIndMsg msg(SERVICE_NAME, notification);
         int rc = sendMessage(msg);
         // purge this client if failed
         if (!rc) {
@@ -656,56 +687,58 @@ void LocHalDaemonClientHandler::onGnssSvCb(GnssSvNotification notification) {
 void LocHalDaemonClientHandler::onGnssNmeaCb(GnssNmeaNotification notification) {
 
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
-    LOC_LOGd("--< onGnssNmeaCb[%s] t=%" PRIu64" l=%zu nmea=%s",
-            mName.c_str(),
-            notification.timestamp,
-            notification.length,
-            notification.nmea);
+    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_GNSS_NMEA_BIT)) {
+        LOC_LOGd("--< onGnssNmeaCb[%s] t=%" PRIu64" l=%zu nmea=%s",
+                mName.c_str(),
+                notification.timestamp,
+                notification.length,
+                notification.nmea);
 
-    // serialize nmea string into ipc message payload
-    size_t msglen = sizeof(LocAPINmeaIndMsg) + notification.length;
-    uint8_t *msg = new(std::nothrow) uint8_t[msglen];
-    if (nullptr == msg) {
-        return;
-    }
-    memset(msg, 0, msglen);
-    LocAPINmeaIndMsg *pmsg = reinterpret_cast<LocAPINmeaIndMsg*>(msg);
-    strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
-    pmsg->msgId = E_LOCAPI_NMEA_MSG_ID;
-    pmsg->gnssNmeaNotification.size = msglen;
-    pmsg->gnssNmeaNotification.timestamp = notification.timestamp;
-    pmsg->gnssNmeaNotification.length = notification.length;
-    memcpy(&(pmsg->gnssNmeaNotification.nmea[0]), notification.nmea, notification.length);
+        // serialize nmea string into ipc message payload
+        size_t msglen = sizeof(LocAPINmeaIndMsg) + notification.length;
+        uint8_t *msg = new(std::nothrow) uint8_t[msglen];
+        if (nullptr == msg) {
+            return;
+        }
+        memset(msg, 0, msglen);
+        LocAPINmeaIndMsg *pmsg = reinterpret_cast<LocAPINmeaIndMsg*>(msg);
+        strlcpy(pmsg->mSocketName, SERVICE_NAME, MAX_SOCKET_PATHNAME_LENGTH);
+        pmsg->msgId = E_LOCAPI_NMEA_MSG_ID;
+        pmsg->gnssNmeaNotification.size = msglen;
+        pmsg->gnssNmeaNotification.timestamp = notification.timestamp;
+        pmsg->gnssNmeaNotification.length = notification.length;
+        memcpy(&(pmsg->gnssNmeaNotification.nmea[0]), notification.nmea, notification.length);
 
-    if (mSubscriptionMask & E_LOC_CB_GNSS_NMEA_BIT) {
         int rc = sendMessage(msg, msglen);
         // purge this client if failed
         if (!rc) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
             mService->deleteClientbyName(mName);
         }
-    }
 
-    delete[] msg;
+        delete[] msg;
+    }
 }
 
 void LocHalDaemonClientHandler::onGnssDataCb(GnssDataNotification notification) {
 
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onGnssDataCb");
-    for (int sig = 0; sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
-        if (GNSS_LOC_DATA_JAMMER_IND_BIT ==
-            (notification.gnssDataMask[sig] & GNSS_LOC_DATA_JAMMER_IND_BIT)) {
-            LOC_LOGv("jammerInd[%d]=%f", sig, notification.jammerInd[sig]);
-        }
-        if (GNSS_LOC_DATA_AGC_BIT ==
-            (notification.gnssDataMask[sig] & GNSS_LOC_DATA_AGC_BIT)) {
-            LOC_LOGv("agc[%d]=%f", sig, notification.agc[sig]);
-        }
-    }
 
-    LocAPIDataIndMsg msg(SERVICE_NAME, notification);
-    if (mSubscriptionMask & E_LOC_CB_GNSS_DATA_BIT) {
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOC_CB_GNSS_DATA_BIT)) {
+        for (int sig = 0; sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
+            if (GNSS_LOC_DATA_JAMMER_IND_BIT ==
+                (notification.gnssDataMask[sig] & GNSS_LOC_DATA_JAMMER_IND_BIT)) {
+                LOC_LOGv("jammerInd[%d]=%f", sig, notification.jammerInd[sig]);
+            }
+            if (GNSS_LOC_DATA_AGC_BIT ==
+                (notification.gnssDataMask[sig] & GNSS_LOC_DATA_AGC_BIT)) {
+                LOC_LOGv("agc[%d]=%f", sig, notification.agc[sig]);
+            }
+        }
+
+        LocAPIDataIndMsg msg(SERVICE_NAME, notification);
         LOC_LOGv("Sending data message");
         int rc = sendMessage(msg);
         // purge this client if failed
@@ -727,8 +760,10 @@ void LocHalDaemonClientHandler::onLocationSystemInfoCb(LocationSystemInfo notifi
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onLocationSystemInfoCb");
 
-    LocAPILocationSystemInfoIndMsg msg(SERVICE_NAME, notification);
-    if (mSubscriptionMask & E_LOC_CB_SYSTEM_INFO_BIT) {
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOC_CB_SYSTEM_INFO_BIT)) {
+
+        LocAPILocationSystemInfoIndMsg msg(SERVICE_NAME, notification);
         LOC_LOGv("Sending location system info message");
         int rc = sendMessage(msg);
         // purge this client if failed
@@ -737,6 +772,14 @@ void LocHalDaemonClientHandler::onLocationSystemInfoCb(LocationSystemInfo notifi
             mService->deleteClientbyName(mName);
         }
     }
+}
+
+void LocHalDaemonClientHandler::onLocationApiDestroyCompleteCb() {
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+
+    LOC_LOGe("delete LocHalDaemonClientHandler %s", mName);
+    delete this;
+    // PLEASE NOTE: no more code after this, including print for class variable
 }
 
 /******************************************************************************
@@ -748,9 +791,17 @@ LocHalDaemonClientHandler - Engine info related functionality
 void LocHalDaemonClientHandler::onGnssEnergyConsumedInfoAvailable(
    LocAPIGnssEnergyConsumedIndMsg &msg) {
 
-    if (mEngineInfoRequestMask & E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT) {
-        sendMessage(msg);
+   if ((nullptr != mIpcSender) &&
+            (mEngineInfoRequestMask & E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT)) {
+
+        int rc = sendMessage(msg);
         mEngineInfoRequestMask &= ~E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT;
+
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
     }
 }
 

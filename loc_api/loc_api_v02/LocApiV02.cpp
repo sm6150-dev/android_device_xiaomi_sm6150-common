@@ -261,7 +261,8 @@ LocApiV02 :: LocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
     clientHandle(LOC_CLIENT_INVALID_HANDLE_VALUE),
     mQmiMask(0), mInSession(false), mPowerMode(GNSS_POWER_MODE_INVALID),
     mEngineOn(false), mMeasurementsStarted(false),
-    mIsMasterRegistered(false), mMasterRegisterNotSupported(false)
+    mIsMasterRegistered(false), mMasterRegisterNotSupported(false),
+    mSvMeasurementSet(nullptr)
 {
   // initialize loc_sync_req interface
   loc_sync_req_init();
@@ -806,6 +807,13 @@ void LocApiV02 :: stopFix(LocApiResponse *adapterResponse)
   // without waiting for Engine Off
   if (!mEngineOn) {
       registerEventMask(mMask);
+  }
+
+  // free the memory used to assemble SV measurement from
+  // different constellations and bands
+  if (!mSvMeasurementSet) {
+      free(mSvMeasurementSet);
+      mSvMeasurementSet = nullptr;
   }
 
   if( eLOC_CLIENT_SUCCESS != status)
@@ -3236,6 +3244,7 @@ void  LocApiV02 :: reportSv (
                     break;
 
                 case eQMI_LOC_SV_SYSTEM_BDS_V02:
+                case eQMI_LOC_SV_SYSTEM_COMPASS_V02:
                     gnssSv_ref.svId = sv_info_ptr->gnssSvId - 200;
                     gnssSv_ref.type = GNSS_SV_TYPE_BEIDOU;
                     break;
@@ -3245,7 +3254,6 @@ void  LocApiV02 :: reportSv (
                     gnssSv_ref.type = GNSS_SV_TYPE_QZSS;
                     break;
 
-                case eQMI_LOC_SV_SYSTEM_COMPASS_V02:
                 default:
                     gnssSv_ref.svId = sv_info_ptr->gnssSvId;
                     gnssSv_ref.type = GNSS_SV_TYPE_UNKNOWN;
@@ -3311,336 +3319,417 @@ void  LocApiV02 :: reportSv (
     LocApiBase::reportSv(SvNotify);
 }
 
+static Gnss_LocSvSystemEnumType getLocApiSvSystemType (qmiLocSvSystemEnumT_v02 qmiSvSystemType) {
+    Gnss_LocSvSystemEnumType locSvSystemType = GNSS_LOC_SV_SYSTEM_UNKNOWN;
+
+    switch (qmiSvSystemType) {
+    case eQMI_LOC_SV_SYSTEM_GPS_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_GPS;
+        break;
+
+    case eQMI_LOC_SV_SYSTEM_GALILEO_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_GALILEO;
+        break;
+
+    case eQMI_LOC_SV_SYSTEM_SBAS_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_SBAS;
+        break;
+
+    case eQMI_LOC_SV_SYSTEM_GLONASS_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_GLONASS;
+        break;
+
+    case eQMI_LOC_SV_SYSTEM_BDS_V02:
+    case eQMI_LOC_SV_SYSTEM_COMPASS_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_BDS;
+        break;
+
+    case eQMI_LOC_SV_SYSTEM_QZSS_V02:
+        locSvSystemType = GNSS_LOC_SV_SYSTEM_QZSS;
+        break;
+
+    default:
+        break;
+    }
+
+    return locSvSystemType;
+}
+
 /* convert satellite measurementreport to loc eng format and  send the converted
    report to loc eng */
 void  LocApiV02 :: reportSvMeasurement (
   const qmiLocEventGnssSvMeasInfoIndMsgT_v02 *gnss_raw_measurement_ptr)
 {
-  GnssSvMeasurementSet                 svMeasurementSet;
-  memset(&svMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
-  svMeasurementSet.size = sizeof(svMeasurementSet);
+    static uint32_t prevRefFCount = 0;
 
-  if( clock_gettime( CLOCK_BOOTTIME, &svMeasurementSet.timeStamp.apTimeStamp)== 0 )
-  {
-    svMeasurementSet.timeStamp.apTimeStampUncertaintyMs = (float)ap_timestamp_uncertainty;
-  }
-  else
-  {
-    svMeasurementSet.timeStamp.apTimeStampUncertaintyMs = FLT_MAX;
-    LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
-  }
-  LOC_LOGD("%s:%d QMI_MeasPacketTime  %ld (sec)  %ld (nsec)",__func__,__LINE__,
-            svMeasurementSet.timeStamp.apTimeStamp.tv_sec,
-            svMeasurementSet.timeStamp.apTimeStamp.tv_nsec);
-
-  LOC_LOGI("[SvMeas] SeqNum: %d, MaxMsgNum: %d, MeasValid: %d, #of SV: %d %d 0x%x\n",
-           gnss_raw_measurement_ptr->seqNum,
-           gnss_raw_measurement_ptr->maxMessageNum,
-           gnss_raw_measurement_ptr->svMeasurement_valid,
-           (gnss_raw_measurement_ptr->svMeasurement_valid)?
-           gnss_raw_measurement_ptr->svMeasurement_len : 0,
-           gnss_raw_measurement_ptr->gnssSignalType_valid,
-           gnss_raw_measurement_ptr->gnssSignalType);
-
-  svMeasurementSet.seqNum           = gnss_raw_measurement_ptr->seqNum;
-  svMeasurementSet.maxMessageNum    = gnss_raw_measurement_ptr->maxMessageNum;
-
-  if(1 == gnss_raw_measurement_ptr->rcvrClockFrequencyInfo_valid)
-  {
-    qmiLocRcvrClockFrequencyInfoStructT_v02* rcvClockFreqInfo =
-      (qmiLocRcvrClockFrequencyInfoStructT_v02*) &gnss_raw_measurement_ptr->rcvrClockFrequencyInfo;
-
-    svMeasurementSet.clockFreq.size         = sizeof(Gnss_LocRcvrClockFrequencyInfoStructType);
-    svMeasurementSet.clockFreqValid         = gnss_raw_measurement_ptr->rcvrClockFrequencyInfo_valid;
-    svMeasurementSet.clockFreq.clockDrift   =
-        gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.clockDrift;
-    svMeasurementSet.clockFreq.clockDriftUnc =
-        gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.clockDriftUnc;
-    svMeasurementSet.clockFreq.sourceOfFreq = (Gnss_LocSourceofFreqEnumType)
-        gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.sourceOfFreq;
-
-    LOC_LOGV("FreqInfo:: Drift: %f, DriftUnc: %f",
-             svMeasurementSet.clockFreq.clockDrift,
-             svMeasurementSet.clockFreq.clockDriftUnc);
-  }
-
-  if((1 == gnss_raw_measurement_ptr->leapSecondInfo_valid) &&
-     (0 == gnss_raw_measurement_ptr->leapSecondInfo.leapSecUnc) )
-  {
-    qmiLocLeapSecondInfoStructT_v02* leapSecond =
-      (qmiLocLeapSecondInfoStructT_v02*)&gnss_raw_measurement_ptr->leapSecondInfo;
-
-    svMeasurementSet.leapSec.size       = sizeof(Gnss_LeapSecondInfoStructType);
-    svMeasurementSet.leapSecValid       = (bool)gnss_raw_measurement_ptr->leapSecondInfo_valid;
-    svMeasurementSet.leapSec.leapSec    = gnss_raw_measurement_ptr->leapSecondInfo.leapSec;
-    svMeasurementSet.leapSec.leapSecUnc = gnss_raw_measurement_ptr->leapSecondInfo.leapSecUnc;
-    LOC_LOGV("leapSecondInfo:: leapSec: %d, leapSecUnc: %d",
-      svMeasurementSet.leapSec.leapSec, svMeasurementSet.leapSec.leapSecUnc);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->gpsGloInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsGloInterSystemBias;
-
-    getInterSystemTimeBias("gpsGloInterSystemBias",
-                           svMeasurementSet.gpsGloInterSystemBias, interSystemBias);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->gpsBdsInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsBdsInterSystemBias;
-
-    getInterSystemTimeBias("gpsBdsInterSystemBias",
-                           svMeasurementSet.gpsBdsInterSystemBias, interSystemBias);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->gpsGalInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsGalInterSystemBias;
-
-    getInterSystemTimeBias("gpsGalInterSystemBias",
-                           svMeasurementSet.gpsGalInterSystemBias, interSystemBias);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->bdsGloInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->bdsGloInterSystemBias;
-
-    getInterSystemTimeBias("bdsGloInterSystemBias",
-                           svMeasurementSet.bdsGloInterSystemBias, interSystemBias);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->galGloInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->galGloInterSystemBias;
-
-    getInterSystemTimeBias("galGloInterSystemBias",
-                           svMeasurementSet.galGloInterSystemBias, interSystemBias);
-  }
-
-  if(1 == gnss_raw_measurement_ptr->galBdsInterSystemBias_valid)
-  {
-    qmiLocInterSystemBiasStructT_v02* interSystemBias =
-      (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->galBdsInterSystemBias;
-
-    getInterSystemTimeBias("galBdsInterSystemBias",
-                           svMeasurementSet.galBdsInterSystemBias,interSystemBias);
-  }
-
-  svMeasurementSet.gnssMeas.size  = sizeof(Gnss_SVMeasurementStructType);
-  svMeasurementSet.gnssMeas.system  = (Gnss_LocSvSystemEnumType)gnss_raw_measurement_ptr->system;
-
-  if(1 == gnss_raw_measurement_ptr->systemTime_valid)
-  {
-    svMeasurementSet.gnssMeas.isSystemTimeValid = gnss_raw_measurement_ptr->systemTime_valid;
-    svMeasurementSet.gnssMeas.systemTime.size        = sizeof(Gnss_LocSystemTimeStructType);
-
-    svMeasurementSet.gnssMeas.systemTime.systemWeek  =
-        gnss_raw_measurement_ptr->systemTime.systemWeek;
-
-    svMeasurementSet.gnssMeas.systemTime.systemMsec  =
-        gnss_raw_measurement_ptr->systemTime.systemMsec;
-
-    svMeasurementSet.gnssMeas.systemTime.systemClkTimeBias  =
-        gnss_raw_measurement_ptr->systemTime.systemClkTimeBias;
-
-    svMeasurementSet.gnssMeas.systemTime.systemClkTimeUncMs =
-        gnss_raw_measurement_ptr->systemTime.systemClkTimeUncMs;
-  }
-
-  if(1 == gnss_raw_measurement_ptr->gloTime_valid)
-  {
-    svMeasurementSet.gnssMeas.isGloTime_valid     = gnss_raw_measurement_ptr->gloTime_valid;
-    svMeasurementSet.gnssMeas.gloTime.size        = sizeof(Gnss_LocGloTimeStructType);
-
-    svMeasurementSet.gnssMeas.gloTime.gloDays     = gnss_raw_measurement_ptr->gloTime.gloDays;
-    svMeasurementSet.gnssMeas.gloTime.gloFourYear = gnss_raw_measurement_ptr->gloTime.gloFourYear;
-    svMeasurementSet.gnssMeas.gloTime.gloMsec     = gnss_raw_measurement_ptr->gloTime.gloMsec;
-    svMeasurementSet.gnssMeas.gloTime.gloClkTimeBias    = gnss_raw_measurement_ptr->gloTime.gloClkTimeBias;
-    svMeasurementSet.gnssMeas.gloTime.gloClkTimeUncMs   = gnss_raw_measurement_ptr->gloTime.gloClkTimeUncMs;
-  }
-
-  if(1 == gnss_raw_measurement_ptr->systemTimeExt_valid)
-  {
-    svMeasurementSet.gnssMeas.isSystemTimeExt_valid  = gnss_raw_measurement_ptr->systemTimeExt_valid;
-    svMeasurementSet.gnssMeas.systemTimeExt.size     = sizeof(Gnss_LocGnssTimeExtStructType);
-
-    svMeasurementSet.gnssMeas.systemTimeExt.refFCount   = gnss_raw_measurement_ptr->systemTimeExt.refFCount;
-
-    svMeasurementSet.gnssMeas.systemTimeExt.systemRtc_valid  =
-      gnss_raw_measurement_ptr->systemTimeExt.systemRtc_valid;
-
-    svMeasurementSet.gnssMeas.systemTimeExt.systemRtcMs =
-      gnss_raw_measurement_ptr->systemTimeExt.systemRtcMs;
-
-    svMeasurementSet.gnssMeas.systemTimeExt.sourceOfTime  =
-      gnss_raw_measurement_ptr->systemTimeExt.sourceOfTime;
-
-  }
-
-  svMeasurementSet.numClockResets_valid = gnss_raw_measurement_ptr->numClockResets_valid;
-  svMeasurementSet.numClockResets = gnss_raw_measurement_ptr->numClockResets;
-
-  if(1 == gnss_raw_measurement_ptr->svMeasurement_valid)
-  {
-
-    svMeasurementSet.gnssMeas.numSvs = gnss_raw_measurement_ptr->svMeasurement_len;
-    svMeasurementSet.gnssMeasValid   = gnss_raw_measurement_ptr->svMeasurement_valid;
-
-    if(gnss_raw_measurement_ptr->svMeasurement_len > GNSS_LOC_SV_MEAS_LIST_MAX_SIZE)
-    {
-      //This should not happen normally, anycase limit to Max List Size
-      svMeasurementSet.gnssMeas.numSvs = GNSS_LOC_SV_MEAS_LIST_MAX_SIZE;
-    }
-    svMeasurementSet.gnssMeas.numSvs         = gnss_raw_measurement_ptr->svMeasurement_len;
-    svMeasurementSet.gnssMeasValid           = gnss_raw_measurement_ptr->svMeasurement_valid;
-    svMeasurementSet.gnssSignalTypeMaskValid = gnss_raw_measurement_ptr->gnssSignalType_valid;
-    svMeasurementSet.gnssSignalTypeMask      = gnss_raw_measurement_ptr->gnssSignalType;
-
-    uint32_t i = 0, cnt=0;
-    for(i=0;i<gnss_raw_measurement_ptr->svMeasurement_len;i++)
-    {
-      svMeasurementSet.gnssMeas.svMeasurement[i].size = sizeof(Gnss_SVMeasurementStructType);
-
-      if((0 != gnss_raw_measurement_ptr->svMeasurement[i].gnssSvId) &&
-         (0 != gnss_raw_measurement_ptr->svMeasurement[i].measurementStatus))
-      {
-        svMeasurementSet.gnssMeas.svMeasurement[i].gnssSvId =
-                 gnss_raw_measurement_ptr->svMeasurement[i].gnssSvId;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].gloFrequency =
-                 gnss_raw_measurement_ptr->svMeasurement[i].gloFrequency;
-
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_LOSSOFLOCK_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].lossOfLock = (bool)
-                 gnss_raw_measurement_ptr->svMeasurement[i].lossOfLock;
-        }
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].svStatus = (Gnss_LocSvSearchStatusEnumT)
-                         gnss_raw_measurement_ptr->svMeasurement[i].svStatus;
-
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_HEALTH_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].healthStatus_valid = 1;
-          svMeasurementSet.gnssMeas.svMeasurement[i].healthStatus = (uint8_t)gnss_raw_measurement_ptr->svMeasurement[i].healthStatus;
-        }
-        svMeasurementSet.gnssMeas.svMeasurement[i].svInfoMask = (Gnss_LocSvInfoMaskT)
-                 gnss_raw_measurement_ptr->svMeasurement[i].svInfoMask;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].CNo =
-                 gnss_raw_measurement_ptr->svMeasurement[i].CNo;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].gloRfLoss =
-                 gnss_raw_measurement_ptr->svMeasurement[i].gloRfLoss;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].measLatency =
-                 gnss_raw_measurement_ptr->svMeasurement[i].measLatency;
-
-        /*SVTimeSpeed*/
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.size = sizeof(Gnss_LocSVTimeSpeedStructType);
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.svMs =
-                 gnss_raw_measurement_ptr->svMeasurement[i].svTimeSpeed.svTimeMs;
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.svSubMs =
-                 gnss_raw_measurement_ptr->svMeasurement[i].svTimeSpeed.svTimeSubMs;
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.svTimeUncMs =
-                 gnss_raw_measurement_ptr->svMeasurement[i].svTimeSpeed.svTimeUncMs;
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.dopplerShift =
-                 gnss_raw_measurement_ptr->svMeasurement[i].svTimeSpeed.dopplerShift;
-        svMeasurementSet.gnssMeas.svMeasurement[i].svTimeSpeed.dopplerShiftUnc=
-                 gnss_raw_measurement_ptr->svMeasurement[i].svTimeSpeed.dopplerShiftUnc;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].measurementStatus =
-                 (uint32_t)gnss_raw_measurement_ptr->svMeasurement[i].measurementStatus;
-
-        svMeasurementSet.gnssMeas.svMeasurement[i].validMeasStatusMask =
-                gnss_raw_measurement_ptr->svMeasurement[i].validMeasStatusMask;
-
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_MULTIPATH_EST_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].multipathEstValid = 1;
-          svMeasurementSet.gnssMeas.svMeasurement[i].multipathEstimate =
-            gnss_raw_measurement_ptr->svMeasurement[i].multipathEstimate;
-        }
-
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_FINE_SPEED_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].fineSpeedValid = 1;
-
-          svMeasurementSet.gnssMeas.svMeasurement[i].fineSpeed  =
-            gnss_raw_measurement_ptr->svMeasurement[i].fineSpeed;
-        }
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_FINE_SPEED_UNC_VALID_V02)
-        {
-           svMeasurementSet.gnssMeas.svMeasurement[i].fineSpeedUncValid = 1;
-
-          svMeasurementSet.gnssMeas.svMeasurement[i].fineSpeedUnc =
-            gnss_raw_measurement_ptr->svMeasurement[i].fineSpeedUnc;
-        }
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_CARRIER_PHASE_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhaseValid = 1;
-
-          svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhase =
-            gnss_raw_measurement_ptr->svMeasurement[i].carrierPhase;
-        }
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_SV_DIRECTION_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].svDirectionValid = 1;
-
-          svMeasurementSet.gnssMeas.svMeasurement[i].svElevation =
-            gnss_raw_measurement_ptr->svMeasurement[i].svElevation;
-          svMeasurementSet.gnssMeas.svMeasurement[i].svAzimuth =
-            gnss_raw_measurement_ptr->svMeasurement[i].svAzimuth;
-        }
-        if(gnss_raw_measurement_ptr->svMeasurement[i].validMask & QMI_LOC_SV_CYCLESLIP_COUNT_VALID_V02)
-        {
-          svMeasurementSet.gnssMeas.svMeasurement[i].cycleSlipCountValid = 1;
-          svMeasurementSet.gnssMeas.svMeasurement[i].cycleSlipCount =
-            gnss_raw_measurement_ptr->svMeasurement[i].cycleSlipCount;
-        }
-
-        cnt++;
-
-      }
-
-      svMeasurementSet.gnssMeas.numSvs = cnt;   /*set the measurement length to the actual SVId's filled in the array*/
-
+    if (!gnss_raw_measurement_ptr) {
+        return;
     }
 
-    if(gnss_raw_measurement_ptr->svMeasurement_len != cnt)
-    {
-      LOC_LOGW("[SV_MEAS_QMI] #of SV in QMI: %d, Valid SV-id Count: %d",
-                 gnss_raw_measurement_ptr->svMeasurement_len,cnt );
+    LOC_LOGi("[SvMeas] nHz (%d, %d), SeqNum: %d, MaxMsgNum: %d, SvSystem:  %d, MeasValid: %d, #of SV: %d\n",
+             gnss_raw_measurement_ptr->nHzMeasurement_valid, gnss_raw_measurement_ptr->nHzMeasurement,
+             gnss_raw_measurement_ptr->seqNum, gnss_raw_measurement_ptr->maxMessageNum,
+             gnss_raw_measurement_ptr->system,
+             gnss_raw_measurement_ptr->svMeasurement_valid,
+             gnss_raw_measurement_ptr->svMeasurement_len);
+
+    if (!mInSession) {
+        LOC_LOGe ("not in session, ignore");
+        return;
     }
 
-    // svCarrierPhseUnc
-    LOC_LOGV("[SV_MEAS] svCarrierPhseUnc_valid=%u _len=%u",
-            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_valid,
-            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len);
-    if ((1 == gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_valid) &&
-            (gnss_raw_measurement_ptr->svMeasurement_len ==
-            gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len)) {
-
-        for(i=0;i<gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len;i++) {
-            svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhaseUncValid = 1;
-            svMeasurementSet.gnssMeas.svMeasurement[i].carrierPhaseUnc =
-                    gnss_raw_measurement_ptr->svCarrierPhaseUncertainty[i];
+    if (!mSvMeasurementSet) {
+        mSvMeasurementSet = (GnssSvMeasurementSet*) malloc(sizeof(GnssSvMeasurementSet));
+        memset(mSvMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
+        mSvMeasurementSet->size = sizeof(GnssSvMeasurementSet);
+        if (!mSvMeasurementSet) {
+            LOC_LOGe ("malloc failed");
+            return;
         }
     }
 
-  } //if svClockMeasurement_valid
-  else
-  {
-    LOC_LOGV("%s] [SV_MEAS] SV Measurement Not Valid", __func__);
-  }
-  //Report SV measurement irrespective of #of SVs for APDR
-  LocApiBase::reportSvMeasurement(svMeasurementSet);
+    // in case the measurement with seqNum of 1 is dropped, we will use ref count
+    // to reset the measurement
+    if ((gnss_raw_measurement_ptr->seqNum == 1) ||
+        (gnss_raw_measurement_ptr->systemTimeExt.refFCount != prevRefFCount)) {
+
+        prevRefFCount = gnss_raw_measurement_ptr->systemTimeExt.refFCount;
+        memset(mSvMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
+        mSvMeasurementSet->size = sizeof(GnssSvMeasurementSet);
+        mSvMeasurementSet->isNhz = false;
+        mSvMeasurementSet->svMeasSetHeader.size = sizeof(GnssSvMeasurementHeader);
+        if (gnss_raw_measurement_ptr->nHzMeasurement_valid &&
+                    gnss_raw_measurement_ptr->nHzMeasurement) {
+            mSvMeasurementSet->isNhz = true;
+        }
+        LOC_LOGV("size %d, isnHz %d", mSvMeasurementSet->size, mSvMeasurementSet->isNhz);
+    }
+
+    Gnss_LocSvSystemEnumType locSvSystemType =
+            getLocApiSvSystemType(gnss_raw_measurement_ptr->system);
+    if (GNSS_LOC_SV_SYSTEM_UNKNOWN == locSvSystemType) {
+        LOC_LOGi("Unknown sv system");
+        return;
+    }
+
+    GnssSvMeasurementHeader &svMeasSetHead = mSvMeasurementSet->svMeasSetHeader;
+
+    // clock frequency
+    if (1 == gnss_raw_measurement_ptr->rcvrClockFrequencyInfo_valid) {
+        const qmiLocRcvrClockFrequencyInfoStructT_v02* rcvClockFreqInfo =
+                &gnss_raw_measurement_ptr->rcvrClockFrequencyInfo;
+
+        svMeasSetHead.clockFreq.size         = sizeof(Gnss_LocRcvrClockFrequencyInfoStructType);
+        svMeasSetHead.clockFreq.clockDrift   =
+                gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.clockDrift;
+        svMeasSetHead.clockFreq.clockDriftUnc =
+                gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.clockDriftUnc;
+        svMeasSetHead.clockFreq.sourceOfFreq = (Gnss_LocSourceofFreqEnumType)
+                gnss_raw_measurement_ptr->rcvrClockFrequencyInfo.sourceOfFreq;
+
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_CLOCK_FREQ;
+        LOC_LOGv("FreqInfo:: Drift: %f, DriftUnc: %f, sourceoffreq: %d",
+                 svMeasSetHead.clockFreq.clockDrift, svMeasSetHead.clockFreq.clockDriftUnc,
+                 svMeasSetHead.clockFreq.sourceOfFreq);
+    }
+
+    if ((1 == gnss_raw_measurement_ptr->leapSecondInfo_valid) &&
+        (0 == gnss_raw_measurement_ptr->leapSecondInfo.leapSecUnc)) {
+
+        qmiLocLeapSecondInfoStructT_v02* leapSecond =
+            (qmiLocLeapSecondInfoStructT_v02*)&gnss_raw_measurement_ptr->leapSecondInfo;
+
+        svMeasSetHead.leapSec.size       = sizeof(Gnss_LeapSecondInfoStructType);
+        svMeasSetHead.leapSec.leapSec    = gnss_raw_measurement_ptr->leapSecondInfo.leapSec;
+        svMeasSetHead.leapSec.leapSecUnc = gnss_raw_measurement_ptr->leapSecondInfo.leapSecUnc;
+
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_LEAP_SECOND;
+        LOC_LOGV("leapSecondInfo:: leapSec: %d, leapSecUnc: %d",
+                 svMeasSetHead.leapSec.leapSec, svMeasSetHead.leapSec.leapSecUnc);
+    }
+
+    if (1 == gnss_raw_measurement_ptr->gpsGloInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsGloInterSystemBias;
+
+        getInterSystemTimeBias("gpsGloInterSystemBias",
+                               svMeasSetHead.gpsGloInterSystemBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GPS_GLO_INTER_SYSTEM_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->gpsBdsInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsBdsInterSystemBias;
+
+        getInterSystemTimeBias("gpsBdsInterSystemBias",
+                               svMeasSetHead.gpsBdsInterSystemBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GPS_BDS_INTER_SYSTEM_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->gpsGalInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->gpsGalInterSystemBias;
+
+        getInterSystemTimeBias("gpsGalInterSystemBias",
+                               svMeasSetHead.gpsGalInterSystemBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GPS_GAL_INTER_SYSTEM_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->bdsGloInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->bdsGloInterSystemBias;
+
+        getInterSystemTimeBias("bdsGloInterSystemBias",
+                               svMeasSetHead.bdsGloInterSystemBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_BDS_GLO_INTER_SYSTEM_BIAS;
+    }
+
+    if(1 == gnss_raw_measurement_ptr->galGloInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->galGloInterSystemBias;
+
+        getInterSystemTimeBias("galGloInterSystemBias",
+                               svMeasSetHead.galGloInterSystemBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GAL_GLO_INTER_SYSTEM_BIAS;
+    }
+
+    if(1 == gnss_raw_measurement_ptr->galBdsInterSystemBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->galBdsInterSystemBias;
+
+        getInterSystemTimeBias("galBdsInterSystemBias",
+                               svMeasSetHead.galBdsInterSystemBias,interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GAL_BDS_INTER_SYSTEM_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->gloTime_valid) {
+        GnssGloTimeStructType & gloSystemTime = svMeasSetHead.gloSystemTime;
+
+        gloSystemTime.gloFourYear     = gnss_raw_measurement_ptr->gloTime.gloFourYear;
+        gloSystemTime.gloDays         = gnss_raw_measurement_ptr->gloTime.gloDays;
+        gloSystemTime.gloMsec         = gnss_raw_measurement_ptr->gloTime.gloMsec;
+        gloSystemTime.gloClkTimeBias  = gnss_raw_measurement_ptr->gloTime.gloClkTimeBias;
+        gloSystemTime.gloClkTimeUncMs = gnss_raw_measurement_ptr->gloTime.gloClkTimeUncMs;
+        gloSystemTime.validityMask |= (GNSS_GLO_FOUR_YEAR_VALID |
+                                       GNSS_CLO_DAYS_VALID |
+                                       GNSS_GLO_MSEC_VALID |
+                                       GNSS_GLO_CLK_TIME_BIAS_VALID |
+                                       GNSS_GLO_CLK_TIME_BIAS_UNC_VALID);
+
+        if (gnss_raw_measurement_ptr->systemTimeExt_valid) {
+            gloSystemTime.refFCount = gnss_raw_measurement_ptr->systemTimeExt.refFCount;
+            gloSystemTime.validityMask |= GNSS_GLO_REF_FCOUNT_VALID;
+        }
+
+        if (gnss_raw_measurement_ptr->numClockResets_valid) {
+            gloSystemTime.numClockResets = gnss_raw_measurement_ptr->numClockResets;
+            gloSystemTime.validityMask |= GNSS_GLO_NUM_CLOCK_RESETS_VALID;
+        }
+
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GLO_SYSTEM_TIME;
+    }
+
+    if ((1 == gnss_raw_measurement_ptr->systemTime_valid) ||
+            (1 == gnss_raw_measurement_ptr->systemTimeExt_valid)) {
+
+        GnssSystemTimeStructType* systemTimePtr = nullptr;
+        Gnss_LocGnssTimeExtStructType* systemTimeExtPtr = nullptr;
+        GpsSvMeasHeaderFlags systemTimeFlags = 0x0;
+        GpsSvMeasHeaderFlags systemTimeExtFlags = 0x0;
+
+        switch (locSvSystemType) {
+        case GNSS_LOC_SV_SYSTEM_GPS:
+            systemTimePtr = &svMeasSetHead.gpsSystemTime;
+            systemTimeExtPtr = &svMeasSetHead.gpsSystemTimeExt;
+            systemTimeFlags = GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME;
+            systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME_EXT;
+            break;
+        case GNSS_LOC_SV_SYSTEM_GALILEO:
+            systemTimePtr = &svMeasSetHead.galSystemTime;
+            systemTimeExtPtr = &svMeasSetHead.galSystemTimeExt;
+            systemTimeFlags = GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME;
+            systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME_EXT;
+            break;
+        case GNSS_LOC_SV_SYSTEM_BDS:
+            systemTimePtr = &svMeasSetHead.bdsSystemTime;
+            systemTimeExtPtr = &svMeasSetHead.bdsSystemTimeExt;
+            systemTimeFlags = GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME;
+            systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME_EXT;
+            break;
+        case GNSS_LOC_SV_SYSTEM_QZSS:
+            systemTimePtr = &svMeasSetHead.qzssSystemTime;
+            systemTimeExtPtr = &svMeasSetHead.qzssSystemTimeExt;
+            systemTimeFlags = GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME;
+            systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT;
+            break;
+        default:
+            break;
+        }
+
+        if (systemTimePtr) {
+            if (gnss_raw_measurement_ptr->systemTime_valid) {
+                systemTimePtr->systemWeek =
+                        gnss_raw_measurement_ptr->systemTime.systemWeek;
+                systemTimePtr->systemMsec =
+                        gnss_raw_measurement_ptr->systemTime.systemMsec;
+                systemTimePtr->systemClkTimeBias  =
+                        gnss_raw_measurement_ptr->systemTime.systemClkTimeBias;
+                systemTimePtr->systemClkTimeUncMs =
+                        gnss_raw_measurement_ptr->systemTime.systemClkTimeUncMs;
+                systemTimePtr->validityMask |= (GNSS_SYSTEM_TIME_WEEK_VALID |
+                                                GNSS_SYSTEM_TIME_WEEK_MS_VALID |
+                                                GNSS_SYSTEM_CLK_TIME_BIAS_VALID |
+                                                GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID);
+                svMeasSetHead.flags |= systemTimeFlags;
+            }
+
+            if (gnss_raw_measurement_ptr->systemTimeExt_valid) {
+                systemTimePtr->refFCount = gnss_raw_measurement_ptr->systemTimeExt.refFCount;
+                systemTimePtr->validityMask |= GNSS_SYSTEM_REF_FCOUNT_VALID;
+                svMeasSetHead.flags |= systemTimeFlags;
+            }
+
+            if (gnss_raw_measurement_ptr->numClockResets_valid) {
+                systemTimePtr->numClockResets = gnss_raw_measurement_ptr->numClockResets;
+                systemTimePtr->validityMask |= GNSS_SYSTEM_NUM_CLOCK_RESETS_VALID;
+                svMeasSetHead.flags |= systemTimeFlags;
+            }
+        }
+
+        if (systemTimeExtPtr) {
+            if (gnss_raw_measurement_ptr->systemTimeExt_valid) {
+                systemTimeExtPtr->size = sizeof(Gnss_LocGnssTimeExtStructType);
+
+                systemTimeExtPtr->systemRtc_valid  =
+                        gnss_raw_measurement_ptr->systemTimeExt.systemRtc_valid;
+                systemTimeExtPtr->systemRtcMs =
+                        gnss_raw_measurement_ptr->systemTimeExt.systemRtcMs;
+
+                svMeasSetHead.flags |= systemTimeExtFlags;
+            }
+        }
+    }
+
+    if (1 == gnss_raw_measurement_ptr->svMeasurement_valid) {
+
+        // check whether carrier phase info is available
+        uint32_t svMeasurement_len = gnss_raw_measurement_ptr->svMeasurement_len;
+        uint32_t svCarrierPhase_len = gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_len;
+        bool validCarrierPhaseUnc = false;
+        if ((1 == gnss_raw_measurement_ptr->svCarrierPhaseUncertainty_valid) &&
+            (svMeasurement_len == svCarrierPhase_len)) {
+            validCarrierPhaseUnc = true;
+        }
+
+        uint32_t &svMeasCount = mSvMeasurementSet->svMeasCount;
+        uint32_t i = 0;
+        for (i=0; (i<svMeasurement_len) && (svMeasCount<GNSS_LOC_SV_MEAS_LIST_MAX_SIZE); i++) {
+            const qmiLocSVMeasurementStructT_v02& qmiSvMeas =
+                     gnss_raw_measurement_ptr->svMeasurement[i];
+            Gnss_SVMeasurementStructType& svMeas =
+                    mSvMeasurementSet->svMeas[svMeasCount];
+
+            qmiLocSvMeasStatusMaskT_v02 measStatus = qmiSvMeas.measurementStatus;
+            if ((0 != qmiSvMeas.gnssSvId) &&
+                    (QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02 & measStatus)) {
+                svMeas.size = sizeof(Gnss_SVMeasurementStructType);
+                svMeas.gnssSystem = locSvSystemType;
+                if (gnss_raw_measurement_ptr->gnssSignalType_valid) {
+                    svMeas.gnssSignalTypeMask = gnss_raw_measurement_ptr->gnssSignalType;
+                }
+                svMeas.gnssSvId = qmiSvMeas.gnssSvId;
+                svMeas.gloFrequency = qmiSvMeas.gloFrequency;
+
+                if (qmiSvMeas.validMask & QMI_LOC_SV_LOSSOFLOCK_VALID_V02) {
+                    svMeas.lossOfLock = (bool) qmiSvMeas.lossOfLock;
+                }
+
+                svMeas.svStatus = (Gnss_LocSvSearchStatusEnumT) qmiSvMeas.svStatus;
+
+                if (qmiSvMeas.validMask & QMI_LOC_SV_HEALTH_VALID_V02) {
+                    svMeas.healthStatus_valid = 1;
+                    svMeas.healthStatus = (uint8_t)qmiSvMeas.healthStatus;
+                }
+
+                svMeas.svInfoMask = (Gnss_LocSvInfoMaskT) qmiSvMeas.svInfoMask;
+                svMeas.CNo = qmiSvMeas.CNo;
+                svMeas.gloRfLoss = qmiSvMeas.gloRfLoss;
+                svMeas.measLatency = qmiSvMeas.measLatency;
+
+                // SVTimeSpeed
+                svMeas.svTimeSpeed.size = sizeof(Gnss_LocSVTimeSpeedStructType);
+                svMeas.svTimeSpeed.svMs = qmiSvMeas.svTimeSpeed.svTimeMs;
+                svMeas.svTimeSpeed.svSubMs = qmiSvMeas.svTimeSpeed.svTimeSubMs;
+                svMeas.svTimeSpeed.svTimeUncMs = qmiSvMeas.svTimeSpeed.svTimeUncMs;
+                svMeas.svTimeSpeed.dopplerShift = qmiSvMeas.svTimeSpeed.dopplerShift;
+                svMeas.svTimeSpeed.dopplerShiftUnc = qmiSvMeas.svTimeSpeed.dopplerShiftUnc;
+
+                svMeas.measurementStatus = (uint32_t)qmiSvMeas.measurementStatus;
+                svMeas.validMeasStatusMask = qmiSvMeas.validMeasStatusMask;
+
+                if (qmiSvMeas.validMask & QMI_LOC_SV_MULTIPATH_EST_VALID_V02) {
+                    svMeas.multipathEstValid = 1;
+                    svMeas.multipathEstimate = qmiSvMeas.multipathEstimate;
+                }
+
+                if (qmiSvMeas.validMask & QMI_LOC_SV_FINE_SPEED_VALID_V02) {
+                    svMeas.fineSpeedValid = 1;
+                    svMeas.fineSpeed = qmiSvMeas.fineSpeed;
+                }
+                if (qmiSvMeas.validMask & QMI_LOC_SV_FINE_SPEED_UNC_VALID_V02) {
+                    svMeas.fineSpeedUncValid = 1;
+                    svMeas.fineSpeedUnc = qmiSvMeas.fineSpeedUnc;
+                }
+                if (qmiSvMeas.validMask & QMI_LOC_SV_CARRIER_PHASE_VALID_V02) {
+                    svMeas.carrierPhaseValid = 1;
+                    svMeas.carrierPhase = qmiSvMeas.carrierPhase;
+                }
+                if (qmiSvMeas.validMask & QMI_LOC_SV_SV_DIRECTION_VALID_V02) {
+                    svMeas.svDirectionValid = 1;
+                    svMeas.svElevation = qmiSvMeas.svElevation;
+                    svMeas.svAzimuth = qmiSvMeas.svAzimuth;
+                }
+                if (qmiSvMeas.validMask & QMI_LOC_SV_CYCLESLIP_COUNT_VALID_V02) {
+                    svMeas.cycleSlipCountValid = 1;
+                    svMeas.cycleSlipCount = qmiSvMeas.cycleSlipCount;
+                }
+
+                if (validCarrierPhaseUnc) {
+                    svMeas.carrierPhaseUncValid = 1;
+                    svMeas.carrierPhaseUnc =
+                             gnss_raw_measurement_ptr->svCarrierPhaseUncertainty[i];
+                }
+
+                svMeasCount++;
+            } else {
+                LOC_LOGw("invalid sv id %d or sv status %d", qmiSvMeas.gnssSvId,
+                         qmiSvMeas.measurementStatus);
+            }
+        } // for loop for sv
+    }// valid sv measurement
+
+
+    if (gnss_raw_measurement_ptr->seqNum == gnss_raw_measurement_ptr->maxMessageNum) {
+        // when we received the last sequence, timestamp the packet with AP time
+        if (clock_gettime(CLOCK_BOOTTIME, &svMeasSetHead.apBootTimeStamp.apTimeStamp)== 0) {
+            // use the time uncertainty configured in gps.conf
+            svMeasSetHead.apBootTimeStamp.apTimeStampUncertaintyMs =
+                    (float)ap_timestamp_uncertainty;
+            svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_AP_TIMESTAMP;
+
+            LOC_LOGD("%s:%d QMI_MeasPacketTime  %ld (sec)  %ld (nsec)",__func__,__LINE__,
+                     svMeasSetHead.apBootTimeStamp.apTimeStamp.tv_sec,
+                     svMeasSetHead.apBootTimeStamp.apTimeStamp.tv_nsec);
+        }
+        else {
+            svMeasSetHead.apBootTimeStamp.apTimeStampUncertaintyMs = FLT_MAX;
+            LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
+        }
+
+        LOC_LOGv("report %d sv in sv meas", mSvMeasurementSet->svMeasCount);
+        LocApiBase::reportSvMeasurement(*mSvMeasurementSet);
+        memset(mSvMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
+    }
 }
 
 /* convert satellite polynomial to loc eng format and  send the converted

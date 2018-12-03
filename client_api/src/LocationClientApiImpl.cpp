@@ -294,8 +294,8 @@ static GnssGloTimeStructType parseGloTime(const ::GnssGloTimeStructType &halGloT
     if (GNSS_CLO_DAYS_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_CLO_DAYS_VALID;
     }
-    if (GNSS_GLOS_MSEC_VALID  & halGloTime.validityMask) {
-        gloTimeFlags |= GNSS_GLOS_MSEC_VALID ;
+    if (GNSS_GLO_MSEC_VALID  & halGloTime.validityMask) {
+        gloTimeFlags |= GNSS_GLO_MSEC_VALID ;
     }
     if (GNSS_GLO_CLK_TIME_BIAS_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_CLK_TIME_BIAS_VALID;
@@ -341,9 +341,6 @@ static GnssSystemTime parseSystemTime(const ::GnssSystemTime &halSystemTime) {
            break;
         case GNSS_LOC_SV_SYSTEM_SBAS:
            systemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_SBAS;
-           break;
-        case GNSS_LOC_SV_SYSTEM_COMPASS:
-           systemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_COMPASS;
            break;
         case GNSS_LOC_SV_SYSTEM_GLONASS:
            systemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_GLONASS;

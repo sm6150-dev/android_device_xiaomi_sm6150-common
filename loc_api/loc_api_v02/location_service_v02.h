@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Thu Dec 20 2018 (Spin 0)
+   It was generated on: Tue Jan 15 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x65
+#define LOC_V02_IDL_MINOR_VERS 0x66
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -592,6 +592,13 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
        leap second info from service  */
 #define QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS_V02 ((qmiLocEventRegMaskT_v02)0x40000000000ull) /**<  The control point must enable this mask to receive the
        BAND MEASUREMENT METRICS from ME  */
+#define QMI_LOC_EVENT_MASK_GNSS_NHZ_MEASUREMENT_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x80000000000ull) /**<  The control point must enable this mask to receive system clock and satellite
+       measurement report events (system clock, SV time, Doppler, etc.) at a rate greater
+       than 1hz.
+       Reports are generated only for the GNSS satellite constellations that are enabled using
+       QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG.   */
+#define QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x100000000000ull) /**<  The control point must enable this mask to receive
+       the QMI_LOC_EVENT_REPORT indication.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -714,6 +721,13 @@ typedef struct {
        leap second info from service
       - QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS (0x40000000000) --  The control point must enable this mask to receive the
        BAND MEASUREMENT METRICS from ME
+      - QMI_LOC_EVENT_MASK_GNSS_NHZ_MEASUREMENT_REPORT (0x80000000000) --  The control point must enable this mask to receive system clock and satellite
+       measurement report events (system clock, SV time, Doppler, etc.) at a rate greater
+       than 1hz.
+       Reports are generated only for the GNSS satellite constellations that are enabled using
+       QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG.
+      - QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT (0x100000000000) --  The control point must enable this mask to receive
+       the QMI_LOC_EVENT_REPORT indication.
 
  Multiple events can be registered by ORing the individual masks and
  sending them in this TLV. All unused bits in this mask must be set to 0.
@@ -7168,6 +7182,13 @@ typedef struct {
        leap second info from service
       - QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS (0x40000000000) --  The control point must enable this mask to receive the
        BAND MEASUREMENT METRICS from ME
+      - QMI_LOC_EVENT_MASK_GNSS_NHZ_MEASUREMENT_REPORT (0x80000000000) --  The control point must enable this mask to receive system clock and satellite
+       measurement report events (system clock, SV time, Doppler, etc.) at a rate greater
+       than 1hz.
+       Reports are generated only for the GNSS satellite constellations that are enabled using
+       QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG.
+      - QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT (0x100000000000) --  The control point must enable this mask to receive
+       the QMI_LOC_EVENT_REPORT indication.
  */
 }qmiLocGetRegisteredEventsIndMsgT_v02;  /* Message */
 /**
@@ -14061,12 +14082,12 @@ typedef struct {
 
   float timeBias;
   /**<   System 1 to System 2 time bias.  \n
-             - Units: Milliseconds
+         - Units: Milliseconds
     */
 
   float timeBiasUnc;
   /**<   System 1 to System 2 time bias uncertainty.  \n
-             - Units: Milliseconds
+         - Units: Milliseconds
     */
 }qmiLocInterSystemBiasStructT_v02;  /* Type */
 /**
@@ -14628,6 +14649,58 @@ typedef struct {
   /*  Jammer Indicator */
   uint8_t jammerIndicator_valid;  /**< Must be set to true if jammerIndicator is being passed */
   qmiLocJammerIndicatorStructT_v02 jammerIndicator;
+
+  /* Optional */
+  /*  GPS L1 - L2C Intrasystem Time Bias */
+  uint8_t GpsL1L2cTimeBias_valid;  /**< Must be set to true if GpsL1L2cTimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 GpsL1L2cTimeBias;
+  /**<   GPS L1 to L2C time bias (L2C-L1) */
+
+  /* Optional */
+  /*  GPS L1 - L5 Intrasystem Time Bias */
+  uint8_t GpsL1L5TimeBias_valid;  /**< Must be set to true if GpsL1L5TimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 GpsL1L5TimeBias;
+  /**<   GPS L1 to L5 time bias (L5-L1) */
+
+  /* Optional */
+  /*  GLO G1 - G2 Intrasystem Time Bias */
+  uint8_t GloG1G2TimeBias_valid;  /**< Must be set to true if GloG1G2TimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 GloG1G2TimeBias;
+  /**<   GLO G1 to G2 time bias (G2-G1) */
+
+  /* Optional */
+  /*  BDS B1I - B2A Intrasystem Time Bias */
+  uint8_t BdsB1iB2aTimeBias_valid;  /**< Must be set to true if BdsB1iB2aTimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 BdsB1iB2aTimeBias;
+  /**<   BDS B1I to B2A time bias (B2A-B1I) */
+
+  /* Optional */
+  /*  BDS B1I - B1C Intrasystem Time Bias */
+  uint8_t BdsB1iB1cTimeBias_valid;  /**< Must be set to true if BdsB1iB1cTimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 BdsB1iB1cTimeBias;
+  /**<   BDS B1I to B1C time bias (B1C-B1I) */
+
+  /* Optional */
+  /*  GALILEO E1 - E5A Intrasystem Time Bias */
+  uint8_t GalE1E5aTimeBias_valid;  /**< Must be set to true if GalE1E5aTimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 GalE1E5aTimeBias;
+  /**<   GAL E1 to E5a time bias (E5a-E1) */
+
+  /* Optional */
+  /*  GALILEO E1 - E5B Intrasystem Time Bias */
+  uint8_t GalE1E5bTimeBias_valid;  /**< Must be set to true if GalE1E5bTimeBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 GalE1E5bTimeBias;
+  /**<   GAL E1 to E5b time bias (E5b-E1) */
+
+  /* Optional */
+  /*  NHz Indicator */
+  uint8_t nHzMeasurement_valid;  /**< Must be set to true if nHzMeasurement is being passed */
+  uint8_t nHzMeasurement;
+  /**<   NHz Indicator. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 indicates 1Hz Measurement Report
+       - 1 indicates NHz Measurement Report (N > 1). */
 }qmiLocEventGnssSvMeasInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20002,12 +20075,9 @@ typedef struct {
   /**<   Common ephemeris data.   */
 
   uint8_t signalHealth;
-  /**<   Signal health. \n
-       Bit 0 : L5 Signal Health. \n
-       Bit 1 : L2 Signal Health. \n
-       Bit 2 : L1 Signal Health. \n
-       - Type: uint8
-       - Values: 3 bit mask of signal health, where set bit indicates unhealthy signal */
+  /**<   The six-bit health indication as defined in GPS ICD. \n
+       https://www.gps.gov/technical/icwg/IS-GPS-200H.pdf Table 20-VIII. Section 20.3.3.5.1.3 SV Health). \n
+       - Type: uint8 */
 
   uint8_t URAI;
   /**<   User Range Accuracy Index. \n
@@ -20060,6 +20130,12 @@ typedef struct {
   uint32_t gpsEphemerisList_len;  /**< Must be set to # of elements in gpsEphemerisList */
   qmiLocGpsEphemerisT_v02 gpsEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
   /**<   GPS ephemeris parameters. */
+
+  /* Optional */
+  /*  GPS Time When Ephemeris Report Is Sent */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS System Time. */
 }qmiLocGpsEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20200,6 +20276,12 @@ typedef struct {
   uint32_t gloEphemerisList_len;  /**< Must be set to # of elements in gloEphemerisList */
   qmiLocGloEphemerisT_v02 gloEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
   /**<   GLONASS ephemeris parameters. */
+
+  /* Optional */
+  /*  GPS Time When Ephemeris Report Is Sent */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS System Time. */
 }qmiLocGloEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20214,11 +20296,10 @@ typedef struct {
   /**<   Common ephemeris data.   */
 
   uint8_t svHealth;
-  /**<   Satellite health information applied to both B1 and B2 (SatH1). \n
-       - Type: uint8
-       Valid Values: \n
-       - 0 : Healthy
-       - 1 : Unhealthy */
+  /**<   Autonomous Satellite Health Flag as defined in BDS ICD Version 2.1. \n
+       http://en.beidou.gov.cn/SYSTEMS/ICD/201806/P020180608523308843290.pdf Section 5.2.4.6. \n
+       Applies to both B1 and B2 (SatH1). \n
+       - Type: uint8 */
 
   uint8_t AODC;
   /**<   Age of data clock. \n
@@ -20255,6 +20336,12 @@ typedef struct {
   uint32_t bdsEphemerisList_len;  /**< Must be set to # of elements in bdsEphemerisList */
   qmiLocBdsEphemerisT_v02 bdsEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
   /**<   BDS ephemeris parameters. */
+
+  /* Optional */
+  /*  GPS Time When Ephemeris Report Is Sent */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS System Time. */
 }qmiLocBdsEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20310,11 +20397,18 @@ typedef struct {
        - Units: Seconds */
 
   uint8_t svHealth;
-  /**<   SV health status of signal identified by dataSourceSignal. \n
+  /**<   SV Health Status defined in section 5.1.9.3 of European GNSS (Galileo)\n
+       Open Service Signal-In-Space Interface Control Document, Issue 1.3.
        - Type: uint8
        Valid Values: \n
-       - 0 : Healthy
-       - 1 : Unhealthy */
+       - Only 3 bits for E5a (F/NAV)
+       - 6 bits for E1B, E5b (I/NAV)
+         -- F/NAV Bit 0 is the DVS bit (Data Validity Status)
+         -- F/NAV Bits 1 and 2 are HS bits (Signal Health Status)
+         -- I/NAV Bits 0, 2, 3 are for E1B, bits 1, 4, 5 are for E5B
+         -- I/NAV Bit 0, 1 are the DVS bit
+         -- I/NAV Bit 2, 3, 4, 5 are the HS bits
+       - A signal is only fully useful when all three bits for a component are 0 */
 }qmiLocGalEphemerisT_v02;  /* Type */
 /**
     @}
@@ -20331,6 +20425,12 @@ typedef struct {
   uint32_t galEphemerisList_len;  /**< Must be set to # of elements in galEphemerisList */
   qmiLocGalEphemerisT_v02 galEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
   /**<   GALILEO ephemeris parameters. */
+
+  /* Optional */
+  /*  GPS Time When Ephemeris Report Is Sent */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS System Time. */
 }qmiLocGalEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20347,6 +20447,12 @@ typedef struct {
   uint32_t qzssEphemerisList_len;  /**< Must be set to # of elements in qzssEphemerisList */
   qmiLocGpsEphemerisT_v02 qzssEphemerisList[QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02];
   /**<   QZSS ephemeris parameters. */
+
+  /* Optional */
+  /*  GPS Time When Ephemeris Report Is Sent */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS System Time. */
 }qmiLocQzssEphemerisReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20547,6 +20653,75 @@ typedef uint64_t qmiLocEventReportMaskT_v02;
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00200000ull) /**<  Reserved Delete SV Poly Bit 5.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00400000ull) /**<  Reserved Delete SV Poly Bit 6.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00800000ull) /**<  Reserved Delete SV Poly Bit 7.  */
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocSvSystemEnumT_v02 dataSource;
+  /**<   Specifies the Satellite System Source of the Ionospheric Model
+ Valid values: \n
+      - eQMI_LOC_SV_SYSTEM_GPS (1) --  GPS satellite
+      - eQMI_LOC_SV_SYSTEM_GALILEO (2) --  GALILEO satellite
+      - eQMI_LOC_SV_SYSTEM_SBAS (3) --  SBAS satellite
+      - eQMI_LOC_SV_SYSTEM_COMPASS (4) --  COMPASS satellite (Deprecated)
+      - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
+      - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
+      - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+ */
+
+  float alpha0;
+  /**<   Klobuchar Model Parameter Alpha 0.
+       - Type: float
+       - Unit: Seconds
+  */
+
+  float alpha1;
+  /**<   Klobuchar Model Parameter Alpha 1.
+       - Type: float
+       - Unit: Seconds / Semi-Circle
+  */
+
+  float alpha2;
+  /**<   Klobuchar Model Parameter Alpha 2.
+       - Type: float
+       - Unit: Seconds / Semi-Circle^2
+  */
+
+  float alpha3;
+  /**<   Klobuchar Model Parameter Alpha 3.
+       - Type: float
+       - Unit: Seconds / Semi-Circle^3
+  */
+
+  float beta0;
+  /**<   Klobuchar Model Parameter Beta 0.
+       - Type: float
+       - Unit: Seconds
+  */
+
+  float beta1;
+  /**<   Klobuchar Model Parameter Beta 1.
+       - Type: float
+       - Unit: Seconds / Semi-Circle
+  */
+
+  float beta2;
+  /**<   Klobuchar Model Parameter Beta 2.
+       - Type: float
+       - Unit: Seconds / Semi-Circle^2
+  */
+
+  float beta3;
+  /**<   Klobuchar Model Parameter Beta 3.
+       - Type: float
+       - Unit: Seconds / Semi-Circle^3
+  */
+}qmiLocKlobucharIonoModelT_v02;  /* Type */
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -20583,6 +20758,37 @@ typedef struct {
       - QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL (0x00400000) --  Reserved Delete SV Poly Bit 6.
       - QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL (0x00800000) --  Reserved Delete SV Poly Bit 7.
  */
+
+  /* Optional */
+  /*  GPS System Time of Event Report */
+  uint8_t gpsSystemTime_valid;  /**< Must be set to true if gpsSystemTime is being passed */
+  qmiLocGnssTimeStructT_v02 gpsSystemTime;
+  /**<   GPS Time When Event Report Is Sent. */
+
+  /* Optional */
+  /*  Klobuchar Ionospheric Model */
+  uint8_t klobucharIonoModel_valid;  /**< Must be set to true if klobucharIonoModel is being passed */
+  qmiLocKlobucharIonoModelT_v02 klobucharIonoModel;
+  /**<   Klobuchar Ionospheric Model. */
+
+  /* Optional */
+  /*  Glonass Time Scale Correction */
+  uint8_t tauC_valid;  /**< Must be set to true if tauC is being passed */
+  double tauC;
+  /**<   Glonass time scale correction to UTC time.
+       As defined in Glonass ICD Edition 5.1 page 36.
+       - Type: double
+       - Unit: Seconds
+  */
+
+  /* Optional */
+  /*  Leap Seconds */
+  uint8_t leapSec_valid;  /**< Must be set to true if leapSec is being passed */
+  int8_t leapSec;
+  /**<   Leap seconds (GPS-UTC) from GPS.
+       - Type: int8
+       - Unit: Seconds
+  */
 }qmiLocEventReportIndMsgT_v02;  /* Message */
 /**
     @}

@@ -80,6 +80,7 @@ private:
   std::vector<Resender> mResenders;
   bool mIsMasterRegistered;
   bool mMasterRegisterNotSupported;
+  GnssSvMeasurementSet*  mSvMeasurementSet;
 
   /* Convert event mask from loc eng to loc_api_v02 format */
   static locClientEventMaskType convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);

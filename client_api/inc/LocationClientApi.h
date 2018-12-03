@@ -266,14 +266,12 @@ enum Gnss_LocSvSystemEnumType {
     GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
     /** SBAS satellite. */
     GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
-    /** COMPASS satellite. */
-    GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
     /** GLONASS satellite. */
-    GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
+    GNSS_LOC_SV_SYSTEM_GLONASS                = 4,
     /** BDS satellite. */
-    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
+    GNSS_LOC_SV_SYSTEM_BDS                    = 5,
     /** QZSS satellite. */
-    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
+    GNSS_LOC_SV_SYSTEM_QZSS                   = 6
 };
 
 enum GnssSystemTimeStructTypeFlags {
@@ -287,7 +285,7 @@ enum GnssSystemTimeStructTypeFlags {
 
 enum GnssGloTimeStructTypeFlags {
     GNSS_CLO_DAYS_VALID                     = (1 << 0),
-    GNSS_GLOS_MSEC_VALID                    = (1 << 1),
+    GNSS_GLO_MSEC_VALID                     = (1 << 1),
     GNSS_GLO_CLK_TIME_BIAS_VALID            = (1 << 2),
     GNSS_GLO_CLK_TIME_BIAS_UNC_VALID        = (1 << 3),
     GNSS_GLO_REF_FCOUNT_VALID               = (1 << 4),

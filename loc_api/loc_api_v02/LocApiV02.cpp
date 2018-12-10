@@ -5703,12 +5703,28 @@ locClientStatusEnumType LocApiV02::locSyncSendReq(uint32_t req_id,
             locClientRegisterEventMask(clientHandle,
                                        mQmiMask | QMI_LOC_EVENT_MASK_ENGINE_STATE_V02, isMaster());
         }
-        LOC_LOGD("%s:%d]: Engine busy, cache req: %d", __func__, __LINE__, req_id);
-        mResenders.push_back([=](){
-                // ignore indicator, we use nullptr as the last parameter
-                loc_sync_send_req(clientHandle, req_id, req_payload,
-                    timeout_msec, ind_id, nullptr);
+        LOC_LOGd("Engine busy, cache req: %d", req_id);
+        uint32_t reqLen = 0;
+        void* pReqData = nullptr;
+        locClientReqUnionType req_payload_copy = {nullptr};
+        validateRequest(req_id, req_payload, &pReqData, &reqLen);
+        if (nullptr != pReqData) {
+            req_payload_copy.pReqData = malloc(reqLen);
+            if (nullptr != req_payload_copy.pReqData) {
+                memcpy(req_payload_copy.pReqData, pReqData, reqLen);
+            }
+        }
+        // something would be wrong if (nullptr != pReqData && nullptr == req_payload_copy)
+        if (nullptr == pReqData || nullptr != req_payload_copy.pReqData) {
+            mResenders.push_back([=](){
+                    // ignore indicator, we use nullptr as the last parameter
+                    loc_sync_send_req(clientHandle, req_id, req_payload_copy,
+                                      timeout_msec, ind_id, nullptr);
+                    if (nullptr != req_payload_copy.pReqData) {
+                        free(req_payload_copy.pReqData);
+                    }
                 });
+        }
     }
     return status;
 }

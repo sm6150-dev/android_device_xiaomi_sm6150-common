@@ -26,8 +26,8 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LOCHALCLIENTHANDLER_H
-#define LOCHALCLIENTHANDLER_H
+#ifndef LOCHAL_CLIENT_HANDLER_H
+#define LOCHAL_CLIENT_HANDLER_H
 
 #include <queue>
 #include <mutex>
@@ -35,6 +35,7 @@
 #include <unordered_map>
 
 #include <LocationAPI.h>
+#include <LocIpc.h>
 #include <LocHalDaemonIPCSender.h>
 
 // forward declaration
@@ -63,6 +64,21 @@ public:
                 mIpcSender(nullptr) {
         if (mName != "default") {
             mIpcSender = new LocHalDaemonIPCSender(mName.c_str());
+
+            // Create a file name with instanceId. The file handle
+            // will be used by hal daemon when it crashes to figure out
+            // the running clients.
+            if (strncmp(mName.c_str(), SOCKET_DIR_TO_CLIENT,
+                sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
+
+                char fileName[MAX_SOCKET_PATHNAME_LENGTH];
+                snprintf (fileName, sizeof(fileName), "%s%s",
+                          SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
+                LOC_LOGv("<-- attempt to open file %s", fileName);
+                if (nullptr == fopen (fileName, "w")) {
+                    LOC_LOGe("<-- failed to open file %s", fileName);
+                }
+            }
         }
         updateSubscription(0);
         mLocationApi = LocationAPI::createInstance(mCallbacks);
@@ -177,5 +193,5 @@ private:
     std::unordered_map<uint32_t, uint32_t> mGfIdsMap; //geofence ID map, clientId-->session
 };
 
-#endif //LOCHALCLIENTHANDLER_H
+#endif //LOCHAL_CLIENT_HANDLER_H
 

@@ -725,50 +725,120 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mCallbacksMask(0), mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
         mLocationSysInfoCb(nullptr),
-        mLocationSysInfoResponseCb(nullptr) {
+        mLocationSysInfoResponseCb(nullptr)
+#ifdef FEATURE_EXTERNAL_AP
+        ,LocSocket()
+#endif
 
+{
     mMsgTask = new MsgTask("ClientApiImpl", false);
+    // get pid to generate sokect name
+    uint32_t pid = (uint32_t)getpid();
 
-    // create socket to send
+#ifdef FEATURE_EXTERNAL_AP
+    // The instance id is composed from pid and client id.
+    // We support up to 32 unique client api within one process.
+    // Each client id is tracked via a bit in mClientIdGenerator,
+    // which is 4 bytes now.
+    lock_guard<mutex> lock(mMutex);
+    unsigned int clientIdMask = 1;
+    // find a bit in the mClientIdGenerator that is not yet used
+    // and use that as client id
+    for (mClientId = 0; mClientId < sizeof(mClientIdGenerator) * 8; mClientId++) {
+        if ((mClientIdGenerator & (1UL << mClientId)) == 0) {
+            mClientIdGenerator |= (1UL << mClientId);
+            break;
+        }
+    }
+
+    if (mClientId >= sizeof(mClientIdGenerator) * 8) {
+        LOC_LOGe("create Qsocket failed, already use up maximum of %d clients",
+                 sizeof(mClientIdGenerator)*8);
+        return;
+    }
+
+    int service = LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID;
+    // generate instance from pid and client id
+    int instance = pid * 100 + mClientId;
+    int numChars = snprintf(mSocketName, sizeof(mSocketName), "%u.%u",
+                            LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID,
+                            instance);
+    if (numChars >= (sizeof(mSocketName)-1)) {
+        LOC_LOGe("mSocketName to small, need %d, buffer size %d",
+                 numChars, sizeof(mSocketName));
+        return;
+    }
+
+    // establish an ipc sender to the hal daemon
+    mIpcSender = new LocSocketSender(LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
+                                     LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);
+    if (nullptr == mIpcSender) {
+        LOC_LOGe("create Qsocket failed addr=%u:%u", service, instance);
+        return;
+    }
+#else
+    // create ipc socket to send
     mIpcSender = new LocIpcSender(SOCKET_TO_LOCATION_HAL_DAEMON);
     if (nullptr == mIpcSender) {
         LOC_LOGe("create mIpcSender failed %s", SOCKET_TO_LOCATION_HAL_DAEMON);
+        return;
     }
 
     // get clientId
     lock_guard<mutex> lock(mMutex);
     mClientId = ++mClientIdGenerator;
-
-    // get pid to generate sokect name
-    uint32_t pid = (uint32_t)getpid();
     int strCopied = strlcpy(mSocketName,SOCKET_TO_LOCATION_CLIENT_BASE,
                            MAX_SOCKET_PATHNAME_LENGTH);
     if (strCopied>0 && strCopied< MAX_SOCKET_PATHNAME_LENGTH) {
         snprintf(mSocketName+strCopied,
                  MAX_SOCKET_PATHNAME_LENGTH-strCopied,
                  ".%u.%u", pid, mClientId);
-        LOC_LOGd("scoketname=%s", mSocketName);
-        startListeningNonBlocking(mSocketName);
     } else {
         LOC_LOGe("strlcpy failed %d", strCopied);
+        return;
     }
+#endif
+
+    LOC_LOGd("listen on socket: %s", mSocketName);
+    startListeningNonBlocking(mSocketName);
 }
 
 LocationClientApiImpl::~LocationClientApiImpl() {
-    bool rc = false;
+}
 
-    // deregister
-    if (mHalRegistered && (nullptr != mIpcSender)) {
-        LocAPIClientDeregisterReqMsg msg(mSocketName);
-        rc = mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
-                                   sizeof(msg));
-        LOC_LOGd(">>> DeregisterReq rc=%d", rc);
-        delete mIpcSender;
-    }
+void LocationClientApiImpl::destroy() {
 
-    if (mMsgTask) {
-        mMsgTask->destroy();
-    }
+    struct DestroyReq : public LocMsg {
+        DestroyReq(LocationClientApiImpl* apiImpl) :
+                mApiImpl(apiImpl) {}
+        virtual ~DestroyReq() {}
+        void proc() const {
+            // deregister
+            if (mApiImpl->mHalRegistered && (nullptr != mApiImpl->mIpcSender)) {
+                LocAPIClientDeregisterReqMsg msg(mApiImpl->mSocketName);
+                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+                LOC_LOGd(">>> DeregisterReq rc=%d\n", rc);
+                delete mApiImpl->mIpcSender;
+                mApiImpl->mIpcSender = nullptr;
+            }
+
+            if (mApiImpl->mMsgTask) {
+                mApiImpl->mMsgTask->destroy();
+            }
+
+        #ifdef ENABLE_USE_LOC_SOCKET
+            // get clientId
+            lock_guard<mutex> lock(mMutex);
+            mApiImpl->mClientIdGenerator &= ~(1UL << mApiImpl->mClientId);
+            LOC_LOGd("client id generarator 0x%x, id %d",
+                     mApiImpl->mClientIdGenerator, mApiImpl->mClientId);
+        #endif
+            delete mApiImpl;
+        }
+        LocationClientApiImpl* mApiImpl;
+    };
+
+    mMsgTask->sendMsg(new (nothrow) DestroyReq(this));
 }
 
 /******************************************************************************
@@ -1503,6 +1573,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_CAPABILILTIES_MSG_ID:
                     {
                         LOC_LOGd("<<< capabilities indication");
+                        if (sizeof(LocAPICapabilitiesIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         mApiImpl->capabilitesCallback(pMsg->msgId, (void*)pMsg);
                         break;
                     }
@@ -1510,6 +1584,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_HAL_READY_MSG_ID:
                     {
                         LOC_LOGd("<<< HAL ready ");
+                        if (sizeof(LocAPIHalReadyIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         mApiImpl->onListenerReady();
                         break;
                     }
@@ -1522,6 +1600,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID:
                     {
                         LOC_LOGd("<<< response message, msgId = %d", pMsg->msgId);
+                        if (sizeof(LocAPIGenericRespMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         const LocAPIGenericRespMsg* pRespMsg = (LocAPIGenericRespMsg*)(pMsg);
                         LocationResponse response = parseLocationError(pRespMsg->err);
                         if (mApiImpl->mResponseCb) {
@@ -1561,6 +1643,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_LOCATION_MSG_ID:
                     {
                         LOC_LOGd("<<< message = location");
+                        if (sizeof(LocAPILocationIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         if (mApiImpl->mCallbacksMask & E_LOC_CB_TRACKING_BIT) {
                             const LocAPILocationIndMsg* pLocationIndMsg = (LocAPILocationIndMsg*)(pMsg);
                             Location location = parseLocation(pLocationIndMsg->locationNotification);
@@ -1624,9 +1710,14 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         }
                         break;
                     }
+
                 case E_LOCAPI_LOCATION_INFO_MSG_ID:
                     {
                         LOC_LOGd("<<< message = location info");
+                        if (sizeof(LocAPILocationInfoIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         if (mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
                             const LocAPILocationInfoIndMsg* pLocationInfoIndMsg =
                                     (LocAPILocationInfoIndMsg*)(pMsg);
@@ -1638,10 +1729,13 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         }
                         break;
                     }
-
                 case E_LOCAPI_SATELLITE_VEHICLE_MSG_ID:
                     {
                         LOC_LOGd("<<< message = sv");
+                        if (sizeof(LocAPISatelliteVehicleIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         if (mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_SV_BIT) {
                             const LocAPISatelliteVehicleIndMsg* pSvIndMsg =
                                     (LocAPISatelliteVehicleIndMsg*)(pMsg);
@@ -1662,6 +1756,7 @@ void LocationClientApiImpl::onReceive(const string& data) {
                     {
                         if ((mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_NMEA_BIT) &&
                                 (mApiImpl->mGnssReportCbs.gnssNmeaCallback)) {
+                            // nmea is variable length, can not be checked
                             const LocAPINmeaIndMsg* pNmeaIndMsg = (LocAPINmeaIndMsg*)(pMsg);
                             uint64_t timestamp = pNmeaIndMsg->gnssNmeaNotification.timestamp;
                             std::string nmea(pNmeaIndMsg->gnssNmeaNotification.nmea,
@@ -1680,6 +1775,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_DATA_MSG_ID:
                     {
                         LOC_LOGd("<<< message = data");
+                        if (sizeof(LocAPIDataIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         if (mApiImpl->mCallbacksMask & E_LOC_CB_GNSS_DATA_BIT) {
                             const LocAPIDataIndMsg* pDataIndMsg = (LocAPIDataIndMsg*)(pMsg);
                             GnssData gnssData =
@@ -1694,6 +1793,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID:
                     {
                         LOC_LOGd("<<< message = GNSS power consumption");
+                        if (sizeof(LocAPIGnssEnergyConsumedIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         LocAPIGnssEnergyConsumedIndMsg* pEnergyMsg =
                                 (LocAPIGnssEnergyConsumedIndMsg*) pMsg;
                         uint64_t energyNumber =
@@ -1717,6 +1820,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
 
                 case E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID:
                         LOC_LOGd("<<< message = location system info");
+                        if (sizeof(LocAPILocationSystemInfoIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         if (mApiImpl->mCallbacksMask & E_LOC_CB_SYSTEM_INFO_BIT) {
                             const LocAPILocationSystemInfoIndMsg * pDataIndMsg =
                                     (LocAPILocationSystemInfoIndMsg*)(pMsg);
@@ -1731,6 +1838,10 @@ void LocationClientApiImpl::onReceive(const string& data) {
                 case E_LOCAPI_PINGTEST_MSG_ID:
                     {
                         LOC_LOGd("<<< ping message %d", pMsg->msgId);
+                        if (sizeof(LocAPIPingTestIndMsg) != mMsgData.length()) {
+                            LOC_LOGe("invalid message");
+                            break;
+                        }
                         const LocAPIPingTestIndMsg* pIndMsg = (LocAPIPingTestIndMsg*)(pMsg);
                         if (mApiImpl->mPingTestCb) {
                             uint32_t response = pIndMsg->data[0];

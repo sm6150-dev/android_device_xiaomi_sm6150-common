@@ -330,6 +330,19 @@ void LocHalDaemonClientHandler::cleanup() {
     // please do not attempt to hold the lock, as the caller of this function
     // already holds the lock
 
+    // check whether this is client from external AP,
+    // mName for client on external ap is of format "serviceid.instanceid"
+    if (strncmp(mName.c_str(), SOCKET_DIR_TO_CLIENT,
+                sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
+        char fileName[MAX_SOCKET_PATHNAME_LENGTH];
+        snprintf (fileName, sizeof(fileName), "%s%s",
+                  SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
+        LOC_LOGv("removed file name", fileName);
+        if (0 != remove(fileName)) {
+            LOC_LOGe("<-- failed to remove file %s", fileName);
+        }
+    }
+
     if (mIpcSender) {
         delete mIpcSender;
         mIpcSender = nullptr;
@@ -780,7 +793,7 @@ void LocHalDaemonClientHandler::onLocationSystemInfoCb(LocationSystemInfo notifi
 void LocHalDaemonClientHandler::onLocationApiDestroyCompleteCb() {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
 
-    LOC_LOGe("delete LocHalDaemonClientHandler %s", mName);
+    LOC_LOGe("delete LocHalDaemonClientHandler");
     delete this;
     // PLEASE NOTE: no more code after this, including print for class variable
 }

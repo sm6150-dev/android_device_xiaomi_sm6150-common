@@ -37,6 +37,11 @@ liblocation_client_api_la_LDFLAGS = -lstdc++ -Wl,-z,defs -lpthread -shared -vers
 liblocation_client_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
+if USE_EXTERNAL_AP
+AM_CFLAGS += $(LOCSOCKET_CFLAGS)
+requiredlibs += $(LOCSOCKET_LIBS)
+endif
+
 liblocation_client_api_la_LIBADD = $(requiredlibs) -lstdc++
 
 #Create and Install libraries

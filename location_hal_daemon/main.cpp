@@ -41,7 +41,7 @@
 #include <loc_misc_utils.h>
 #include "LocationApiService.h"
 
-#define HAL_DAEMON_VERSION "1.0.5"
+#define HAL_DAEMON_VERSION "1.1.0"
 
 static uint32_t gAutoStartGnss = 0;
 static uint32_t gGnssSessionTbfMs = 100;

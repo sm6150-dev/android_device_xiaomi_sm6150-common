@@ -1020,6 +1020,11 @@
         <item>10</item>
     </integer-array>
 
+    <!-- Enables or disables haptic effect when the text insertion/selection handle is moved
+         manually by the user. Off by default, since the expected haptic feedback may not be
+         available on some devices. -->
+    <bool name="config_enableHapticTextHandle">true</bool>
+
     <!-- Enable ACS (auto channel selection) for Wifi hotspot (SAP) -->
     <bool name="config_wifi_softap_acs_supported">true</bool>
 

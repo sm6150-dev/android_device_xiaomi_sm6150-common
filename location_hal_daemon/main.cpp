@@ -91,59 +91,34 @@ int main(int argc, char *argv[])
 
     // check if this process started by root
     if (0 == getuid()) {
+        // started as root.
+        LOC_LOGE("Error !!! location_hal_daemon started as root");
+        exit(1);
+    }
 
-        // Set capabilities
-        struct __user_cap_header_struct cap_hdr = {};
-        cap_hdr.version = _LINUX_CAPABILITY_VERSION;
-        cap_hdr.pid = getpid();
-        if(prctl(PR_SET_KEEPCAPS, 1) < 0) {
-            LOC_LOGe("Error: prctl failed. %s", strerror(errno));
-        }
-
-        // groups
+    // groups
 #ifdef POWERMANAGER_ENABLED
-        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag powermgr locclient";
-#else
-        char groupNames[LOC_MAX_PARAM_NAME] = "gps diag locclient";
-#endif
-        gid_t groupIds[LOC_PROCESS_MAX_NUM_GROUPS] = {};
-        char *splitGrpString[LOC_PROCESS_MAX_NUM_GROUPS];
-        int numGrps = loc_util_split_string(groupNames, splitGrpString,
-                LOC_PROCESS_MAX_NUM_GROUPS, ' ');
+    char groupNames[LOC_MAX_PARAM_NAME] = "powermgr";
 
-        int numGrpIds=0;
-        for(int i=0; i<numGrps; i++) {
-            struct group* grp = getgrnam(splitGrpString[i]);
-            if (grp) {
-                groupIds[numGrpIds] = grp->gr_gid;
-                LOC_LOGv("Group %s = %d", splitGrpString[i], groupIds[numGrpIds]);
-                numGrpIds++;
-            }
-        }
-        if (0 != numGrpIds) {
-            if(-1 == setgroups(numGrpIds, groupIds)) {
-                LOC_LOGe("Error: setgroups failed %s", strerror(errno));
-            }
-        }
-
-        // Set the group id first and then set the effective userid, to gps.
-        if(-1 == setgid(GID_GPS)) {
-            LOC_LOGe("Error: setgid failed. %s", strerror(errno));
-        }
-        // Set user id
-        if(-1 == setuid(UID_GPS)) {
-            LOC_LOGe("Error: setuid failed. %s", strerror(errno));
-        }
-
-        // Set access to netmgr (QCMAP)
-        struct __user_cap_data_struct cap_data = {};
-        cap_data.permitted = (1 << CAP_NET_BIND_SERVICE) | (1 << CAP_NET_ADMIN);
-        cap_data.effective = cap_data.permitted;
-        LOC_LOGv("cap_data.permitted: %d", (int)cap_data.permitted);
-        if(capset(&cap_hdr, &cap_data)) {
-            LOC_LOGe("Error: capset failed. %s", strerror(errno));
+    gid_t groupIds[LOC_PROCESS_MAX_NUM_GROUPS] = {};
+    char *splitGrpString[LOC_PROCESS_MAX_NUM_GROUPS];
+    int numGrps = loc_util_split_string(groupNames, splitGrpString,
+            LOC_PROCESS_MAX_NUM_GROUPS, ' ');
+    int numGrpIds=0;
+    for(int i=0; i<numGrps; i++) {
+        struct group* grp = getgrnam(splitGrpString[i]);
+        if (grp) {
+            groupIds[numGrpIds] = grp->gr_gid;
+            LOC_LOGv("Group %s = %d", splitGrpString[i], groupIds[numGrpIds]);
+            numGrpIds++;
         }
     }
+    if (0 != numGrpIds) {
+        if(-1 == setgroups(numGrpIds, groupIds)) {
+            LOC_LOGe("Error: setgroups failed %s", strerror(errno));
+        }
+    }
+#endif
 
     // move to root dir
     chdir("/");

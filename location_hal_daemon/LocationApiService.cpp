@@ -129,10 +129,10 @@ LocationApiService::~LocationApiService() {
         delete mIpcReceiver;
     }
 
-    // delete client
+    // free resource associated with the client
     for (auto each : mClients) {
         LOC_LOGd(">-- deleted client [%s]", each.first.c_str());
-        delete each.second;
+        each.second->cleanup();
     }
 
     // delete location contorol API handle
@@ -212,13 +212,13 @@ void LocationApiService::deleteClientbyName(const std::string clientname) {
 
     // delete this client from property db
     LocHalDaemonClientHandler* pClient = getClient(clientname);
-    mClients.erase(clientname);
 
     if (!pClient) {
         LOC_LOGe(">-- deleteClient invlalid client=%s", clientname.c_str());
         return;
     }
-    delete pClient;
+    mClients.erase(clientname);
+    pClient->cleanup();
 
     LOC_LOGi(">-- deleteClient client=%s", clientname.c_str());
 }
@@ -490,6 +490,19 @@ void LocationApiService::resumeGeofences(LocAPIResumeGeofencesReqMsg* pMsg) {
 
     LOC_LOGi(">-- resume geofences");
     free(sessions);
+}
+
+void LocationApiService::pingTest(LocAPIPingTestReqMsg* pMsg) {
+
+    // test only - ignore this request when config is not enabled
+    std::lock_guard<std::mutex> lock(mMutex);
+    LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (!pClient) {
+        LOC_LOGe(">-- pingTest invlalid client=%s", pMsg->mSocketName);
+        return;
+    }
+    pClient->pingTest();
+    LOC_LOGd(">-- pingTest");
 }
 
 /******************************************************************************

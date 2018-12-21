@@ -358,6 +358,7 @@ INIT += ssr_setup
 INIT += enable_swap.sh
 INIT += init.mdm.sh
 INIT += fstab.qcom
+INIT += fstab.qti
 INIT += init.qcom.sensors.sh
 INIT += init.qcom.crashdata.sh
 INIT += init.qcom.vendor.rc

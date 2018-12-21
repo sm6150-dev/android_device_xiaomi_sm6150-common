@@ -670,6 +670,7 @@ MM_CORE += libOmxCore
 
 #WFD
 MM_WFD := libwfdaac
+MM_WFD := libwfdaac_proprietary
 
 
 #MM_VIDEO

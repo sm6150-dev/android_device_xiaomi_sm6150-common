@@ -202,6 +202,7 @@ static void globalRespCb(locClientHandleType clientHandle,
             locApiV02Instance->handleZppBestAvailableFixIndication(
                     *respPayload.pGetBestAvailablePositionInd);
         }
+        [[fallthrough]];
        // Call loc_sync_process_ind below also
     default:
       // process the sync call

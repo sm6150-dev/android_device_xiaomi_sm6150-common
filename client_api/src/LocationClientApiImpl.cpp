@@ -865,6 +865,12 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
                 mApiImpl(apiImpl), mOption(option) {}
         virtual ~StartTrackingReq() {}
         void proc() const {
+            // check if option is updated
+            bool isOptionUpdated = false;
+            if ((mApiImpl->mLocationOptions.minInterval != mOption.minInterval) ||
+                (mApiImpl->mLocationOptions.minDistance != mOption.minDistance)) {
+                isOptionUpdated = true;
+            }
             mApiImpl->mLocationOptions = mOption;
             if (!mApiImpl->mHalRegistered) {
                 LOC_LOGe(">>> startTracking - Not registered yet");
@@ -882,9 +888,12 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
                 LOC_LOGd(">>> StartTrackingReq Interval=%d Distance=%d",
                          mApiImpl->mLocationOptions.minInterval,
                          mApiImpl->mLocationOptions.minDistance);
-            } else {
+            } else if (isOptionUpdated) {
                 //update a tracking session
-                mApiImpl->updateTrackingOptions(0, const_cast<TrackingOptions&>(mOption));
+                mApiImpl->updateTrackingOptionsSync(
+                        mApiImpl, const_cast<TrackingOptions&>(mOption));
+            } else {
+                LOC_LOGd(">>> StartTrackingReq - no change in option");
             }
         }
         LocationClientApiImpl* mApiImpl;
@@ -920,6 +929,16 @@ void LocationClientApiImpl::stopTracking(uint32_t) {
     mMsgTask->sendMsg(new (nothrow) StopTrackingReq(this));
 }
 
+void LocationClientApiImpl::updateTrackingOptionsSync(
+        LocationClientApiImpl* pImpl, TrackingOptions& option) {
+        LocAPIUpdateTrackingOptionsReqMsg
+                msg(pImpl->mSocketName, option.minInterval, option.minDistance);
+        bool rc = pImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+        LOC_LOGd(">>> updateTrackingOptionsSync Interval=%d Distance=%d",
+                option.minInterval, option.minDistance);
+        pImpl->mLocationOptions = option;
+}
+
 void LocationClientApiImpl::updateTrackingOptions(uint32_t, TrackingOptions& option) {
 
     struct UpdateTrackingOptionsReq : public LocMsg {
@@ -929,13 +948,8 @@ void LocationClientApiImpl::updateTrackingOptions(uint32_t, TrackingOptions& opt
         void proc() const {
             if ((mApiImpl->mLocationOptions.minInterval != mOption.minInterval) ||
                 (mApiImpl->mLocationOptions.minDistance != mOption.minDistance)) {
-                LocAPIUpdateTrackingOptionsReqMsg
-                        msg(mApiImpl->mSocketName, mOption.minInterval, mOption.minDistance);
-                bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg),
-                                                     sizeof(msg));
-                LOC_LOGd(">>> UpdateTrackingOptionsReq Interval=%d Distance=%d",
-                        mOption.minInterval, mOption.minDistance);
-                mApiImpl->mLocationOptions = mOption;
+                mApiImpl->updateTrackingOptionsSync(
+                        mApiImpl, const_cast<TrackingOptions&>(mOption));
             } else {
                 LOC_LOGd("No UpdateTrackingOptions because same Interval=%d Distance=%d",
                         mOption.minInterval, mOption.minDistance);
@@ -1444,6 +1458,23 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID msgId, const void* msg
     }
 }
 
+void LocationClientApiImpl::pingTest(PingTestCb pingTestCallback) {
+
+    mPingTestCb = pingTestCallback;
+
+    struct PingTestReq : public LocMsg {
+        PingTestReq(LocationClientApiImpl *apiImpl) : mApiImpl(apiImpl){}
+        virtual ~PingTestReq() {}
+        void proc() const {
+            LocAPIPingTestReqMsg msg(mApiImpl->mSocketName);
+            bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+        }
+        LocationClientApiImpl *mApiImpl;
+    };
+    mMsgTask->sendMsg(new (nothrow) PingTestReq(this));
+    return;
+}
+
 /******************************************************************************
 LocationClientApiImpl - LocIpc overrides
 ******************************************************************************/
@@ -1699,6 +1730,17 @@ void LocationClientApiImpl::onReceive(const string& data) {
                             }
                         }
                         break;
+
+                case E_LOCAPI_PINGTEST_MSG_ID:
+                    {
+                        LOC_LOGd("<<< ping message %d", pMsg->msgId);
+                        const LocAPIPingTestIndMsg* pIndMsg = (LocAPIPingTestIndMsg*)(pMsg);
+                        if (mApiImpl->mPingTestCb) {
+                            uint32_t response = pIndMsg->data[0];
+                            mApiImpl->mPingTestCb(response);
+                        }
+                        break;
+                    }
 
                 default:
                     {

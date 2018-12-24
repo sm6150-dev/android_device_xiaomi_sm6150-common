@@ -26,12 +26,11 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-
  *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
-/* This file was generated with Tool version 6.14.9
-   It was generated on: Tue Oct  2 2018 (Spin 0)
+/* This file was generated with Tool version 6.14.7
+   It was generated on: Thu Nov  1 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
@@ -3046,12 +3045,17 @@ static const uint8_t qmiLocInjectPositionReqMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, velUncEnu),
   QMI_LOC_ENU_ARRAY_LENGTH_V02,
 
-  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList) - QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList_valid)),
+  QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList) - QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList_valid)),
   0x26,
   QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN |  QMI_IDL_GENERIC_2_BYTE,
   QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList),
   QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-  QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList) - QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList_len)
+  QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList) - QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, expandedGnssSvUsedList_len),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocInjectPositionReqMsgT_v02, numSvInFix) - QMI_IDL_OFFSET16RELATIVE(qmiLocInjectPositionReqMsgT_v02, numSvInFix_valid)),
+  0x27,
+   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET16ARRAY(qmiLocInjectPositionReqMsgT_v02, numSvInFix)
 };
 
 static const uint8_t qmiLocInjectPositionIndMsgT_data_v02[] = {
@@ -7501,7 +7505,7 @@ static const qmi_idl_service_message_table_entry loc_service_command_messages_v0
   {QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02, QMI_IDL_TYPE16(0, 42), 0},
   {QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_REQ_V02, QMI_IDL_TYPE16(0, 44), 0},
   {QMI_LOC_INJECT_UTC_TIME_REQ_V02, QMI_IDL_TYPE16(0, 46), 18},
-  {QMI_LOC_INJECT_POSITION_REQ_V02, QMI_IDL_TYPE16(0, 48), 536},
+  {QMI_LOC_INJECT_POSITION_REQ_V02, QMI_IDL_TYPE16(0, 48), 540},
   {QMI_LOC_SET_ENGINE_LOCK_REQ_V02, QMI_IDL_TYPE16(0, 50), 14},
   {QMI_LOC_GET_ENGINE_LOCK_REQ_V02, QMI_IDL_TYPE16(0, 52), 7},
   {QMI_LOC_SET_SBAS_CONFIG_REQ_V02, QMI_IDL_TYPE16(0, 54), 8},
@@ -7926,7 +7930,7 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x61,
+  0x63,
   NULL
 };
 

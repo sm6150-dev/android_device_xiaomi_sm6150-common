@@ -85,6 +85,8 @@ using namespace loc_core;
 /* glonass and UTC offset: 3 hours */
 #define GLONASS_UTC_OFFSET_HOURS 3
 
+#define MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION 64
+
 /* number of QMI_LOC messages that need to be checked*/
 #define NUMBER_OF_MSG_TO_BE_CHECKED        (3)
 
@@ -109,6 +111,15 @@ using namespace loc_core;
 #define QZSS_L2C_L_CARRIER_FREQUENCY    1227600000.0
 #define QZSS_L5_Q_CARRIER_FREQUENCY     1176450000.0
 #define SBAS_L1_CA_CARRIER_FREQUENCY    1575420000.0
+
+const float CarrierFrequencies[] = {
+    0.0,                                // UNKNOWN
+    GPS_L1C_CARRIER_FREQUENCY,          // L1C
+    SBAS_L1_CA_CARRIER_FREQUENCY,       // SBAS_L1
+    GLONASS_G1_CARRIER_FREQUENCY,       // GLONASS_G1
+    QZSS_L1CA_CARRIER_FREQUENCY,        // QZSS_L1CA
+    BEIDOU_B1_I_CARRIER_FREQUENCY,      // BEIDOU_B1
+    GALILEO_E1_C_CARRIER_FREQUENCY };   // GALILEO_E1
 
 /* Gaussian 2D scaling table - scale from x% to 68% confidence */
 struct conf_scaler_to_68_pair {
@@ -955,30 +966,26 @@ void LocApiV02::injectPosition(const Location& location, bool onDemandCpi)
     }));
 }
 
-/* This is utility routine that fills in sv id from svUsedIdsMask
-   into the svUsedList.
+/* This is utility routine that computes number of SV used
+   in the fix from the svUsedIdsMask.
  */
-void setSvUsedIds (uint16_t *svUsedList, unsigned int svUsedListSize,
-                   unsigned int &svUsedListIndex, uint64_t svUsedIdsMask,
-                   unsigned int svStartIndex, unsigned int svEndIndex) {
-
-    if (svEndIndex < svStartIndex) {
-        return;
+int LocApiV02::getNumSvUsed (uint64_t svUsedIdsMask, int totalSvCntInOneConstellation) {
+    if (totalSvCntInOneConstellation > MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION) {
+        LOC_LOGe ("error: total SV count in one constellation %d exceeded limit of 64",
+                  totalSvCntInOneConstellation);
+        return 0;
     }
 
-    unsigned int maxSvCnt = svEndIndex - svStartIndex + 1;
-    // each bit in the svUsedIdsMask can only encode one SV used info
-    if (maxSvCnt > (sizeof(svUsedIdsMask) * 8)) {
-        maxSvCnt = sizeof(svUsedIdsMask) * 8;
-    }
-    uint64_t svBitValue = 1;
-    for (unsigned int i = 0; ((i < maxSvCnt) && (svUsedListIndex < svUsedListSize)); i++) {
-        if (svUsedIdsMask & svBitValue) {
-            *(svUsedList + svUsedListIndex) = svStartIndex + i;
-            svUsedListIndex++;
+    int numSvUsed = 0;
+    uint64_t mask = 0x1;
+    for (int i = 0; i < totalSvCntInOneConstellation; i++) {
+        if (svUsedIdsMask & mask) {
+            numSvUsed++;
         }
-        svBitValue <<= 1;
+        mask <<= 1;
     }
+
+    return numSvUsed;
 }
 
 void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi)
@@ -1098,36 +1105,22 @@ void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo,
         injectPositionReq.timeUnc = locationInfo.timeUncMs;
     }
 
-    // SV used info
+    // number of SV used info, this replaces expandedGnssSvUsedList as the payload
+    // for expandedGnssSvUsedList is too large
     if (GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT & locationInfo.flags) {
-        unsigned int svUsedListIndex = 0;
-        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
-                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-                     svUsedListIndex, locationInfo.svUsedInPosition.gpsSvUsedIdsMask,
-                     GPS_SV_PRN_MIN, GPS_SV_PRN_MAX);
 
-        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
-                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-                     svUsedListIndex, locationInfo.svUsedInPosition.gloSvUsedIdsMask,
-                     GLO_SV_PRN_MIN, GLO_SV_PRN_MAX);
+        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.gpsSvUsedIdsMask,
+                                                     GPS_SV_PRN_MAX - GPS_SV_PRN_MIN + 1);
+        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.gloSvUsedIdsMask,
+                                                     GLO_SV_PRN_MAX - GLO_SV_PRN_MIN + 1);
+        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.qzssSvUsedIdsMask,
+                                                     QZSS_SV_PRN_MAX - QZSS_SV_PRN_MIN + 1);
+        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.bdsSvUsedIdsMask,
+                                                     BDS_SV_PRN_MAX - BDS_SV_PRN_MIN + 1);
+        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.galSvUsedIdsMask,
+                                                     GAL_SV_PRN_MAX - GAL_SV_PRN_MIN + 1);
 
-        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
-                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-                     svUsedListIndex, locationInfo.svUsedInPosition.qzssSvUsedIdsMask,
-                     QZSS_SV_PRN_MIN, QZSS_SV_PRN_MAX);
-
-        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
-                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-                     svUsedListIndex, locationInfo.svUsedInPosition.bdsSvUsedIdsMask,
-                     BDS_SV_PRN_MIN, BDS_SV_PRN_MAX);
-
-        setSvUsedIds(injectPositionReq.expandedGnssSvUsedList,
-                     QMI_LOC_EXPANDED_SV_INFO_LIST_MAX_SIZE_V02,
-                     svUsedListIndex, locationInfo.svUsedInPosition.galSvUsedIdsMask,
-                     GAL_SV_PRN_MIN, GAL_SV_PRN_MAX);
-
-        injectPositionReq.expandedGnssSvUsedList_len = svUsedListIndex;
-        injectPositionReq.expandedGnssSvUsedList_valid = true;
+        injectPositionReq.numSvInFix_valid = 1;
     }
 
     // mark fix as from DRE for modem to distinguish from others
@@ -1142,11 +1135,12 @@ void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo,
     }
 
     LOC_LOGv("Lat=%lf, Lon=%lf, Acc=%.2lf rawAcc=%.2lf horConfidence=%d"
-             "rawHorConfidence=%d onDemandCpi=%d, position src=%d",
+             "rawHorConfidence=%d onDemandCpi=%d, position src=%d, numSVs=%d",
              injectPositionReq.latitude, injectPositionReq.longitude,
              injectPositionReq.horUncCircular, injectPositionReq.rawHorUncCircular,
              injectPositionReq.horConfidence, injectPositionReq.rawHorConfidence,
-             injectPositionReq.onDemandCpi, injectPositionReq.positionSrc);
+             injectPositionReq.onDemandCpi, injectPositionReq.positionSrc,
+             injectPositionReq.numSvInFix);
 
     LOC_SEND_SYNC_REQ(InjectPosition, INJECT_POSITION, injectPositionReq);
 
@@ -2891,6 +2885,8 @@ void LocApiV02 :: reportPosition (
                     multiBandTypesAvailable = true;
                 }
 
+                LOC_LOGv("sv length %d ", gnssSvUsedList_len);
+
                 locationExtended.numOfMeasReceived = gnssSvUsedList_len;
                 memset(locationExtended.measUsageInfo, 0, sizeof(locationExtended.measUsageInfo));
                 // Set of used_in_fix SV ID
@@ -3301,6 +3297,9 @@ void  LocApiV02 :: reportSv (
                                 gnss_report_ptr->gnssSignalTypeList[SvNotify.count];
                         }
                     }
+                } else {
+                    mask |= GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT;
+                    gnssSv_ref.carrierFrequencyHz = CarrierFrequencies[gnssSv_ref.type];
                 }
 
                 gnssSv_ref.gnssSvOptionsMask = mask;
@@ -4135,7 +4134,9 @@ void  LocApiV02 :: reportSystemInfo(
                     nextLeapSecondInfo.leapSecondsCurrent;
             leapSecondChangeInfo.leapSecondsAfterChange =
                     nextLeapSecondInfo.leapSecondsNext;
-        } else if (nextLeapSecondInfo.leapSecondsCurrent_valid) {
+        }
+
+        if (nextLeapSecondInfo.leapSecondsCurrent_valid) {
             systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
             systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
                     LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;
@@ -4901,6 +4902,16 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         measurementData.flags |= GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT;
     }
     else {
+        measurementData.carrierFrequencyHz = 0;
+        // GLONASS is FDMA system, so each channel has its own carrier frequency
+        // The formula is f(k) = fc + k * 0.5625;
+        // This is applicable for GLONASS G1 only, where fc = 1602MHz
+        if ((gloFrequency >= 1 && gloFrequency <= 14)) {
+            measurementData.carrierFrequencyHz += ((gloFrequency - 8) * 562500);
+        }
+        measurementData.carrierFrequencyHz += CarrierFrequencies[measurementData.svType];
+        measurementData.flags |= GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT;
+
         LOC_LOGv("gnss_measurement_report_ptr.gnssSignalType_valid = 0");
     }
     // multipath_indicator
@@ -5692,12 +5703,28 @@ locClientStatusEnumType LocApiV02::locSyncSendReq(uint32_t req_id,
             locClientRegisterEventMask(clientHandle,
                                        mQmiMask | QMI_LOC_EVENT_MASK_ENGINE_STATE_V02, isMaster());
         }
-        LOC_LOGD("%s:%d]: Engine busy, cache req: %d", __func__, __LINE__, req_id);
-        mResenders.push_back([=](){
-                // ignore indicator, we use nullptr as the last parameter
-                loc_sync_send_req(clientHandle, req_id, req_payload,
-                    timeout_msec, ind_id, nullptr);
+        LOC_LOGd("Engine busy, cache req: %d", req_id);
+        uint32_t reqLen = 0;
+        void* pReqData = nullptr;
+        locClientReqUnionType req_payload_copy = {nullptr};
+        validateRequest(req_id, req_payload, &pReqData, &reqLen);
+        if (nullptr != pReqData) {
+            req_payload_copy.pReqData = malloc(reqLen);
+            if (nullptr != req_payload_copy.pReqData) {
+                memcpy(req_payload_copy.pReqData, pReqData, reqLen);
+            }
+        }
+        // something would be wrong if (nullptr != pReqData && nullptr == req_payload_copy)
+        if (nullptr == pReqData || nullptr != req_payload_copy.pReqData) {
+            mResenders.push_back([=](){
+                    // ignore indicator, we use nullptr as the last parameter
+                    loc_sync_send_req(clientHandle, req_id, req_payload_copy,
+                                      timeout_msec, ind_id, nullptr);
+                    if (nullptr != req_payload_copy.pReqData) {
+                        free(req_payload_copy.pReqData);
+                    }
                 });
+        }
     }
     return status;
 }

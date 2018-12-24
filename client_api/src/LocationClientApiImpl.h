@@ -61,6 +61,10 @@ struct ClientCallbacks {
 
 namespace location_client
 {
+typedef std::function<void(
+    uint32_t response
+)> PingTestCb;
+
 class GeofenceImpl: public std::enable_shared_from_this<GeofenceImpl> {
     uint32_t mId;
     Geofence mGeofence;
@@ -138,8 +142,11 @@ public:
     std::vector<uint32_t>               mLastAddedClientIds;
     std::unordered_map<uint32_t, Geofence> mGeofenceMap; //clientId --> Geofence object
 
+    void pingTest(PingTestCb pingTestCallback);
+
 private:
     void capabilitesCallback(ELocMsgID  msgId, const void* msgData);
+    void updateTrackingOptionsSync(LocationClientApiImpl* pImpl, TrackingOptions& option);
 
     // internal session parameter
     static uint32_t         mClientIdGenerator;
@@ -158,6 +165,7 @@ private:
     GnssReportCbs           mGnssReportCbs;
     BatchingCb              mBatchingCb;
     GeofenceBreachCb        mGfBreachCb;
+    PingTestCb              mPingTestCb;
 
     LocationCallbacksMask   mCallbacksMask;
     LocationOptions         mLocationOptions;

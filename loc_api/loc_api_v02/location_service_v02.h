@@ -1,30 +1,30 @@
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials provided
- *       with the distribution.
- *     * Neither the name of The Linux Foundation, nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above
+*       copyright notice, this list of conditions and the following
+*       disclaimer in the documentation and/or other materials provided
+*       with the distribution.
+*     * Neither the name of The Linux Foundation, nor the names of its
+*       contributors may be used to endorse or promote products derived
+*       from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 #ifndef LOC_SERVICE_02_H
 #define LOC_SERVICE_02_H
 /**
@@ -62,8 +62,8 @@
  *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
-/* This file was generated with Tool version 6.14.9
-   It was generated on: Tue Oct  2 2018 (Spin 0)
+/* This file was generated with Tool version 6.14.7
+   It was generated on: Thu Nov  1 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x61
+#define LOC_V02_IDL_MINOR_VERS 0x63
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -1886,7 +1886,7 @@ typedef struct {
          - Range: 0 to 360 */
 
   float snr;
-  /**<   SV signal-to-noise ratio. \n
+  /**<   SV signal-to-noise ratio at antenna. \n
          - Units: dB-Hz */
 }qmiLocSvInfoStructT_v02;  /* Type */
 /**
@@ -5481,6 +5481,14 @@ typedef struct {
       - For BDS:     201 to 237 \n
       - For GAL:     301 to 336
       */
+
+  /* Optional */
+  /*  Number of SVs used to calculate the fix */
+  uint8_t numSvInFix_valid;  /**< Must be set to true if numSvInFix is being passed */
+  uint8_t numSvInFix;
+  /**<   Number of SVs used to calculate the fix. \n
+       - Type: uint8
+  */
 }qmiLocInjectPositionReqMsgT_v02;  /* Message */
 /**
     @}
@@ -14375,7 +14383,7 @@ typedef struct {
  */
 
   uint16_t CNo;
-  /**<   Carrier to noise ratio.  \n
+  /**<   Carrier to noise ratio at antenna.  \n
              - Units: dBHz \n
              - Scale: 0.1
     */
@@ -17085,6 +17093,7 @@ typedef uint32_t qmiLocDeleteSatelliteDataMaskT_v02;
 #define QMI_LOC_DELETE_DATA_MASK_IONO_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000200) /**<  Ionosphere correction  */
 #define QMI_LOC_DELETE_DATA_MASK_TIME_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000400) /**<  Reset satellite time  */
 #define QMI_LOC_DELETE_DATA_MASK_MB_DATA_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00000800) /**<  Delete Multiband data  */
+#define QMI_LOC_DELETE_DATA_MASK_TGD_DATA_V02 ((qmiLocDeleteSatelliteDataMaskT_v02)0x00001000) /**<  Reset Tgd (Group delay) data  */
 typedef uint32_t qmiLocGNSSConstellMaskT_v02;
 #define QMI_LOC_SYSTEM_GPS_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000001) /**<  System GPS data  */
 #define QMI_LOC_SYSTEM_GLO_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000002) /**<  System GLONASS data  */
@@ -17122,6 +17131,7 @@ typedef struct {
       - QMI_LOC_DELETE_DATA_MASK_IONO (0x00000200) --  Ionosphere correction
       - QMI_LOC_DELETE_DATA_MASK_TIME (0x00000400) --  Reset satellite time
       - QMI_LOC_DELETE_DATA_MASK_MB_DATA (0x00000800) --  Delete Multiband data
+      - QMI_LOC_DELETE_DATA_MASK_TGD_DATA (0x00001000) --  Reset Tgd (Group delay) data
  */
 }qmiLocDeleteSatelliteDataStructT_v02;  /* Type */
 /**

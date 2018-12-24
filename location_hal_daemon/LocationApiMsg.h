@@ -94,6 +94,9 @@ enum ELocMsgID {
 
     //geofence breach
     E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
+
+    // ping
+    E_LOCAPI_PINGTEST_MSG_ID = 99
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -521,5 +524,25 @@ struct LocAPILocationSystemInfoIndMsg: LocAPIMsgHeader
         locationSystemInfo(systemInfo) { }
 };
 
+/******************************************************************************
+IPC message structure - ping
+******************************************************************************/
+#define LOCATION_REMOTE_API_PINGTEST_SIZE (1024)
+
+struct LocAPIPingTestReqMsg: LocAPIMsgHeader
+{
+    uint8_t data[LOCATION_REMOTE_API_PINGTEST_SIZE];
+
+    inline LocAPIPingTestReqMsg(const char* name) :
+        LocAPIMsgHeader(name, E_LOCAPI_PINGTEST_MSG_ID) { }
+};
+
+struct LocAPIPingTestIndMsg: LocAPIMsgHeader
+{
+    uint8_t data[LOCATION_REMOTE_API_PINGTEST_SIZE];
+
+    inline LocAPIPingTestIndMsg(const char* name) :
+        LocAPIMsgHeader(name, E_LOCAPI_PINGTEST_MSG_ID) { }
+};
 
 #endif /* LOCATIONAPIMSG_H */

@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Thu Nov  1 2018 (Spin 0)
+   It was generated on: Thu Dec 20 2018 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x63
+#define LOC_V02_IDL_MINOR_VERS 0x64
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -13004,6 +13004,14 @@ typedef struct {
   qmiLocWifiApAdditionalDataStructT_v02 wifiApInfoA[QMI_LOC_WIFI_MAX_REPORTED_APS_PER_MSG_V02];
   /**<   \n List of Wi-Fi AP additional measurements scan information entered by the control point.
           The order and the number of additional measurements must be the same as wifiApInfo. */
+
+  /* Optional */
+  /*  UE Wi-Fi Mac Address */
+  uint8_t ueMacAddress_valid;  /**< Must be set to true if ueMacAddress is being passed */
+  uint8_t ueMacAddress[QMI_LOC_WIFI_MAC_ADDR_LENGTH_V02];
+  /**<   UE's WIFI MAC address. \n
+  Address is of length QMI_LOC_WIFI_MAC_ADDR_LENGTH.
+  */
 }qmiLocInjectWifiApDataReqMsgT_v02;  /* Message */
 /**
     @}

@@ -67,9 +67,9 @@ ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
 PRODUCT_BOOT_JARS += qcom.fmradio
 endif #BOARD_HAVE_QCOM_FM
 #Camera QC extends API
-ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
-PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
-endif
+#ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
+#PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
+#endif
 ifneq ($(strip $(TARGET_DISABLE_PERF_OPTIMIATIONS)),true)
 # Preloading QPerformance jar to ensure faster perflocks in Boost Framework
 PRODUCT_BOOT_JARS += QPerformance

@@ -155,7 +155,7 @@ void LocationApiService::onListenerReady() {
     const std::string fnamebase = SOCKET_TO_LOCATION_CLIENT_BASE;
     while (nullptr != (dp = readdir(dirp))) {
         std::string fname = SOCKET_DIR_TO_CLIENT;
-        fname += dp->d_name;
+        fname += (const char*)(dp->d_name);
         if (-1 == lstat(fname.c_str(), &sbuf)) {
             continue;
         }
@@ -408,6 +408,19 @@ void LocationApiService::addGeofences(LocAPIAddGeofencesReqMsg* pMsg) {
             (GeofenceOption*)malloc(pMsg->geofences.count * sizeof(GeofenceOption));
     GeofenceInfo* gfInfos = (GeofenceInfo*)malloc(pMsg->geofences.count * sizeof(GeofenceInfo));
     uint32_t* clientIds = (uint32_t*)malloc(pMsg->geofences.count * sizeof(uint32_t));
+    if ((nullptr == gfOptions) || (nullptr == gfInfos) || (nullptr == clientIds)) {
+        LOC_LOGe("Failed to malloc memory!");
+        if (clientIds != nullptr) {
+            free(clientIds);
+        }
+        if (gfInfos != nullptr) {
+            free(gfInfos);
+        }
+        if (gfOptions != nullptr) {
+            free(gfOptions);
+        }
+        return;
+    }
 
     for(int i=0; i < pMsg->geofences.count; ++i) {
         gfOptions[i] = (*(pMsg->geofences.gfPayload + i)).gfOption;
@@ -436,6 +449,10 @@ void LocationApiService::addGeofences(LocAPIAddGeofencesReqMsg* pMsg) {
 void LocationApiService::removeGeofences(LocAPIRemoveGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (nullptr == pClient) {
+        LOC_LOGe("Null client!");
+        return;
+    }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
     if (pClient && sessions) {
         pClient->removeGeofences(pMsg->gfClientIds.count, sessions);
@@ -451,6 +468,16 @@ void LocationApiService::modifyGeofences(LocAPIModifyGeofencesReqMsg* pMsg) {
     GeofenceOption* gfOptions = (GeofenceOption*)
             malloc(sizeof(GeofenceOption) * pMsg->geofences.count);
     uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * pMsg->geofences.count);
+    if (nullptr == gfOptions || nullptr == clientIds) {
+        LOC_LOGe("Failed to malloc memory!");
+        if (clientIds != nullptr) {
+            free(clientIds);
+        }
+        if (gfOptions != nullptr) {
+            free(gfOptions);
+        }
+        return;
+    }
     for (int i=0; i<pMsg->geofences.count; ++i) {
         gfOptions[i] = (*(pMsg->geofences.gfPayload + i)).gfOption;
         clientIds[i] = (*(pMsg->geofences.gfPayload + i)).gfClientId;
@@ -470,6 +497,10 @@ void LocationApiService::modifyGeofences(LocAPIModifyGeofencesReqMsg* pMsg) {
 void LocationApiService::pauseGeofences(LocAPIPauseGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (nullptr == pClient) {
+        LOC_LOGe("Null client!");
+        return;
+    }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
     if (pClient && sessions) {
         pClient->pauseGeofences(pMsg->gfClientIds.count, sessions);
@@ -482,6 +513,10 @@ void LocationApiService::pauseGeofences(LocAPIPauseGeofencesReqMsg* pMsg) {
 void LocationApiService::resumeGeofences(LocAPIResumeGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (nullptr == pClient) {
+        LOC_LOGe("Null client!");
+        return;
+    }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
     if (pClient && sessions) {
         pClient->resumeGeofences(pMsg->gfClientIds.count, sessions);

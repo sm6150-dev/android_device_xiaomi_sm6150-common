@@ -4622,7 +4622,8 @@ void LocApiV02 :: reportGnssMeasurementData(
 
     // number of measurements
     if (gnss_measurement_report_ptr.svMeasurement_valid) {
-        if (gnss_measurement_report_ptr.svMeasurement_len != 0) {
+        if (gnss_measurement_report_ptr.svMeasurement_len != 0 &&
+            gnss_measurement_report_ptr.svMeasurement_len <= QMI_LOC_SV_MEAS_LIST_MAX_SIZE_V02) {
             // the array of measurements
             LOC_LOGv("Measurements received for GNSS system %d",
                      gnss_measurement_report_ptr.system);

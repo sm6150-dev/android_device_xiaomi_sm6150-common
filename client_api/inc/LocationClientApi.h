@@ -163,20 +163,24 @@ enum GnssSignalTypeMask {
     GNSS_SIGNAL_GALILEO_E5A_BIT         = (1<<7),
     /** GALILEO E5B RF Band */
     GNSS_SIGNAL_GALILIEO_E5B_BIT        = (1<<8),
-    /** BEIDOU B1 RF Band */
-    GNSS_SIGNAL_BEIDOU_B1_BIT           = (1<<9),
-    /** BEIDOU B2 RF Band */
-    GNSS_SIGNAL_BEIDOU_B2_BIT           = (1<<10),
+    /** BEIDOU B1I RF Band */
+    GNSS_SIGNAL_BEIDOU_B1I_BIT          = (1<<9),
+    /** BEIDOU B1C RF Band */
+    GNSS_SIGNAL_BEIDOU_B1C_BIT          = (1<<10),
+    /** BEIDOU B2I RF Band */
+    GNSS_SIGNAL_BEIDOU_B2I_BIT          = (1<<11),
+    /** BEIDOU B2AI RF Band */
+    GNSS_SIGNAL_BEIDOU_B2AI_BIT         = (1<<12),
     /** QZSS L1CA RF Band */
-    GNSS_SIGNAL_QZSS_L1CA_BIT           = (1<<11),
+    GNSS_SIGNAL_QZSS_L1CA_BIT           = (1<<13),
     /** QZSS L1S RF Band */
-    GNSS_SIGNAL_QZSS_L1S_BIT            = (1<<12),
+    GNSS_SIGNAL_QZSS_L1S_BIT            = (1<<14),
     /** QZSS L2 RF Band */
-    GNSS_SIGNAL_QZSS_L2_BIT             = (1<<13),
+    GNSS_SIGNAL_QZSS_L2_BIT             = (1<<15),
     /** QZSS L5 RF Band */
-    GNSS_SIGNAL_QZSS_L5_BIT             = (1<<14),
+    GNSS_SIGNAL_QZSS_L5_BIT             = (1<<16),
     /** SBAS L1 RF Band */
-    GNSS_SIGNAL_SBAS_L1_BIT             = (1<<15)
+    GNSS_SIGNAL_SBAS_L1_BIT             = (1<<17)
 };
 
 

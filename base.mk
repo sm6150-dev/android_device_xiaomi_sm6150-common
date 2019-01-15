@@ -8,17 +8,6 @@ else
 TARGET_USES_NEW_ION := true
 endif
 
-# Pure AOSP framework vs vendor modified framework detection
-# - using BUILD_ID xKQ* as mechanism
-
-ifeq ($(filter $(shell echo $(BUILD_ID) | sed 's/.KQ.*/KQ/g'),KQ),KQ)
-  TARGET_FWK_SUPPORTS_FULL_VALUEADDS := true
-  $(warning "Compile using modified AOSP tree supporting full vendor value-adds")
-else
-  TARGET_FWK_SUPPORTS_FULL_VALUEADDS := false
-  $(warning "Compile using pure AOSP tree")
-endif
-
 # Board platforms lists to be used for
 # TARGET_BOARD_PLATFORM specific featurization
 QCOM_BOARD_PLATFORMS += msm8974

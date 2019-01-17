@@ -860,7 +860,7 @@ vendor/bin/cnss-daemon
 vendor/bin/nv_mac
 vendor/etc/wifi/p2p_supplicant_overlay.conf
 vendor/etc/wifi/WCNSS_qcom_cfg.ini
-vendor/etc/wifi/wpa_supplicant_overlay.conf|5d79976be80682e614462b39929669be03c103df
+vendor/etc/wifi/wpa_supplicant_overlay.conf|05f9f511f1ae26e6d709642b957b1759df900a27
 vendor/lib64/libwapi_cert.so
 
 # WiFi Display

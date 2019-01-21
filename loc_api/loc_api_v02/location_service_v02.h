@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Jan 15 2019 (Spin 0)
+   It was generated on: Fri Feb  8 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x66
+#define LOC_V02_IDL_MINOR_VERS 0x69
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -13966,6 +13966,12 @@ typedef struct {
   uint8_t reportFullSvPolyDb_valid;  /**< Must be set to true if reportFullSvPolyDb is being passed */
   uint8_t reportFullSvPolyDb;
   /**<   Request indicating client needs complete SV polynomials */
+
+  /* Optional */
+  /*  Request Complete Iono Data */
+  uint8_t reportFullIonoDb_valid;  /**< Must be set to true if reportFullIonoDb is being passed */
+  uint8_t reportFullIonoDb;
+  /**<   Request indicating client needs complete Iono */
 }qmiLocSetGNSSConstRepConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -20653,6 +20659,11 @@ typedef uint64_t qmiLocEventReportMaskT_v02;
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00200000ull) /**<  Reserved Delete SV Poly Bit 5.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00400000ull) /**<  Reserved Delete SV Poly Bit 6.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00800000ull) /**<  Reserved Delete SV Poly Bit 7.  */
+#define QMI_LOC_DELETE_GPS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x01000000ull) /**<  GPS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_GLO_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x02000000ull) /**<  GLONASS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_BDS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x04000000ull) /**<  BDS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_GAL_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x08000000ull) /**<  GALILEO IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_QZSS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x10000000ull) /**<  QZSS IONO parameters have been deleted.  */
 /** @addtogroup loc_qmi_aggregates
     @{
   */
@@ -20757,6 +20768,11 @@ typedef struct {
       - QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL (0x00200000) --  Reserved Delete SV Poly Bit 5.
       - QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL (0x00400000) --  Reserved Delete SV Poly Bit 6.
       - QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL (0x00800000) --  Reserved Delete SV Poly Bit 7.
+      - QMI_LOC_DELETE_GPS_IONO_ALL (0x01000000) --  GPS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_GLO_IONO_ALL (0x02000000) --  GLONASS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_BDS_IONO_ALL (0x04000000) --  BDS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_GAL_IONO_ALL (0x08000000) --  GALILEO IONO parameters have been deleted.
+      - QMI_LOC_DELETE_QZSS_IONO_ALL (0x10000000) --  QZSS IONO parameters have been deleted.
  */
 
   /* Optional */

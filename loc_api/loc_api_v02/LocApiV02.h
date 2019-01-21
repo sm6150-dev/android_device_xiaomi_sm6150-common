@@ -167,6 +167,7 @@ private:
   void populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02 *,
           GnssSvEphemerisReport &);
   void populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &, GnssEphCommon &);
+  void populateGpsTimeOfReport(const qmiLocGnssTimeStructT_v02 &, GnssSystemTimeStructType &);
 
   void reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_ptr);
   /* convert system info to location api format and dispatch to

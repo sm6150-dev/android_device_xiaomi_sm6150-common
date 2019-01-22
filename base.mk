@@ -849,6 +849,7 @@ IMS_SETTINGS := imssettings
 
 #IMS Extension module for Android Telephony
 IMS_EXT := ims-ext-common
+IMS_EXT += ims_ext_common.xml
 IMS_EXT += ConfURIDialer
 
 #CRDA

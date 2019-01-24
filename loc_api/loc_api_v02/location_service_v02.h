@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x64
+#define LOC_V02_IDL_MINOR_VERS 0x65
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00CD
+#define LOC_V02_MAX_MESSAGE_ID 0x00CE
 /**
     @}
   */
@@ -590,6 +590,8 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
        for all GNSS constellations  */
 #define QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x20000000000ull) /**<  The control point must enable this mask to receive the upcoming
        leap second info from service  */
+#define QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS_V02 ((qmiLocEventRegMaskT_v02)0x40000000000ull) /**<  The control point must enable this mask to receive the
+       BAND MEASUREMENT METRICS from ME  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -710,6 +712,8 @@ typedef struct {
        for all GNSS constellations
       - QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT (0x20000000000) --  The control point must enable this mask to receive the upcoming
        leap second info from service
+      - QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS (0x40000000000) --  The control point must enable this mask to receive the
+       BAND MEASUREMENT METRICS from ME
 
  Multiple events can be registered by ORing the individual masks and
  sending them in this TLV. All unused bits in this mask must be set to 0.
@@ -1547,7 +1551,7 @@ typedef struct {
   /*  GPS Time */
   uint8_t gpsTime_valid;  /**< Must be set to true if gpsTime is being passed */
   qmiLocGPSTimeStructT_v02 gpsTime;
-  /**<   \vspace{0.06in} \n The number of weeks since Jan. 5, 1980, and
+  /**<   \vspace{0.06in} \n The number of weeks since Jan. 6, 1980, and
        milliseconds into the current week. */
 
   /* Optional */
@@ -5423,7 +5427,7 @@ typedef struct {
   uint8_t onDemandCpi_valid;  /**< Must be set to true if onDemandCpi is being passed */
   uint8_t onDemandCpi;
   /**<   Indicates whether this position injection was requested by the modem.
-       Valid values: \newline
+       Valid values: \n
        - 0x00 (FALSE) -- The position injection was not requested by the modem (Free CPI) \n
        - 0x01 (TRUE) -- The position injection was requested by the modem (On-Demand CPI) */
 
@@ -5441,7 +5445,7 @@ typedef struct {
   /*  GPS Time */
   uint8_t gpsTime_valid;  /**< Must be set to true if gpsTime is being passed */
   qmiLocGPSTimeStructT_v02 gpsTime;
-  /**<   \vspace{0.06in} \n The number of weeks since Jan. 5, 1980, and
+  /**<   \n The number of weeks since Jan. 6, 1980, and
        milliseconds into the current week. This is the GPS Time Stamp
        for this injected position. */
 
@@ -7162,6 +7166,8 @@ typedef struct {
        for all GNSS constellations
       - QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT (0x20000000000) --  The control point must enable this mask to receive the upcoming
        leap second info from service
+      - QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS (0x40000000000) --  The control point must enable this mask to receive the
+       BAND MEASUREMENT METRICS from ME
  */
 }qmiLocGetRegisteredEventsIndMsgT_v02;  /* Message */
 /**
@@ -20067,11 +20073,11 @@ typedef struct {
   uint16_t gnssSvId;
   /**<   GNSS SV ID.
        - Type: uint16
-       - Range: 65 to 96 if known. When the slot number to SV ID mapping is unknown, set to 255 */
+       - Range: 65 to 96 (if known). When the slot number to SV ID mapping is unknown, set to 255. */
 
   qmiLocEphUpdateActionEnumT_v02 updateAction;
   /**<   Specifies the source of ephemeris. \n
- - Type: int32 enum
+ - Type: int32 enum \n
  Valid Values: \n
       - eQMI_LOC_UPDATE_EPH_SRC_UNKNOWN (0) --  Update ephemeris. Source of ephemeris is unknown
       - eQMI_LOC_UPDATE_EPH_SRC_OTA (1) --  Update ephemeris. Source of ephemeris is OTA
@@ -20358,16 +20364,16 @@ typedef struct {
   /*  tuncConstraintOn */
   uint8_t tuncConstraintOn;
   /**<   Specifies the constrained tunc mode desired by the control point.
-       \begin{itemize1}
-       \item    True: Engine shall maintain Tunc below specified constraint.
-       \item    False: Engine shall not maintain Tunc.
-       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+       Values: \n
+       - True -- Engine shall maintain Tunc below specified constraint. \n
+       - False -- Engine shall not maintain Tunc.
+        */
 
   /* Optional */
   /*  tuncConstraint */
   uint8_t tuncConstraint_valid;  /**< Must be set to true if tuncConstraint is being passed */
   float tuncConstraint;
-  /**<   If tuncConstraintOn is set to ON, the engine shall maintain its time
+  /**<   If tuncConstraint is set to ON, the engine maintains its time
        uncertainty below the specified constraint in tuncConstraint. The units
        are in ms. If this parameter is not specified and tuncConstraint is set
        to ON, the Engine picks up the default tuncConstraint.
@@ -20378,10 +20384,10 @@ typedef struct {
   uint8_t energyBudget_valid;  /**< Must be set to true if energyBudget is being passed */
   uint32_t energyBudget;
   /**<   If tuncConstraintOn is set to ON, and if energyBudget is specified, the
-       Engine shall use this as the maximum energy to be used while keeping the
+       engine uses this as the maximum energy to be used while keeping the
        engine in constrained tunc mode. If no energy budget is specified, the
-       engine shall assume the budget to be infinite. \n
-       - Units: 0.1 milli watt second \n
+       engine assumes the budget to be infinite. \n
+       - Units: 0.1 milli watt second
        */
 }qmiLocSetConstrainedTuncModeReqMsgT_v02;  /* Message */
 /**
@@ -20399,7 +20405,7 @@ typedef struct {
   /* Mandatory */
   /*  status */
   qmiLocStatusEnumT_v02 status;
-  /**<   Status of the Set Tunc Constrained Mode Req.
+  /**<   Status of the set tunc constrained mode request.
 
  Valid values: \n
       - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
@@ -20432,10 +20438,10 @@ typedef struct {
   /*  enablePositionAssistedClockEst */
   uint8_t enablePositionAssistedClockEst;
   /**<   Specifies the position assisted clock estimation mode desired by the control point.
-       \begin{itemize1}
-       \item    True: Engine shall enable position assisted clock estimation mode.
-       \item    False: Engine shall disable position assisted clock estimation mode.
-       \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+       Values: \n
+       - True -- Engine enables position assisted clock estimation mode. \n
+       - False -- Engine disables position assisted clock estimation mode.
+        */
 }qmiLocEnablePositionAssistedClockEstReqMsgT_v02;  /* Message */
 /**
     @}
@@ -20500,8 +20506,7 @@ typedef struct {
   /*  energyConsumedSinceLastBoot */
   uint64_t energyConsumedSinceLastBoot;
   /**<   Energy consumed by the GNSS engine since bootup in units of 0.1 milli watt seconds.
-       A value of 0xffffffffffffffff indicates an invalid reading
-       Valid values: \n
+       A value of 0xffffffffffffffff indicates an invalid reading.
 
        */
 
@@ -20509,8 +20514,7 @@ typedef struct {
   /*  energyConsumedSinceFirstBoot */
   uint64_t energyConsumedSinceFirstBoot;
   /**<   Energy consumed by the GNSS engine since the first bootup in units of 0.1 milli watt seconds.
-       A value of 0xffffffffffffffff indicates an invalid reading
-       Valid values: \n
+       A value of 0xffffffffffffffff indicates an invalid reading.
 
        */
 }qmiLocQueryGNSSEnergyConsumedIndMsgT_v02;  /* Message */
@@ -20584,6 +20588,146 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  uint16_t bpAmpI;
+  /**<   GNSS BP Amp I; For GLO, it is the average BP Amp I*/
+
+  uint16_t bpAmpQ;
+  /**<   GNSS BP Amp Q ; For GLO, it is the average BP Amp Q   */
+
+  int32_t jammerPwrDb;
+  /**<   Jammer Power metrics, in units of dB */
+}qmiLocMePerGnssRfStructType_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to request the Band Measurement Metrics.  */
+typedef struct {
+
+  /* Mandatory */
+  /*  systemTick */
+  uint64_t systemTick;
+  /**<   System counter at which RF status is updated*/
+
+  /* Mandatory */
+  /*  band1PgaGainDb */
+  int32_t band1PgaGainDb;
+  /**<   GNSS Band1 RX path PGA gain in units of dB
+  GEN9(nominal values)    0 to +4
+  Limit -12 to +18   \n
+   */
+
+  /* Optional */
+  /*  gpsL1caRfStats */
+  uint8_t gpsL1caRfStats_valid;  /**< Must be set to true if gpsL1caRfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 gpsL1caRfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    160-200
+  Limit 89-356
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  gloG1RfStats */
+  uint8_t gloG1RfStats_valid;  /**< Must be set to true if gloG1RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 gloG1RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    120-180
+  Limit 128-512
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  bdsB1RfStats */
+  uint8_t bdsB1RfStats_valid;  /**< Must be set to true if bdsB1RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 bdsB1RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    160-200
+  Limit 75-582
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  galE1RfStats */
+  uint8_t galE1RfStats_valid;  /**< Must be set to true if galE1RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 galE1RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    160-200
+  Limit 75-582
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  gpsL2cRfStats */
+  uint8_t gpsL2cRfStats_valid;  /**< Must be set to true if gpsL2cRfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 gpsL2cRfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    160-200
+  Limit  89-356
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  gloG2RfStats */
+  uint8_t gloG2RfStats_valid;  /**< Must be set to true if gloG2RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 gloG2RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    120-180
+  Limit 128-512
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  bdsB2RfStats */
+  uint8_t bdsB2RfStats_valid;  /**< Must be set to true if bdsB2RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 bdsB2RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    160-200
+  Limit 75-582
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  band5PgaGainDb */
+  uint8_t band5PgaGainDb_valid;  /**< Must be set to true if band5PgaGainDb is being passed */
+  int32_t band5PgaGainDb;
+  /**<   GNSS Band5 RX path PGA gain in units of dB
+  GEN9(nominal values)       -4 to 0
+  Limit -12 to +18    \n
+   */
+
+  /* Optional */
+  /*  gpsL5RfStats */
+  uint8_t gpsL5RfStats_valid;  /**< Must be set to true if gpsL5RfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 gpsL5RfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    60-100
+  Limit 60-150
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+
+  /* Optional */
+  /*  galE5ARfStats */
+  uint8_t galE5ARfStats_valid;  /**< Must be set to true if galE5ARfStats is being passed */
+  qmiLocMePerGnssRfStructType_v02 galE5ARfStats;
+  /**<  GNSS BP Amp in dB
+  GEN9(nominal values)    60-100
+  Limit 60-150
+  Limit of l_JammerPwrDb  -18 to 105 dB    \n
+  */
+}qmiLocGetBandMeasurementMetricsIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -20596,6 +20740,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_DELETE_GNSS_SERVICE_DATA_V02
 //#define REMOVE_QMI_LOC_DELETE_SUPL_CERTIFICATE_V02
 //#define REMOVE_QMI_LOC_EDIT_GEOFENCE_V02
+//#define REMOVE_QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_V02
 //#define REMOVE_QMI_LOC_ENABLE_POSITION_INJECTION_TEST_MODE_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCHING_STATUS_V02
 //#define REMOVE_QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_V02
@@ -20652,6 +20797,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_GDT_UPLOAD_BEGIN_STATUS_V02
 //#define REMOVE_QMI_LOC_GDT_UPLOAD_END_V02
 //#define REMOVE_QMI_LOC_GET_AVAILABLE_WWAN_POSITION_V02
+//#define REMOVE_QMI_LOC_GET_BAND_MEASUREMENT_METRICS_V02
 //#define REMOVE_QMI_LOC_GET_BATCH_SIZE_V02
 //#define REMOVE_QMI_LOC_GET_BEST_AVAILABLE_POSITION_V02
 //#define REMOVE_QMI_LOC_GET_BLACKLIST_SV_V02
@@ -21183,6 +21329,7 @@ typedef struct {
 #define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02 0x00CC
 #define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02 0x00CC
 #define QMI_LOC_EVENT_REPORT_IND_V02 0x00CD
+#define QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02 0x00CE
 /**
     @}
   */

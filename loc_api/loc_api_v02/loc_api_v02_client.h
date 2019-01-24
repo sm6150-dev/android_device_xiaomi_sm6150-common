@@ -1112,6 +1112,10 @@ typedef union
    /** Sent by the engine to inform of location system info event
     QMI_LOC_SYSTEM_INFO_IND_V02 */
 
+   const qmiLocGetBandMeasurementMetricsIndMsgT_v02 *pLocGetBandMeasurementMetricsEvent;
+   /** Sent asynchronously by MGP to registred clients for the Power metrics
+    QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02 0x00CE*/
+
 }locClientEventIndUnionType;
 
 

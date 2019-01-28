@@ -78,28 +78,8 @@ case "$1" in
         sleep 1
         $0 start
         ;;
-
-  start_service)
-        # Create required directories for location hal daemon
-        # and start location_hal_daemon service.
-        # Note: used for systemd targets
-        $0 start
-        echo "Start location_hal_daemon service"
-        start-stop-daemon -S -b -a /usr/bin/location_hal_daemon
-        ;;
-  stop_service)
-        # stop location_hal_daemon service
-        # Note: used for systemd targets
-        echo "Stop location_hal_daemon service"
-        start-stop-daemon -K -n location_hal_daemon
-        ;;
-  restart_service)
-        $0 stop_service
-        $0 start_service
-        ;;
-
   *)
-        echo -n "Usage location_hal_initializer { start | stop | restart | start_service | stop_service | restart_service }" >&2
+        echo -n "Usage location_hal_initializer { start | stop | restart }" >&2
         exit 1
         ;;
 esac

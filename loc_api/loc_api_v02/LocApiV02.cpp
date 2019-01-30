@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -5064,10 +5064,59 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         bAgcIsPresent = false;
     }
 
+    // code type
+    if (gnss_measurement_report_ptr.measurementCodeType_valid) {
+        switch (gnss_measurement_report_ptr.measurementCodeType)
+        {
+        case eQMI_LOC_GNSS_CODE_TYPE_A_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_A; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_B_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_B; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_C_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_C; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_I_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_I; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_L_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_L; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_M_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_M; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_P_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_P; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_Q_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_Q; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_S_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_S; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_W_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_W; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_X_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_X; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_Y_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_Y; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_Z_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_Z; break;
+        case eQMI_LOC_GNSS_CODE_TYPE_N_V02:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_N; break;
+        default:
+            measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_OTHER; break;
+        }
+    } else {
+        measurementData.codeType = GNSS_MEASUREMENTS_CODE_TYPE_OTHER;
+    }
+
+    memset(measurementData.otherCodeTypeName, 0, GNSS_MAX_NAME_LENGTH);
+    if (GNSS_MEASUREMENTS_CODE_TYPE_OTHER == measurementData.codeType) {
+        if (gnss_measurement_report_ptr.otherCodeTypeName_valid) {
+            strlcpy(measurementData.otherCodeTypeName,
+                    gnss_measurement_report_ptr.otherCodeTypeName,
+                    std::min((uint32_t)sizeof(measurementData.otherCodeTypeName),
+                             (uint32_t)gnss_measurement_report_ptr.otherCodeTypeName_len+1));
+        }
+    }
+
     LOC_LOGv(" GNSS measurement raw data received from modem:\n"
              " Input => gnssSvId=%d validMask=0x%04x validMeasStatus=0x%" PRIx64
              "  CNo=%d dopplerShift=%.2f dopplerShiftUnc=%.2f fineSpeed=%.2f fineSpeedUnc=%.2f"
-             "  svTimeMs=%u svTimeSubMs=%.2f svTimeUncMs=%.2f"
+             "  svTimeMs=%u svTimeSubMs=%.2f svTimeUncMs=%.2f codeType=%d"
              "  carrierPhase=%.2f carrierPhaseUnc=%.6f cycleSlipCount=%u\n"
              " GNSS measurement data after conversion:"
              " Output => size=%zu svid=%d time_offset_ns=%.2f stateMask=0x%08x"
@@ -5075,7 +5124,7 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
              "  c_n0_dbhz=%.2f"
              "  pseudorange_rate_mps=%.2f pseudorange_rate_uncertainty_mps=%.2f"
              "  adrStateMask=0x%02x adrMeters=%.2f adrUncertaintyMeters=%.6f"
-             " carrierFrequencyHz=%.2f",
+             "  carrierFrequencyHz=%.2f codeType=%d",
              gnss_measurement_info.gnssSvId,                                    // %d
              gnss_measurement_info.validMask,                                   // 0x%4x
              validMeasStatus,                                                   // %PRIx64
@@ -5087,6 +5136,7 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
              gnss_measurement_info.svTimeSpeed.svTimeMs,                        // %u
              gnss_measurement_info.svTimeSpeed.svTimeSubMs,                     // %f
              gnss_measurement_info.svTimeSpeed.svTimeUncMs,                     // %f
+             gnss_measurement_report_ptr.measurementCodeType,                   // %d
              gnss_measurement_info.carrierPhase,                                // %f
              gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index],      // %f
              gnss_measurement_info.cycleSlipCount,                              // %u
@@ -5102,8 +5152,8 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
              measurementData.adrStateMask,                                      // 0x%2x
              measurementData.adrMeters,                                         // %f
              measurementData.adrUncertaintyMeters,                              // %f
-             measurementData.carrierFrequencyHz);                               // %f
-
+             measurementData.carrierFrequencyHz,                                // %f
+             measurementData.codeType);                                         // %d
     return bAgcIsPresent;
 }
 

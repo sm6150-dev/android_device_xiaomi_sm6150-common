@@ -225,7 +225,6 @@ BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := f2fs
 TARGET_COPY_OUT_VENDOR := vendor
 
 # Power
-TARGET_TAP_TO_WAKE_EVENT_NODE := "/dev/input/event2"
 TARGET_WLAN_POWER_STAT := "/sys/kernel/wlan/power_stats"
 TARGET_RPM_MASTER_STAT := "/sys/power/rpmh_stats/master_stats"
 

@@ -61,6 +61,7 @@ BOARD_HAVE_QCOM_FM ?= true
 # Boot additions
 #Android Telephony library
 PRODUCT_BOOT_JARS += qtiNetworkLib
+PRODUCT_BOOT_JARS += ims-ext-common
 ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
 PRODUCT_BOOT_JARS += com.nxp.nfc.nq
 endif

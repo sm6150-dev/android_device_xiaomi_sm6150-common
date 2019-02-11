@@ -650,7 +650,6 @@ LIBQDUTILS := libqdutils
 
 #LIBQDMETADATA
 LIBQDMETADATA := libqdMetaData
-LIBQDMETADATA += libqdMetaData.system
 
 #LIBPOWER
 LIBPOWER := power.qcom

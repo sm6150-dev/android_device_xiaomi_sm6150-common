@@ -159,8 +159,9 @@ static void onPingTestCb(uint32_t response) {
 }
 
 static void printHelp() {
-    printf("g: Gnss report session\n");
-    printf("l: Location session \n");
+    printf("g: Gnss report session with 1000 ms interval\n");
+    printf("u: Update a session with 2000 ms interval\n");
+    printf("m: Interleaving fix session with 1000 and 2000 ms interval, change every 3 seconds\n");
     printf("s: Stop a session \n");
     printf("p: Ping test\n");
     printf("q: Quit\n");
@@ -202,12 +203,41 @@ int main(int argc, char *argv[]) {
                 if (!pClient) {
                     pClient = new LocationClientApi(onCapabilitiesCb);
                 }
-                pClient->startPositionSession(1000, reportcbs, onResponseCb);
+                if (pClient) {
+                    pClient->startPositionSession(1000, reportcbs, onResponseCb);
+                }
+                break;
+            case 'u':
+                if (!pClient) {
+                    pClient = new LocationClientApi(onCapabilitiesCb);
+                }
+                if (pClient) {
+                    pClient->startPositionSession(2000, reportcbs, onResponseCb);
+                }
                 break;
             case 's':
-                pClient->stopPositionSession();
-                delete pClient;
-                pClient = NULL;
+                if (pClient) {
+                    pClient->stopPositionSession();
+                    delete pClient;
+                    pClient = NULL;
+                }
+                break;
+            case 'm':
+                if (!pClient) {
+                    pClient = new LocationClientApi(onCapabilitiesCb);
+                }
+                if (pClient) {
+                    int i = 0;
+                    do {
+                        if (i%2 == 0) {
+                            pClient->startPositionSession(2000, reportcbs, onResponseCb);
+                        } else {
+                            pClient->startPositionSession(1000, reportcbs, onResponseCb);
+                        }
+                        i++;
+                        sleep(3);
+                    } while (1);
+                }
                 break;
             case 'q':
                 goto EXIT;

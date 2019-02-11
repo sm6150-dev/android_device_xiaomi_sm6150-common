@@ -43,6 +43,7 @@
 #include <linux/types.h>
 #include <linux/socket.h>
 
+#include <log_util.h>
 #include <LocIpc.h>
 #include <LocThread.h>
 
@@ -108,6 +109,9 @@ private:
     static bool sendData(int fd, const sockaddr_qrtr& addr,
             const uint8_t data[], uint32_t length);
     static bool findService(int fd, sockaddr_qrtr& addr, int service, int instance);
+    // this call will find service with retry attempt of
+    // default retry count and interval
+    static bool findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service, int instance);
 
     int mService;
     int mInstance;
@@ -116,6 +120,9 @@ private:
     LocThread mThread;
     LocRunnable *mRunnable;
 };
+
+#define RETRY_FINDNEWSERVICE_MAX_COUNT 200
+#define RETRY_FINDNEWSERVICE_SLEEP_MS  5
 
 class LocSocketSender {
 public:
@@ -127,13 +134,12 @@ public:
 
         mService = service;
         mInstance = instance;
+        memset(&mDestAddr, 0, sizeof(mDestAddr));
 
         mSocket = socket(AF_QIPCRTR, SOCK_DGRAM, 0);
         if (mSocket < 0) {
             return;
         }
-
-        LocSocket::findService(mSocket, mDestAddr, mService, mInstance);
     }
 
     inline ~LocSocketSender() {
@@ -151,11 +157,42 @@ public:
         bool rtv = true;
 
         if (nullptr != data) {
-            LocSocket::findService(mSocket, mDestAddr, mService, mInstance);
+            rtv = LocSocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance);
             if (true == rtv) {
                 rtv = LocSocket::sendData(mSocket, mDestAddr, data, length);
             }
         }
+        return rtv;
+    }
+
+    // This routine will attempt to find new service when service
+    // has crashed and restarted.
+    // We need to make sure that we get the new dest info (node/port) as the
+    // crashed service may lingering around for some time and findService may
+    // return the node/port belong to the crashed service.
+    inline bool findNewService() {
+        bool rtv = false;
+        bool newServiceFound = false;
+        int retryCount = 0;
+
+        sockaddr_qrtr newDestAddr;
+
+        do {
+            memset(&newDestAddr, 0, sizeof(newDestAddr));
+            rtv = LocSocket::findServiceWithRetry(mSocket, newDestAddr, mService, mInstance);
+            if (true == rtv) {
+                if ((mDestAddr.sq_node != newDestAddr.sq_node) ||
+                    (mDestAddr.sq_port != newDestAddr.sq_port)) {
+                    newServiceFound = true;
+                    break;
+                }
+                usleep(RETRY_FINDNEWSERVICE_SLEEP_MS*1000);
+                retryCount++;
+            }
+        } while (retryCount < RETRY_FINDNEWSERVICE_MAX_COUNT);
+
+        LOC_LOGd("find new servie: service found %d, new service found %d, "
+                 "retry count %d", rtv, newServiceFound, retryCount);
         return rtv;
     }
 

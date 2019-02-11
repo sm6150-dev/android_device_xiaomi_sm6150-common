@@ -42,7 +42,8 @@ namespace loc_util {
 #define LOC_MSG_BUF_LEN 8192
 #define LOC_MSG_HEAD "$MSGLEN$"
 #define LOC_MSG_ABORT "LocQsocketMsg::ABORT"
-
+#define RETRY_FINDSERVICE_MAX_COUNT 10
+#define RETRY_FINDSERVICE_SLEEP_MS  5
 
 class LocQsocketRunnable : public LocRunnable {
 friend LocQsocket;
@@ -82,11 +83,11 @@ bool LocQsocket::startListeningBlocking(const std::string& name) {
     // should not exceed 65 bytes
     mService = atoi(name.c_str());
     const char* instance_ptr = strchr(name.c_str(), '.');
-    if (nullptr != instance_ptr) {
-        instance_ptr++;
+    if (nullptr == instance_ptr) {
+        return false;
     }
 
-    mInstance = atoi(instance_ptr);
+    mInstance = atoi(++instance_ptr);
 
     // bind
     memset(&mDestAddr, 0, sizeof(mDestAddr));
@@ -187,10 +188,28 @@ bool LocQsocket::findService(int fd, qsockaddr_ipcr& addr,
             LOC_LOGd("for service %d, instance %d, number of services successfully found %d",
                       service, instance, num_entries);
             printaddr(&addr);
+        } else {
+            LOC_LOGe("service found error code %d, service num %d", rc, num_entries);
         }
-        LOC_LOGe("service found error code %d, service num %d", rc, num_entries);
     }
     return serviceFound;
+}
+
+bool LocQsocket::findServiceWithRetry(int fd, qsockaddr_ipcr& addr,
+                                      int service, int instance) {
+    int retryCount = 0;
+
+    bool result = false;
+    do {
+        result = LocQsocket::findService(fd, addr, service, instance);
+        if (true == result) {
+            break;
+        }
+        usleep(RETRY_FINDSERVICE_SLEEP_MS * 1000);
+    } while (retryCount++ <= RETRY_FINDSERVICE_MAX_COUNT);
+
+    LOC_LOGd("find service returned %d, retryCount %d", result, retryCount);
+    return result;
 }
 
 // static
@@ -209,13 +228,10 @@ bool LocQsocket::send(int service, int instance, const uint8_t data[], uint32_t 
     }
 
     qsockaddr_ipcr addr;
-    while (1) {
-        if (findService(fd, addr, service, instance)) {
-            break;
-        }
-        sleep(1);
+    result = findServiceWithRetry(fd, addr, service, instance);
+    if (result == true) {
+        result = sendData(fd, addr, data, length);
     }
-    result = sendData(fd, addr, data, length);
 
     (void)qclose(fd);
     return result;
@@ -257,7 +273,7 @@ bool LocQsocket::sendData(int fd, const qsockaddr_ipcr& addr, const uint8_t data
             }
         }
     }
-    LOC_LOGd("send len=%u result=%d", length, result);
+    LOC_LOGd("send finished len=%u result=%d", length, result);
     return result;
 }
 

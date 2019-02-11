@@ -198,7 +198,14 @@ void LocationApiService::onListenerReady(bool externalApIpc) {
             LocHalDaemonIPCSender* pIpcSender = new LocHalDaemonIPCSender(clientName);
             LocAPIHalReadyIndMsg msg(SERVICE_NAME);
             LOC_LOGd("<-- Sending ready to socket: %s, msg size %d", clientName, sizeof(msg));
-            pIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+            bool sendSuccessful = pIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
+            // Remove this external AP client as the socket it has is no longer reachable.
+            // For MDM location API client, the socket file will be removed automatically when
+            // its process exits/crashes.
+            if ((false == sendSuccessful) && (true == externalApIpc)) {
+                remove(fname.c_str());
+                LOC_LOGd("<-- remove file %s", fname.c_str());
+            }
             delete pIpcSender;
         }
     }

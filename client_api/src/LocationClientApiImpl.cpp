@@ -744,14 +744,16 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
     unsigned int clientIdMask = 1;
     // find a bit in the mClientIdGenerator that is not yet used
     // and use that as client id
-    for (mClientId = 0; mClientId < sizeof(mClientIdGenerator) * 8; mClientId++) {
-        if ((mClientIdGenerator & (1UL << mClientId)) == 0) {
-            mClientIdGenerator |= (1UL << mClientId);
+    // client id will be from 1 to 32, as client id will be used to
+    // set session id and 0 is reserved for LOCATION_CLIENT_SESSION_ID_INVALID
+    for (mClientId = 1; mClientId <= sizeof(mClientIdGenerator) * 8; mClientId++) {
+        if ((mClientIdGenerator & (1UL << (mClientId-1))) == 0) {
+            mClientIdGenerator |= (1UL << (mClientId-1));
             break;
         }
     }
 
-    if (mClientId >= sizeof(mClientIdGenerator) * 8) {
+    if (mClientId > sizeof(mClientIdGenerator) * 8) {
         LOC_LOGe("create Qsocket failed, already use up maximum of %d clients",
                  sizeof(mClientIdGenerator)*8);
         return;
@@ -787,6 +789,11 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
     // get clientId
     lock_guard<mutex> lock(mMutex);
     mClientId = ++mClientIdGenerator;
+    // make sure client ID is not equal to LOCATION_CLIENT_SESSION_ID_INVALID,
+    // as session id will be assigned to client ID
+    if (mClientId == LOCATION_CLIENT_SESSION_ID_INVALID) {
+        mClientId = ++mClientIdGenerator;
+    }
     int strCopied = strlcpy(mSocketName,SOCKET_TO_LOCATION_CLIENT_BASE,
                            MAX_SOCKET_PATHNAME_LENGTH);
     if (strCopied>0 && strCopied< MAX_SOCKET_PATHNAME_LENGTH) {
@@ -1552,8 +1559,14 @@ void LocationClientApiImpl::onListenerReady() {
         virtual ~ClientRegisterReq() {}
         void proc() const {
             LocAPIClientRegisterReqMsg msg(mApiImpl->mSocketName);
-            bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t *>(&msg), sizeof(msg));
-            LOC_LOGd(">>> onListenerReady::ClientRegisterReqMsg rc=%d", rc);
+            bool rc = true;
+#ifdef FEATURE_EXTERNAL_AP
+            rc = mApiImpl->mIpcSender->findNewService();
+#endif
+            if (rc == true) {
+                rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t *>(&msg), sizeof(msg));
+                LOC_LOGd(">>> onListenerReady::ClientRegisterReqMsg rc=%d", rc);
+            }
         }
         LocationClientApiImpl *mApiImpl;
     };
@@ -1588,6 +1601,12 @@ void LocationClientApiImpl::onReceive(const string& data) {
                             LOC_LOGe("invalid message");
                             break;
                         }
+                        // location hal deamon has restarted, need to set this
+                        // flag to false to prevent messages to be sent to hal
+                        // before registeration completes
+                        mApiImpl->mHalRegistered = false;
+                        // set mSessionId to invalid so session can be restarted
+                        mApiImpl->mSessionId = LOCATION_CLIENT_SESSION_ID_INVALID;
                         mApiImpl->onListenerReady();
                         break;
                     }

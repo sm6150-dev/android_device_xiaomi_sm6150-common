@@ -51,11 +51,9 @@ public:
             uint32_t serviceId = atoi(destSocket);
             const char* instance_ptr = strchr(destSocket, '.');
             if (nullptr != instance_ptr) {
-                instance_ptr++;
+                uint32_t instanceId = atoi(++instance_ptr);
+                mQsockSender = new LocQsocketSender(serviceId, instanceId);
             }
-            uint32_t instanceId = atoi (instance_ptr);
-
-            mQsockSender = new LocQsocketSender(serviceId, instanceId);
         }
     }
 

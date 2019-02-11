@@ -99,6 +99,9 @@ private:
     static bool sendData(int fd, const qsockaddr_ipcr& addr,
             const uint8_t data[], uint32_t length);
 
+    static bool findServiceWithRetry(int fd, qsockaddr_ipcr& addr,
+                                     int service, int instance);
+
     static bool findService(int fd, qsockaddr_ipcr& addr,
                             int service, int instance);
 
@@ -137,13 +140,6 @@ public:
         mService = service;
         mInstance = instance;
 
-        while (1) {
-            if(LocQsocket::findService(mSocket, mDestAddr, mService, mInstance)) {
-                break;
-            }
-            sleep(1);
-        }
-
         printaddr(&mDestAddr);
     }
 
@@ -163,7 +159,7 @@ public:
         bool rtv = true;
 
         if (nullptr != data) {
-            rtv = LocQsocket::findService(mSocket, mDestAddr, mService, mInstance);
+            rtv = LocQsocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance);
             if (true == rtv) {
                 rtv = LocQsocket::sendData(mSocket, mDestAddr, data, length);
             }

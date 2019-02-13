@@ -467,8 +467,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
             (getSupportedFeatureList_ind.feature_len != 0 ? getSupportedFeatureList_ind.feature:
             NULL), gnssMeasurementSupported);
 
-       // broadcast handle engine up event
-        handleEngineUpEvent();
+       LocDualContext::injectFeatureConfig(mContext);
     }
   }
 

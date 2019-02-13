@@ -4819,7 +4819,7 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
 
     // stateMask & receivedSvTimeNs & received_gps_tow_uncertainty_ns
     uint64_t validMeasStatus = gnss_measurement_info.measurementStatus &
-                         gnss_measurement_info.validMeasStatusMask;
+                               gnss_measurement_info.validMeasStatusMask;
     uint64_t bitSynMask = QMI_LOC_MASK_MEAS_STATUS_BE_CONFIRM_V02 |
                           QMI_LOC_MASK_MEAS_STATUS_SB_VALID_V02;
     double gpsTowUncNs = (double)gnss_measurement_info.svTimeSpeed.svTimeUncMs * 1e6;
@@ -4832,67 +4832,154 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         isGloTimeValid = true;
     }
 
-    uint64_t galSVstateMask = 0;
+    bool bBandNotAvailable = !gnss_measurement_report_ptr.gnssSignalType_valid;
+    qmiLocGnssSignalTypeMaskT_v02 gnssBand;
 
-    if (GNSS_SV_TYPE_GALILEO == measurementData.svType) {
+    if (gnss_measurement_report_ptr.gnssSignalType_valid) {
+        gnssBand = gnss_measurement_report_ptr.gnssSignalType;
+    }
+
+    measurementData.stateMask = GNSS_MEASUREMENTS_STATE_UNKNOWN_BIT;
+    measurementData.receivedSvTimeNs = 0;
+    measurementData.receivedSvTimeUncertaintyNs = 0;
+    // deal first with TOD_KNOWN and TOW_KNOWN bits
+    // GLONASS G1
+    if (GNSS_SV_TYPE_GLONASS == measurementData.svType &&
+        (bBandNotAvailable ||
+        (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 == gnssBand))) {
+        if (isGloTimeValid) {
+            measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT |
+                                          GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT);
+        }
+    }
+    if (gnss_measurement_report_ptr.systemTime_valid &&
+        255 != gnss_measurement_report_ptr.systemTime.systemWeek) {
+        // GPS L1
+        if (eQMI_LOC_SV_SYSTEM_GPS_V02 == gnss_measurement_report_ptr.systemTime.system &&
+            (bBandNotAvailable ||
+            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA_V02 == gnssBand))) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
+        }
+        // BDS B1 I
+        if (eQMI_LOC_SV_SYSTEM_BDS_V02 == gnss_measurement_report_ptr.systemTime.system &&
+            (bBandNotAvailable ||
+            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I_V02 == gnssBand))) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
+        }
+        // GAL E1C
+        if (eQMI_LOC_SV_SYSTEM_GALILEO_V02 == gnss_measurement_report_ptr.systemTime.system &&
+            (bBandNotAvailable ||
+            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02 == gnssBand))) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
+        }
+        // SBAS
+        if (eQMI_LOC_SV_SYSTEM_SBAS_V02 == gnss_measurement_report_ptr.systemTime.system &&
+            (bBandNotAvailable ||
+            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 == gnssBand))) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
+        }
+    }
+
+    // Deal with Galileo first since it is special
+    uint64_t galSVstateMask = 0;
+    if (GNSS_SV_TYPE_GALILEO == measurementData.svType &&
+        (bBandNotAvailable ||
+        (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02 == gnssBand))) {
+
         galSVstateMask = GNSS_MEASUREMENTS_STATE_GAL_E1BC_CODE_LOCK_BIT;
 
         if (gnss_measurement_info.measurementStatus &
-                QMI_LOC_MASK_MEAS_STATUS_100MS_STAT_BIT_VALID_V02) {
+            QMI_LOC_MASK_MEAS_STATUS_100MS_STAT_BIT_VALID_V02) {
             galSVstateMask |= GNSS_MEASUREMENTS_STATE_GAL_E1C_2ND_CODE_LOCK_BIT;
         }
+
         if (gnss_measurement_info.measurementStatus &
-                QMI_LOC_MASK_MEAS_STATUS_2S_STAT_BIT_VALID_V02) {
+            QMI_LOC_MASK_MEAS_STATUS_2S_STAT_BIT_VALID_V02) {
             galSVstateMask |= GNSS_MEASUREMENTS_STATE_GAL_E1B_PAGE_SYNC_BIT;
         }
+    }
+    // now deal with all constellations
+    bool bIsL5orE5 = false;
+    // L5
+    if (GNSS_SV_TYPE_GPS == measurementData.svType &&
+        (bBandNotAvailable ||
+        (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q_V02 == gnssBand))) {
+        bIsL5orE5 = true;
+    }
+    // E5
+    if (GNSS_SV_TYPE_GALILEO == measurementData.svType &&
+        (bBandNotAvailable ||
+        (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q_V02 == gnssBand))) {
+        bIsL5orE5 = true;
     }
 
     if (validMeasStatus & QMI_LOC_MASK_MEAS_STATUS_MS_VALID_V02) {
         /* sub-frame decode & TOW decode */
-        measurementData.stateMask = GNSS_MEASUREMENTS_STATE_SUBFRAME_SYNC_BIT |
-                                    GNSS_MEASUREMENTS_STATE_TOW_DECODED_BIT |
-                                    GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT |
-                                    GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT;
-        if (true == isGloTimeValid) {
-            measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT |
-                GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT);
+        measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_SUBFRAME_SYNC_BIT |
+                                      GNSS_MEASUREMENTS_STATE_TOW_DECODED_BIT |
+                                      GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT |
+                                      GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT);
+        // GLO
+        if (GNSS_SV_TYPE_GLONASS == measurementData.svType &&
+            (bBandNotAvailable ||
+            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 == gnssBand))) {
+
+            measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT |
+                                          GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT);
+            if (isGloTimeValid) {
+                measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT |
+                                              GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT);
+            }
         }
+
+        // GAL
         measurementData.stateMask |= galSVstateMask;
 
+        // BDS
         if (IS_BDS_GEO_SV(measurementData.svId, measurementData.svType)) {
             /* BDS_GEO SV transmitting D2 signal */
             measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_BDS_D2_BIT_SYNC_BIT |
-                GNSS_MEASUREMENTS_STATE_BDS_D2_SUBFRAME_SYNC_BIT);
+                                          GNSS_MEASUREMENTS_STATE_BDS_D2_SUBFRAME_SYNC_BIT);
         }
+
+        // L5 or E5
+        if (bIsL5orE5) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_2ND_CODE_LOCK_BIT;
+        }
+
         measurementData.receivedSvTimeNs =
-            (int64_t)(((double)gnss_measurement_info.svTimeSpeed.svTimeMs +
-             (double)gnss_measurement_info.svTimeSpeed.svTimeSubMs) * 1e6);
+            ((int64_t)gnss_measurement_info.svTimeSpeed.svTimeMs * 1000000) +
+            (int64_t)(gnss_measurement_info.svTimeSpeed.svTimeSubMs * 1e6);
 
         measurementData.receivedSvTimeUncertaintyNs = (int64_t)gpsTowUncNs;
 
     } else if ((validMeasStatus & bitSynMask) == bitSynMask) {
         /* bit sync */
-        measurementData.stateMask = GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT |
-                                    GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT;
+        measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT |
+                                      GNSS_MEASUREMENTS_STATE_SYMBOL_SYNC_BIT |
+                                      GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT);
         measurementData.stateMask |= galSVstateMask;
+
+        // L5 or E5
+        if (bIsL5orE5) {
+            measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_2ND_CODE_LOCK_BIT;
+        }
+
         measurementData.receivedSvTimeNs =
-            (int64_t)(fmod(((double)gnss_measurement_info.svTimeSpeed.svTimeMs +
-                  (double)gnss_measurement_info.svTimeSpeed.svTimeSubMs), 20) * 1e6);
+            (((int64_t)gnss_measurement_info.svTimeSpeed.svTimeMs * 1000000) +
+            (int64_t)(gnss_measurement_info.svTimeSpeed.svTimeSubMs * 1e6)) % (int64_t)20;
+
         measurementData.receivedSvTimeUncertaintyNs = (int64_t)gpsTowUncNs;
 
     } else if (validMeasStatus & QMI_LOC_MASK_MEAS_STATUS_SM_VALID_V02) {
         /* code lock */
-        measurementData.stateMask = GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT;
+        measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT;
         measurementData.stateMask |= galSVstateMask;
-        measurementData.receivedSvTimeNs =
-             (int64_t)((double)gnss_measurement_info.svTimeSpeed.svTimeSubMs * 1e6);
-        measurementData.receivedSvTimeUncertaintyNs = (int64_t)gpsTowUncNs;
 
-    } else {
-        /* by default */
-        measurementData.stateMask = GNSS_MEASUREMENTS_STATE_UNKNOWN_BIT;
-        measurementData.receivedSvTimeNs = 0;
-        measurementData.receivedSvTimeUncertaintyNs = 0;
+        measurementData.receivedSvTimeNs =
+            (int64_t)(gnss_measurement_info.svTimeSpeed.svTimeSubMs * 1e6);
+
+        measurementData.receivedSvTimeUncertaintyNs = (int64_t)gpsTowUncNs;
     }
 
     // carrierToNoiseDbHz

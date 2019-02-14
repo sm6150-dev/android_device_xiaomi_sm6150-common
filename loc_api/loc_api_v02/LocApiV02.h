@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -184,6 +184,8 @@ private:
   /* convert system info to location api format and dispatch to
      the registered adapter */
   void reportSystemInfo(const qmiLocSystemInfoIndMsgT_v02* system_info_ptr);
+  void reportLocationRequestNotification(
+      const qmiLocLocationRequestNotificationIndMsgT_v02* loc_req_notif);
 
   /* convert engine state report to loc eng format and send the converted
      report to loc eng */
@@ -237,6 +239,8 @@ private:
 
   /* Inform ODCPI availability to Modem */
   void wifiStatusInformSync();
+
+  void sendNfwNotification(GnssNfwNotification& notification);
 
 protected:
   virtual enum loc_api_adapter_err
@@ -355,6 +359,7 @@ public:
   virtual GnssConfigLppProfile convertLppProfile(const uint32_t lppProfile);
   virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
   virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
+  virtual LocationError setEmergencyExtensionWindowSync(const uint32_t emergencyExtensionSeconds);
 
   /* Requests for SV/Constellation Control */
   virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);

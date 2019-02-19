@@ -4600,7 +4600,7 @@ void LocApiV02 :: reportGnssMeasurementData(
 
     static bool bGPSreceived = false;
     static int msInWeek = -1;
-    bool bAgcIsPresent = false;
+    static bool bAgcIsPresent = false;
 
     LOC_LOGd("SeqNum: %d, MaxMsgNum: %d",
         gnss_measurement_report_ptr.seqNum,
@@ -4615,6 +4615,7 @@ void LocApiV02 :: reportGnssMeasurementData(
     {
         bGPSreceived = false;
         msInWeek = -1;
+        bAgcIsPresent = false;
         memset(&measurementsNotify, 0, sizeof(GnssMeasurementsNotification));
         measurementsNotify.size = sizeof(GnssMeasurementsNotification);
     }
@@ -4626,16 +4627,17 @@ void LocApiV02 :: reportGnssMeasurementData(
             LOC_LOGv("Measurements received for GNSS system %d",
                      gnss_measurement_report_ptr.system);
 
+            if (0 == measurementsNotify.count) {
+                bAgcIsPresent = true;
+            }
             for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
                     measurementsNotify.count < GNSS_MEASUREMENTS_MAX;
                     index++) {
                 LOC_LOGv("index=%u count=%zu", index, measurementsNotify.count);
-                if (convertGnssMeasurements(
+                bAgcIsPresent &= convertGnssMeasurements(
                         measurementsNotify.measurements[measurementsNotify.count],
-                    gnss_measurement_report_ptr,
-                    index)) {
-                    bAgcIsPresent = true;
-                }
+                        gnss_measurement_report_ptr,
+                        index);
                 measurementsNotify.count++;
             }
             LOC_LOGv("there are %d SV measurements now, total=%zu",
@@ -4921,32 +4923,36 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
     if (gnss_measurement_report_ptr.jammerIndicator_valid) {
         if (GNSS_INVALID_JAMMER_IND !=
             gnss_measurement_report_ptr.jammerIndicator.agcMetricDb) {
+            LOC_LOGv("AGC is valid: agcMetricDb = 0x%X bpMetricDb = 0x%X",
+                gnss_measurement_report_ptr.jammerIndicator.agcMetricDb,
+                gnss_measurement_report_ptr.jammerIndicator.bpMetricDb);
+
             measurementData.agcLevelDb =
                 (double)gnss_measurement_report_ptr.jammerIndicator.agcMetricDb / 100.0;
             measurementData.flags |= GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
-        }
-        LOC_LOGv("AGC is valid: agcMetricDb = 0x%X bpMetricDb = 0x%X",
+        } else {
+            LOC_LOGv("AGC is invalid: agcMetricDb = 0x%X bpMetricDb = 0x%X",
                  gnss_measurement_report_ptr.jammerIndicator.agcMetricDb,
                  gnss_measurement_report_ptr.jammerIndicator.bpMetricDb);
+        }
         bAgcIsPresent = true;
-    }
-    else {
-        LOC_LOGv("AGC is invalid");
+    } else {
+        LOC_LOGv("AGC is not present");
         bAgcIsPresent = false;
     }
 
-    LOC_LOGV(" %s:%d]: GNSS measurement raw data received from modem:"
+    LOC_LOGv(" GNSS measurement raw data received from modem:"
              " Input => gnssSvId=%d CNo=%d measurementStatus=0x%04x%04x"
              "  dopplerShift=%f dopplerShiftUnc=%f fineSpeed=%f fineSpeedUnc=%f"
              "  svTimeMs=%u svTimeSubMs=%f svTimeUncMs=%f"
-             "  svStatus=0x%02x validMeasStatusMask=0x%04x%04x"
+             "  svStatus=0x%02x validMeasStatusMask=0x%04x%04x\n"
              " GNSS measurement data after conversion:"
              " Output => size=%zu svid=%d time_offset_ns=%f state=%d"
              "  received_sv_time_in_ns=%" PRIu64 " received_sv_time_uncertainty_in_ns=%" PRIu64
              " c_n0_dbhz=%g"
              "  pseudorange_rate_mps=%g pseudorange_rate_uncertainty_mps=%g"
-             " carrierFrequencyHz=%.2f",
-            __func__, __LINE__,
+             " carrierFrequencyHz=%.2f"
+             " flags=0x%X",
              gnss_measurement_info.gnssSvId,                                    // %d
              gnss_measurement_info.CNo,                                         // %d
              (uint32_t)(gnss_measurement_info.measurementStatus >> 32),         // %04x Upper 32
@@ -4970,7 +4976,8 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
              measurementData.carrierToNoiseDbHz,                                // %g
              measurementData.pseudorangeRateMps,                                // %g
              measurementData.pseudorangeRateUncertaintyMps,                     // %g
-             measurementData.carrierFrequencyHz);                               // %f
+             measurementData.carrierFrequencyHz,
+             measurementData.flags);                                            // %X
 
     return bAgcIsPresent;
 }

@@ -245,7 +245,7 @@ static void getInterSystemTimeBias(const char* interSystem,
                                    Gnss_InterSystemBiasStructType &interSystemBias,
                                    const qmiLocInterSystemBiasStructT_v02* pInterSysBias)
 {
-    LOC_LOGV("%s] Mask:%d, TimeBias:%f, TimeBiasUnc:%f,\n",
+    LOC_LOGd("%s] Mask:%d, TimeBias:%f, TimeBiasUnc:%f,\n",
              interSystem, pInterSysBias->validMask, pInterSysBias->timeBias,
              pInterSysBias->timeBiasUnc);
 
@@ -543,6 +543,14 @@ bool LocApiV02::sendRequestForAidingData(locClientEventMaskType qmiMask) {
         aidingDataReq.reportFullEphemerisDb = true;
     }
 
+    /* Note: Requesting for full KlobucharIonoModel report is based on
+       QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02 bit as there is no separate QMI subscription bit for
+       iono model.*/
+    if (qmiMask & QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02) {
+        aidingDataReq.reportFullIonoDb_valid = true;
+        aidingDataReq.reportFullIonoDb = true;
+    }
+
     req_union.pSetGNSSConstRepConfigReq = &aidingDataReq;
     memset(&aidingDataReqInd, 0, sizeof(aidingDataReqInd));
 
@@ -578,7 +586,8 @@ locClientEventMaskType LocApiV02 :: adjustMaskIfNoSession(locClientEventMaskType
                                            QMI_LOC_EVENT_MASK_ENGINE_STATE_V02 |
                                            QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
                                            QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02 |
-                                           QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02;
+                                           QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02 |
+                                           QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02;
         qmiMask = qmiMask & ~clearMask;
     }
     LOC_LOGd("oldQmiMask=%" PRIu64 " qmiMask=%" PRIu64 " mInSession: %d",
@@ -2514,9 +2523,11 @@ locClientEventMaskType LocApiV02 :: convertMask(
   if (mask & LOC_API_ADAPTER_BIT_BS_OBS_DATA_SERVICE_REQ)
       eventMask |= QMI_LOC_EVENT_MASK_BS_OBS_DATA_SERVICE_REQ_V02;
 
-  if (mask & LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO) {
+  if (mask & LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO)
       eventMask |= QMI_LOC_EVENT_MASK_NEXT_LS_INFO_REPORT_V02;
-  }
+
+  if (mask & LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO)
+      eventMask |= QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02;
 
   return eventMask;
 }
@@ -3365,10 +3376,10 @@ void  LocApiV02 :: reportSvMeasurement (
         return;
     }
 
-    LOC_LOGi("[SvMeas] nHz (%d, %d), SeqNum: %d, MaxMsgNum: %d, SvSystem:  %d, MeasValid: %d, #of SV: %d\n",
+    LOC_LOGi("[SvMeas] nHz (%d, %d), SeqNum: %d, MaxMsgNum: %d, SvSystem: %d SignalType: %" PRIu64 " MeasValid: %d, #of SV: %d\n",
              gnss_raw_measurement_ptr->nHzMeasurement_valid, gnss_raw_measurement_ptr->nHzMeasurement,
              gnss_raw_measurement_ptr->seqNum, gnss_raw_measurement_ptr->maxMessageNum,
-             gnss_raw_measurement_ptr->system,
+             gnss_raw_measurement_ptr->system, gnss_raw_measurement_ptr->gnssSignalType,
              gnss_raw_measurement_ptr->svMeasurement_valid,
              gnss_raw_measurement_ptr->svMeasurement_len);
 
@@ -3499,6 +3510,24 @@ void  LocApiV02 :: reportSvMeasurement (
         getInterSystemTimeBias("galBdsInterSystemBias",
                                svMeasSetHead.galBdsInterSystemBias,interSystemBias);
         svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GAL_BDS_INTER_SYSTEM_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->GpsL1L5TimeBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->GpsL1L5TimeBias;
+
+        getInterSystemTimeBias("gpsL1L5TimeBias",
+                               svMeasSetHead.gpsL1L5TimeBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GPSL1L5_TIME_BIAS;
+    }
+
+    if (1 == gnss_raw_measurement_ptr->GalE1E5aTimeBias_valid) {
+        qmiLocInterSystemBiasStructT_v02* interSystemBias =
+                (qmiLocInterSystemBiasStructT_v02*)&gnss_raw_measurement_ptr->GalE1E5aTimeBias;
+
+        getInterSystemTimeBias("galE1E5aTimeBias",
+                               svMeasSetHead.galE1E5aTimeBias, interSystemBias);
+        svMeasSetHead.flags |= GNSS_SV_MEAS_HEADER_HAS_GALE1E5A_TIME_BIAS;
     }
 
     if (1 == gnss_raw_measurement_ptr->gloTime_valid) {
@@ -3868,7 +3897,9 @@ void LocApiV02::reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_
 {
     GnssAidingData aidingData;
     memset(&aidingData, 0, sizeof(aidingData));
-    LOC_LOGd("Loc event report: %d", event_report_ptr->eventReport);
+    LOC_LOGd("Loc event report: %" PRIu64 " KlobucharIonoMode_valid:%d: leapSec_valid:%d: tauC_valid:%d",
+            event_report_ptr->eventReport, event_report_ptr->klobucharIonoModel_valid,
+            event_report_ptr->leapSec_valid, event_report_ptr->tauC_valid);
 
     if (event_report_ptr->eventReport & QMI_LOC_DELETE_GPS_EPHEMERIS_ALL_V02) {
         aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
@@ -3920,7 +3951,104 @@ void LocApiV02::reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_
         aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT;
     }
 
-    LocApiBase::reportDeleteAidingDataEvent(aidingData);
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GPS_IONO_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GPS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GLO_IONO_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GLONASS_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_BDS_IONO_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_GAL_IONO_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT;
+    }
+
+    if (event_report_ptr->eventReport & QMI_LOC_DELETE_QZSS_IONO_ALL_V02) {
+        aidingData.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
+        aidingData.sv.svTypeMask |= GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT;
+    }
+
+
+    if ((aidingData.sv.svMask != 0) && (aidingData.sv.svTypeMask != 0)) {
+        LocApiBase::reportDeleteAidingDataEvent(aidingData);
+    }
+
+    // report Klobuchar IonoModel
+    if (event_report_ptr->klobucharIonoModel_valid) {
+        GnssKlobucharIonoModel klobucharIonoModel;
+        memset(&klobucharIonoModel, 0, sizeof(klobucharIonoModel));
+
+        if (event_report_ptr->gpsSystemTime_valid) {
+            klobucharIonoModel.isSystemTimeValid = true;
+            populateGpsTimeOfReport(event_report_ptr->gpsSystemTime, klobucharIonoModel.systemTime);
+        }
+
+        switch(event_report_ptr->klobucharIonoModel.dataSource) {
+            case eQMI_LOC_SV_SYSTEM_GPS_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_GPS;
+                break;
+            case eQMI_LOC_SV_SYSTEM_GALILEO_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_GALILEO;
+                break;
+            case eQMI_LOC_SV_SYSTEM_SBAS_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_SBAS;
+                break;
+            case eQMI_LOC_SV_SYSTEM_GLONASS_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_GLONASS;
+                break;
+            case eQMI_LOC_SV_SYSTEM_BDS_V02:
+            case eQMI_LOC_SV_SYSTEM_COMPASS_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_BDS;
+                break;
+            case eQMI_LOC_SV_SYSTEM_QZSS_V02:
+                klobucharIonoModel.gnssConstellation = GNSS_LOC_SV_SYSTEM_QZSS;
+                break;
+        }
+
+        klobucharIonoModel.alpha0 = event_report_ptr->klobucharIonoModel.alpha0;
+        klobucharIonoModel.alpha1 = event_report_ptr->klobucharIonoModel.alpha1;
+        klobucharIonoModel.alpha2 = event_report_ptr->klobucharIonoModel.alpha2;
+        klobucharIonoModel.alpha3 = event_report_ptr->klobucharIonoModel.alpha3;
+        klobucharIonoModel.beta0  = event_report_ptr->klobucharIonoModel.beta0;
+        klobucharIonoModel.beta1 = event_report_ptr->klobucharIonoModel.beta1;
+        klobucharIonoModel.beta2 = event_report_ptr->klobucharIonoModel.beta2;
+        klobucharIonoModel.beta3 = event_report_ptr->klobucharIonoModel.beta3;
+        LOC_LOGd("iono model: %d:%f:%f:%f:%f:%f:%f:%f:%f:%d",
+            klobucharIonoModel.gnssConstellation,  klobucharIonoModel.alpha0,
+            klobucharIonoModel.alpha1, klobucharIonoModel.alpha2, klobucharIonoModel.alpha3,
+            klobucharIonoModel.beta0, klobucharIonoModel.beta1, klobucharIonoModel.beta2,
+            klobucharIonoModel.beta3, klobucharIonoModel.isSystemTimeValid);
+
+        LocApiBase::reportKlobucharIonoModel(klobucharIonoModel);
+    }
+
+    // report gnss additional system info
+    GnssAdditionalSystemInfo additionalSystemInfo;
+    memset(&additionalSystemInfo, 0, sizeof(additionalSystemInfo));
+    if (event_report_ptr->leapSec_valid) {
+        additionalSystemInfo.validityMask |= GNSS_ADDITIONAL_SYSTEMINFO_HAS_LEAP_SEC;
+        additionalSystemInfo.leapSec = event_report_ptr->leapSec;
+        LOC_LOGd("LeapSec: %d", event_report_ptr->leapSec);
+    }
+    if (event_report_ptr->tauC_valid) {
+        additionalSystemInfo.validityMask |= GNSS_ADDITIONAL_SYSTEMINFO_HAS_TAUC;
+        additionalSystemInfo.tauC = event_report_ptr->tauC;
+        LOC_LOGd("tauC: %lf", event_report_ptr->tauC);
+    }
+
+    if (additionalSystemInfo.validityMask && event_report_ptr->gpsSystemTime_valid) {
+        additionalSystemInfo.isSystemTimeValid = true;
+        populateGpsTimeOfReport(event_report_ptr->gpsSystemTime, additionalSystemInfo.systemTime);
+        LocApiBase::reportGnssAdditionalSystemInfo(additionalSystemInfo);
+    }
 }
 
 void LocApiV02::reportSvEphemeris (
@@ -3954,6 +4082,19 @@ void LocApiV02::reportSvEphemeris (
 
     LocApiBase::reportSvEphemeris(svEphemeris);
 }
+
+void LocApiV02::populateGpsTimeOfReport(const qmiLocGnssTimeStructT_v02 &inGpsSystemTime,
+        GnssSystemTimeStructType& outGpsSystemTime) {
+
+    outGpsSystemTime.validityMask = GNSS_SYSTEM_TIME_WEEK_VALID |  GNSS_SYSTEM_TIME_WEEK_MS_VALID |
+            GNSS_SYSTEM_CLK_TIME_BIAS_VALID | GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID;
+
+    outGpsSystemTime.systemWeek = inGpsSystemTime.systemWeek;
+    outGpsSystemTime.systemMsec = inGpsSystemTime.systemMsec;
+    outGpsSystemTime.systemClkTimeBias = inGpsSystemTime.systemClkTimeBias;
+    outGpsSystemTime.systemClkTimeUncMs = inGpsSystemTime.systemClkTimeUncMs;
+}
+
 
 void LocApiV02::populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &receivedEph,
         GnssEphCommon &ephToFill)
@@ -4011,8 +4152,14 @@ void LocApiV02::populateGpsEphemeris(
         const qmiLocGpsEphemerisReportIndMsgT_v02 *gpsEphemeris,
         GnssSvEphemerisReport &svEphemeris)
 {
-    LOC_LOGv("GPS Ephemeris Received: %d", gpsEphemeris->gpsEphemerisList_len);
+    LOC_LOGd("GPS Ephemeris Received: Len= %d: systemTime_valid%d",
+            gpsEphemeris->gpsEphemerisList_len, gpsEphemeris->gpsSystemTime_valid);
     svEphemeris.ephInfo.gpsEphemeris.numOfEphemeris = gpsEphemeris->gpsEphemerisList_len;
+
+    if (gpsEphemeris->gpsSystemTime_valid) {
+        svEphemeris.isSystemTimeValid = true;
+        populateGpsTimeOfReport(gpsEphemeris->gpsSystemTime, svEphemeris.systemTime);
+    }
 
     for (uint32_t i =0; i < gpsEphemeris->gpsEphemerisList_len; i++) {
         const qmiLocGpsEphemerisT_v02 &receivedGpsEphemeris = gpsEphemeris->gpsEphemerisList[i];
@@ -4034,8 +4181,14 @@ void LocApiV02::populateGpsEphemeris(
 void LocApiV02::populateGlonassEphemeris(const qmiLocGloEphemerisReportIndMsgT_v02 *gloEphemeris,
         GnssSvEphemerisReport &svEphemeris)
 {
-    LOC_LOGv("GLO Ephemeris Received: %d", gloEphemeris->gloEphemerisList_len);
+    LOC_LOGd("GLO Ephemeris Received: Len= %d: systemTime_valid%d",
+            gloEphemeris->gloEphemerisList_len, gloEphemeris->gpsSystemTime_valid);
     svEphemeris.ephInfo.glonassEphemeris.numOfEphemeris = gloEphemeris->gloEphemerisList_len;
+
+    if (gloEphemeris->gpsSystemTime_valid) {
+        svEphemeris.isSystemTimeValid = true;
+        populateGpsTimeOfReport(gloEphemeris->gpsSystemTime, svEphemeris.systemTime);
+    }
 
     for (uint32_t i =0; i < gloEphemeris->gloEphemerisList_len; i++) {
         const qmiLocGloEphemerisT_v02 &receivedGloEphemeris = gloEphemeris->gloEphemerisList[i];
@@ -4092,8 +4245,15 @@ void LocApiV02::populateGlonassEphemeris(const qmiLocGloEphemerisReportIndMsgT_v
 void LocApiV02::populateBdsEphemeris(const qmiLocBdsEphemerisReportIndMsgT_v02 *bdsEphemeris,
         GnssSvEphemerisReport &svEphemeris)
 {
-    LOC_LOGv("BDS Ephemeris Received: %d", bdsEphemeris->bdsEphemerisList_len);
+    LOC_LOGd("BDS Ephemeris Received: Len= %d: systemTime_valid%d",
+            bdsEphemeris->bdsEphemerisList_len, bdsEphemeris->gpsSystemTime_valid);
     svEphemeris.ephInfo.bdsEphemeris.numOfEphemeris = bdsEphemeris->bdsEphemerisList_len;
+
+    if (bdsEphemeris->gpsSystemTime_valid) {
+        svEphemeris.isSystemTimeValid = true;
+        populateGpsTimeOfReport(bdsEphemeris->gpsSystemTime, svEphemeris.systemTime);
+    }
+
 
     for (uint32_t i =0; i < bdsEphemeris->bdsEphemerisList_len; i++) {
         const qmiLocBdsEphemerisT_v02 &receivedBdsEphemeris = bdsEphemeris->bdsEphemerisList[i];
@@ -4113,8 +4273,15 @@ void LocApiV02::populateBdsEphemeris(const qmiLocBdsEphemerisReportIndMsgT_v02 *
 void LocApiV02::populateGalEphemeris(const qmiLocGalEphemerisReportIndMsgT_v02 *galEphemeris,
         GnssSvEphemerisReport &svEphemeris)
 {
-    LOC_LOGv("GAL Ephemeris Received: %d", galEphemeris->galEphemerisList_len);
+    LOC_LOGd("GAL Ephemeris Received: Len= %d: systemTime_valid%d",
+            galEphemeris->galEphemerisList_len, galEphemeris->gpsSystemTime_valid);
     svEphemeris.ephInfo.galileoEphemeris.numOfEphemeris = galEphemeris->galEphemerisList_len;
+
+    if (galEphemeris->gpsSystemTime_valid) {
+        svEphemeris.isSystemTimeValid = true;
+        populateGpsTimeOfReport(galEphemeris->gpsSystemTime, svEphemeris.systemTime);
+    }
+
 
     for (uint32_t i =0; i < galEphemeris->galEphemerisList_len; i++) {
         const qmiLocGalEphemerisT_v02 &receivedGalEphemeris = galEphemeris->galEphemerisList[i];
@@ -4147,8 +4314,15 @@ void LocApiV02::populateGalEphemeris(const qmiLocGalEphemerisReportIndMsgT_v02 *
 void LocApiV02::populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02 *qzssEphemeris,
         GnssSvEphemerisReport &svEphemeris)
 {
-    LOC_LOGv("QZSS Ephemeris Received: %d", qzssEphemeris->qzssEphemerisList_len);
+    LOC_LOGd("QZSS Ephemeris Received: Len= %d: systemTime_valid%d",
+            qzssEphemeris->qzssEphemerisList_len, qzssEphemeris->gpsSystemTime_valid);
     svEphemeris.ephInfo.qzssEphemeris.numOfEphemeris = qzssEphemeris->qzssEphemerisList_len;
+
+    if (qzssEphemeris->gpsSystemTime_valid) {
+        svEphemeris.isSystemTimeValid = true;
+        populateGpsTimeOfReport(qzssEphemeris->gpsSystemTime, svEphemeris.systemTime);
+    }
+
 
     for (uint32_t i =0; i < qzssEphemeris->qzssEphemerisList_len; i++) {
         const qmiLocGpsEphemerisT_v02 &receivedQzssEphemeris = qzssEphemeris->qzssEphemerisList[i];
@@ -5402,6 +5576,9 @@ void LocApiV02::requestForAidingData(GnssAidingDataSvMask svDataMask)
 
         if (svDataMask & GNSS_AIDING_DATA_SV_EPHEMERIS_BIT)
             qmiMask |= QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02;
+
+        if (svDataMask & GNSS_AIDING_DATA_SV_IONOSPHERE_BIT)
+            qmiMask |= QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02;
 
         sendRequestForAidingData(qmiMask);
     }));

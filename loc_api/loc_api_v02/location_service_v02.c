@@ -30,7 +30,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Jan 15 2019 (Spin 0)
+   It was generated on: Fri Feb  8 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
@@ -1768,19 +1768,6 @@ static const uint8_t qmiLocGalEphemerisT_data_v02[] = {
   QMI_IDL_FLAG_END_VALUE
 };
 
-static const uint8_t qmiLocMePerGnssRfStructType_data_v02[] = {
-  QMI_IDL_GENERIC_2_BYTE,
-  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, bpAmpI),
-
-  QMI_IDL_GENERIC_2_BYTE,
-  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, bpAmpQ),
-
-  QMI_IDL_GENERIC_4_BYTE,
-  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, jammerPwrDb),
-
-  QMI_IDL_FLAG_END_VALUE
-};
-
 static const uint8_t qmiLocKlobucharIonoModelT_data_v02[] = {
   QMI_IDL_GENERIC_4_BYTE,
   QMI_IDL_OFFSET8(qmiLocKlobucharIonoModelT_v02, dataSource),
@@ -1808,6 +1795,19 @@ static const uint8_t qmiLocKlobucharIonoModelT_data_v02[] = {
 
   QMI_IDL_GENERIC_4_BYTE,
   QMI_IDL_OFFSET8(qmiLocKlobucharIonoModelT_v02, beta3),
+
+  QMI_IDL_FLAG_END_VALUE
+};
+
+static const uint8_t qmiLocMePerGnssRfStructType_data_v02[] = {
+  QMI_IDL_GENERIC_2_BYTE,
+  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, bpAmpI),
+
+  QMI_IDL_GENERIC_2_BYTE,
+  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, bpAmpQ),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocMePerGnssRfStructType_v02, jammerPwrDb),
 
   QMI_IDL_FLAG_END_VALUE
 };
@@ -5414,10 +5414,15 @@ static const uint8_t qmiLocSetGNSSConstRepConfigReqMsgT_data_v02[] = {
    QMI_IDL_GENERIC_1_BYTE,
   QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullEphemerisDb),
 
-  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb) - QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb_valid)),
+  QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb) - QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb_valid)),
   0x13,
    QMI_IDL_GENERIC_1_BYTE,
-  QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb)
+  QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullSvPolyDb),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullIonoDb) - QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullIonoDb_valid)),
+  0x14,
+   QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET8(qmiLocSetGNSSConstRepConfigReqMsgT_v02, reportFullIonoDb)
 };
 
 static const uint8_t qmiLocSetGNSSConstRepConfigIndMsgT_data_v02[] = {
@@ -7217,7 +7222,7 @@ static const uint8_t qmiLocEventReportIndMsgT_data_v02[] = {
   0x11,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventReportIndMsgT_v02, klobucharIonoModel),
-  QMI_IDL_TYPE88(0, 92),
+  QMI_IDL_TYPE88(0, 91),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocEventReportIndMsgT_v02, tauC) - QMI_IDL_OFFSET8(qmiLocEventReportIndMsgT_v02, tauC_valid)),
   0x12,
@@ -7243,43 +7248,43 @@ static const uint8_t qmiLocGetBandMeasurementMetricsIndMsgT_data_v02[] = {
   0x10,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gpsL1caRfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG1RfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG1RfStats_valid)),
   0x11,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG1RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB1RfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB1RfStats_valid)),
   0x12,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB1RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE1RfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE1RfStats_valid)),
   0x13,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE1RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gpsL2cRfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gpsL2cRfStats_valid)),
   0x14,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gpsL2cRfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG2RfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG2RfStats_valid)),
   0x15,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gloG2RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB2RfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB2RfStats_valid)),
   0x16,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, bdsB2RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, band5PgaGainDb) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, band5PgaGainDb_valid)),
   0x17,
@@ -7290,13 +7295,13 @@ static const uint8_t qmiLocGetBandMeasurementMetricsIndMsgT_data_v02[] = {
   0x18,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, gpsL5RfStats),
-  QMI_IDL_TYPE88(0, 91),
+  QMI_IDL_TYPE88(0, 92),
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE5ARfStats) - QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE5ARfStats_valid)),
   0x19,
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetBandMeasurementMetricsIndMsgT_v02, galE5ARfStats),
-  QMI_IDL_TYPE88(0, 91)
+  QMI_IDL_TYPE88(0, 92)
 };
 
 /* Type Table */
@@ -7392,8 +7397,8 @@ static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocGloEphemerisT_v02), qmiLocGloEphemerisT_data_v02},
   {sizeof(qmiLocBdsEphemerisT_v02), qmiLocBdsEphemerisT_data_v02},
   {sizeof(qmiLocGalEphemerisT_v02), qmiLocGalEphemerisT_data_v02},
-  {sizeof(qmiLocMePerGnssRfStructType_v02), qmiLocMePerGnssRfStructType_data_v02},
-  {sizeof(qmiLocKlobucharIonoModelT_v02), qmiLocKlobucharIonoModelT_data_v02}
+  {sizeof(qmiLocKlobucharIonoModelT_v02), qmiLocKlobucharIonoModelT_data_v02},
+  {sizeof(qmiLocMePerGnssRfStructType_v02), qmiLocMePerGnssRfStructType_data_v02}
 };
 
 /* Message Table */
@@ -7793,7 +7798,7 @@ static const qmi_idl_service_message_table_entry loc_service_command_messages_v0
   {QMI_LOC_GET_AVAILABLE_WWAN_POSITION_REQ_V02, QMI_IDL_TYPE16(0, 183), 7},
   {QMI_LOC_SET_PREMIUM_SERVICES_CONFIG_REQ_V02, QMI_IDL_TYPE16(0, 185), 14},
   {QMI_LOC_SET_XTRA_VERSION_CHECK_REQ_V02, QMI_IDL_TYPE16(0, 187), 7},
-  {QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02, QMI_IDL_TYPE16(0, 189), 30},
+  {QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG_V02, QMI_IDL_TYPE16(0, 189), 34},
   {QMI_LOC_ADD_GEOFENCE_CONTEXT_REQ_V02, QMI_IDL_TYPE16(0, 193), 2517},
   {QMI_LOC_SET_GEOFENCE_ENGINE_CONTEXT_REQ_V02, QMI_IDL_TYPE16(0, 195), 25},
   {QMI_LOC_DELETE_GEOFENCE_CONTEXT_REQ_V02, QMI_IDL_TYPE16(0, 197), 21},
@@ -8152,7 +8157,7 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x66,
+  0x69,
   NULL
 };
 

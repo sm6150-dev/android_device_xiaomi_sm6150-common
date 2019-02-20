@@ -2306,6 +2306,9 @@ GnssAdapter::startTrackingCommand(LocationAPI* client, TrackingOptions& options)
                             mTrackingOptions.tbm, TRACKING_TBM_THRESHOLD_MILLIS);
                     mTrackingOptions.powerMode = GNSS_POWER_MODE_M2;
                 }
+                if (mTrackingOptions.minInterval < MIN_TRACKING_INTERVAL) {
+                    mTrackingOptions.minInterval = MIN_TRACKING_INTERVAL;
+                }
                 // Api doesn't support multiple clients for time based tracking, so mutiplex
                 bool reportToClientWithNoWait =
                         mAdapter.startTrackingMultiplex(mClient, mSessionId, mTrackingOptions);
@@ -2364,6 +2367,7 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
         }
         if (updateOptions) {
             // restart time based tracking with the newly updated options
+
             startTracking(client, sessionId, multiplexedOptions);
             // need to wait for QMI callback
             reportToClientWithNoWait = false;
@@ -2378,6 +2382,10 @@ void
 GnssAdapter::startTracking(LocationAPI* client, uint32_t sessionId,
         const TrackingOptions& trackingOptions)
 {
+    LOC_LOGd("minInterval %u minDistance %u mode %u powermode %u tbm %u",
+         trackingOptions.minInterval, trackingOptions.minDistance,
+         trackingOptions.mode, trackingOptions.powerMode, trackingOptions.tbm);
+
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, trackingOptions);
 
@@ -2489,6 +2497,9 @@ GnssAdapter::updateTrackingOptionsCommand(LocationAPI* client, uint32_t id,
                         LOC_LOGd("TBM (%d) > %d Falling back to M2 power mode",
                                 mTrackingOptions.tbm, TRACKING_TBM_THRESHOLD_MILLIS);
                         mTrackingOptions.powerMode = GNSS_POWER_MODE_M2;
+                    }
+                    if (mTrackingOptions.minInterval < MIN_TRACKING_INTERVAL) {
+                        mTrackingOptions.minInterval = MIN_TRACKING_INTERVAL;
                     }
                     // Api doesn't support multiple clients for time based tracking, so mutiplex
                     bool reportToClientWithNoWait =

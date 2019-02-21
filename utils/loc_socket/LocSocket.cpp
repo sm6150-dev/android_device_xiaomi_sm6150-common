@@ -191,75 +191,102 @@ void LocSocket::stopListening() {
     }
 }
 
-bool LocSocket::findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service, int instance) {
+bool LocSocket::findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service,
+                                     int instance, bool &serviceDeleted) {
     int retryCount = 0;
 
     bool result = false;
     do {
-        result = LocSocket::findService(fd, addr, service, instance);
-        if (true == result) {
+        result = LocSocket::findService(fd, addr, service, instance, serviceDeleted);
+        if ((true == result) || (true == serviceDeleted)) {
             break;
         }
         usleep(RETRY_FINDSERVICE_SLEEP_MS * 1000);
     } while (retryCount++ <= RETRY_FINDSERVICE_MAX_COUNT);
 
-    LOC_LOGd("find service with retry returned %d, retry count %d", result, retryCount);
+    LOC_LOGe("find service with retry returned %d, retry count %d, serviceDeleted %d",
+             result, retryCount, serviceDeleted);
     return result;
 }
 
 
-bool LocSocket::findService(int fd, sockaddr_qrtr& addr, int service, int instance) {
+bool LocSocket::findService(int fd, sockaddr_qrtr& addr, int service,
+                            int instance, bool &serviceDeleted) {
 
-    memset(&addr, 0, sizeof(addr));
-    socklen_t sl = sizeof(addr);
+    bool serviceFound = false;
+    int len = 0;
 
-    // get socket name
-    int rc = getsockname(fd, (void*)&addr, &sl);
-    if (rc || addr.sq_family != AF_QIPCRTR || sl != sizeof(addr)) {
-        LOC_LOGe("error: getsockname rc=%d errno=%d (%s)", rc, errno, strerror(errno));
-        return false;
-    }
-
-    addr.sq_port = QRTR_PORT_CTRL;
-    // send control packet
-    struct qrtr_ctrl_pkt pkt = {0};
-    pkt.cmd = cpu_to_le32(QRTR_TYPE_NEW_LOOKUP);
-    pkt.server.service = cpu_to_le32(service);
-    pkt.server.instance = cpu_to_le32(instance);
-    rc = sendto(fd, &pkt, sizeof(pkt), 0, (void*)&addr, sizeof(addr));
-    if (rc < 0) {
-        LOC_LOGe("sendto failed!");
-        return false;
-    }
-
-    // get server addr from ipc router
-    int len;
-    while ((len = recv(fd, &pkt, sizeof(pkt), 0)) > 0) {
-        unsigned int type = le32_to_cpu(pkt.cmd);
-
-        if (len < sizeof(pkt) || type != QRTR_TYPE_NEW_SERVER) {
-            LOC_LOGe("invalid/short packet");
-            continue;
-        }
-
-        LOC_LOGd("service=%d", le32_to_cpu(pkt.server.service));
-        LOC_LOGd("version=%d", le32_to_cpu(pkt.server.instance) & 0xff);
-        LOC_LOGd("instance=%d", le32_to_cpu(pkt.server.instance) >> 8);
-        LOC_LOGd("node=%d", le32_to_cpu(pkt.server.node));
-        LOC_LOGd("port=%d", le32_to_cpu(pkt.server.port));
-
-        if (0 != pkt.server.service) {
+    do {
+        // service has been deleted and it has not restarted yet, simply return
+        if (true == serviceDeleted) {
             break;
         }
-    }
-    if (len <= 0) {
-        LOC_LOGe("recv() returned %d bytes", len);
-        return false;
-    }
 
-    addr.sq_node = le32_to_cpu(pkt.server.node);
-    addr.sq_port = le32_to_cpu(pkt.server.port);
-    return true;
+        memset(&addr, 0, sizeof(addr));
+        socklen_t sl = sizeof(addr);
+
+        // get socket name
+        int rc = getsockname(fd, (void*)&addr, &sl);
+        if (rc || addr.sq_family != AF_QIPCRTR || sl != sizeof(addr)) {
+            LOC_LOGe("error: getsockname rc=%d errno=%d (%s)", rc, errno, strerror(errno));
+            break;
+        }
+
+        addr.sq_port = QRTR_PORT_CTRL;
+        // send control packet
+        struct qrtr_ctrl_pkt pkt = {0};
+        pkt.cmd = cpu_to_le32(QRTR_TYPE_NEW_LOOKUP);
+        pkt.server.service = cpu_to_le32(service);
+        pkt.server.instance = cpu_to_le32(instance);
+        rc = sendto(fd, &pkt, sizeof(pkt), 0, (void*)&addr, sizeof(addr));
+        if (rc < 0) {
+            LOC_LOGe("sendto failed!");
+            break;
+        }
+
+        // get server addr from ipc router
+        serviceFound = false;
+        while ((len = recv(fd, &pkt, sizeof(pkt), 0)) > 0) {
+            unsigned int type = le32_to_cpu(pkt.cmd);
+
+            if (QRTR_TYPE_DEL_SERVER == type) {
+                serviceDeleted = true;
+                LOC_LOGe("server deleted");
+                break;
+            }
+
+            if (len < sizeof(pkt)) {
+                LOC_LOGe("invalid/short packet size %d, expected size %d", len, sizeof(pkt));
+                continue;
+            }
+
+            if (type != QRTR_TYPE_NEW_SERVER) {
+                LOC_LOGe("unexpected packet type %d", type);
+                continue;
+            }
+
+            LOC_LOGd("service=%d", le32_to_cpu(pkt.server.service));
+            LOC_LOGd("version=%d", le32_to_cpu(pkt.server.instance) & 0xff);
+            LOC_LOGd("instance=%d", le32_to_cpu(pkt.server.instance) >> 8);
+            LOC_LOGd("node=%d", le32_to_cpu(pkt.server.node));
+            LOC_LOGd("port=%d", le32_to_cpu(pkt.server.port));
+
+            if (0 != pkt.server.service) {
+                serviceFound = true;
+                break;
+            }
+        }
+
+        if (true == serviceFound) {
+            addr.sq_node = le32_to_cpu(pkt.server.node);
+            addr.sq_port = le32_to_cpu(pkt.server.port);
+        }
+
+        LOC_LOGd("after while loop len %d, serviceFound = %d!", len, serviceFound);
+
+    } while (0);
+
+    return serviceFound;
 }
 
 // static
@@ -279,7 +306,10 @@ bool LocSocket::send(int service, int instance, const uint8_t data[], uint32_t l
 
     sockaddr_qrtr addr;
     memset(&addr, 0, sizeof(addr));
-    result = findServiceWithRetry(fd, addr, service, instance);
+    // this routine is used to send an abort message to
+    // the socket itself, so it is safe to set serviceDeleted to false
+    bool serviceDeleted = false;
+    result = findServiceWithRetry(fd, addr, service, instance, serviceDeleted);
     if (true == result) {
         result = sendData(fd, addr, data, length);
     }
@@ -293,6 +323,7 @@ bool LocSocket::sendData(int fd, const sockaddr_qrtr& addr, const uint8_t data[]
 
     bool result = true;
 
+    LOC_LOGd("sendData begin");
     if (length <= LOC_MSG_BUF_LEN) {
         if (sendto(fd, data, length, 0, (void*)&addr, sizeof(addr)) < 0) {
             LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
@@ -321,6 +352,8 @@ bool LocSocket::sendData(int fd, const sockaddr_qrtr& addr, const uint8_t data[]
             }
         }
     }
+
+    LOC_LOGd("sendto finished with result %d", result);
     return result;
 }
 }

@@ -108,10 +108,12 @@ protected:
 private:
     static bool sendData(int fd, const sockaddr_qrtr& addr,
             const uint8_t data[], uint32_t length);
-    static bool findService(int fd, sockaddr_qrtr& addr, int service, int instance);
+    static bool findService(int fd, sockaddr_qrtr& addr, int service, int instance,
+                            bool & serviceDeleted);
     // this call will find service with retry attempt of
     // default retry count and interval
-    static bool findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service, int instance);
+    static bool findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service, int instance,
+                                     bool & serviceDeleted);
 
     int mService;
     int mInstance;
@@ -134,6 +136,7 @@ public:
 
         mService = service;
         mInstance = instance;
+        mServiceDeleted = false;
         memset(&mDestAddr, 0, sizeof(mDestAddr));
 
         mSocket = socket(AF_QIPCRTR, SOCK_DGRAM, 0);
@@ -156,8 +159,9 @@ public:
     inline bool send(const uint8_t data[], uint32_t length) {
         bool rtv = true;
 
-        if (nullptr != data) {
-            rtv = LocSocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance);
+        if ((nullptr != data) && (false == mServiceDeleted)){
+            rtv = LocSocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance,
+                                                  mServiceDeleted);
             if (true == rtv) {
                 rtv = LocSocket::sendData(mSocket, mDestAddr, data, length);
             }
@@ -174,21 +178,22 @@ public:
         bool rtv = false;
         bool newServiceFound = false;
         int retryCount = 0;
-
         sockaddr_qrtr newDestAddr;
 
         do {
             memset(&newDestAddr, 0, sizeof(newDestAddr));
-            rtv = LocSocket::findServiceWithRetry(mSocket, newDestAddr, mService, mInstance);
+            mServiceDeleted = false;
+            rtv = LocSocket::findServiceWithRetry(mSocket, newDestAddr, mService, mInstance,
+                                                  mServiceDeleted);
             if (true == rtv) {
                 if ((mDestAddr.sq_node != newDestAddr.sq_node) ||
                     (mDestAddr.sq_port != newDestAddr.sq_port)) {
                     newServiceFound = true;
                     break;
                 }
-                usleep(RETRY_FINDNEWSERVICE_SLEEP_MS*1000);
-                retryCount++;
             }
+            usleep(RETRY_FINDNEWSERVICE_SLEEP_MS*1000);
+            retryCount++;
         } while (retryCount < RETRY_FINDNEWSERVICE_MAX_COUNT);
 
         LOC_LOGd("find new servie: service found %d, new service found %d, "
@@ -201,6 +206,7 @@ private:
     int mInstance;
     int mSocket;
     sockaddr_qrtr mDestAddr;
+    bool mServiceDeleted;
 };
 
 }

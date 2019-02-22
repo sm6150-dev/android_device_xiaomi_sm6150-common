@@ -96,6 +96,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_update_service_status" value="false"/>
         <boolean name="config_update_volte_icon" value="false"/>
 
+        <boolean name="auto_retry_failed_wifi_emergency_call" value="true" />
     </carrier_config>
 
     <carrier_config mcc="001" mnc="01">

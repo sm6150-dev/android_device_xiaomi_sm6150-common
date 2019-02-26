@@ -4,24 +4,24 @@ AM_CFLAGS = \
     -I inc/ \
     $(QMIFW_CFLAGS) \
     $(GPSUTILS_CFLAGS) \
-    -fpermissive \
-    -std=c++11
+    -fpermissive
+
+if USE_QSOCKET
+  AM_CFLAGS += -DUSE_QSOCKET
+endif
 
 ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -std=c++11
+AM_CPPFLAGS = -std=c++14
 
 requiredlibs = \
     $(QMIFW_LIBS) \
     $(GPSUTILS_LIBS)
 
-h_sources = \
-    LocSocket.h
-
 c_sources = \
     LocSocket.cpp
 
 libloc_socket_la_SOURCES = \
-    $(c_sources) $(h_sources)
+    $(c_sources)
 
 ######################
 # Build loc_socket
@@ -40,7 +40,7 @@ endif
 libloc_socket_la_LIBADD = $(requiredlibs) -lstdc++
 
 #Create and Install libraries
-library_include_HEADERS = $(h_sources)
+library_include_HEADERS =
 lib_LTLIBRARIES = libloc_socket.la
 
 library_includedir = $(pkgincludedir)

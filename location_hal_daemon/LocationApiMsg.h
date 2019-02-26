@@ -29,7 +29,13 @@
 #ifndef LOCATIONAPIMSG_H
 #define LOCATIONAPIMSG_H
 
+#include <string>
+#include <memory>
+#include <algorithm>
 #include <loc_pla.h> // for strlcpy
+#include <gps_extended_c.h>
+#include <log_util.h>
+#include <LocIpc.h>
 #include <LocationDataTypes.h>
 
 /******************************************************************************
@@ -46,6 +52,97 @@ Constants
 #define LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID    (5001)
 #define LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID   (1)
 #define LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID       (5002)
+
+#define sLOCAL SOCKET_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
+#define sEAP EAP_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
+
+using namespace std;
+using namespace loc_util;
+
+class SockNode {
+    const int32_t mId1;
+    const int32_t mId2;
+    const string mNodePathnamePrefix;
+
+public:
+    enum Type { LOCAL, EAP, OTHER };
+    SockNode(int32_t id1, int32_t mId2, const string&& prefix) :
+            mId1(id1), mId2(mId2), mNodePathnamePrefix(prefix) {
+    }
+    SockNode(SockNode&& node) :
+            SockNode(node.mId1, node.mId2, move(node.mNodePathnamePrefix)) {
+    }
+    static SockNode create(const string fullPathName) {
+        return create(fullPathName.c_str(), fullPathName.size());
+    }
+    static SockNode create(const char* fullPathName, int32_t length = -1) {
+        uint32_t count = 0;
+        int32_t indx = 0, id1 = -1, id2 = -1;
+
+        if (nullptr != fullPathName) {
+            indx = (length < 0) ? (strlen(fullPathName) - 1) : length;
+
+            while (count < 2 && indx >= 0) {
+                if ('.' == fullPathName[indx]) {
+                    count++;
+                }
+                indx--;
+            }
+        }
+
+        if (count == 2) {
+            indx++;
+            sscanf(fullPathName+indx+1, "%d.%d", &id1, &id2);
+        } else {
+            indx = 0;
+        }
+
+        return SockNode(id1, id2, string(fullPathName, indx));
+    }
+    inline int getId1() const { return mId1; }
+    inline int getId2() const { return mId2; }
+    inline const string& getNodePathnamePrefix() const { return mNodePathnamePrefix; }
+    inline string getNodePathname() const {
+        return string(mNodePathnamePrefix).append(1, '.').append(to_string(mId1))
+            .append(1, '.').append(to_string(mId2));
+    }
+    inline Type getNodeType() const {
+        Type type = OTHER;
+        if (mNodePathnamePrefix.compare(0, string::npos, sLOCAL, sizeof(sLOCAL)-1) == 0) {
+            type = LOCAL;
+        } else if (mNodePathnamePrefix.compare(0, string::npos, sEAP, sizeof(sEAP)-1) == 0) {
+            type = EAP;
+        }
+        return type;
+    }
+    inline shared_ptr<LocIpcSender> createSender(bool createFsNode = false) {
+        const string socket = getNodePathname();
+        const char* sock = socket.c_str();
+        switch (getNodeType()) {
+        case SockNode::LOCAL:
+            return LocIpc::getLocIpcLocalSender(sock);
+        case SockNode::EAP:
+            if (createFsNode) {
+                if (nullptr == fopen(sock, "w")) {
+                    LOC_LOGe("<-- failed to open file %s", sock);
+                }
+            }
+            return LocIpc::getLocIpcQsockSender(getId1(), getId2());
+        default:
+            return nullptr;
+        }
+    }
+};
+
+class SockNodeLocal : public SockNode {
+public:
+    SockNodeLocal(int32_t pid, int32_t tid) : SockNode(pid, tid, sLOCAL) {}
+};
+
+class SockNodeEap : public SockNode {
+public:
+    SockNodeEap(int32_t service, int32_t instance) : SockNode(service, instance, sEAP) {}
+};
 
 /******************************************************************************
 List of message IDs supported by Location Remote API

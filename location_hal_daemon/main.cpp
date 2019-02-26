@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
     LOC_LOGi("location hal daemon - ver %s", HAL_DAEMON_VERSION);
 
     waitForDir(SOCKET_DIR_LOCATION);
-    waitForDir(SOCKET_DIR_TO_CLIENT);
-    waitForDir(DIR_FOR_EXT_AP_LOC_CLIENT);
+    waitForDir(SOCKET_LOC_CLIENT_DIR);
+    waitForDir(EAP_LOC_CLIENT_DIR);
     waitForDir(SOCKET_DIR_EHUB);
 
     LOC_LOGd("starting loc_hal_daemon");

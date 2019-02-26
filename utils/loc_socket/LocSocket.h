@@ -121,7 +121,7 @@ private:
     LocRunnable *mRunnable;
 };
 
-#define RETRY_FINDNEWSERVICE_MAX_COUNT 200
+#define RETRY_FINDNEWSERVICE_MAX_COUNT 10000
 #define RETRY_FINDNEWSERVICE_SLEEP_MS  5
 
 class LocSocketSender {

@@ -75,16 +75,6 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
             [this](size_t count, LocationError *errs, uint32_t *ids) {
         onControlCollectiveResponseCallback(count, errs, ids);
     };
-    mLocationControlApi = LocationControlAPI::createInstance(mControlCallabcks);
-    if (nullptr == mLocationControlApi) {
-        LOC_LOGd("Failed to create LocationControlAPI");
-        return;
-    }
-
-    // enable
-    mLocationControlId = mLocationControlApi->enable(LOCATION_TECHNOLOGY_TYPE_GNSS);
-    LOC_LOGd("-->enable=%u", mLocationControlId);
-    // this is a unique id assigned to this daemon - will be used when disable
 
     // create IPC receiver
     mIpcReceiver = new LocHalDaemonIPCReceiver(this);
@@ -104,6 +94,8 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
 
     // create a default client if enabled by config
     if (mAutoStartGnss) {
+        checkEnableGnss();
+
         LOC_LOGd("--> Starting a default client...");
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
         mClients.emplace("default", pClient);
@@ -183,6 +175,8 @@ void LocationApiService::newClient(LocAPIClientRegisterReqMsg *pMsg) {
 
     std::lock_guard<std::mutex> lock(mMutex);
     std::string clientname(pMsg->mSocketName);
+
+    checkEnableGnss();
 
     // if this name is already used return error
     if (mClients.find(clientname) != mClients.end()) {
@@ -617,3 +611,17 @@ GnssInterface* LocationApiService::getGnssInterface() {
     return gnssInterface;
 }
 
+void LocationApiService::checkEnableGnss() {
+    if (nullptr == mLocationControlApi) {
+        mLocationControlApi = LocationControlAPI::createInstance(mControlCallabcks);
+        if (nullptr == mLocationControlApi) {
+            LOC_LOGe("Failed to create LocationControlAPI");
+            return;
+        }
+
+        // enable
+        mLocationControlId = mLocationControlApi->enable(LOCATION_TECHNOLOGY_TYPE_GNSS);
+        LOC_LOGd("-->enable=%u", mLocationControlId);
+        // this is a unique id assigned to this daemon - will be used when disable
+    }
+}

@@ -3398,12 +3398,12 @@ void  LocApiV02 :: reportSvMeasurement (
 
     if (!mSvMeasurementSet) {
         mSvMeasurementSet = (GnssSvMeasurementSet*) malloc(sizeof(GnssSvMeasurementSet));
-        memset(mSvMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
-        mSvMeasurementSet->size = sizeof(GnssSvMeasurementSet);
         if (!mSvMeasurementSet) {
-            LOC_LOGe ("malloc failed");
+            LOC_LOGe ("Malloc failed to allocate heap memory");
             return;
         }
+        memset(mSvMeasurementSet, 0, sizeof(GnssSvMeasurementSet));
+        mSvMeasurementSet->size = sizeof(GnssSvMeasurementSet);
     }
 
     // in case the measurement with seqNum of 1 is dropped, we will use ref count

@@ -25,24 +25,44 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef LOCHALDAEMON_IPCSENDER_H
+#define LOCHALDAEMON_IPCSENDER_H
 
-#ifndef LOCHALDAEMONIPCSENDER_H
-#define LOCHALDAEMONIPCSENDER_H
-
+#include <gps_extended_c.h>
 #include <LocIpc.h>
+#include <LocQsocket.h>
+#include <LocationApiMsg.h>
 
 using loc_util::LocIpcSender;
+using loc_util::LocQsocketSender;
 
-class LocHalDaemonIPCSender : public LocIpcSender
+class LocHalDaemonIPCSender
 {
 public:
-    inline LocHalDaemonIPCSender(const char* destSocket):
-            LocIpcSender(destSocket) { }
+    inline LocHalDaemonIPCSender(const char* destSocket) :
+            mIpcSender(nullptr),
+            mQsockSender(nullptr) {
+
+        if (strncmp(destSocket, SOCKET_DIR_TO_CLIENT,
+                    sizeof(SOCKET_DIR_TO_CLIENT)-1) == 0 ) {
+            mIpcSender = new LocIpcSender(destSocket);
+        }
+        else {
+            uint32_t serviceId = atoi(destSocket);
+            const char* instance_ptr = strchr(destSocket, '.');
+            if (nullptr != instance_ptr) {
+                uint32_t instanceId = atoi(++instance_ptr);
+                mQsockSender = new LocQsocketSender(serviceId, instanceId);
+            }
+        }
+    }
 
     bool send(const uint8_t data[], uint32_t length);
 
 private:
+    LocIpcSender* mIpcSender;
+    LocQsocketSender* mQsockSender;
 };
 
-#endif //LOCHALDAEMONIPCSENDER_H
+#endif //LOCHALDAEMON_IPCSENDER_H
 

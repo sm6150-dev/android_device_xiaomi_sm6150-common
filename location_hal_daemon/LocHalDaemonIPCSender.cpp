@@ -33,8 +33,14 @@
 bool LocHalDaemonIPCSender::send(const uint8_t data[], uint32_t length) {
 
     bool rc = false;
-    rc = LocIpcSender::send(data, length);
-    //LOC_LOGd("<-- done:size=%u rc=%u", length, rc);
+    if (nullptr != mIpcSender) {
+        rc = mIpcSender->send(data, length);
+    } else if (nullptr != mQsockSender) {
+        rc = mQsockSender->send(data, length);
+    } else {
+        LOC_LOGe("invalid configuration");
+    }
+
     return rc;
 }
 

@@ -33,176 +33,7 @@
 LocHalDaemonIPCReceiver - LocIpc overrids
 ******************************************************************************/
 void LocHalDaemonIPCReceiver::onReceive(const std::string& data) {
-    // parse received message
-    LocAPIMsgHeader* pMsg = (LocAPIMsgHeader*)(data.data());
-    LOC_LOGd(">-- onReceive len=%u remote=%s msgId=%u",
-            data.length(), pMsg->mSocketName, pMsg->msgId);
-
-    switch (pMsg->msgId) {
-        case E_LOCAPI_CLIENT_REGISTER_MSG_ID: {
-            // new client
-            if (sizeof(LocAPIClientRegisterReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->newClient(reinterpret_cast
-                    <LocAPIClientRegisterReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_CLIENT_DEREGISTER_MSG_ID: {
-            // delete client
-            if (sizeof(LocAPIClientDeregisterReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->deleteClient(reinterpret_cast
-                    <LocAPIClientDeregisterReqMsg*>(pMsg));
-            break;
-        }
-
-        case E_LOCAPI_START_TRACKING_MSG_ID: {
-            // start
-            if (sizeof(LocAPIStartTrackingReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->startTracking(reinterpret_cast
-                    <LocAPIStartTrackingReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_STOP_TRACKING_MSG_ID: {
-            // stop
-            if (sizeof(LocAPIStopTrackingReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->stopTracking(reinterpret_cast
-                    <LocAPIStopTrackingReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_UPDATE_CALLBACKS_MSG_ID: {
-            // update subscription
-            if (sizeof(LocAPIUpdateCallbacksReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->updateSubscription(reinterpret_cast
-                    <LocAPIUpdateCallbacksReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID: {
-            if (sizeof(LocAPIUpdateTrackingOptionsReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->updateTrackingOptions(reinterpret_cast
-                    <LocAPIUpdateTrackingOptionsReqMsg*>(pMsg));
-            break;
-        }
-
-        case E_LOCAPI_START_BATCHING_MSG_ID: {
-            // start
-            if (sizeof(LocAPIStartBatchingReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->startBatching(reinterpret_cast
-                    <LocAPIStartBatchingReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_STOP_BATCHING_MSG_ID: {
-            // stop
-            if (sizeof(LocAPIStopBatchingReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->stopBatching(reinterpret_cast
-                    <LocAPIStopBatchingReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID: {
-            if (sizeof(LocAPIUpdateBatchingOptionsReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->updateBatchingOptions(reinterpret_cast
-                    <LocAPIUpdateBatchingOptionsReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_ADD_GEOFENCES_MSG_ID: {
-            mService->addGeofences(reinterpret_cast
-                    <LocAPIAddGeofencesReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_REMOVE_GEOFENCES_MSG_ID: {
-            mService->removeGeofences(reinterpret_cast
-                    <LocAPIRemoveGeofencesReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_MODIFY_GEOFENCES_MSG_ID: {
-            mService->modifyGeofences(reinterpret_cast
-                    <LocAPIModifyGeofencesReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_PAUSE_GEOFENCES_MSG_ID: {
-            mService->pauseGeofences(reinterpret_cast
-                    <LocAPIPauseGeofencesReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_RESUME_GEOFENCES_MSG_ID: {
-            mService->resumeGeofences(reinterpret_cast
-                    <LocAPIResumeGeofencesReqMsg*>(pMsg));
-            break;
-        }
-        case E_LOCAPI_CONTROL_UPDATE_CONFIG_MSG_ID: {
-            if (sizeof(LocAPIUpdateConfigReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->gnssUpdateConfig(reinterpret_cast<
-                    LocAPIUpdateConfigReqMsg*>(pMsg)->gnssConfig);
-            break;
-        }
-        case E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID: {
-            if (sizeof(LocAPIDeleteAidingDataReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->gnssDeleteAidingData(reinterpret_cast
-                    <LocAPIDeleteAidingDataReqMsg*>(pMsg)->gnssAidingData);
-            break;
-        }
-        case E_LOCAPI_CONTROL_UPDATE_NETWORK_AVAILABILITY_MSG_ID: {
-            if (sizeof(LocAPIUpdateNetworkAvailabilityReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->updateNetworkAvailability(reinterpret_cast
-                    <LocAPIUpdateNetworkAvailabilityReqMsg*>(pMsg)->mAvailability);
-            break;
-        }
-        case E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID: {
-            if (sizeof(LocAPIGetGnssEnergyConsumedReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->getGnssEnergyConsumed(reinterpret_cast
-                    <LocAPIGetGnssEnergyConsumedReqMsg*>(pMsg)->mSocketName);
-            break;
-        }
-        case E_LOCAPI_PINGTEST_MSG_ID: {
-            if (sizeof(LocAPIPingTestReqMsg) != data.length()) {
-                LOC_LOGe("invalid message");
-                break;
-            }
-            mService->pingTest(reinterpret_cast<LocAPIPingTestReqMsg*>(pMsg));
-            break;
-        }
-        default: {
-            LOC_LOGe("Unknown message");
-            break;
-        }
-    }
+    mService->processClientMsg(data);
 }
 
 void LocHalDaemonIPCReceiver::onListenerReady() {
@@ -210,6 +41,19 @@ void LocHalDaemonIPCReceiver::onListenerReady() {
         LOC_LOGe("chown to group locclient failed %s", strerror(errno));
     }
 
-    mService->onListenerReady();
+    // false indicates this is IPC is for communication within same processor
+    mService->onListenerReady(false);
+}
+
+/******************************************************************************
+LocHalDaemonQsockReceiver - LocIpc overrids
+******************************************************************************/
+void LocHalDaemonQsockReceiver::onReceive(const std::string& data) {
+    mService->processClientMsg(data);
+}
+
+void LocHalDaemonQsockReceiver::onListenerReady() {
+    // true indicates this is IPC is for communication within same processor
+    mService->onListenerReady(true);
 }
 

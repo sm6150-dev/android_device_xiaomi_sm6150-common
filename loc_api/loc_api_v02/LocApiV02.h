@@ -91,6 +91,7 @@ private:
   uint32_t mCounter;
   uint32_t mMinInterval;
   std::vector<adrData>  mADRdata;
+  GnssSvMeasurementSet*  mSvMeasurementSet;
 
   /* Convert event mask from loc eng to loc_api_v02 format */
   static locClientEventMaskType convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
@@ -177,6 +178,7 @@ private:
   void populateQzssEphemeris(const qmiLocQzssEphemerisReportIndMsgT_v02 *,
           GnssSvEphemerisReport &);
   void populateCommonEphemeris(const qmiLocEphGnssDataStructT_v02 &, GnssEphCommon &);
+  void populateGpsTimeOfReport(const qmiLocGnssTimeStructT_v02 &, GnssSystemTimeStructType &);
 
   void reportLocEvent(const qmiLocEventReportIndMsgT_v02 *event_report_ptr);
   /* convert system info to location api format and dispatch to

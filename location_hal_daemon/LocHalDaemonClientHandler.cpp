@@ -248,6 +248,9 @@ uint32_t* LocHalDaemonClientHandler::getSessionIds(size_t count, uint32_t* clien
     uint32_t* sessionIds = nullptr;
     if (count > 0) {
         sessionIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (nullptr == sessionIds) {
+            return nullptr;
+        }
         memset(sessionIds, 0, sizeof(uint32_t) * count);
         for (int i=0; i<count; ++i) {
             sessionIds[i] = mGfIdsMap[clientIds[i]];
@@ -260,6 +263,9 @@ uint32_t* LocHalDaemonClientHandler::getClientIds(size_t count, uint32_t* sessio
     uint32_t* clientIds = nullptr;
     if (count > 0) {
         clientIds = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (nullptr == clientIds) {
+            return nullptr;
+        }
         memset(clientIds, 0, sizeof(uint32_t) * count);
         for (int i=0; i<count; ++i) {
             for(auto itor = mGfIdsMap.begin(); itor != mGfIdsMap.end(); itor++) {
@@ -323,6 +329,19 @@ void LocHalDaemonClientHandler::pingTest() {
 void LocHalDaemonClientHandler::cleanup() {
     // please do not attempt to hold the lock, as the caller of this function
     // already holds the lock
+
+    // check whether this is client from external AP,
+    // mName for client on external ap is of format "serviceid.instanceid"
+    if (strncmp(mName.c_str(), SOCKET_DIR_TO_CLIENT,
+                sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
+        char fileName[MAX_SOCKET_PATHNAME_LENGTH];
+        snprintf (fileName, sizeof(fileName), "%s%s",
+                  SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
+        LOC_LOGv("removed file name %s", fileName);
+        if (0 != remove(fileName)) {
+            LOC_LOGe("<-- failed to remove file %s", fileName);
+        }
+    }
 
     if (mIpcSender) {
         delete mIpcSender;
@@ -603,15 +622,12 @@ void LocHalDaemonClientHandler::onGeofenceBreachCb(GeofenceBreachNotification gf
     if ((nullptr != mIpcSender) &&
             (mSubscriptionMask & E_LOCAPI_GEOFENCE_BREACH_MSG_ID)) {
 
-        uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * gfBreachNotif.count);
-        if (clientIds == NULL) {
-            LOC_LOGE("%s:%d] Failed to alloc %zu bytes",
-                     __FUNCTION__, __LINE__,
+        uint32_t* clientIds = getClientIds(gfBreachNotif.count, gfBreachNotif.ids);
+        if (nullptr == clientIds) {
+            LOC_LOGe("Failed to alloc %zu bytes",
                      sizeof(uint32_t) * gfBreachNotif.count);
             return;
         }
-
-        clientIds = getClientIds(gfBreachNotif.count, gfBreachNotif.ids);
         // serialize GeofenceBreachNotification into ipc message payload
         size_t msglen = sizeof(LocAPIGeofenceBreachIndMsg) +
                 sizeof(uint32_t) * (gfBreachNotif.count - 1);
@@ -777,7 +793,7 @@ void LocHalDaemonClientHandler::onLocationSystemInfoCb(LocationSystemInfo notifi
 void LocHalDaemonClientHandler::onLocationApiDestroyCompleteCb() {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
 
-    LOC_LOGe("delete LocHalDaemonClientHandler %s", mName);
+    LOC_LOGe("delete LocHalDaemonClientHandler");
     delete this;
     // PLEASE NOTE: no more code after this, including print for class variable
 }

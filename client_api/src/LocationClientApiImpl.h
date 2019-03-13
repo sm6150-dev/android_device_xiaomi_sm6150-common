@@ -33,7 +33,11 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#ifdef FEATURE_EXTERNAL_AP
+#include <LocSocket.h>
+#else  // FEATURE_EXTERNAL_AP
 #include <LocIpc.h>
+#endif // FEATURE_EXTERNAL_AP
 #include <LocationDataTypes.h>
 #include <ILocationAPI.h>
 #include <LocationClientApi.h>
@@ -43,8 +47,13 @@
 
 using namespace std;
 
+#ifdef FEATURE_EXTERNAL_AP
+using loc_util::LocSocket;
+using loc_util::LocSocketSender;
+#else  // FEATURE_EXTERNAL_AP
 using loc_util::LocIpc;
 using loc_util::LocIpcSender;
+#endif // FEATURE_EXTERNAL_AP
 
 /** @fn
     @brief
@@ -79,11 +88,17 @@ public:
     inline uint32_t getClientId() { return mId; }
 };
 
-class LocationClientApiImpl : public LocIpc, public ILocationAPI,
-                              public ILocationControlAPI {
+class LocationClientApiImpl :
+#ifdef FEATURE_EXTERNAL_AP
+    public LocSocket,
+#else // FEATURE_EXTERNAL_AP
+    public LocIpc,
+#endif // FEATURE_EXTERNAL_AP
+    public ILocationAPI,
+    public ILocationControlAPI {
 public:
     LocationClientApiImpl(CapabilitiesCb capabitiescb);
-    ~LocationClientApiImpl();
+    void destroy();
 
     // Tracking
     virtual void updateCallbacks(LocationCallbacks&) override;
@@ -145,6 +160,7 @@ public:
     void pingTest(PingTestCb pingTestCallback);
 
 private:
+    ~LocationClientApiImpl();
     void capabilitesCallback(ELocMsgID  msgId, const void* msgData);
     void updateTrackingOptionsSync(LocationClientApiImpl* pImpl, TrackingOptions& option);
 
@@ -155,7 +171,13 @@ private:
     uint32_t                mSessionId;
     uint32_t                mBatchingId;
     bool                    mHalRegistered;
+    // For client on different processor, socket name will start with
+    // defined constant of SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE.
+    // For client on same processor, socket name will start with
+    // SOCKET_TO_LOCATION_CLIENT_BASE.
     char                    mSocketName[MAX_SOCKET_PATHNAME_LENGTH];
+    // for client on a different processor, 0 is invalid
+    uint32_t                mInstanceId;
 
     // callbacks
     CapabilitiesCb          mCapabilitiesCb;
@@ -178,7 +200,12 @@ private:
     ResponseCb              mLocationSysInfoResponseCb;
 
     MsgTask*                mMsgTask;
-    LocIpcSender*           mIpcSender;
+
+#ifdef FEATURE_EXTERNAL_AP
+    LocSocketSender*       mIpcSender;
+#else  // FEATURE_EXTERNAL_AP
+    LocIpcSender*          mIpcSender;
+#endif // FEATURE_EXTERNAL_AP
 };
 
 } // namespace location_client

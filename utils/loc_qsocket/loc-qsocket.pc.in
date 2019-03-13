@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: loc-qsocket
+Description: location qsocket util library
+Version: @VERSION@
+Libs: -L${libdir} -lloc_qsocket
+Cflags: -I${includedir} -I${includedir}/loc-qsocket

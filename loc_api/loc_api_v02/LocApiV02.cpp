@@ -4762,7 +4762,7 @@ void LocApiV02::reportGnssMeasurementData(
                 bAgcIsPresent = true;
             }
             for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
-                mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
+                    mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
                     index++) {
                 LOC_LOGv("index=%u count=%zu", index, mGnssMeasurements->gnssMeasNotification.count);
                 if ((gnss_measurement_report_ptr.svMeasurement[index].validMeasStatusMask &
@@ -4771,7 +4771,7 @@ void LocApiV02::reportGnssMeasurementData(
                      QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02)) {
                     bAgcIsPresent &= convertGnssMeasurements(
                         gnss_measurement_report_ptr,
-                        index);
+                        index, false);
                     mGnssMeasurements->gnssMeasNotification.count++;
                 } else {
                     LOC_LOGv("Measurements are stale, do not report");
@@ -4779,7 +4779,39 @@ void LocApiV02::reportGnssMeasurementData(
             }
             LOC_LOGv("there are %d SV measurements now, total=%zu",
                      gnss_measurement_report_ptr.svMeasurement_len,
-                mGnssMeasurements->gnssMeasNotification.count);
+                     mGnssMeasurements->gnssMeasNotification.count);
+
+            /* now check if more measurements are available (some constellations such
+            as BDS have more measurements available in extSvMeasurement)
+            */
+            if (gnss_measurement_report_ptr.extSvMeasurement_valid &&
+                gnss_measurement_report_ptr.extSvMeasurement_len != 0 &&
+                gnss_measurement_report_ptr.extSvMeasurement_len <=
+                    QMI_LOC_EXT_SV_MEAS_LIST_MAX_SIZE_V02) {
+                // the array of measurements
+                LOC_LOGv("More measurements received for GNSS system %d",
+                         gnss_measurement_report_ptr.system);
+                for (uint32_t index = 0; index < gnss_measurement_report_ptr.extSvMeasurement_len &&
+                        mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
+                        index++) {
+                    LOC_LOGv("index=%u count=%zu", index, mGnssMeasurements->gnssMeasNotification.count);
+                    if ((gnss_measurement_report_ptr.extSvMeasurement[index].validMeasStatusMask &
+                         QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02) &&
+                        (gnss_measurement_report_ptr.extSvMeasurement[index].measurementStatus &
+                         QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02)) {
+                        bAgcIsPresent &= convertGnssMeasurements(
+                            gnss_measurement_report_ptr,
+                            index, true);
+                        mGnssMeasurements->gnssMeasNotification.count++;
+                    }
+                    else {
+                        LOC_LOGv("Measurements are stale, do not report");
+                    }
+                }
+                LOC_LOGv("there are %d SV measurements now, total=%zu",
+                         gnss_measurement_report_ptr.extSvMeasurement_len,
+                         mGnssMeasurements->gnssMeasNotification.count);
+            }
         }
     } else {
         LOC_LOGv("there is no valid GNSS measurement for system %d, total=%zu",
@@ -5133,7 +5165,7 @@ void LocApiV02::wifiStatusInformSync()
 /*convert GnssMeasurement type from QMI LOC to loc eng format*/
 bool LocApiV02 :: convertGnssMeasurements(
     const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr,
-    int index)
+    int index, bool isExt)
 {
     uint8_t gloFrequency = 0;
     bool bAgcIsPresent = false;
@@ -5523,15 +5555,28 @@ bool LocApiV02 :: convertGnssMeasurements(
     }
 
     // accumulatedDeltaRangeUncertaintyM
-    if (gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) {
-        measurementData.adrUncertaintyMeters =
-            (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
-            gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
-        LOC_LOGv("carrierPhaseUnc = %.6f adrMetersUnc = %.6f",
-                 gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index],
-                 measurementData.adrUncertaintyMeters);
+    if (!isExt) {
+        if (gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) {
+            measurementData.adrUncertaintyMeters =
+                (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
+                gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
+            LOC_LOGv("carrierPhaseUnc = %.6f adrMetersUnc = %.6f",
+                     gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index],
+                     measurementData.adrUncertaintyMeters);
+        } else {
+            measurementData.adrUncertaintyMeters = 0.0;
+        }
     } else {
-        measurementData.adrUncertaintyMeters = 0.0;
+        if (gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty_valid) {
+            measurementData.adrUncertaintyMeters =
+                (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
+                gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty[index];
+            LOC_LOGv("extCarrierPhaseUnc = %.6f adrMetersUnc = %.6f",
+                     gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty[index],
+                     measurementData.adrUncertaintyMeters);
+        } else {
+            measurementData.adrUncertaintyMeters = 0.0;
+        }
     }
 
     // accumulatedDeltaRangeState

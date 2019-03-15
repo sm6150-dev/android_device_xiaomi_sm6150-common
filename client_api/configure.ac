@@ -33,6 +33,14 @@ PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
 
+PKG_CHECK_MODULES([DIAGIFACE], [loc-diag-iface])
+AC_SUBST([DIAGIFACE_CFLAGS])
+AC_SUBST([DIAGIFACE_LIBS])
+
+PKG_CHECK_MODULES([DIAG], [diag])
+AC_SUBST([DIAG_CFLAGS])
+AC_SUBST([DIAG_LIBS])
+
 AC_ARG_WITH([external_ap],
     AC_HELP_STRING([--with-external_ap=@<:@dir@:>@],
         [Using External Application Processor]),

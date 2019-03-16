@@ -55,7 +55,9 @@ ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
 PRODUCT_BOOT_JARS += com.nxp.nfc.nq
 endif
 ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
+ifeq ($(TARGET_FWK_SUPPORTS_FULL_VALUEADDS),true)
 PRODUCT_BOOT_JARS += qcom.fmradio
+endif
 endif #BOARD_HAVE_QCOM_FM
 #Camera QC extends API
 #ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)

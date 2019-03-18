@@ -15,3 +15,5 @@ GNSS_CFLAGS := \
     -Wno-error=tautological-compare \
     -Wno-error=switch \
     -Wno-error=date-time
+
+LOCAL_SANITIZE := integer_overflow

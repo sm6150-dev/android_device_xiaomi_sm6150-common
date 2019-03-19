@@ -3897,6 +3897,12 @@ case "$target" in
 		echo 400 > $memlat/mem_latency/ratio_ceil
 	    done
 
+	    #Enable powersave governor for L3 cdsp nodes
+	    for l3cdsp in $device/*qcom,devfreq-l3/*cdsp-l3-lat/devfreq/*cdsp-l3-lat
+	    do
+                echo "powersave" > $l3cdsp/governor
+	    done
+
 	    #Enable mem_latency governor for LLCC and DDR scaling
 	    for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
 	    do

@@ -4901,6 +4901,8 @@ void LocApiV02 :: reportGnssMeasurementData(
                 bAgcIsPresent = true;
             }
             for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
+                    index < (sizeof(gnss_measurement_report_ptr.svMeasurement) /
+                               sizeof(gnss_measurement_report_ptr.svMeasurement[0])) &&
                     measurementsNotify.count < GNSS_MEASUREMENTS_MAX;
                     index++) {
                 LOC_LOGv("index=%u count=%zu", index, measurementsNotify.count);

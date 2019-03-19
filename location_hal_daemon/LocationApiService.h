@@ -148,6 +148,8 @@ private:
         return getClient(clientname);
     }
 
+    void checkEnableGnss();
+
     GnssInterface* getGnssInterface();
 
 #ifdef POWERMANAGER_ENABLED

@@ -61,6 +61,15 @@
 using Resender = std::function<void()>;
 using namespace loc_core;
 
+typedef struct
+{
+    uint32_t counter;
+    qmiLocSvSystemEnumT_v02 system;
+    uint16_t gnssSvId;
+    qmiLocMeasFieldsValidMaskT_v02 validMask;
+    uint8_t cycleSlipCount;
+} adrData;
+
 /* This class derives from the LocApiBase class.
    The members of this class are responsible for converting
    the Loc API V02 data structures into Loc Adapter data structures.
@@ -78,8 +87,10 @@ private:
   bool mEngineOn;
   bool mMeasurementsStarted;
   std::vector<Resender> mResenders;
-  bool mIsMasterRegistered;
   bool mMasterRegisterNotSupported;
+  uint32_t mCounter;
+  uint32_t mMinInterval;
+  std::vector<adrData>  mADRdata;
 
   /* Convert event mask from loc eng to loc_api_v02 format */
   static locClientEventMaskType convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
@@ -107,7 +118,7 @@ private:
       uint8_t gloFrequency);
 
   /*convert GnssMeasurement type from QMI LOC to loc eng format*/
-  static bool convertGnssMeasurements (GnssMeasurementsData& measurementData,
+  bool convertGnssMeasurements (GnssMeasurementsData& measurementData,
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr,
       int index);
 
@@ -213,17 +224,6 @@ private:
   bool cacheGnssMeasurementSupport();
   void registerMasterClient();
   int getGpsLock(uint8_t subType);
-
-  inline bool checkRegisterMaster() {
-      if (!mIsMasterRegistered) {
-          if (true == isMaster()) {
-              registerMasterClient();
-              mIsMasterRegistered = true;
-              return true;
-          }
-      }
-      return false;
-  }
 
   /* Convert get blacklist sv info to GnssSvIdConfig */
   void reportGnssSvIdConfig

@@ -475,8 +475,6 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
        mContext->setEngineCapabilities(supportedMsgList,
             (getSupportedFeatureList_ind.feature_len != 0 ? getSupportedFeatureList_ind.feature:
             NULL), gnssMeasurementSupported);
-
-       LocDualContext::injectFeatureConfig(mContext);
     }
   }
 

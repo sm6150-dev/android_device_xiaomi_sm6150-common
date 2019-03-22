@@ -140,6 +140,7 @@ public:
         mService = service;
         mInstance = instance;
 
+        LocQsocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance);
         printaddr(&mDestAddr);
     }
 
@@ -159,10 +160,7 @@ public:
         bool rtv = true;
 
         if (nullptr != data) {
-            rtv = LocQsocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance);
-            if (true == rtv) {
-                rtv = LocQsocket::sendData(mSocket, mDestAddr, data, length);
-            }
+            rtv = LocQsocket::sendData(mSocket, mDestAddr, data, length);
         }
         return rtv;
     }

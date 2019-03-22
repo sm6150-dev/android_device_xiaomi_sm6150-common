@@ -125,6 +125,7 @@ private:
 
 #define RETRY_FINDNEWSERVICE_MAX_COUNT 10000
 #define RETRY_FINDNEWSERVICE_SLEEP_MS  5
+#define SOCKET_TIMEOUT_SEC 2
 
 class LocSocketSender {
 public:
@@ -143,6 +144,16 @@ public:
         if (mSocket < 0) {
             return;
         }
+
+        // 2 second timeout value for socket operation
+        timeval timeout;
+        timeout.tv_sec = SOCKET_TIMEOUT_SEC;
+        timeout.tv_usec = 0;
+        setsockopt(mSocket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
+        // find the server address
+        LocSocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance,
+                                        mServiceDeleted);
     }
 
     inline ~LocSocketSender() {
@@ -160,9 +171,9 @@ public:
         bool rtv = true;
 
         if ((nullptr != data) && (false == mServiceDeleted)){
-            rtv = LocSocket::findServiceWithRetry(mSocket, mDestAddr, mService, mInstance,
-                                                  mServiceDeleted);
-            if (true == rtv) {
+            if ((addr.sq_node == 0) && (addr.sq_port == 0)) {
+                LOC_LOGe("service not ready");
+            } else{
                 rtv = LocSocket::sendData(mSocket, mDestAddr, data, length);
             }
         }
@@ -188,6 +199,7 @@ public:
             if (true == rtv) {
                 if ((mDestAddr.sq_node != newDestAddr.sq_node) ||
                     (mDestAddr.sq_port != newDestAddr.sq_port)) {
+                    mDestAddr = newDestAddr;
                     newServiceFound = true;
                     break;
                 }

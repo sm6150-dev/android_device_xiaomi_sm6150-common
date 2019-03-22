@@ -1597,7 +1597,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
         <boolean name="allow_emergency_video_calls_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="true" />
-        <boolean name="show_rtt_visibility_setting_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="030">

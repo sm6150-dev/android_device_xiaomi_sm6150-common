@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1115,6 +1115,10 @@ typedef union
    const qmiLocGetBandMeasurementMetricsIndMsgT_v02 *pLocGetBandMeasurementMetricsEvent;
    /** Sent asynchronously by MGP to registred clients for the Power metrics
     QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02 0x00CE*/
+
+   const qmiLocLocationRequestNotificationIndMsgT_v02 *pLocReqNotifEvent;
+   /** Sent by the engine to inform of location system info event
+   QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02 */
 
 }locClientEventIndUnionType;
 

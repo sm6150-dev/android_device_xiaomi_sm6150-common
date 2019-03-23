@@ -1465,115 +1465,108 @@ LocApiV02::deleteAidingData(const GnssAidingData& data, LocApiResponse *adapterR
 void
 LocApiV02::informNiResponse(GnssNiResponse userResponse, const void* passThroughData)
 {
-  sendMsg(new LocApiMsg([this, userResponse, passThroughData] () {
+    sendMsg(new LocApiMsg([this, userResponse, passThroughData] () {
 
-  LocationError err = LOCATION_ERROR_SUCCESS;
-  locClientReqUnionType req_union;
-  locClientStatusEnumType status;
-  qmiLocNiUserRespReqMsgT_v02 ni_resp;
-  qmiLocNiUserRespIndMsgT_v02 ni_resp_ind;
+        LocationError err = LOCATION_ERROR_SUCCESS;
+        locClientReqUnionType req_union;
+        locClientStatusEnumType status;
+        qmiLocNiUserRespReqMsgT_v02 ni_resp;
+        qmiLocNiUserRespIndMsgT_v02 ni_resp_ind;
 
-  qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *request_pass_back =
-    (qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *)passThroughData;
+        qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *request_pass_back =
+            (qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *)passThroughData;
 
-  memset(&ni_resp,0, sizeof(ni_resp));
+        memset(&ni_resp,0, sizeof(ni_resp));
 
-  memset(&ni_resp_ind,0, sizeof(ni_resp_ind));
+        memset(&ni_resp_ind,0, sizeof(ni_resp_ind));
 
-  switch (userResponse)
-  {
-    case GNSS_NI_RESPONSE_ACCEPT:
-      ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_ACCEPT_V02;
-      break;
-   case GNSS_NI_RESPONSE_DENY:
-      ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_DENY_V02;
-      break;
-   case GNSS_NI_RESPONSE_NO_RESPONSE:
-      ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_NORESP_V02;
-      break;
-   default:
-      err = LOCATION_ERROR_INVALID_PARAMETER;
-      free((void *)passThroughData);
-      return;
-  }
+        switch (userResponse) {
+        case GNSS_NI_RESPONSE_ACCEPT:
+            ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_ACCEPT_V02;
+            break;
+        case GNSS_NI_RESPONSE_DENY:
+            ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_DENY_V02;
+            break;
+        case GNSS_NI_RESPONSE_NO_RESPONSE:
+            ni_resp.userResp = eQMI_LOC_NI_LCS_NOTIFY_VERIFY_NORESP_V02;
+            break;
+        default:
+            err = LOCATION_ERROR_INVALID_PARAMETER;
+            free((void *)passThroughData);
+            return;
+        }
 
-  LOC_LOGV(" %s:%d]: NI response: %d\n", __func__, __LINE__,
-                ni_resp.userResp);
+        LOC_LOGv("NI response: %d", ni_resp.userResp);
 
-  ni_resp.notificationType = request_pass_back->notificationType;
+        ni_resp.notificationType = request_pass_back->notificationType;
 
-  // copy SUPL payload from request
-  if(request_pass_back->NiSuplInd_valid == 1)
-  {
-     ni_resp.NiSuplPayload_valid = 1;
-     memcpy(&(ni_resp.NiSuplPayload), &(request_pass_back->NiSuplInd),
-            sizeof(qmiLocNiSuplNotifyVerifyStructT_v02));
+        // copy SUPL payload from request
+        if (1 == request_pass_back->NiSuplInd_valid) {
+            ni_resp.NiSuplPayload_valid = 1;
+            memcpy(&(ni_resp.NiSuplPayload),
+                   &(request_pass_back->NiSuplInd),
+                   sizeof(qmiLocNiSuplNotifyVerifyStructT_v02));
+        }
+        // should this be an "else if"?? we don't need to decide
 
-  }
-  // should this be an "else if"?? we don't need to decide
+        // copy UMTS-CP payload from request
+        if (1 == request_pass_back->NiUmtsCpInd_valid) {
+            ni_resp.NiUmtsCpPayload_valid = 1;
+            memcpy(&(ni_resp.NiUmtsCpPayload),
+                   &(request_pass_back->NiUmtsCpInd),
+                   sizeof(qmiLocNiUmtsCpNotifyVerifyStructT_v02));
+        }
 
-  // copy UMTS-CP payload from request
-  if( request_pass_back->NiUmtsCpInd_valid == 1 )
-  {
-     ni_resp.NiUmtsCpPayload_valid = 1;
-     memcpy(&(ni_resp.NiUmtsCpPayload), &(request_pass_back->NiUmtsCpInd),
-            sizeof(qmiLocNiUmtsCpNotifyVerifyStructT_v02));
-  }
+        //copy Vx payload from the request
+        if (1 == request_pass_back->NiVxInd_valid) {
+            ni_resp.NiVxPayload_valid = 1;
+            memcpy(&(ni_resp.NiVxPayload),
+                   &(request_pass_back->NiVxInd),
+                   sizeof(qmiLocNiVxNotifyVerifyStructT_v02));
+        }
 
-  //copy Vx payload from the request
-  if( request_pass_back->NiVxInd_valid == 1)
-  {
-     ni_resp.NiVxPayload_valid = 1;
-     memcpy(&(ni_resp.NiVxPayload), &(request_pass_back->NiVxInd),
-            sizeof(qmiLocNiVxNotifyVerifyStructT_v02));
-  }
+        // copy Vx service interaction payload from the request
+        if (1 == request_pass_back->NiVxServiceInteractionInd_valid) {
+            ni_resp.NiVxServiceInteractionPayload_valid = 1;
+            memcpy(&(ni_resp.NiVxServiceInteractionPayload),
+                   &(request_pass_back->NiVxServiceInteractionInd),
+                   sizeof(qmiLocNiVxServiceInteractionStructT_v02));
+        }
 
-  // copy Vx service interaction payload from the request
-  if(request_pass_back->NiVxServiceInteractionInd_valid == 1)
-  {
-     ni_resp.NiVxServiceInteractionPayload_valid = 1;
-     memcpy(&(ni_resp.NiVxServiceInteractionPayload),
-            &(request_pass_back->NiVxServiceInteractionInd),
-            sizeof(qmiLocNiVxServiceInteractionStructT_v02));
-  }
+        // copy Network Initiated SUPL Version 2 Extension
+        if (1 == request_pass_back->NiSuplVer2ExtInd_valid) {
+            ni_resp.NiSuplVer2ExtPayload_valid = 1;
+            memcpy(&(ni_resp.NiSuplVer2ExtPayload),
+                   &(request_pass_back->NiSuplVer2ExtInd),
+                   sizeof(qmiLocNiSuplVer2ExtStructT_v02));
+        }
 
-  // copy Network Initiated SUPL Version 2 Extension
-  if (request_pass_back->NiSuplVer2ExtInd_valid == 1)
-  {
-     ni_resp.NiSuplVer2ExtPayload_valid = 1;
-     memcpy(&(ni_resp.NiSuplVer2ExtPayload),
-            &(request_pass_back->NiSuplVer2ExtInd),
-            sizeof(qmiLocNiSuplVer2ExtStructT_v02));
-  }
+        // copy SUPL Emergency Notification
+        if (request_pass_back->suplEmergencyNotification_valid) {
+            ni_resp.suplEmergencyNotification_valid = 1;
+            memcpy(&(ni_resp.suplEmergencyNotification),
+                   &(request_pass_back->suplEmergencyNotification),
+                   sizeof(qmiLocEmergencyNotificationStructT_v02));
+        }
 
-  // copy SUPL Emergency Notification
-  if(request_pass_back->suplEmergencyNotification_valid)
-  {
-     ni_resp.suplEmergencyNotification_valid = 1;
-     memcpy(&(ni_resp.suplEmergencyNotification),
-            &(request_pass_back->suplEmergencyNotification),
-            sizeof(qmiLocEmergencyNotificationStructT_v02));
-  }
+        req_union.pNiUserRespReq = &ni_resp;
 
-  req_union.pNiUserRespReq = &ni_resp;
+        status = locSyncSendReq(QMI_LOC_NI_USER_RESPONSE_REQ_V02,
+                                req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                QMI_LOC_NI_USER_RESPONSE_IND_V02,
+                                &ni_resp_ind);
 
-  status = locSyncSendReq(QMI_LOC_NI_USER_RESPONSE_REQ_V02,
-                          req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                          QMI_LOC_NI_USER_RESPONSE_IND_V02,
-                          &ni_resp_ind);
+        if (status != eLOC_CLIENT_SUCCESS ||
+            eQMI_LOC_SUCCESS_V02 != ni_resp_ind.status) {
 
-  if (status != eLOC_CLIENT_SUCCESS ||
-      eQMI_LOC_SUCCESS_V02 != ni_resp_ind.status)
-  {
-    LOC_LOGE ("%s:%d]: error! status = %s, ni_resp_ind.status = %s\n",
-              __func__, __LINE__,
-              loc_get_v02_client_status_name(status),
-              loc_get_v02_qmi_status_name(ni_resp_ind.status));
-    err = LOCATION_ERROR_GENERAL_FAILURE;
-  }
+            LOC_LOGe("error! status = %s, ni_resp_ind.status = %s",
+                     loc_get_v02_client_status_name(status),
+                     loc_get_v02_qmi_status_name(ni_resp_ind.status));
+            err = LOCATION_ERROR_GENERAL_FAILURE;
+        }
 
-  free((void *)passThroughData);
-  }));
+        free((void *)passThroughData);
+    }));
 }
 
 void
@@ -4418,6 +4411,118 @@ void  LocApiV02 :: reportSystemInfo(
     }
 }
 
+void LocApiV02::reportLocationRequestNotification(
+    const qmiLocLocationRequestNotificationIndMsgT_v02* loc_req_notif)
+{
+    static GnssNfwNotification notification = {};
+
+    LOC_LOGv("IN: protocolStack=%d"
+             " ,clientStrId_valid=%d"
+             " ,clientStrId=%s"
+             " ,requestor=%d"
+             " ,requestorId=%s"
+             " ,responseType=%d"
+             " ,inEmergencyMode=%d"
+             " ,isCachedLocation=%d",
+             loc_req_notif->protocolStack,
+             loc_req_notif->clientStrId_valid,
+             loc_req_notif->clientStrId,
+             loc_req_notif->requestor,
+             loc_req_notif->requestorId,
+             loc_req_notif->inEmergencyMode,
+             loc_req_notif->isCachedLocation);
+
+    strlcpy(notification.proxyAppPackageName, "NFW app",
+            sizeof(notification.proxyAppPackageName));
+    switch (loc_req_notif->protocolStack) {
+    case eQMI_LOC_CTRL_PLANE_V02:
+        notification.protocolStack = GNSS_NFW_CTRL_PLANE;
+        break;
+    case eQMI_LOC_SUPL_V02:
+        notification.protocolStack = GNSS_NFW_SUPL;
+        break;
+    case eQMI_LOC_IMS_V02:
+        notification.protocolStack = GNSS_NFW_IMS;
+        break;
+    case eQMI_LOC_SIM_V02:
+        notification.protocolStack = GNSS_NFW_SIM;
+        break;
+    case eQMI_LOC_MDT_V02:
+    case eQMI_LOC_TLOC_V02:
+    case eQMI_LOC_OTHER_V02:
+    default:
+        notification.protocolStack = GNSS_NFW_OTHER_PROTOCOL_STACK;
+        if (loc_req_notif->clientStrId_valid) {
+            strlcpy(notification.otherProtocolStackName,
+                    loc_req_notif->clientStrId,
+                    sizeof(notification.otherProtocolStackName));
+        } else {
+            strlcpy(notification.otherProtocolStackName,
+                    "NFW Client",
+                    sizeof(notification.otherProtocolStackName));
+        }
+        break;
+    }
+    switch (loc_req_notif->requestor) {
+    case eQMI_LOC_REQUESTOR_CARRIER_V02:
+        notification.requestor = GNSS_NFW_CARRIER;
+        break;
+    case eQMI_LOC_REQUESTOR_OEM_V02:
+        notification.requestor = GNSS_NFW_OEM;
+        break;
+    case eQMI_LOC_REQUESTOR_MODEM_CHIPSET_VENDOR_V02:
+        notification.requestor = GNSS_NFW_MODEM_CHIPSET_VENDOR;
+        break;
+    case eQMI_LOC_REQUESTOR_GNSS_CHIPSET_VENDOR_V02:
+        notification.requestor = GNSS_NFW_GNSS_CHIPSET_VENDOR;
+        break;
+    case eQMI_LOC_REQUESTOR_OTHER_CHIPSET_VENDOR_V02:
+        notification.requestor = GNSS_NFW_OTHER_CHIPSET_VENDOR;
+        break;
+    case eQMI_LOC_REQUESTOR_AUTOMOBILE_CLIENT_V02:
+        notification.requestor = GNSS_NFW_AUTOMOBILE_CLIENT;
+        break;
+    case eQMI_LOC_REQUESTOR_OTHER_V02:
+    default:
+        notification.requestor = GNSS_NFW_OTHER_REQUESTOR;
+        break;
+    }
+    strlcpy(notification.requestorId,
+            loc_req_notif->requestorId,
+            sizeof(notification.requestorId));
+    switch (loc_req_notif->responseType) {
+    case eQMI_LOC_REJECTED_V02:
+        notification.responseType = GNSS_NFW_REJECTED;
+        break;
+    case eQMI_LOC_ACCEPTED_NO_LOCATION_PROVIDED_V02:
+        notification.responseType = GNSS_NFW_ACCEPTED_NO_LOCATION_PROVIDED;
+        break;
+    case eQMI_LOC_ACCEPTED_LOCATION_PROVIDED_V02:
+        notification.responseType = GNSS_NFW_ACCEPTED_LOCATION_PROVIDED;
+        break;
+    }
+    notification.inEmergencyMode = (bool)loc_req_notif->inEmergencyMode;
+    notification.isCachedLocation = (bool)loc_req_notif->isCachedLocation;
+
+    LOC_LOGv("OUT: proxyAppPackageName=%s"
+        " ,protocolStack=%d"
+        " ,otherProtocolStackName=%s"
+        " ,requestor=%d"
+        " ,requestorId=%s"
+        " ,responseType=%d"
+        " ,inEmergencyMode=%d"
+        " ,isCachedLocation=%d",
+        notification.proxyAppPackageName,
+        notification.protocolStack,
+        notification.otherProtocolStackName,
+        notification.requestor,
+        notification.requestorId,
+        notification.inEmergencyMode,
+        notification.isCachedLocation);
+
+    LocApiBase::sendNfwNotification(notification);
+}
+
 /* convert engine state report to loc eng format and send the converted
    report to loc eng */
 void LocApiV02 :: reportEngineState (
@@ -4589,154 +4694,131 @@ void LocApiV02 :: reportAtlRequest(
 void LocApiV02 :: reportNiRequest(
     const qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *ni_req_ptr)
 {
-  GnssNiNotification notif = {};
-  notif.messageEncoding = GNSS_NI_ENCODING_TYPE_NONE ;
-  notif.requestorEncoding = GNSS_NI_ENCODING_TYPE_NONE;
-  notif.timeoutResponse = GNSS_NI_RESPONSE_NO_RESPONSE;
-  notif.timeout = LOC_NI_NO_RESPONSE_TIME;
+    GnssNiNotification notif = {};
+    notif.messageEncoding = GNSS_NI_ENCODING_TYPE_NONE ;
+    notif.requestorEncoding = GNSS_NI_ENCODING_TYPE_NONE;
+    notif.timeoutResponse = GNSS_NI_RESPONSE_NO_RESPONSE;
+    notif.timeout = LOC_NI_NO_RESPONSE_TIME;
 
-  /*Handle Vx request */
-  if(ni_req_ptr->NiVxInd_valid == 1)
-  {
-     const qmiLocNiVxNotifyVerifyStructT_v02 *vx_req = &(ni_req_ptr->NiVxInd);
+    /* Handle Vx request */
+    if (1 == ni_req_ptr->NiVxInd_valid) {
+        const qmiLocNiVxNotifyVerifyStructT_v02 *vx_req = &(ni_req_ptr->NiVxInd);
 
-     notif.type = GNSS_NI_TYPE_VOICE;
+        notif.type = GNSS_NI_TYPE_VOICE;
 
-     // Requestor ID, the requestor id recieved is NULL terminated
-     hexcode(notif.requestor, sizeof notif.requestor,
-             (char *)vx_req->requestorId, vx_req->requestorId_len );
-  }
-
-  /* Handle UMTS CP request*/
-  else if(ni_req_ptr->NiUmtsCpInd_valid == 1)
-  {
-    const qmiLocNiUmtsCpNotifyVerifyStructT_v02 *umts_cp_req =
-       &ni_req_ptr->NiUmtsCpInd;
-
-    notif.type = GNSS_NI_TYPE_CONTROL_PLANE;
-
-    /* notificationText should always be a NULL terminated string */
-    hexcode(notif.message, sizeof notif.message,
-            (char *)umts_cp_req->notificationText,
-            umts_cp_req->notificationText_len);
-
-    /* Store requestor ID */
-    hexcode(notif.requestor, sizeof(notif.requestor),
-            (char *)umts_cp_req->requestorId.codedString,
-            umts_cp_req->requestorId.codedString_len);
-
-   /* convert encodings */
-    notif.messageEncoding = convertNiEncoding(umts_cp_req->dataCodingScheme);
-
-    notif.requestorEncoding =
-      convertNiEncoding(umts_cp_req->requestorId.dataCodingScheme);
-
-    /* LCS address (using extras field) */
-    if ( umts_cp_req->clientAddress_len != 0)
-    {
-      char lcs_addr[32]; // Decoded LCS address for UMTS CP NI
-
-      // Copy LCS Address into notif.extras in the format: Address = 012345
-      strlcat(notif.extras, LOC_NI_NOTIF_KEY_ADDRESS, sizeof (notif.extras));
-      strlcat(notif.extras, " = ", sizeof notif.extras);
-      int addr_len = 0;
-      const char *address_source = NULL;
-      address_source = (char *)umts_cp_req->clientAddress;
-      // client Address is always NULL terminated
-      addr_len = decodeAddress(lcs_addr, sizeof(lcs_addr), address_source,
-                               umts_cp_req->clientAddress_len);
-
-      // The address is ASCII string
-      if (addr_len)
-      {
-        strlcat(notif.extras, lcs_addr, sizeof notif.extras);
-      }
+        // Requestor ID, the requestor id recieved is NULL terminated
+        hexcode(notif.requestor, sizeof notif.requestor,
+                (char *)vx_req->requestorId, vx_req->requestorId_len );
     }
 
-  }
-  else if(ni_req_ptr->NiSuplInd_valid == 1)
-  {
-    const qmiLocNiSuplNotifyVerifyStructT_v02 *supl_req =
-      &ni_req_ptr->NiSuplInd;
+    /* Handle UMTS CP request*/
+    else if (1 == ni_req_ptr->NiUmtsCpInd_valid) {
+        const qmiLocNiUmtsCpNotifyVerifyStructT_v02 *umts_cp_req =
+            &ni_req_ptr->NiUmtsCpInd;
 
-    notif.type = GNSS_NI_TYPE_SUPL;
+        notif.type = GNSS_NI_TYPE_CONTROL_PLANE;
 
-    // Client name
-    if (supl_req->valid_flags & QMI_LOC_SUPL_CLIENT_NAME_MASK_V02)
-    {
-      hexcode(notif.message, sizeof(notif.message),
-              (char *)supl_req->clientName.formattedString,
-              supl_req->clientName.formattedString_len);
-      LOC_LOGV("%s:%d]: SUPL NI: client_name: %s \n", __func__, __LINE__,
-          notif.message);
+        /* notificationText should always be a NULL terminated string */
+        hexcode(notif.message, sizeof notif.message,
+                (char *)umts_cp_req->notificationText,
+                umts_cp_req->notificationText_len);
+
+        /* Store requestor ID */
+        hexcode(notif.requestor, sizeof(notif.requestor),
+                (char *)umts_cp_req->requestorId.codedString,
+                umts_cp_req->requestorId.codedString_len);
+
+        /* convert encodings */
+        notif.messageEncoding = convertNiEncoding(umts_cp_req->dataCodingScheme);
+
+        notif.requestorEncoding =
+            convertNiEncoding(umts_cp_req->requestorId.dataCodingScheme);
+
+        /* LCS address (using extras field) */
+        if (0 != umts_cp_req->clientAddress_len) {
+            char lcs_addr[32]; // Decoded LCS address for UMTS CP NI
+
+            // Copy LCS Address into notif.extras in the format: Address = 012345
+            strlcat(notif.extras, LOC_NI_NOTIF_KEY_ADDRESS, sizeof (notif.extras));
+            strlcat(notif.extras, " = ", sizeof notif.extras);
+            int addr_len = 0;
+            const char *address_source = NULL;
+            address_source = (char *)umts_cp_req->clientAddress;
+            // client Address is always NULL terminated
+            addr_len = decodeAddress(lcs_addr, sizeof(lcs_addr), address_source,
+                                     umts_cp_req->clientAddress_len);
+
+            // The address is ASCII string
+            if (addr_len) {
+                strlcat(notif.extras, lcs_addr, sizeof notif.extras);
+            }
+        }
+    } else if (1 == ni_req_ptr->NiSuplInd_valid) {
+        const qmiLocNiSuplNotifyVerifyStructT_v02 *supl_req =
+            &ni_req_ptr->NiSuplInd;
+
+        notif.type = GNSS_NI_TYPE_SUPL;
+
+        // Client name
+        if (supl_req->valid_flags & QMI_LOC_SUPL_CLIENT_NAME_MASK_V02) {
+            hexcode(notif.message, sizeof(notif.message),
+                    (char *)supl_req->clientName.formattedString,
+                    supl_req->clientName.formattedString_len);
+            LOC_LOGv("SUPL NI: client_name: %s \n", notif.message);
+        } else {
+            LOC_LOGv("%s:%d]: SUPL NI: client_name not present.");
+        }
+
+        // Requestor ID
+        if (supl_req->valid_flags & QMI_LOC_SUPL_REQUESTOR_ID_MASK_V02) {
+            hexcode(notif.requestor, sizeof notif.requestor,
+                    (char*)supl_req->requestorId.formattedString,
+                    supl_req->requestorId.formattedString_len);
+
+            LOC_LOGv("SUPL NI: requestor: %s", notif.requestor);
+        } else {
+            LOC_LOGv("SUPL NI: requestor not present.");
+        }
+
+        // Encoding type
+        if (supl_req->valid_flags & QMI_LOC_SUPL_DATA_CODING_SCHEME_MASK_V02) {
+            notif.messageEncoding = convertNiEncoding(supl_req->dataCodingScheme);
+            notif.requestorEncoding = convertNiEncoding(supl_req->dataCodingScheme);
+        } else {
+            notif.messageEncoding = notif.requestorEncoding = GNSS_NI_ENCODING_TYPE_NONE;
+        }
+
+        // ES SUPL
+        if (1 == ni_req_ptr->suplEmergencyNotification_valid) {
+            const qmiLocEmergencyNotificationStructT_v02 *supl_emergency_request =
+                &ni_req_ptr->suplEmergencyNotification;
+
+            notif.type = GNSS_NI_TYPE_EMERGENCY_SUPL;
+        }
+    } //ni_req_ptr->NiSuplInd_valid == 1
+    else {
+        LOC_LOGe("unknown request event");
+        return;
     }
-    else
-    {
-      LOC_LOGV("%s:%d]: SUPL NI: client_name not present.",
-          __func__, __LINE__);
+
+    // Set default_response & notify_flags
+    convertNiNotifyVerifyType(&notif, ni_req_ptr->notificationType);
+
+    qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *ni_req_copy_ptr =
+        (qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *)malloc(sizeof(*ni_req_copy_ptr));
+
+    if (NULL != ni_req_copy_ptr) {
+        memcpy(ni_req_copy_ptr, ni_req_ptr, sizeof(*ni_req_copy_ptr));
+
+        if (ni_req_ptr->isInEmergencySession_valid &&
+            ni_req_ptr->isInEmergencySession) {
+            informNiResponse(GNSS_NI_RESPONSE_ACCEPT, (const void*)ni_req_copy_ptr);
+        } else {
+            requestNiNotify(notif, (const void*)ni_req_copy_ptr);
+        }
+    } else {
+        LOC_LOGe("Error copying NI request");
     }
-
-    // Requestor ID
-    if (supl_req->valid_flags & QMI_LOC_SUPL_REQUESTOR_ID_MASK_V02)
-    {
-      hexcode(notif.requestor, sizeof notif.requestor,
-              (char*)supl_req->requestorId.formattedString,
-              supl_req->requestorId.formattedString_len );
-
-      LOC_LOGV("%s:%d]: SUPL NI: requestor: %s \n", __func__, __LINE__,
-          notif.requestor);
-    }
-    else
-    {
-      LOC_LOGV("%s:%d]: SUPL NI: requestor not present.",
-          __func__, __LINE__);
-    }
-
-    // Encoding type
-    if (supl_req->valid_flags & QMI_LOC_SUPL_DATA_CODING_SCHEME_MASK_V02)
-    {
-      notif.messageEncoding = convertNiEncoding(supl_req->dataCodingScheme);
-
-      notif.requestorEncoding = convertNiEncoding(supl_req->dataCodingScheme);
-    }
-    else
-    {
-      notif.messageEncoding = notif.requestorEncoding = GNSS_NI_ENCODING_TYPE_NONE;
-    }
-
-    // ES SUPL
-    if(ni_req_ptr->suplEmergencyNotification_valid ==1)
-    {
-        const qmiLocEmergencyNotificationStructT_v02 *supl_emergency_request =
-        &ni_req_ptr->suplEmergencyNotification;
-
-        notif.type = GNSS_NI_TYPE_EMERGENCY_SUPL;
-    }
-
-  } //ni_req_ptr->NiSuplInd_valid == 1
-  else
-  {
-    LOC_LOGE("%s:%d]: unknown request event \n",__func__, __LINE__);
-    return;
-  }
-
-  // Set default_response & notify_flags
-  convertNiNotifyVerifyType(&notif, ni_req_ptr->notificationType);
-
-  qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *ni_req_copy_ptr =
-    (qmiLocEventNiNotifyVerifyReqIndMsgT_v02 *)malloc(sizeof(*ni_req_copy_ptr));
-
-  if( NULL != ni_req_copy_ptr)
-  {
-    memcpy(ni_req_copy_ptr, ni_req_ptr, sizeof(*ni_req_copy_ptr));
-
-    requestNiNotify(notif, (const void*)ni_req_copy_ptr);
-  }
-  else
-  {
-    LOC_LOGE("%s:%d]: Error copying NI request\n", __func__, __LINE__);
-  }
-
 }
 
 /* If Confidence value is less than 68%, then scale the accuracy value to
@@ -5744,8 +5826,12 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
 
     // System info event regarding next leap second
     case QMI_LOC_SYSTEM_INFO_IND_V02:
-      reportSystemInfo(eventPayload.pLocSystemInfoEvent);
-      break;
+        reportSystemInfo(eventPayload.pLocSystemInfoEvent);
+        break;
+
+    case QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02:
+        reportLocationRequestNotification(eventPayload.pLocReqNotifEvent);
+        break;
   }
 }
 
@@ -5815,19 +5901,18 @@ LocationError LocApiV02 :: setGpsLockSync(GnssConfigGpsLock lock)
     setEngineLockReq.subType_valid = true;
     setEngineLockReq.subType = eQMI_LOC_LOCK_ALL_SUB_V02;
     req_union.pSetEngineLockReq = &setEngineLockReq;
+    LOC_LOGd("API lock type = 0x%X QMI lockType = %d", lock, setEngineLockReq.lockType);
     memset(&setEngineLockInd, 0, sizeof(setEngineLockInd));
     status = locSyncSendReq(QMI_LOC_SET_ENGINE_LOCK_REQ_V02,
                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
                             QMI_LOC_SET_ENGINE_LOCK_IND_V02,
                             &setEngineLockInd);
     if (eLOC_CLIENT_SUCCESS != status || eQMI_LOC_SUCCESS_V02 != setEngineLockInd.status) {
-        LOC_LOGE("%s:%d]: Set engine lock failed. status: %s, ind status:%s\n",
-            __func__, __LINE__,
+        LOC_LOGe("Set engine lock failed. status: %s, ind status:%s",
             loc_get_v02_client_status_name(status),
             loc_get_v02_qmi_status_name(setEngineLockInd.status));
         err = LOCATION_ERROR_GENERAL_FAILURE;
     }
-    LOC_LOGd("exit\n");
     return err;
 }
 
@@ -5881,7 +5966,7 @@ int LocApiV02 :: getGpsLock(uint8_t subType)
     }
     else {
         if(getEngineLockInd.lockType_valid) {
-            ret = (int)getEngineLockInd.lockType;
+            ret = (int)convertGpsLockFromQMItoAPI(getEngineLockInd.lockType);
         }
         else {
             LOC_LOGE("%s:%d]: Lock Type not valid\n", __func__, __LINE__);
@@ -6631,6 +6716,42 @@ LocApiV02::convertLppeUp(const uint32_t lppeUserPlaneMask)
         mask |= GNSS_CONFIG_LPPE_USER_PLANE_SENSOR_BARO_MEASUREMENTS_BIT;
     }
     return mask;
+}
+
+LocationError
+LocApiV02::setEmergencyExtensionWindowSync(const uint32_t emergencyExtensionSeconds)
+{
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
+    locClientReqUnionType req_union;
+    qmiLocSetProtocolConfigParametersReqMsgT_v02 eCbW_req;
+    qmiLocSetProtocolConfigParametersIndMsgT_v02 eCbW_ind;
+
+    memset(&eCbW_req, 0, sizeof(eCbW_req));
+    memset(&eCbW_ind, 0, sizeof(eCbW_ind));
+
+    eCbW_req.emergencyCallbackWindow_valid = 1;
+    eCbW_req.emergencyCallbackWindow = emergencyExtensionSeconds;
+
+    req_union.pSetProtocolConfigParametersReq = &eCbW_req;
+
+    LOC_LOGd("emergencyCallbackWindow = %d", emergencyExtensionSeconds);
+
+    result = locSyncSendReq(QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+        req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+        QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+        &eCbW_ind);
+
+    if (result != eLOC_CLIENT_SUCCESS ||
+        eQMI_LOC_SUCCESS_V02 != eCbW_ind.status)
+    {
+        LOC_LOGe("Error status = %s, ind..status = %s ",
+            loc_get_v02_client_status_name(result),
+            loc_get_v02_qmi_status_name(eCbW_ind.status));
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    return err;
 }
 
 LocationError

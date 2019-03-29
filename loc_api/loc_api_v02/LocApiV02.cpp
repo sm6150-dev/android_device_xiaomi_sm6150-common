@@ -997,28 +997,6 @@ void LocApiV02::injectPosition(const Location& location, bool onDemandCpi)
     }));
 }
 
-/* This is utility routine that computes number of SV used
-   in the fix from the svUsedIdsMask.
- */
-int LocApiV02::getNumSvUsed (uint64_t svUsedIdsMask, int totalSvCntInOneConstellation) {
-    if (totalSvCntInOneConstellation > MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION) {
-        LOC_LOGe ("error: total SV count in one constellation %d exceeded limit of 64",
-                  totalSvCntInOneConstellation);
-        return 0;
-    }
-
-    int numSvUsed = 0;
-    uint64_t mask = 0x1;
-    for (int i = 0; i < totalSvCntInOneConstellation; i++) {
-        if (svUsedIdsMask & mask) {
-            numSvUsed++;
-        }
-        mask <<= 1;
-    }
-
-    return numSvUsed;
-}
-
 void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi)
 {
     sendMsg(new LocApiMsg([this, locationInfo, onDemandCpi] () {
@@ -1138,19 +1116,8 @@ void LocApiV02::injectPosition(const GnssLocationInfoNotification &locationInfo,
 
     // number of SV used info, this replaces expandedGnssSvUsedList as the payload
     // for expandedGnssSvUsedList is too large
-    if (GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT & locationInfo.flags) {
-
-        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.gpsSvUsedIdsMask,
-                                                     GPS_SV_PRN_MAX - GPS_SV_PRN_MIN + 1);
-        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.gloSvUsedIdsMask,
-                                                     GLO_SV_PRN_MAX - GLO_SV_PRN_MIN + 1);
-        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.qzssSvUsedIdsMask,
-                                                     QZSS_SV_PRN_MAX - QZSS_SV_PRN_MIN + 1);
-        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.bdsSvUsedIdsMask,
-                                                     BDS_SV_PRN_MAX - BDS_SV_PRN_MIN + 1);
-        injectPositionReq.numSvInFix += getNumSvUsed(locationInfo.svUsedInPosition.galSvUsedIdsMask,
-                                                     GAL_SV_PRN_MAX - GAL_SV_PRN_MIN + 1);
-
+    if (GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT & locationInfo.flags) {
+        injectPositionReq.numSvInFix = locationInfo.numSvUsedInPosition;
         injectPositionReq.numSvInFix_valid = 1;
     }
 

@@ -3887,7 +3887,7 @@ case "$target" in
 		echo 6881 > $llccbw/max_freq
 	    done
 
-	    for npubw in $device/*npu-npu-ddr-bw/devfreq/*npu-npu-ddr-bw
+	    for npubw in $device/*npu*-npu-ddr-bw/devfreq/*npu*-npu-ddr-bw
 	    do
 		echo "bw_hwmon" > $npubw/governor
 		echo 40 > $npubw/polling_interval

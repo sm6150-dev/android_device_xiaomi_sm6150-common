@@ -45,7 +45,7 @@
 #include <gps_extended.h>
 #include "loc_pla.h"
 #include <loc_cfg.h>
-#include <LocDualContext.h>
+#include <LocContext.h>
 
 using namespace std;
 using namespace loc_core;
@@ -115,6 +115,17 @@ using namespace loc_core;
 #define QZSS_L2C_L_CARRIER_FREQUENCY    1227600000.0
 #define QZSS_L5_Q_CARRIER_FREQUENCY     1176450000.0
 #define SBAS_L1_CA_CARRIER_FREQUENCY    1575420000.0
+
+#define LAT_LONG_TO_RADIANS .000005364418
+#define GF_RESPONSIVENESS_THRESHOLD_MSEC_HIGH   120000 //2 mins
+#define GF_RESPONSIVENESS_THRESHOLD_MSEC_MEDIUM 900000 //15 mins
+
+#define FLP_BATCHING_MINIMUN_INTERVAL           (1000) // in msec
+#define FLP_BATCHING_MIN_TRIP_DISTANCE           1 // 1 meter
+
+template struct loc_core::LocApiResponseData<LocApiBatchData>;
+template struct loc_core::LocApiResponseData<LocApiGeofenceData>;
+template struct loc_core::LocApiResponseData<LocGpsLocation>;
 
 const float CarrierFrequencies[] = {
     0.0,                                // UNKNOWN
@@ -268,7 +279,9 @@ LocApiV02 :: LocApiV02(LOC_API_ADAPTER_EVENT_MASK_T exMask,
     mEngineOn(false), mMeasurementsStarted(false),
     mMasterRegisterNotSupported(false),
     mCounter(0), mMinInterval(1000),
-    mSvMeasurementSet(nullptr)
+    mSvMeasurementSet(nullptr),
+    mBatchSize(0), mDesiredBatchSize(0),
+    mTripBatchSize(0), mDesiredTripBatchSize(0)
 {
   // initialize loc_sync_req interface
   loc_sync_req_init();
@@ -354,7 +367,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
                 mQmiMask |= QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02;
             }
 
-            LocDualContext::injectFeatureConfig(mContext);
+            LocContext::injectFeatureConfig(mContext);
         }
 
         // check the modem
@@ -618,6 +631,7 @@ enum loc_api_adapter_err LocApiV02 :: close()
   return rtv;
 }
 
+
 /* start positioning session */
 void LocApiV02 :: startFix(const LocPosMode& fixCriteria, LocApiResponse *adapterResponse)
 {
@@ -841,22 +855,10 @@ void LocApiV02 :: stopFix(LocApiResponse *adapterResponse)
       err = LOCATION_ERROR_SUCCESS;
   }
 
-  adapterResponse->returnToSender(err);
+  if (adapterResponse != NULL) {
+      adapterResponse->returnToSender(err);
+  }
   }));
-}
-
-/* set the positioning fix criteria */
-void LocApiV02 :: setPositionMode(
-  const LocPosMode& posMode)
-{
-    if(isInSession())
-    {
-        //fix is in progress, send a restart
-        LOC_LOGD ("%s:%d]: fix is in progress restarting the fix with new "
-                  "criteria\n", __func__, __LINE__);
-
-        startFix(posMode, NULL);
-    }
 }
 
 /* inject time into the position engine */
@@ -1457,7 +1459,9 @@ LocApiV02::deleteAidingData(const GnssAidingData& data, LocApiResponse *adapterR
       }
   }
 
-  adapterResponse->returnToSender(err);
+  if (adapterResponse != NULL) {
+      adapterResponse->returnToSender(err);
+  }
   }));
 }
 
@@ -5805,8 +5809,8 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
     case QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02:
     case QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02:
     case QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02:
-        reportSvEphemeris(eventId, eventPayload);
-    break;
+      reportSvEphemeris(eventId, eventPayload);
+      break;
 
     //Unpropagated position report
     case QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02:
@@ -5829,17 +5833,52 @@ void LocApiV02 :: eventCb(locClientHandleType /*clientHandle*/,
       break;
 
     case QMI_LOC_EVENT_REPORT_IND_V02:
-        reportLocEvent(eventPayload.pLocEvent);
-        break;
+      reportLocEvent(eventPayload.pLocEvent);
+      break;
 
     // System info event regarding next leap second
     case QMI_LOC_SYSTEM_INFO_IND_V02:
-        reportSystemInfo(eventPayload.pLocSystemInfoEvent);
-        break;
+      reportSystemInfo(eventPayload.pLocSystemInfoEvent);
+      break;
 
     case QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02:
-        reportLocationRequestNotification(eventPayload.pLocReqNotifEvent);
-        break;
+      reportLocationRequestNotification(eventPayload.pLocReqNotifEvent);
+      break;
+
+    case QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02");
+      geofenceBreachEvent(eventPayload.pGeofenceBreachEvent);
+      break;
+
+    case QMI_LOC_EVENT_GEOFENCE_BATCHED_BREACH_NOTIFICATION_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_GEOFENCE_BATCHED_BREACH_NOTIFICATION_IND_V02");
+      geofenceBreachEvent(eventPayload.pGeofenceBatchedBreachEvent);
+      break;
+
+    case QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02:
+      geofenceStatusEvent(eventPayload.pGeofenceGenAlertEvent);
+      break;
+
+    case QMI_LOC_EVENT_GEOFENCE_BATCHED_DWELL_NOTIFICATION_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_GEOFENCE_BATCHED_DWELL_NOTIFICATION_IND_V02");
+      geofenceDwellEvent(eventPayload.pGeofenceBatchedDwellEvent);
+      break;
+
+    case QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_BATCH_FULL_NOTIFICATION_IND_V02");
+      batchFullEvent(eventPayload.pBatchCount);
+      break;
+
+    case QMI_LOC_EVENT_BATCHING_STATUS_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_BATCHING_STATUS_IND_V02");
+      batchStatusEvent(eventPayload.pBatchingStatusEvent);
+      break;
+
+    case QMI_LOC_EVENT_DBT_POSITION_REPORT_IND_V02:
+      LOC_LOGd("Got QMI_LOC_EVENT_DBT_POSITION_REPORT_IND_V02");
+      onDbtPosReportEvent(eventPayload.pDbtPositionReportEvent);
+      break;
+
   }
 }
 
@@ -7074,9 +7113,949 @@ LocApiV02::convertToGnssSvTypeConfig(
     }
 }
 
-qmiLocPowerModeEnumT_v02 LocApiV02::convertPowerMode(GnssPowerMode powerMode)
+void LocApiV02::onDbtPosReportEvent(const qmiLocEventDbtPositionReportIndMsgT_v02* pDbtPosReport)
 {
-    switch (powerMode) {
+    UlpLocation location;
+    memset (&location, 0, sizeof (location));
+    location.size = sizeof(location);
+    const qmiLocDbtPositionStructT_v02 *pReport = &pDbtPosReport->dbtPosition;
+
+    // time stamp
+    location.gpsLocation.timestamp = pReport->timestampUtc;
+    // latitude & longitude
+    location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_LAT_LONG;
+    location.gpsLocation.latitude  = pReport->latitude;
+    location.gpsLocation.longitude = pReport->longitude;
+    // Altitude
+    if (pReport->altitudeWrtEllipsoid_valid == 1) {
+        location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_ALTITUDE;
+        location.gpsLocation.altitude = pReport->altitudeWrtEllipsoid;
+    }
+    // Speed
+    if (pReport->speedHorizontal_valid == 1) {
+        location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_SPEED;
+        location.gpsLocation.speed = pReport->speedHorizontal;
+    }
+    // Heading
+    if (pReport->heading_valid == 1) {
+        location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_BEARING;
+        location.gpsLocation.bearing = pReport->heading;
+    }
+    // Accuracy
+    location.gpsLocation.flags |= LOC_GPS_LOCATION_HAS_ACCURACY;
+    location.gpsLocation.accuracy = sqrt(pReport->horUncEllipseSemiMinor*
+                                         pReport->horUncEllipseSemiMinor +
+                                         pReport->horUncEllipseSemiMajor*
+                                         pReport->horUncEllipseSemiMajor);
+    // Source used
+    LocPosTechMask loc_technology_mask = LOC_POS_TECH_MASK_DEFAULT;
+    if (pDbtPosReport->positionSrc_valid) {
+        switch (pDbtPosReport->positionSrc) {
+            case eQMI_LOC_POSITION_SRC_GNSS_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_SATELLITE;
+                break;
+            case eQMI_LOC_POSITION_SRC_CELLID_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_CELLID;
+                break;
+            case eQMI_LOC_POSITION_SRC_ENH_CELLID_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_CELLID;
+                break;
+            case eQMI_LOC_POSITION_SRC_WIFI_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_WIFI;
+                break;
+            case eQMI_LOC_POSITION_SRC_TERRESTRIAL_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_REFERENCE_LOCATION;
+                break;
+            case eQMI_LOC_POSITION_SRC_GNSS_TERRESTRIAL_HYBRID_V02:
+                loc_technology_mask = LOC_POS_TECH_MASK_HYBRID;
+                break;
+            default:
+                loc_technology_mask = LOC_POS_TECH_MASK_DEFAULT;
+        }
+    }
+
+    GpsLocationExtended locationExtended;
+    memset(&locationExtended, 0, sizeof (GpsLocationExtended));
+    locationExtended.size = sizeof(locationExtended);
+
+    if (pReport->vertUnc_valid) {
+       locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_VERT_UNC;
+       locationExtended.vert_unc = pReport->vertUnc;
+    }
+    if (pDbtPosReport->speedUnc_valid) {
+        locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_SPEED_UNC;
+        locationExtended.speed_unc = pDbtPosReport->speedUnc;
+    }
+    if (pDbtPosReport->headingUnc_valid) {
+       locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_BEARING_UNC;
+       locationExtended.bearing_unc = pDbtPosReport->headingUnc;
+    }
+    // Calling the base
+    reportDBTPosition(location,
+                      locationExtended,
+                      LOC_SESS_SUCCESS,
+                      loc_technology_mask);
+}
+
+void LocApiV02::batchFullEvent(const qmiLocEventBatchFullIndMsgT_v02* batchFullInfo)
+{
+    struct MsgGetBatchedLocations : public LocMsg {
+        LocApiBase& mApi;
+        size_t mCount;
+        uint32_t mAccumulatedDistance;
+        qmiLocBatchingTypeEnumT_v02 mBatchType;
+        inline MsgGetBatchedLocations(LocApiV02& api,
+                                      size_t count,
+                                      uint32_t accumulatedDistance,
+                                      qmiLocBatchingTypeEnumT_v02 batchType) :
+            LocMsg(),
+            mApi(api),
+            mCount(count),
+            mAccumulatedDistance(accumulatedDistance),
+            mBatchType(batchType) {}
+        inline virtual void proc() const {
+            // Explicit check for if OTB is supported or not to work around an
+            // issue with older modems where uninitialized batchInd is being sent
+            if ((mBatchType == eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02) &&
+                (ContextBase::isMessageSupported(LOC_API_ADAPTER_MESSAGE_OUTDOOR_TRIP_BATCHING))) {
+                mApi.getBatchedTripLocationsSync(mCount, mAccumulatedDistance);
+            } else {
+                mApi.getBatchedLocationsSync(mCount);
+            }
+        }
+    };
+
+    sendMsg(new MsgGetBatchedLocations(*this,
+                                        batchFullInfo->batchCount,
+                                        (batchFullInfo->accumulatedDistance_valid ?
+                                                batchFullInfo->accumulatedDistance: 0),
+                                        (batchFullInfo->batchType_valid ? batchFullInfo->batchType :
+                                                eQMI_LOC_LOCATION_BATCHING_V02)));
+
+}
+
+void LocApiV02::batchStatusEvent(const qmiLocEventBatchingStatusIndMsgT_v02* batchStatusInfo)
+{
+    BatchingStatus batchStatus;
+
+    switch(batchStatusInfo->batchingStatus)
+    {
+        case eQMI_LOC_BATCH_POS_UNAVAILABLE_V02:
+            batchStatus = BATCHING_STATUS_POSITION_UNAVAILABLE;
+            break;
+        case eQMI_LOC_BATCH_POS_AVAILABLE_V02:
+            batchStatus = BATCHING_STATUS_POSITION_AVAILABE;
+            break;
+        default:
+            batchStatus = BATCHING_STATUS_POSITION_UNAVAILABLE;
+    }
+
+    handleBatchStatusEvent(batchStatus);
+}
+
+// For Geofence
+void LocApiV02::geofenceBreachEvent(const qmiLocEventGeofenceBreachIndMsgT_v02* breachInfo)
+{
+    uint32_t hwId = breachInfo->geofenceId;
+    int64_t timestamp = time(NULL); // get the current time
+    Location location;
+    memset(&location, 0, sizeof(Location));
+    location.size = sizeof(Location);
+
+    if (breachInfo->geofencePosition_valid) {
+        // Latitude & Longitude
+        location.flags |= LOCATION_HAS_LAT_LONG_BIT;
+        if (breachInfo->geofencePosition.latitude >= -90 &&
+            breachInfo->geofencePosition.latitude <= 90 &&
+            breachInfo->geofencePosition.longitude >= -180 &&
+            breachInfo->geofencePosition.longitude <= 180) {
+            // latitude and longitude look to be in the expected format
+            location.latitude  = breachInfo->geofencePosition.latitude;
+            location.longitude = breachInfo->geofencePosition.longitude;
+        }
+        else {
+            // latitude and longitude must be in wrong format, so convert
+            location.latitude  = breachInfo->geofencePosition.latitude * LAT_LONG_TO_RADIANS;
+            location.longitude = breachInfo->geofencePosition.longitude * LAT_LONG_TO_RADIANS;
+        }
+
+        // Time stamp (UTC)
+        location.timestamp = breachInfo->geofencePosition.timestampUtc;
+
+        // Altitude
+        location.flags |= LOCATION_HAS_ALTITUDE_BIT;
+        location.altitude = breachInfo->geofencePosition.altitudeWrtEllipsoid;
+
+        // Speed
+        if (breachInfo->geofencePosition.speedHorizontal_valid == 1) {
+            location.flags |= LOCATION_HAS_SPEED_BIT;
+            location.speed = breachInfo->geofencePosition.speedHorizontal;
+        }
+
+        // Heading
+        if (breachInfo->geofencePosition.heading_valid == 1) {
+            location.flags |= LOCATION_HAS_BEARING_BIT;
+            location.bearing = breachInfo->geofencePosition.heading;
+        }
+
+        // Uncertainty (circular)
+        location.flags |= LOCATION_HAS_ACCURACY_BIT;
+        location.accuracy = sqrt(
+            (breachInfo->geofencePosition.horUncEllipseSemiMinor *
+            breachInfo->geofencePosition.horUncEllipseSemiMinor) +
+            (breachInfo->geofencePosition.horUncEllipseSemiMajor *
+            breachInfo->geofencePosition.horUncEllipseSemiMajor));
+
+        location.techMask = LOCATION_TECHNOLOGY_GNSS_BIT;
+
+        LOC_LOGV("%s:%d]: Location lat=%8.2f long=%8.2f ",
+                 __func__, __LINE__, location.latitude, location.longitude);
+
+    } else {
+       LOC_LOGE("%s:%d]: NO Location ", __func__, __LINE__);
+    }
+
+    GeofenceBreachType breachType;
+    switch (breachInfo->breachType) {
+    case eQMI_LOC_GEOFENCE_BREACH_TYPE_ENTERING_V02:
+        breachType = GEOFENCE_BREACH_ENTER;
+        break;
+    case eQMI_LOC_GEOFENCE_BREACH_TYPE_LEAVING_V02:
+        breachType = GEOFENCE_BREACH_EXIT;
+        break;
+    default:
+        breachType = GEOFENCE_BREACH_UNKNOWN;
+        break;
+    }
+
+    // calling the base
+    geofenceBreach(1, &hwId, location, breachType, timestamp);
+}
+
+void
+LocApiV02::geofenceBreachEvent(const qmiLocEventGeofenceBatchedBreachIndMsgT_v02* breachInfo)
+{
+    if (NULL == breachInfo)
+        return;
+
+    int64_t timestamp = time(NULL); // get the current time
+    Location location;
+    memset(&location, 0, sizeof(Location));
+    location.size = sizeof(Location);
+
+    if (breachInfo->geofencePosition_valid) {
+        // Latitude & Longitude
+        location.flags |= LOCATION_HAS_LAT_LONG_BIT;
+        if (breachInfo->geofencePosition.latitude >= -90 &&
+            breachInfo->geofencePosition.latitude <= 90 &&
+            breachInfo->geofencePosition.longitude >= -180 &&
+            breachInfo->geofencePosition.longitude <= 180) {
+            // latitude and longitude look to be in the expected format
+            location.latitude  = breachInfo->geofencePosition.latitude;
+            location.longitude = breachInfo->geofencePosition.longitude;
+        }
+        else {
+            // latitdue and longitude must be in wrong format, so convert
+            location.latitude  = breachInfo->geofencePosition.latitude *
+                                 LAT_LONG_TO_RADIANS;
+            location.longitude = breachInfo->geofencePosition.longitude *
+                                 LAT_LONG_TO_RADIANS;
+        }
+
+        // Time stamp (UTC)
+        location.timestamp = breachInfo->geofencePosition.timestampUtc;
+
+        // Altitude
+        location.flags |= LOCATION_HAS_ALTITUDE_BIT;
+        location.altitude = breachInfo->geofencePosition.altitudeWrtEllipsoid;
+
+        // Speed
+        if (breachInfo->geofencePosition.speedHorizontal_valid == 1) {
+            location.flags |= LOCATION_HAS_SPEED_BIT;
+            location.speed = breachInfo->geofencePosition.speedHorizontal;
+        }
+
+        // Heading
+        if (breachInfo->geofencePosition.heading_valid == 1) {
+            location.flags |= LOCATION_HAS_BEARING_BIT;
+            location.bearing = breachInfo->geofencePosition.heading;
+        }
+
+        // Uncertainty (circular)
+        location.flags |= LOCATION_HAS_ACCURACY_BIT;
+        location.accuracy = sqrt(
+            (breachInfo->geofencePosition.horUncEllipseSemiMinor *
+            breachInfo->geofencePosition.horUncEllipseSemiMinor) +
+            (breachInfo->geofencePosition.horUncEllipseSemiMajor *
+            breachInfo->geofencePosition.horUncEllipseSemiMajor));
+
+        location.techMask = LOCATION_TECHNOLOGY_GNSS_BIT;
+
+        LOC_LOGV("%s]: latitude=%8.2f longitude=%8.2f ",
+                 __func__, location.latitude, location.longitude);
+
+    } else {
+       LOC_LOGE("%s:%d]: NO Location ", __func__, __LINE__);
+    }
+
+    GeofenceBreachType breachType;
+    switch (breachInfo->breachType) {
+    case eQMI_LOC_GEOFENCE_BREACH_TYPE_ENTERING_V02:
+        breachType = GEOFENCE_BREACH_ENTER;
+        break;
+    case eQMI_LOC_GEOFENCE_BREACH_TYPE_LEAVING_V02:
+        breachType = GEOFENCE_BREACH_EXIT;
+        break;
+    default:
+        breachType = GEOFENCE_BREACH_UNKNOWN;
+        break;
+    }
+
+    size_t count = 0;
+    if (1 == breachInfo->geofenceIdDiscreteList_valid) {
+        count += breachInfo->geofenceIdDiscreteList_len;
+    }
+
+    if (1 == breachInfo->geofenceIdContinuousList_valid) {
+        for (uint32_t i = 0; i < breachInfo->geofenceIdContinuousList_len; i++) {
+            count += breachInfo->geofenceIdContinuousList[i].idHigh -
+                     breachInfo->geofenceIdContinuousList[i].idLow + 1;
+        }
+    }
+
+    if (0 == count) {
+        return;
+    }
+
+    uint32_t* hwIds = new uint32_t[count];
+    if (hwIds == nullptr) {
+        LOC_LOGE("new allocation failed, fatal error.");
+        return;
+    }
+    uint32_t index = 0;
+    if (1 == breachInfo->geofenceIdDiscreteList_valid) {
+        for (uint32_t i = 0; i<breachInfo->geofenceIdDiscreteList_len; i++) {
+            LOC_LOGV("%s]: discrete hwID %u breachType %u",
+                     __func__, breachInfo->geofenceIdDiscreteList[i], breachType);
+             if (index < count) {
+                 hwIds[index++] = breachInfo->geofenceIdDiscreteList[i];
+             }
+        }
+    }
+
+    if (1 == breachInfo->geofenceIdContinuousList_valid) {
+        for (uint32_t i = 0; i < breachInfo->geofenceIdContinuousList_len; i++) {
+            for (uint32_t j = breachInfo->geofenceIdContinuousList[i].idLow;
+                 j <= breachInfo->geofenceIdContinuousList[i].idHigh;
+                 j++) {
+                     LOC_LOGV("%s]: continuous hwID %u breachType %u",__func__, j, breachType);
+                if (index < count) {
+                    hwIds[index++] = j;
+                }
+            }
+        }
+    }
+
+    // calling the base
+    geofenceBreach(count, hwIds, location, breachType, timestamp);
+
+    delete[] hwIds;
+}
+
+void LocApiV02::geofenceStatusEvent(const qmiLocEventGeofenceGenAlertIndMsgT_v02* alertInfo)
+{
+    const char* names[] = {
+        "bad value",
+        "GEOFENCE_GEN_ALERT_GNSS_UNAVAILABLE",
+        "GEOFENCE_GEN_ALERT_GNSS_AVAILABLE",
+        "GEOFENCE_GEN_ALERT_OOS",
+        "GEOFENCE_GEN_ALERT_TIME_INVALID"
+    };
+    int index = alertInfo->geofenceAlert;
+    if (index < 0 || index > 4) {
+        index = 0;
+    }
+    LOC_LOGV("%s]: GEOFENCE_GEN_ALERT - %s", __func__, names[index]);
+
+    GeofenceStatusAvailable available = GEOFENCE_STATUS_AVAILABILE_NO;
+    switch (alertInfo->geofenceAlert) {
+    case eQMI_LOC_GEOFENCE_GEN_ALERT_GNSS_UNAVAILABLE_V02:
+        available = GEOFENCE_STATUS_AVAILABILE_NO;
+        break;
+    case eQMI_LOC_GEOFENCE_GEN_ALERT_GNSS_AVAILABLE_V02:
+        available = GEOFENCE_STATUS_AVAILABILE_YES;
+        break;
+    default:
+        return;
+        break;
+    }
+
+    // calling the base
+    geofenceStatus(available);
+}
+
+void
+LocApiV02::geofenceDwellEvent(const qmiLocEventGeofenceBatchedDwellIndMsgT_v02 *dwellInfo)
+{
+    if (NULL == dwellInfo)
+        return;
+
+    int64_t timestamp = time(NULL); // get the current time
+    GeofenceBreachType breachType;
+    if (eQMI_LOC_GEOFENCE_DWELL_TYPE_INSIDE_V02 == dwellInfo->dwellType) {
+        breachType = GEOFENCE_BREACH_DWELL_IN;
+    } else if (eQMI_LOC_GEOFENCE_DWELL_TYPE_OUTSIDE_V02 == dwellInfo->dwellType) {
+        breachType = GEOFENCE_BREACH_DWELL_OUT;
+    } else {
+        LOC_LOGW("%s]: unknown dwell type %d", __func__, dwellInfo->dwellType);
+        breachType = GEOFENCE_BREACH_UNKNOWN;
+    }
+
+    Location location;
+    memset(&location, 0, sizeof(Location));
+    location.size = sizeof(Location);
+
+    if (dwellInfo->geofencePosition_valid) {
+        // Latitude & Longitude
+        location.flags |= LOCATION_HAS_LAT_LONG_BIT;
+        if (dwellInfo->geofencePosition.latitude >= -90 &&
+            dwellInfo->geofencePosition.latitude <= 90 &&
+            dwellInfo->geofencePosition.longitude >= -180 &&
+            dwellInfo->geofencePosition.longitude <= 180) {
+            // latitude and longitude look to be in the expected format
+            location.latitude  = dwellInfo->geofencePosition.latitude;
+            location.longitude = dwellInfo->geofencePosition.longitude;
+        } else {
+            // latitude and longitude must be in wrong format, so convert
+            location.latitude = dwellInfo->geofencePosition.latitude *
+                                   LAT_LONG_TO_RADIANS;
+            location.longitude = dwellInfo->geofencePosition.longitude *
+                                    LAT_LONG_TO_RADIANS;
+        }
+
+        // Time stamp (UTC)
+        location.timestamp = dwellInfo->geofencePosition.timestampUtc;
+
+        // Altitude
+        location.flags |= LOCATION_HAS_ALTITUDE_BIT;
+        location.altitude = dwellInfo->geofencePosition.altitudeWrtEllipsoid;
+
+        // Speed
+        if (dwellInfo->geofencePosition.speedHorizontal_valid == 1) {
+            location.flags |= LOCATION_HAS_SPEED_BIT;
+            location.speed = dwellInfo->geofencePosition.speedHorizontal;
+        }
+
+        // Heading
+        if (dwellInfo->geofencePosition.heading_valid == 1) {
+            location.flags |= LOCATION_HAS_BEARING_BIT;
+            location.bearing = dwellInfo->geofencePosition.heading;
+        }
+
+        // Uncertainty (circular)
+        location.flags |= LOCATION_HAS_ACCURACY_BIT;
+        location.accuracy = sqrt(
+            (dwellInfo->geofencePosition.horUncEllipseSemiMinor *
+            dwellInfo->geofencePosition.horUncEllipseSemiMinor) +
+            (dwellInfo->geofencePosition.horUncEllipseSemiMajor *
+            dwellInfo->geofencePosition.horUncEllipseSemiMajor));
+
+            LOC_LOGV("%s]: latitude=%8.2f longitude=%8.2f ",
+                     __func__, location.latitude, location.longitude);
+    } else {
+       LOC_LOGE("%s:%d]: NO Location ", __func__, __LINE__);
+    }
+
+    size_t count = 0;
+    if (1 == dwellInfo->geofenceIdDiscreteList_valid) {
+        count += dwellInfo->geofenceIdDiscreteList_len;
+    }
+
+    if (1 == dwellInfo->geofenceIdContinuousList_valid) {
+        for (uint32_t i = 0; i < dwellInfo->geofenceIdContinuousList_len; i++) {
+            count += dwellInfo->geofenceIdContinuousList[i].idHigh -
+                     dwellInfo->geofenceIdContinuousList[i].idLow + 1;
+        }
+    }
+
+    if (0 == count) {
+        return;
+    }
+
+    uint32_t* hwIds = new uint32_t[count];
+    if (hwIds == nullptr) {
+        LOC_LOGE("new allocation failed, fatal error.");
+        return;
+    }
+    uint32_t index = 0;
+    if (1 == dwellInfo->geofenceIdDiscreteList_valid) {
+        for (uint32_t i = 0; i<dwellInfo->geofenceIdDiscreteList_len; i++) {
+            LOC_LOGV("%s]: discrete hwID %u breachType %u",
+                     __func__, dwellInfo->geofenceIdDiscreteList[i], breachType);
+             if (index < count) {
+                 hwIds[index++] = dwellInfo->geofenceIdDiscreteList[i];
+             }
+        }
+    }
+
+    if (1 == dwellInfo->geofenceIdContinuousList_valid) {
+        for (uint32_t i = 0; i < dwellInfo->geofenceIdContinuousList_len; i++) {
+            for (uint32_t j = dwellInfo->geofenceIdContinuousList[i].idLow;
+                 j <= dwellInfo->geofenceIdContinuousList[i].idHigh;
+                 j++) {
+                LOC_LOGV("%s]: continuous hwID %u breachType %u", __func__, j , breachType);
+                if (index < count) {
+                    hwIds[index++] = j;
+                }
+            }
+        }
+    }
+
+    // calling the base
+    geofenceBreach(count, hwIds, location, breachType, timestamp);
+
+    delete[] hwIds;
+}
+
+void
+LocApiV02::addGeofence(uint32_t clientId,
+                        const GeofenceOption& options,
+                        const GeofenceInfo& info,
+                        LocApiResponseData<LocApiGeofenceData>* adapterResponseData)
+{
+    sendMsg(new LocApiMsg([this, clientId, options, info, adapterResponseData] () {
+
+    LOC_LOGD("%s]: lat=%8.2f long=%8.2f radius %8.2f breach=%u respon=%u dwell=%u",
+             __func__, info.latitude, info.longitude, info.radius,
+             options.breachTypeMask, options.responsiveness, options.dwellTime);
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocAddCircularGeofenceReqMsgT_v02 addReq;
+    memset(&addReq, 0, sizeof(addReq));
+
+    if (options.breachTypeMask & GEOFENCE_BREACH_ENTER_BIT)
+        addReq.breachMask |= QMI_LOC_GEOFENCE_BREACH_ENTERING_MASK_V02;
+    if (options.breachTypeMask & GEOFENCE_BREACH_EXIT_BIT)
+        addReq.breachMask |= QMI_LOC_GEOFENCE_BREACH_LEAVING_MASK_V02;
+
+    // confidence
+    addReq.confidence_valid = true;
+    addReq.confidence = eQMI_LOC_GEOFENCE_CONFIDENCE_HIGH_V02; // always high
+
+    // custom responsiveness
+    addReq.customResponsivenessValue_valid = true;
+    // The (min,max) custom responsiveness we support in seconds is (1, 65535)
+    addReq.customResponsivenessValue =
+            ((options.responsiveness < 1000U) ? 1 :
+            std::min((options.responsiveness / 1000U), (uint32_t)UINT16_MAX));
+
+    // dwell time
+    if (options.dwellTime > 0) {
+        addReq.dwellTime_valid = 1;
+        addReq.dwellTime = options.dwellTime;
+        addReq.dwellTypeMask_valid = 1;
+        if (options.breachTypeMask & GEOFENCE_BREACH_DWELL_IN_BIT) {
+            addReq.dwellTypeMask |= QMI_LOC_GEOFENCE_DWELL_TYPE_INSIDE_MASK_V02;
+        }
+        if (options.breachTypeMask & GEOFENCE_BREACH_DWELL_OUT_BIT) {
+            addReq.dwellTypeMask |= QMI_LOC_GEOFENCE_DWELL_TYPE_OUTSIDE_MASK_V02;
+        }
+    }
+    addReq.circularGeofenceArgs.latitude = info.latitude;
+    addReq.circularGeofenceArgs.longitude = info.longitude;
+    addReq.circularGeofenceArgs.radius = info.radius;
+    addReq.includePosition = true;
+    addReq.transactionId = clientId;
+
+    LOC_SEND_SYNC_REQ(AddCircularGeofence, ADD_CIRCULAR_GEOFENCE, addReq);
+
+    LocApiGeofenceData data;
+    if (rv && ind.geofenceId_valid != 0) {
+        data.hwId = ind.geofenceId;
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        if (eQMI_LOC_MAX_GEOFENCE_PROGRAMMED_V02 == ind.status) {
+            err = LOCATION_ERROR_GEOFENCES_AT_MAX;
+        }
+        LOC_LOGE("%s]: failed! rv is %d, ind.geofenceId_valid is %d",
+                 __func__, rv, ind.geofenceId_valid);
+    }
+
+    if (adapterResponseData != NULL) {
+        adapterResponseData->returnToSender(err, data);
+    }
+    }));
+}
+
+void
+LocApiV02::removeGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, hwId, clientId, adapterResponse] () {
+
+    LOC_LOGD("%s]: hwId %u", __func__, hwId);
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocDeleteGeofenceReqMsgT_v02 deleteReq;
+    memset(&deleteReq, 0, sizeof(deleteReq));
+
+    deleteReq.geofenceId = hwId;
+    deleteReq.transactionId = clientId;
+
+    LOC_SEND_SYNC_REQ(DeleteGeofence, DELETE_GEOFENCE, deleteReq);
+
+    if (rv) {
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        LOC_LOGE("%s]: failed! rv is %d", __func__, rv);
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+void
+LocApiV02::pauseGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, hwId, clientId, adapterResponse] () {
+
+    LOC_LOGD("%s]: hwId %u", __func__, hwId);
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocEditGeofenceReqMsgT_v02 editReq;
+    memset(&editReq, 0, sizeof(editReq));
+
+    editReq.geofenceId = hwId;
+    editReq.transactionId = clientId;
+    editReq.geofenceState_valid = 1;
+    editReq.geofenceState = eQMI_LOC_GEOFENCE_STATE_SUSPEND_V02;
+
+    LOC_SEND_SYNC_REQ(EditGeofence, EDIT_GEOFENCE, editReq);
+
+    if (rv) {
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        LOC_LOGE("%s]: failed! rv is %d", __func__, rv);
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+void
+LocApiV02::resumeGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, hwId, clientId, adapterResponse] () {
+
+    LOC_LOGD("%s]: hwId %u", __func__, hwId);
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocEditGeofenceReqMsgT_v02 editReq;
+    memset(&editReq, 0, sizeof(editReq));
+
+    editReq.geofenceId = hwId;
+    editReq.transactionId = clientId;
+    editReq.geofenceState_valid = 1;
+    editReq.geofenceState = eQMI_LOC_GEOFENCE_STATE_ACTIVE_V02;
+
+    LOC_SEND_SYNC_REQ(EditGeofence, EDIT_GEOFENCE, editReq);
+
+    if (rv) {
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        LOC_LOGE("%s]: failed! rv is %d", __func__, rv);
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+void
+LocApiV02::modifyGeofence(uint32_t hwId,
+                           uint32_t clientId,
+                           const GeofenceOption& options, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, hwId, clientId, options, adapterResponse] () {
+
+    LOC_LOGD("%s]: breach=%u respon=%u dwell=%u",
+             __func__, options.breachTypeMask, options.responsiveness, options.dwellTime);
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocEditGeofenceReqMsgT_v02 editReq;
+    memset(&editReq, 0, sizeof(editReq));
+
+    editReq.geofenceId = hwId;
+    editReq.transactionId = clientId;
+
+    editReq.breachMask_valid = 1;
+    if (options.breachTypeMask & GEOFENCE_BREACH_ENTER_BIT) {
+        editReq.breachMask |= QMI_LOC_GEOFENCE_BREACH_ENTERING_MASK_V02;
+    }
+    if (options.breachTypeMask & GEOFENCE_BREACH_EXIT_BIT) {
+        editReq.breachMask |= QMI_LOC_GEOFENCE_BREACH_LEAVING_MASK_V02;
+    }
+
+    editReq.responsiveness_valid = 1;
+    if (options.responsiveness <= GF_RESPONSIVENESS_THRESHOLD_MSEC_HIGH) {
+        editReq.responsiveness = eQMI_LOC_GEOFENCE_RESPONSIVENESS_HIGH_V02;
+    } else if (options.responsiveness <= GF_RESPONSIVENESS_THRESHOLD_MSEC_MEDIUM) {
+        editReq.responsiveness = eQMI_LOC_GEOFENCE_RESPONSIVENESS_MED_V02;
+    } else {
+        editReq.responsiveness = eQMI_LOC_GEOFENCE_RESPONSIVENESS_LOW_V02;
+    }
+
+    LOC_SEND_SYNC_REQ(EditGeofence, EDIT_GEOFENCE, editReq);
+
+    if (rv) {
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        LOC_LOGE("%s]: failed! rv is %d", __func__, rv);
+    }
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+
+}
+
+void LocApiV02::setBatchSize(size_t size)
+{
+    LOC_LOGD("%s]: mDesiredBatchSize %zu", __func__, size);
+    mDesiredBatchSize = size;
+    // set to zero so the actual batch size will be queried from modem on first startBatching call
+    mBatchSize = 0;
+}
+
+void LocApiV02::setTripBatchSize(size_t size)
+{
+    mDesiredTripBatchSize = size;
+    // set to zero so the actual trip batch size will be queried from modem on
+    // first startOutdoorTripBatching call
+    mTripBatchSize = 0;
+}
+
+LocationError
+LocApiV02::queryBatchBuffer(size_t desiredSize,
+        size_t &allocatedSize, BatchingMode batchMode)
+{
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+    qmiLocGetBatchSizeReqMsgT_v02 batchSizeReq;
+
+    memset(&batchSizeReq, 0, sizeof(batchSizeReq));
+    batchSizeReq.transactionId = 1;
+    batchSizeReq.batchSize = desiredSize;
+
+    batchSizeReq.batchType_valid = 1;
+    batchSizeReq.batchType = (batchMode == BATCHING_MODE_ROUTINE ? eQMI_LOC_LOCATION_BATCHING_V02 :
+            eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02);
+    LOC_SEND_SYNC_REQ(GetBatchSize, GET_BATCH_SIZE, batchSizeReq);
+
+    if (rv) {
+        allocatedSize = ind.batchSize;
+        LOC_LOGV("%s:%d]: get batching size succeeded. The modem batch size for"
+                " batch mode %u is %zu. Desired batch size : %zu.",
+                __func__, __LINE__, batchMode, allocatedSize, desiredSize);
+        if (allocatedSize != 0) {
+            err = LOCATION_ERROR_SUCCESS;
+        }
+    } else {
+        if ((batchMode == BATCHING_MODE_TRIP) &&
+            (ind.status == eQMI_LOC_INVALID_PARAMETER_V02) &&
+            (ind.batchSize > 0)) {
+
+            LOC_LOGW("%s:%d]: get batching size failed. The modem max threshold batch size "
+                    "for batch mode %u is %u. Desired batch size : %zu. "
+                    "Retrying with max threshold size ...",
+                    __func__, __LINE__, batchMode, ind.batchSize, desiredSize);
+
+            desiredSize = ind.batchSize;
+            batchSizeReq.batchSize = ind.batchSize;
+            LOC_SEND_SYNC_REQ(GetBatchSize, GET_BATCH_SIZE, batchSizeReq);
+
+            if (rv) {
+                allocatedSize = ind.batchSize;
+                LOC_LOGV("%s:%d]: get batching size succeeded. The modem batch size for"
+                        " batch mode %u is %zu. Desired batch size : %zu.",
+                        __func__, __LINE__, batchMode, allocatedSize, desiredSize);
+                if (allocatedSize != 0) {
+                    err = LOCATION_ERROR_SUCCESS;
+                }
+                return err;
+            }
+        }
+
+        allocatedSize = 0;
+        LOC_LOGE("%s:%d]: get batching size failed for batch mode %u and desired batch size %zu"
+                "Or modem does not support batching",
+                __func__, __LINE__, batchMode, desiredSize);
+    }
+
+    return err;
+}
+
+LocationError
+LocApiV02::releaseBatchBuffer(BatchingMode batchMode) {
+
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+
+    qmiLocReleaseBatchReqMsgT_v02 batchReleaseReq;
+    memset(&batchReleaseReq, 0, sizeof(batchReleaseReq));
+    batchReleaseReq.transactionId = 1;
+
+    batchReleaseReq.batchType_valid = 1;
+    switch (batchMode) {
+        case BATCHING_MODE_ROUTINE:
+            batchReleaseReq.batchType = eQMI_LOC_LOCATION_BATCHING_V02;
+        break;
+
+        case BATCHING_MODE_TRIP:
+            batchReleaseReq.batchType = eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02;
+        break;
+
+        default:
+            err = LOCATION_ERROR_INVALID_PARAMETER;
+            LOC_LOGE("%s:%d]: release batch failed for batch mode %u",
+                __func__, __LINE__, batchMode);
+            return err;
+    }
+
+    LOC_SEND_SYNC_REQ(ReleaseBatch, RELEASE_BATCH, batchReleaseReq);
+
+    if (rv) {
+        LOC_LOGV("%s:%d]: release batch succeeded for batch mode %u",
+                 __func__, __LINE__, batchMode);
+        mTripBatchSize = 0;
+        err = LOCATION_ERROR_SUCCESS;
+    } else {
+        LOC_LOGE("%s:%d]: release batch failed for batch mode %u",
+                __func__, __LINE__, batchMode);
+    }
+
+    return err;
+}
+
+
+void
+LocApiV02::setOperationMode(GnssSuplMode mode)
+{
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    qmiLocSetOperationModeReqMsgT_v02 set_mode_msg;
+    qmiLocSetOperationModeIndMsgT_v02 set_mode_ind;
+
+    memset (&set_mode_msg, 0, sizeof(set_mode_msg));
+    memset (&set_mode_ind, 0, sizeof(set_mode_ind));
+
+    if (GNSS_SUPL_MODE_MSB == mode) {
+        set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_MSB_V02;
+        LOC_LOGV("%s:%d]: operationMode MSB", __func__, __LINE__);
+    } else if (GNSS_SUPL_MODE_MSA == mode) {
+        set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_MSA_V02;
+        LOC_LOGV("%s:%d]: operationMode MSA", __func__, __LINE__);
+    } else {
+        set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_STANDALONE_V02;
+        LOC_LOGV("%s:%d]: operationMode STANDALONE", __func__, __LINE__);
+    }
+
+    req_union.pSetOperationModeReq = &set_mode_msg;
+
+    status = locSyncSendReq(QMI_LOC_SET_OPERATION_MODE_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_SET_OPERATION_MODE_IND_V02,
+                            &set_mode_ind);
+
+    if (eLOC_CLIENT_SUCCESS != status || eQMI_LOC_SUCCESS_V02 != set_mode_ind.status) {
+        LOC_LOGE ("%s:%d]: Failed status = %d ind.status = %d",
+                  __func__, __LINE__, status, set_mode_ind.status);
+    }
+}
+
+void
+LocApiV02::startTimeBasedTracking(const TrackingOptions& options, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, options, adapterResponse] () {
+
+    LOC_LOGD("%s] minInterval %u", __func__, options.minInterval);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    mInSession = true;
+    mMeasurementsStarted = true;
+    registerEventMask(mMask);
+    setOperationMode(options.mode);
+
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+    qmiLocStartReqMsgT_v02 start_msg;
+    memset(&start_msg, 0, sizeof(start_msg));
+
+    start_msg.sessionId = 1; // dummy session id
+
+    // interval
+    uint32_t minInterval = options.minInterval;
+
+    /*set interval for intermediate fixes*/
+    start_msg.minIntermediatePositionReportInterval_valid = 1;
+    start_msg.minIntermediatePositionReportInterval = minInterval;
+
+    /*set interval for final fixes*/
+    start_msg.minInterval_valid = 1;
+    start_msg.minInterval = minInterval;
+
+    // accuracy
+    start_msg.horizontalAccuracyLevel_valid = 1;
+    start_msg.horizontalAccuracyLevel = eQMI_LOC_ACCURACY_HIGH_V02;
+
+    // recurrence
+    start_msg.fixRecurrence_valid = 1;
+    start_msg.fixRecurrence = eQMI_LOC_RECURRENCE_PERIODIC_V02;
+
+    // altitude assumed
+    start_msg.configAltitudeAssumed_valid = 1;
+    start_msg.configAltitudeAssumed =
+        eQMI_LOC_ALTITUDE_ASSUMED_IN_GNSS_SV_INFO_DISABLED_V02;
+
+    // power mode
+    if (GNSS_POWER_MODE_INVALID != options.powerMode) {
+        start_msg.powerMode_valid = 1;
+        start_msg.powerMode.powerMode =
+                convertPowerMode(options.powerMode);
+        start_msg.powerMode.timeBetweenMeasurement = options.tbm;
+        // Force low accuracy for background power modes
+        if (GNSS_POWER_MODE_M3 == options.powerMode ||
+                GNSS_POWER_MODE_M4 == options.powerMode ||
+                GNSS_POWER_MODE_M5 == options.powerMode) {
+            start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_LOW_V02;
+        }
+        // Force TBM = TBF for power mode M4
+        if (GNSS_POWER_MODE_M4 == options.powerMode) {
+            start_msg.powerMode.timeBetweenMeasurement = start_msg.minInterval;
+        }
+    }
+
+    req_union.pStartReq = &start_msg;
+    status = locClientSendReq(QMI_LOC_START_REQ_V02, req_union);
+    if (eLOC_CLIENT_SUCCESS != status) {
+        LOC_LOGE ("%s]: failed! status %d",
+                  __func__, status);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+qmiLocPowerModeEnumT_v02
+LocApiV02::convertPowerMode(GnssPowerMode powerMode)
+{
+    switch(powerMode) {
     case GNSS_POWER_MODE_M1:
         return eQMI_LOC_POWER_MODE_IMPROVED_ACCURACY_V02;
     case GNSS_POWER_MODE_M2:
@@ -7093,3 +8072,743 @@ qmiLocPowerModeEnumT_v02 LocApiV02::convertPowerMode(GnssPowerMode powerMode)
 
     return QMILOCPOWERMODEENUMT_MIN_ENUM_VAL_V02;
 }
+
+void
+LocApiV02::stopTimeBasedTracking(LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, adapterResponse] () {
+
+    LOC_LOGD("%s] ", __func__);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+    qmiLocStopReqMsgT_v02 stop_msg;
+    memset(&stop_msg, 0, sizeof(stop_msg));
+    stop_msg.sessionId = 1; // dummy session id
+    req_union.pStopReq = &stop_msg;
+
+    status = locClientSendReq(QMI_LOC_STOP_REQ_V02, req_union);
+    if (status != eLOC_CLIENT_SUCCESS) {
+        LOC_LOGE ("%s]: failed! status %d",
+                  __func__, status);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    } else {
+        mInSession = false;
+        mPowerMode = GNSS_POWER_MODE_INVALID;
+
+        // if engine on never happend, deregister events
+        // without waiting for Engine Off
+        if (!mEngineOn) {
+            registerEventMask(mMask);
+        }
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+void
+LocApiV02::startDistanceBasedTracking(uint32_t sessionId,
+                                       const LocationOptions& options,
+                                       LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, sessionId, options, adapterResponse] () {
+
+    LOC_LOGD("%s] id %u minInterval %u minDistance %u",
+             __func__, sessionId, options.minInterval, options.minDistance);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    /** start distance based tracking session*/
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+    qmiLocStartDbtReqMsgT_v02 start_dbt_req;
+    qmiLocStartDbtIndMsgT_v02 start_dbt_ind;
+    memset(&start_dbt_req, 0, sizeof(start_dbt_req));
+    memset(&start_dbt_ind, 0, sizeof(start_dbt_ind));
+
+    // request id
+    start_dbt_req.reqId = sessionId;
+
+    // distance
+    start_dbt_req.minDistance = options.minDistance;
+
+    // time
+    uint32_t minInterval = options.minInterval;
+    start_dbt_req.maxLatency_valid = 1;
+    start_dbt_req.maxLatency = minInterval/1000; //in seconds
+    if (0 == start_dbt_req.maxLatency) {
+        start_dbt_req.maxLatency = 1; //in seconds
+    }
+
+    // type
+    start_dbt_req.distanceType = eQMI_LOC_DBT_DISTANCE_TYPE_STRAIGHT_LINE_V02;
+
+    /* original location disabled by default, as the original location is
+       the one cached in the modem buffer and its timestamps is not fresh.*/
+    start_dbt_req.needOriginLocation = 0;
+
+    start_dbt_req.usageType_valid = 1;
+    start_dbt_req.usageType = eQMI_LOC_DBT_USAGE_NAVIGATION_V02;
+    req_union.pStartDbtReq = &start_dbt_req;
+
+    status = locSyncSendReq(QMI_LOC_START_DBT_REQ_V02,
+                            req_union,
+                            LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_START_DBT_IND_V02,
+                            &start_dbt_ind);
+
+    if (eLOC_CLIENT_SUCCESS != status ||
+        eQMI_LOC_SUCCESS_V02 != start_dbt_ind.status) {
+        LOC_LOGE("%s] failed! status %d ind.status %d",
+              __func__, status, start_dbt_ind.status);
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+void
+LocApiV02::stopDistanceBasedTracking(uint32_t sessionId, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, sessionId] () {
+
+    LOC_LOGD("%s] id %u", __func__, sessionId);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+    qmiLocStopDbtReqMsgT_v02 stop_dbt_req;
+    qmiLocStopDbtIndMsgT_v02 stop_dbt_Ind;
+    memset(&stop_dbt_req, 0, sizeof(stop_dbt_req));
+    memset(&stop_dbt_Ind, 0, sizeof(stop_dbt_Ind));
+
+    stop_dbt_req.reqId = sessionId;
+
+    req_union.pStopDbtReq = &stop_dbt_req;
+
+    status = locSyncSendReq(QMI_LOC_STOP_DBT_REQ_V02,
+                            req_union,
+                            LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_STOP_DBT_IND_V02,
+                            &stop_dbt_Ind);
+
+    if (eLOC_CLIENT_SUCCESS != status ||
+        eQMI_LOC_SUCCESS_V02 != stop_dbt_Ind.status) {
+        LOC_LOGE("%s] failed! status %d ind.status %d",
+              __func__, status, stop_dbt_Ind.status);
+    }
+
+    }));
+}
+
+void
+LocApiV02::startBatching(uint32_t sessionId,
+                          const LocationOptions& options,
+                          uint32_t accuracy,
+                          uint32_t timeout,
+                          LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, sessionId, options, accuracy, timeout, adapterResponse] () {
+
+    LOC_LOGD("%s]: id %u minInterval %u minDistance %u accuracy %u timeout %u",
+             __func__, sessionId, options.minInterval, options.minDistance, accuracy, timeout);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    setOperationMode(options.mode);
+
+    //get batch size if needs
+    if (mBatchSize == 0) {
+        if (LOCATION_ERROR_SUCCESS != queryBatchBuffer(mDesiredBatchSize,
+                mBatchSize, BATCHING_MODE_ROUTINE)) {
+            if (adapterResponse != NULL) {
+                adapterResponse->returnToSender(LOCATION_ERROR_GENERAL_FAILURE);
+            }
+            return;
+        }
+    }
+
+    qmiLocStartBatchingReqMsgT_v02 startBatchReq;
+    memset(&startBatchReq, 0, sizeof(startBatchReq));
+
+    // interval
+    startBatchReq.minInterval_valid = 1;
+    if (options.minInterval >= FLP_BATCHING_MINIMUN_INTERVAL) {
+        startBatchReq.minInterval = options.minInterval;
+    } else {
+        startBatchReq.minInterval = FLP_BATCHING_MINIMUN_INTERVAL; // 1 second
+    }
+
+    // distance
+    startBatchReq.minDistance_valid = 1;
+    startBatchReq.minDistance = options.minDistance;
+
+    // accuracy
+    startBatchReq.horizontalAccuracyLevel_valid = 1;
+    switch(accuracy) {
+    case 0:
+        startBatchReq.horizontalAccuracyLevel = eQMI_LOC_ACCURACY_LOW_V02;
+        break;
+    case 1:
+        startBatchReq.horizontalAccuracyLevel = eQMI_LOC_ACCURACY_MED_V02;
+        break;
+    case 2:
+        startBatchReq.horizontalAccuracyLevel = eQMI_LOC_ACCURACY_HIGH_V02;
+        break;
+    default:
+        startBatchReq.horizontalAccuracyLevel = eQMI_LOC_ACCURACY_LOW_V02;
+    }
+
+    // time out
+    if (timeout > 0) {
+        startBatchReq.fixSessionTimeout_valid = 1;
+        startBatchReq.fixSessionTimeout = timeout;
+    } else {
+        // modem will use the default time out (20 seconds)
+        startBatchReq.fixSessionTimeout_valid = 0;
+    }
+
+    // batch request id
+    startBatchReq.requestId_valid = 1;
+    startBatchReq.requestId = sessionId;
+
+    // batch all fixes always
+    startBatchReq.batchAllPos_valid = 1;
+    startBatchReq.batchAllPos = true;
+
+    LOC_SEND_SYNC_REQ(StartBatching, START_BATCHING, startBatchReq);
+
+    if (!rv) {
+        LOC_LOGE("%s] failed!", __func__);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+
+    }));
+}
+
+void
+LocApiV02::stopBatching(uint32_t sessionId, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, sessionId, adapterResponse] () {
+
+    LOC_LOGD("%s] id %u", __func__, sessionId);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    locClientStatusEnumType status;
+
+    qmiLocStopBatchingReqMsgT_v02 stopBatchingReq;
+    memset(&stopBatchingReq, 0, sizeof(stopBatchingReq));
+
+    stopBatchingReq.requestId_valid = 1;
+    stopBatchingReq.requestId = sessionId;
+
+    stopBatchingReq.batchType_valid = 1;
+    stopBatchingReq.batchType = eQMI_LOC_LOCATION_BATCHING_V02;
+
+    LOC_SEND_SYNC_REQ(StopBatching, STOP_BATCHING, stopBatchingReq);
+
+    if (!rv) {
+        LOC_LOGE("%s] failed!", __func__);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
+    }
+    }));
+}
+
+LocationError
+LocApiV02::startOutdoorTripBatchingSync(uint32_t tripDistance, uint32_t tripTbf, uint32_t timeout)
+{
+    LOC_LOGD("%s]: minInterval %u minDistance %u timeout %u",
+             __func__, tripTbf, tripDistance, timeout);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    //get batch size if needs
+    if (mTripBatchSize == 0) {
+        if (LOCATION_ERROR_SUCCESS != queryBatchBuffer(mDesiredTripBatchSize,
+            mTripBatchSize, BATCHING_MODE_TRIP)) {
+            return LOCATION_ERROR_GENERAL_FAILURE;
+        }
+    }
+
+    qmiLocStartOutdoorTripBatchingReqMsgT_v02 startOutdoorTripBatchReq;
+    memset(&startOutdoorTripBatchReq, 0, sizeof(startOutdoorTripBatchReq));
+
+    if (tripDistance > 0) {
+        startOutdoorTripBatchReq.batchDistance = tripDistance;
+    } else {
+        startOutdoorTripBatchReq.batchDistance = FLP_BATCHING_MIN_TRIP_DISTANCE; // 1 meter
+    }
+
+    if (tripTbf >= FLP_BATCHING_MINIMUN_INTERVAL) {
+        startOutdoorTripBatchReq.minTimeInterval = tripTbf;
+    } else {
+        startOutdoorTripBatchReq.minTimeInterval = FLP_BATCHING_MINIMUN_INTERVAL; // 1 second
+    }
+
+    // batch all fixes always
+    startOutdoorTripBatchReq.batchAllPos_valid = 1;
+    startOutdoorTripBatchReq.batchAllPos = true;
+
+    // time out
+    if (timeout > 0) {
+        startOutdoorTripBatchReq.fixSessionTimeout_valid = 1;
+        startOutdoorTripBatchReq.fixSessionTimeout = timeout;
+    } else {
+        // modem will use the default time out (20 seconds)
+        startOutdoorTripBatchReq.fixSessionTimeout_valid = 0;
+    }
+
+    LOC_SEND_SYNC_REQ(StartOutdoorTripBatching, START_OUTDOOR_TRIP_BATCHING,
+            startOutdoorTripBatchReq);
+
+    if (!rv) {
+        LOC_LOGE("%s] failed!", __func__);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+    }
+
+    return err;
+}
+
+void
+LocApiV02::startOutdoorTripBatching(uint32_t tripDistance, uint32_t tripTbf, uint32_t timeout,
+                                          LocApiResponse* adapterResponse) {
+    sendMsg(new LocApiMsg([this, tripDistance, tripTbf, timeout, adapterResponse] () {
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(startOutdoorTripBatchingSync(tripDistance,
+                                                                         tripTbf,
+                                                                         timeout));
+        }
+    }));
+}
+
+void
+LocApiV02::reStartOutdoorTripBatching(uint32_t ongoingTripDistance,
+                                            uint32_t ongoingTripInterval,
+                                            uint32_t batchingTimeout,
+                                            LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, ongoingTripDistance, ongoingTripInterval, batchingTimeout,
+                           adapterResponse] () {
+        LocationError err = LOCATION_ERROR_SUCCESS;
+
+        uint32_t accumulatedDistance = 0;
+        uint32_t numOfBatchedPositions = 0;
+        queryAccumulatedTripDistanceSync(accumulatedDistance, numOfBatchedPositions);
+
+        if (numOfBatchedPositions) {
+            getBatchedTripLocationsSync(numOfBatchedPositions, 0);
+        }
+
+        stopOutdoorTripBatchingSync(false);
+
+        err = startOutdoorTripBatchingSync(ongoingTripDistance,
+                                           ongoingTripInterval,
+                                           batchingTimeout);
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(err);
+        }
+    }));
+}
+
+LocationError
+LocApiV02::stopOutdoorTripBatchingSync(bool deallocBatchBuffer)
+{
+    LOC_LOGD("%s] dellocBatchBuffer : %d", __func__, deallocBatchBuffer);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    locClientStatusEnumType status;
+
+    qmiLocStopBatchingReqMsgT_v02 stopBatchingReq;
+    memset(&stopBatchingReq, 0, sizeof(stopBatchingReq));
+
+    stopBatchingReq.batchType_valid = 1;
+    stopBatchingReq.batchType = eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02;
+    LOC_SEND_SYNC_REQ(StopBatching, STOP_BATCHING, stopBatchingReq);
+
+    if (!rv) {
+        LOC_LOGE("%s] failed!", __func__);
+        err = LOCATION_ERROR_GENERAL_FAILURE;
+        return err;
+    }
+
+    if (deallocBatchBuffer) {
+        err = releaseBatchBuffer(BATCHING_MODE_TRIP);
+    }
+
+    return err;
+}
+
+void
+LocApiV02::stopOutdoorTripBatching(bool deallocBatchBuffer, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, deallocBatchBuffer, adapterResponse] () {
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(stopOutdoorTripBatchingSync(deallocBatchBuffer));
+        }
+    }));
+}
+
+LocationError
+LocApiV02::getBatchedLocationsSync(size_t count)
+{
+    LOC_LOGD("%s] count %zu.", __func__, count);
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    size_t entriesToReadInTotal = std::min(mBatchSize,count);
+    if (entriesToReadInTotal == 0) {
+        LOC_LOGD("%s] No batching memory allocated in modem or nothing to read", __func__);
+        // calling the base class
+        reportLocations(NULL, 0, BATCHING_MODE_ROUTINE);
+    } else {
+        size_t entriesToRead =
+            std::min(entriesToReadInTotal, (size_t)QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02);
+        size_t entriesGotInTotal = 0;
+        size_t entriesGotInEachTime = 0;
+        //allocate +1 just in case we get one more location added during read
+        Location* pLocationsFromModem = new Location[entriesToReadInTotal+1]();
+        if (pLocationsFromModem == nullptr) {
+            LOC_LOGE("new allocation failed, fatal error.");
+            return LOCATION_ERROR_GENERAL_FAILURE;
+        }
+        memset(pLocationsFromModem, 0, sizeof(Location)*(entriesToReadInTotal+1));
+        Location* tempLocationP = new Location[QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02]();
+        if (tempLocationP == nullptr) {
+            LOC_LOGE("new allocation failed, fatal error.");
+            return LOCATION_ERROR_GENERAL_FAILURE;
+        }
+        do {
+            memset(tempLocationP, 0, QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02*sizeof(Location));
+            readModemLocations(tempLocationP,
+                               entriesToRead,
+                               BATCHING_MODE_ROUTINE,
+                               entriesGotInEachTime);
+            for (size_t i = 0; i<entriesGotInEachTime; i++) {
+                size_t index = entriesToReadInTotal-entriesGotInTotal-i;
+
+                // make sure index is not too large or small to fit in the array
+                if (index <= entriesToReadInTotal && (int)index >= 0) {
+                    pLocationsFromModem[index] = tempLocationP[i];
+                } else {
+                    LOC_LOGW("%s] dropped an unexpected location.", __func__);
+                }
+            }
+            entriesGotInTotal += entriesGotInEachTime;
+            entriesToRead = std::min(entriesToReadInTotal - entriesGotInTotal,
+                                     (size_t)QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02);
+        } while (entriesGotInEachTime > 0 && entriesToRead > 0);
+        delete[] tempLocationP;
+
+        LOC_LOGD("%s] Read out %zu batched locations from modem in total.",
+                 __func__, entriesGotInTotal);
+
+        // offset is by default 1 because we allocated one extra location during read
+        uint32_t offset = 1;
+        if (entriesToReadInTotal > entriesGotInTotal) {
+            offset = 1 + entriesToReadInTotal - entriesGotInTotal;
+            LOC_LOGD("%s] offset %u", __func__, offset);
+        } else if (entriesGotInTotal > entriesToReadInTotal) {
+            // offset is zero because we need one extra slot for the extra location
+            offset = 0;
+            LOC_LOGD("%s] Read %zu extra location(s) than expected.",
+                     __func__, entriesGotInTotal - entriesToReadInTotal);
+            // we got one extra location added during modem read, so one location will
+            // be out of order and needs to be found and put in order
+            int64_t currentTimeStamp = pLocationsFromModem[entriesToReadInTotal].timestamp;
+            for (int i=entriesToReadInTotal-1; i >= 0; i--) {
+                // find the out of order location
+                if (currentTimeStamp < pLocationsFromModem[i].timestamp) {
+                    LOC_LOGD("%s] Out of order location is index %d timestamp %" PRIu64,
+                             __func__, i, pLocationsFromModem[i].timestamp);
+                    // save the out of order location to be put at end of array
+                    Location tempLocation(pLocationsFromModem[i]);
+                    // shift the remaining locations down one
+                    for (size_t j=i; j<entriesToReadInTotal; j++) {
+                        pLocationsFromModem[j] = pLocationsFromModem[j+1];
+                    }
+                    // put the out of order location at end of array now
+                    pLocationsFromModem[entriesToReadInTotal] = tempLocation;
+                    break;
+                } else {
+                    currentTimeStamp = pLocationsFromModem[i].timestamp;
+                }
+            }
+        }
+
+        LOC_LOGD("%s] Calling reportLocations with count:%zu and entriesGotInTotal:%zu",
+                  __func__, count, entriesGotInTotal);
+
+        // calling the base class
+        reportLocations(pLocationsFromModem+offset, entriesGotInTotal, BATCHING_MODE_ROUTINE);
+        delete[] pLocationsFromModem;
+    }
+    return err;
+
+}
+
+void
+LocApiV02::getBatchedLocations(size_t count, LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, count, adapterResponse] () {
+          if (adapterResponse != NULL) {
+              adapterResponse->returnToSender(getBatchedLocationsSync(count));
+          }
+    }));
+}
+
+LocationError LocApiV02::getBatchedTripLocationsSync(size_t count, uint32_t accumulatedDistance)
+{
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    size_t idxLocationFromModem = 0;
+
+    size_t entriesToReadInTotal = std::min(mTripBatchSize, count);
+    if (entriesToReadInTotal == 0) {
+        LOC_LOGD("%s] No trip batching memory allocated in modem or nothing to read", __func__);
+        // calling the base class
+        reportLocations(NULL, 0, BATCHING_MODE_TRIP);
+    } else {
+        size_t entriesToRead =
+                std::min(entriesToReadInTotal, (size_t)QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02);
+        size_t entriesGotInTotal = 0;
+        size_t entriesGotInEachTime = 0;
+
+        Location* pLocationsFromModem = new Location[entriesToReadInTotal]();
+        if (pLocationsFromModem == nullptr) {
+            LOC_LOGE("new allocation failed, fatal error.");
+            return LOCATION_ERROR_GENERAL_FAILURE;
+        }
+        memset(pLocationsFromModem, 0, sizeof(Location)*(entriesToReadInTotal));
+        Location* tempLocationP = new Location[QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02]();
+        if (tempLocationP == nullptr) {
+            LOC_LOGE("new allocation failed, fatal error.");
+            return LOCATION_ERROR_GENERAL_FAILURE;
+        }
+
+        do {
+            memset(tempLocationP, 0, QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02*sizeof(Location));
+            readModemLocations(tempLocationP,
+                               entriesToRead,
+                               BATCHING_MODE_TRIP,
+                               entriesGotInEachTime);
+            for (size_t iEntryIndex = 0; iEntryIndex<entriesGotInEachTime;
+                    iEntryIndex++, idxLocationFromModem++) {
+                // make sure index is not too large fit in the array
+                if (idxLocationFromModem < entriesToReadInTotal) {
+                    pLocationsFromModem[idxLocationFromModem] = tempLocationP[iEntryIndex];
+                } else {
+                    LOC_LOGW("%s] dropped an unexpected location.", __func__);
+                }
+            }
+            entriesGotInTotal += entriesGotInEachTime;
+            entriesToRead = std::min(entriesToReadInTotal - entriesGotInTotal,
+                                     (size_t)QMI_LOC_READ_FROM_BATCH_MAX_SIZE_V02);
+        } while (entriesGotInEachTime > 0 && entriesToRead > 0);
+        delete[] tempLocationP;
+
+        LOC_LOGD("%s] Calling reportLocations with count:%zu and entriesGotInTotal:%zu",
+                  __func__, count, entriesGotInTotal);
+
+        // calling the base class
+        reportLocations(pLocationsFromModem, entriesGotInTotal, BATCHING_MODE_TRIP);
+
+        if (accumulatedDistance != 0) {
+            LOC_LOGD("%s] Calling reportCompletedTrips with distance %u:",
+                    __func__, accumulatedDistance);
+            reportCompletedTrips(accumulatedDistance);
+        }
+
+        delete[] pLocationsFromModem;
+    }
+
+    return err;
+}
+
+void LocApiV02::getBatchedTripLocations(size_t count, uint32_t accumulatedDistance,
+                                              LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, count, accumulatedDistance, adapterResponse] () {
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(getBatchedTripLocationsSync(count, accumulatedDistance));
+        }
+    }));
+}
+
+void
+LocApiV02::readModemLocations(Location* pLocationPiece,
+                              size_t count,
+                              BatchingMode batchingMode,
+                              size_t& numbOfEntries)
+{
+    LOC_LOGD("%s] count %zu.", __func__, count);
+    numbOfEntries = 0;
+    qmiLocReadFromBatchReqMsgT_v02 getBatchLocatonReq;
+    memset(&getBatchLocatonReq, 0, sizeof(getBatchLocatonReq));
+
+    if (count != 0) {
+        getBatchLocatonReq.numberOfEntries = count;
+        getBatchLocatonReq.transactionId = 1;
+    }
+
+    getBatchLocatonReq.batchType_valid = 1;
+    getBatchLocatonReq.batchType = ((batchingMode == BATCHING_MODE_ROUTINE) ?
+            eQMI_LOC_LOCATION_BATCHING_V02: eQMI_LOC_OUTDOOR_TRIP_BATCHING_V02);
+
+    LOC_SEND_SYNC_REQ(ReadFromBatch, READ_FROM_BATCH, getBatchLocatonReq);
+
+    if (!rv) {
+        LOC_LOGE("%s] Reading batched locations from modem failed.", __func__);
+        return;
+    }
+    if (ind.numberOfEntries_valid != 0 &&
+        ind.batchedReportList_valid != 0) {
+        for (uint32_t i=0; i<ind.numberOfEntries; i++) {
+            Location temp;
+            memset (&temp, 0, sizeof(temp));
+            temp.size = sizeof(Location);
+            if ((ind.batchedReportList[i].validFields &
+                 QMI_LOC_BATCHED_REPORT_MASK_VALID_LATITUDE_V02) &&
+                (ind.batchedReportList[i].validFields &
+                 QMI_LOC_BATCHED_REPORT_MASK_VALID_LONGITUDE_V02)) {
+                temp.latitude = ind.batchedReportList[i].latitude;
+                temp.longitude = ind.batchedReportList[i].longitude;
+                temp.flags |= LOCATION_HAS_LAT_LONG_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_ALT_WRT_ELP_V02) {
+                temp.altitude = ind.batchedReportList[i].altitudeWrtEllipsoid;
+                temp.flags |= LOCATION_HAS_ALTITUDE_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_TIMESTAMP_UTC_V02) {
+                temp.timestamp = ind.batchedReportList[i].timestampUtc;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_HOR_CIR_UNC_V02) {
+                temp.accuracy = ind.batchedReportList[i].horUncCircular;
+                temp.flags |= LOCATION_HAS_ACCURACY_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_HEADING_V02) {
+                temp.bearing = ind.batchedReportList[i].heading;
+                temp.flags |= LOCATION_HAS_BEARING_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_SPEED_HOR_V02) {
+                temp.speed = ind.batchedReportList[i].speedHorizontal;
+                temp.flags |= LOCATION_HAS_SPEED_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_TECH_MASK_V02) {
+                if (QMI_LOC_POS_TECH_MASK_SATELLITE_V02 & ind.batchedReportList[i].technologyMask) {
+                    temp.techMask |= LOCATION_TECHNOLOGY_GNSS_BIT;
+                }
+                if (QMI_LOC_POS_TECH_MASK_CELLID_V02 & ind.batchedReportList[i].technologyMask) {
+                    temp.techMask |= LOCATION_TECHNOLOGY_CELL_BIT;
+                }
+                if (QMI_LOC_POS_TECH_MASK_WIFI_V02 & ind.batchedReportList[i].technologyMask) {
+                    temp.techMask |= LOCATION_TECHNOLOGY_WIFI_BIT;
+                }
+                if (QMI_LOC_POS_TECH_MASK_SENSORS_V02 & ind.batchedReportList[i].technologyMask) {
+                    temp.techMask |= LOCATION_TECHNOLOGY_SENSORS_BIT;
+                }
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_VERT_UNC_V02) {
+                temp.verticalAccuracy = ind.batchedReportList[i].vertUnc;
+                temp.flags |= LOCATION_HAS_VERTICAL_ACCURACY_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_SPEED_UNC_V02) {
+                temp.speedAccuracy = ind.batchedReportList[i].speedUnc;
+                temp.flags |= LOCATION_HAS_SPEED_ACCURACY_BIT;
+            }
+            if (ind.batchedReportList[i].validFields &
+                QMI_LOC_BATCHED_REPORT_MASK_VALID_HEADING_UNC_V02) {
+                temp.bearingAccuracy = ind.batchedReportList[i].headingUnc;
+                temp.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
+            }
+            pLocationPiece[i] = temp;
+        }
+        numbOfEntries = ind.numberOfEntries;
+        LOC_LOGD("%s] Read out %zu batched locations from modem.",
+                 __func__, numbOfEntries);
+    } else {
+        LOC_LOGD("%s] Modem does not return batched location.", __func__);
+    }
+}
+
+LocationError LocApiV02::queryAccumulatedTripDistanceSync(uint32_t &accumulatedTripDistance,
+        uint32_t &numOfBatchedPositions)
+{
+    locClientStatusEnumType st = eLOC_CLIENT_SUCCESS;
+    locClientReqUnionType req_union;
+    locClientStatusEnumType status;
+
+    qmiLocQueryOTBAccumulatedDistanceReqMsgT_v02 accumulated_distance_req;
+    qmiLocQueryOTBAccumulatedDistanceIndMsgT_v02 accumulated_distance_ind;
+
+    memset(&accumulated_distance_req,0,sizeof(accumulated_distance_req));
+    memset(&accumulated_distance_ind, 0, sizeof(accumulated_distance_ind));
+
+    req_union.pQueryOTBAccumulatedDistanceReq = &accumulated_distance_req;
+
+    status = locSyncSendReq(QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02,
+                            req_union,
+                            LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                            QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_IND_V02,
+                            &accumulated_distance_ind);
+    if ((eLOC_CLIENT_SUCCESS != status) ||
+        (eQMI_LOC_SUCCESS_V02 != accumulated_distance_ind.status))
+    {
+        LOC_LOGE ("%s:%d]: error! status = %d, accumulated_distance_ind.status = %d\n",
+                __func__, __LINE__,
+                (status),
+                (accumulated_distance_ind.status));
+        return LOCATION_ERROR_GENERAL_FAILURE;
+    }
+    else
+    {
+        LOC_LOGD("Got accumulated distance: %u number of accumulated positions %u",
+        accumulated_distance_ind.accumulatedDistance, accumulated_distance_ind.batchedPosition);
+
+        accumulatedTripDistance = accumulated_distance_ind.accumulatedDistance;
+        numOfBatchedPositions = accumulated_distance_ind.batchedPosition;
+
+        return LOCATION_ERROR_SUCCESS;
+    }
+}
+
+void LocApiV02::queryAccumulatedTripDistance(
+        LocApiResponseData<LocApiBatchData>* adapterResponseData)
+{
+    sendMsg(new LocApiMsg([this, adapterResponseData] () {
+        LocationError err = LOCATION_ERROR_SUCCESS;
+        LocApiBatchData data;
+        err = queryAccumulatedTripDistanceSync(data.accumulatedDistance,
+                                               data.numOfBatchedPositions);
+        if (adapterResponseData != NULL) {
+            adapterResponseData->returnToSender(err, data);
+        }
+    }));
+}
+
+void LocApiV02::addToCallQueue(LocApiResponse* adapterResponse)
+{
+    sendMsg(new LocApiMsg([adapterResponse] () {
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(LOCATION_ERROR_SUCCESS);
+        }
+    }));
+}
+
+
+

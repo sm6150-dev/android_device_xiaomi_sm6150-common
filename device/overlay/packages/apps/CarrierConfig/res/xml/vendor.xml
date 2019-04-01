@@ -1294,6 +1294,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_hide_vt_callforward_option" value="true" />
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <string name="carrier_name_string">China Unicom</string>
+        <boolean name="config_update_service_status" value="true"/>
         <boolean name="config_update_volte_icon" value="true"/>
     </carrier_config>
 

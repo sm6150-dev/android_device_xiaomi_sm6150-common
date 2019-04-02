@@ -2615,8 +2615,11 @@ void LocApiV02 :: reportPosition (
     GpsLocationExtended locationExtended;
     memset(&locationExtended, 0, sizeof (GpsLocationExtended));
     locationExtended.size = sizeof(locationExtended);
-    if( clock_gettime( CLOCK_BOOTTIME, &locationExtended.timeStamp.apTimeStamp)== 0 )
+    struct timespec apTimestamp;
+    if( clock_gettime( CLOCK_BOOTTIME, &apTimestamp)== 0)
     {
+       locationExtended.timeStamp.apTimeStamp.tv_sec = apTimestamp.tv_sec;
+       locationExtended.timeStamp.apTimeStamp.tv_nsec = apTimestamp.tv_nsec;
        locationExtended.timeStamp.apTimeStampUncertaintyMs = (float)ap_timestamp_uncertainty;
 
     }
@@ -2625,7 +2628,7 @@ void LocApiV02 :: reportPosition (
        locationExtended.timeStamp.apTimeStampUncertaintyMs = FLT_MAX;
        LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
     }
-    LOC_LOGd("QMI_PosPacketTime %ld (sec) %ld (nsec), QMI_spoofReportMask %" PRIu64,
+    LOC_LOGd("QMI_PosPacketTime %" PRIu32 "(sec) %" PRIu32 "(nsec), QMI_spoofReportMask %" PRIu64,
                  locationExtended.timeStamp.apTimeStamp.tv_sec,
                  locationExtended.timeStamp.apTimeStamp.tv_nsec,
                  location_report_ptr->spoofReportMask);

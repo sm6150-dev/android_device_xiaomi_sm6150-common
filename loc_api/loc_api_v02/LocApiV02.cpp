@@ -4433,7 +4433,7 @@ void LocApiV02::reportLocationRequestNotification(
              " ,requestorId=%s"
              " ,responseType=%d"
              " ,inEmergencyMode=%d"
-             " ,isCachedLocation=%d",
+             " ,isCachedLocation=%u",
              loc_req_notif->protocolStack,
              loc_req_notif->clientStrId_valid,
              loc_req_notif->clientStrId,
@@ -4521,7 +4521,7 @@ void LocApiV02::reportLocationRequestNotification(
         " ,requestorId=%s"
         " ,responseType=%d"
         " ,inEmergencyMode=%d"
-        " ,isCachedLocation=%d",
+        " ,isCachedLocation=%u",
         notification.proxyAppPackageName,
         notification.protocolStack,
         notification.otherProtocolStackName,
@@ -5944,9 +5944,11 @@ LocationError LocApiV02 :: setGpsLockSync(GnssConfigGpsLock lock)
     locClientStatusEnumType status;
     locClientReqUnionType req_union;
 
+    memset(&setEngineLockReq, 0, sizeof(setEngineLockReq));
     setEngineLockReq.lockType = convertGpsLockFromAPItoQMI((GnssConfigGpsLock)lock);;
     setEngineLockReq.subType_valid = true;
     setEngineLockReq.subType = eQMI_LOC_LOCK_ALL_SUB_V02;
+    setEngineLockReq.lockClient_valid = false;
     req_union.pSetEngineLockReq = &setEngineLockReq;
     LOC_LOGd("API lock type = 0x%X QMI lockType = %d", lock, setEngineLockReq.lockType);
     memset(&setEngineLockInd, 0, sizeof(setEngineLockInd));

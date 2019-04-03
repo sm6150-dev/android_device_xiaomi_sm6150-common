@@ -1274,6 +1274,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <string name="carrier_name_string">China Mobile</string>
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="support_video_conference_call_bool" value="false"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -1342,6 +1345,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <string name="carrier_name_string">China Mobile</string>
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="support_video_conference_call_bool" value="false"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -1372,6 +1378,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <boolean name="config_auto_retry_cfu_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
@@ -1460,6 +1468,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="support_video_conference_call_bool" value="false"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -1504,6 +1515,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="support_video_conference_call_bool" value="false"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">
@@ -1560,6 +1574,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_parse_number_on_forward_call_bool" value="true" />
         <boolean name="config_auto_retry_cfu_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
@@ -1583,6 +1599,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_hide_vt_callforward_option" value="true" />
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="config_auto_retry_cfu_bool" value="true" />
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_holding_video_call" value="false" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="00">

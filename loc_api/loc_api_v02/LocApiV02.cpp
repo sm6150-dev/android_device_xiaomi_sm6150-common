@@ -319,6 +319,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 
   LOC_API_ADAPTER_EVENT_MASK_T newMask = mask & ~mExcludedMask;
   locClientEventMaskType qmiMask = 0;
+  bool gnssMeasurementSupported = false;
 
   LOC_LOGd("%p Enter mMask: 0x%" PRIx64 "  mQmiMask: 0x%" PRIx64 " mExcludedMask: 0x%" PRIx64 "",
            clientHandle, mMask, mQmiMask, mExcludedMask);
@@ -358,7 +359,6 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
             QMI_LOC_START_DBT_REQ_V02
         };
 
-        bool gnssMeasurementSupported = false;
         if (isMaster()) {
             registerMasterClient();
             gnssMeasurementSupported = cacheGnssMeasurementSupport();
@@ -511,13 +511,20 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
         /* Set the SV Measurement Constellation when Measurement Report or Polynomial report is set */
         /* Check if either measurement report or sv polynomial report bit is different in the new
            mask compared to the old mask. If yes then turn that report on or off as requested */
-        locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02 |
-                                              QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
+        /* Later change: we need to set the SV Measurement Constellation whenever measurements
+           are supported, and that is because other clients (e.g. CHRE need to have measurements
+           enabled and those clients cannot set the SV Measurement Constellation since they are
+           not master */
+        locClientEventMaskType measOrSvPoly = QMI_LOC_EVENT_MASK_GNSS_SV_POLYNOMIAL_REPORT_V02;
         LOC_LOGd("clientHandle = %p isMaster(): %d measOrSvPoly: 0x%" PRIx64 \
                  " maskDiff: 0x%" PRIx64 "",
                  clientHandle, isMaster(), measOrSvPoly, maskDiff);
         if (((maskDiff & measOrSvPoly) != 0)) {
-          setSvMeasurementConstellation(qmiMask);
+          if (gnssMeasurementSupported) {
+            setSvMeasurementConstellation(qmiMask | QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02);
+          } else {
+            setSvMeasurementConstellation(qmiMask & ~QMI_LOC_EVENT_MASK_GNSS_MEASUREMENT_REPORT_V02);
+          }
         }
       }
     }

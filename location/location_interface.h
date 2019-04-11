@@ -83,6 +83,7 @@ struct GnssInterface {
                      int blockDurationMsec, double latLonDiffThreshold);
     void (*getGnssEnergyConsumed)(GnssEnergyConsumedCallback energyConsumedCb);
     void (*injectLocationExt)(const GnssLocationInfoNotification &locationInfo);
+    void (*updateBatteryStatus)(bool charging);
 };
 
 struct FlpInterface {

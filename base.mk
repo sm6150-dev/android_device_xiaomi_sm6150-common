@@ -817,7 +817,7 @@ WPA += hs20-osu-client
 #ZLIB
 ZLIB := gzip
 ZLIB += libunz
-ZLIB_HOST := minigzip
+ZLIB_HOST += minigzip
 
 #Charger
 CHARGER := charger

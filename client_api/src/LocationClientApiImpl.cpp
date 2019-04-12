@@ -625,13 +625,13 @@ static GnssSv parseGnssSv(const ::GnssSv &halGnssSv) {
 
     uint32_t gnssSvOptionsMask = 0;
     if (GNSS_SV_OPTIONS_HAS_EPHEMER_BIT & halGnssSv.gnssSvOptionsMask) {
-        gnssSvOptionsMask &= GNSS_SV_OPTIONS_HAS_EPHEMER_BIT;
+        gnssSvOptionsMask |= GNSS_SV_OPTIONS_HAS_EPHEMER_BIT;
     }
     if (GNSS_SV_OPTIONS_HAS_ALMANAC_BIT & halGnssSv.gnssSvOptionsMask) {
-        gnssSvOptionsMask &= GNSS_SV_OPTIONS_HAS_ALMANAC_BIT;
+        gnssSvOptionsMask |= GNSS_SV_OPTIONS_HAS_ALMANAC_BIT;
     }
     if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT & halGnssSv.gnssSvOptionsMask) {
-        gnssSvOptionsMask &= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
+        gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
     }
     gnssSv.gnssSvOptionsMask = (GnssSvOptionsMask)gnssSvOptionsMask;
 

@@ -1299,6 +1299,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <string name="carrier_name_string">China Unicom</string>
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="config_update_volte_icon" value="true"/>
+        <boolean name="check_mobile_data_for_cf" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -1423,6 +1424,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <string name="carrier_name_string">China Unicom</string>
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="config_update_volte_icon" value="true"/>
+        <boolean name="check_mobile_data_for_cf" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -1535,6 +1537,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <string name="carrier_name_string">China Unicom</string>
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="config_update_volte_icon" value="true"/>
+        <boolean name="check_mobile_data_for_cf" value="true" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="10">

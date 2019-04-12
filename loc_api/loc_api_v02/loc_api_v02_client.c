@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, 2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, 2018-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -331,6 +331,16 @@ static const locClientEventIndTableStructT locClientEventIndTable[]= {
   { QMI_LOC_SYSTEM_INFO_IND_V02,
     sizeof(qmiLocSystemInfoIndMsgT_v02),
     QMI_LOC_SYSTEM_INFO_IND_V02},
+
+  // Power Metrics with multiband support
+  { QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02,
+    sizeof(qmiLocGetBandMeasurementMetricsIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_GET_BAND_MEASUREMENT_METRICS_V02},
+
+  // loc system info event ind
+  { QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02,
+    sizeof(qmiLocLocationRequestNotificationIndMsgT_v02),
+    QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02},
 };
 
 /* table to relate the respInd Id with its size */
@@ -1192,6 +1202,12 @@ bool locClientRegisterEventMask(
       strlcpy(regEventsReq.clientStrId, HAL,
               sizeof(regEventsReq.clientStrId));
   }
+
+  regEventsReq.clientType_valid = true;
+  regEventsReq.clientType = eQMI_LOC_CLIENT_AFW_V02;
+  regEventsReq.enablePosRequestNotification_valid = true;
+  regEventsReq.enablePosRequestNotification = false;
+
   reqUnion.pRegEventsReq = &regEventsReq;
 
   status = locClientSendReq(clientHandle,

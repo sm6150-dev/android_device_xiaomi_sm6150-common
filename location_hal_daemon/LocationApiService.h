@@ -52,6 +52,7 @@
 
 // forward declaration
 class LocHalDaemonIPCReceiver;
+class LocHalDaemonQsockReceiver;
 
 /******************************************************************************
 LocationApiService
@@ -78,6 +79,25 @@ public:
     }
 
     // APIs can be invoked by IPC
+    void processClientMsg(const std::string& data);
+
+    // from IPC receiver
+    void onListenerReady(bool externalApIpc);
+
+#ifdef POWERMANAGER_ENABLED
+    // power event handler
+    void onSuspend();
+    void onResume();
+    void onShutdown();
+#endif
+
+    // other APIs
+    void deleteClientbyName(const std::string name);
+
+    static std::mutex mMutex;
+
+private:
+    // APIs can be invoked to process client's IPC messgage
     void newClient(LocAPIClientRegisterReqMsg*);
     void deleteClient(LocAPIClientDeregisterReqMsg*);
 
@@ -108,22 +128,6 @@ public:
         mLocationControlApi->gnssDeleteAidingData(data);
     }
 
-    // from IPC receiver
-    void onListenerReady();
-
-#ifdef POWERMANAGER_ENABLED
-    // power event handler
-    void onSuspend();
-    void onResume();
-    void onShutdown();
-#endif
-
-    // other APIs
-    void deleteClientbyName(const std::string name);
-
-    static std::mutex mMutex;
-
-private:
     // Location control API callback
     void onControlResponseCallback(LocationError err, uint32_t id);
     void onControlCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
@@ -162,6 +166,9 @@ private:
 
     // IPC interface
     LocHalDaemonIPCReceiver* mIpcReceiver;
+
+    // QSocket interface
+    LocHalDaemonQsockReceiver* mQsockReceiver;
 
     // Client propery database
     std::unordered_map<std::string, LocHalDaemonClientHandler*> mClients;

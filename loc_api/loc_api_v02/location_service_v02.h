@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Mon Feb 11 2019 (Spin 0)
+   It was generated on: Fri Mar  8 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x66
+#define LOC_V02_IDL_MINOR_VERS 0x69
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00CE
+#define LOC_V02_MAX_MESSAGE_ID 0x00CF
 /**
     @}
   */
@@ -378,6 +378,9 @@ extern "C" {
 /**  Maximum number of satellites in an ephemeris report.  */
 #define QMI_LOC_EPHEMERIS_LIST_MAX_SIZE_V02 8
 #define QMI_LOC_DEFAULT_CONSTRAINED_TUNC_MS_V02 9.5
+
+/**  Maximum string length for the requestor string ID  */
+#define QMI_LOC_MAX_REQUESTOR_ID_STRING_LENGTH_V02 20
 /**
     @}
   */
@@ -602,6 +605,20 @@ typedef uint64_t qmiLocEventRegMaskT_v02;
        QMI_LOC_SET_GNSS_CONSTELL_REPORT_CONFIG.   */
 #define QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02 ((qmiLocEventRegMaskT_v02)0x100000000000ull) /**<  The control point must enable this mask to receive
        the QMI_LOC_EVENT_REPORT indication.  */
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCCLIENTTYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_CLIENT_AFW_V02 = 1, /**<  Application FrameWork client  */
+  eQMI_LOC_CLIENT_NFW_V02 = 2, /**<  Non-AFW client */
+  eQMI_LOC_CLIENT_PRIVILEGED_V02 = 3, /**<  Privileged client  */
+  QMILOCCLIENTTYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocClientTypeEnumT_v02;
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -740,12 +757,37 @@ typedef struct {
   /*  Client Identification String */
   uint8_t clientStrId_valid;  /**< Must be set to true if clientStrId is being passed */
   char clientStrId[QMI_LOC_MAX_CLIENT_ID_STRING_LENGTH_V02 + 1];
-  /**<   String identification of this client, used internally for debugging purposes.
-       If not provided, then nothing will get printed for client identification.
-       \begin{itemize1}
-       \item    Type: NULL-terminated string
-       \item    Maximum string length (including NULL terminator): 5
-       \vspace{-0.18in} \end{itemize1} */
+  /**<   String identification of this client.
+       This string will be sent to the application framework in the
+       QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND message.
+       */
+
+  /* Optional */
+  /*  clientType */
+  uint8_t clientType_valid;  /**< Must be set to true if clientType is being passed */
+  qmiLocClientTypeEnumT_v02 clientType;
+  /**<   If not specified, defaults to NFW client.
+ If specifically set as the NFW client, then the control point
+ must set the value for enablePosRequestNotification.
+ Note: Location requests from privileged client(s) are always allowed,
+ regardless of user privacy settings. This may violate OEM, carrier,
+ or even government privacy requirements. Please contact privacy counsel
+ for advice before choosing "privileged" as the clientType. \n
+ Valid values: \n
+      - eQMI_LOC_CLIENT_AFW (1) --  Application FrameWork client
+      - eQMI_LOC_CLIENT_NFW (2) --  Non-AFW client
+      - eQMI_LOC_CLIENT_PRIVILEGED (3) --  Privileged client
+        */
+
+  /* Optional */
+  /*  enablePosRequestNotification */
+  uint8_t enablePosRequestNotification_valid;  /**< Must be set to true if enablePosRequestNotification is being passed */
+  uint8_t enablePosRequestNotification;
+  /**<   If not specified, defaults to FALSE.
+         If set to TRUE, then each positioning request made by this client shall
+       generate a notification to the application framework.
+       The value will be ignored if the client registers as an AFW client. \n
+        */
 }qmiLocRegEventsReqMsgT_v02;  /* Message */
 /**
     @}
@@ -1255,6 +1297,8 @@ typedef uint64_t qmiLocNavSolutionMaskT_v02;
 #define QMI_LOC_NAV_MASK_SBAS_CORRECTION_LONG_V02 ((qmiLocNavSolutionMaskT_v02)0x00000004ull) /**<  Bitmask to specify whether SBAS long-tem correction is used  */
 #define QMI_LOC_NAV_MASK_SBAS_INTEGRITY_V02 ((qmiLocNavSolutionMaskT_v02)0x00000008ull) /**<  Bitmask to specify whether SBAS integrity information is used  */
 #define QMI_LOC_NAV_MASK_CORRECTION_DGNSS_V02 ((qmiLocNavSolutionMaskT_v02)0x00000010ull) /**<  Bitmask to specify whether DGNSS information is used  */
+#define QMI_LOC_NAV_MASK_ONLY_SBAS_CORRECTED_SV_USED_V02 ((qmiLocNavSolutionMaskT_v02)0x00000020ull) /**<  Bitmask to specify whether only SBAS corrected SVs are used for fix \n
+       If mask is not set, All-in-view SVs are used for fix    */
 typedef uint32_t qmiLocSensorSubTechnologyMaskT_v02;
 #define QMI_LOC_SENSOR_SUB_MASK_PDR_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000001) /**<  Bitmask to specify whether PDR is enabled or disabled  */
 #define QMI_LOC_SENSOR_SUB_MASK_PEDOMETER_ENABLED_V02 ((qmiLocSensorSubTechnologyMaskT_v02)0x00000002) /**<  Bitmask to specify whether a pedometer was used  */
@@ -1673,6 +1717,8 @@ typedef struct {
       - QMI_LOC_NAV_MASK_SBAS_CORRECTION_LONG (0x00000004) --  Bitmask to specify whether SBAS long-tem correction is used
       - QMI_LOC_NAV_MASK_SBAS_INTEGRITY (0x00000008) --  Bitmask to specify whether SBAS integrity information is used
       - QMI_LOC_NAV_MASK_CORRECTION_DGNSS (0x00000010) --  Bitmask to specify whether DGNSS information is used
+      - QMI_LOC_NAV_MASK_ONLY_SBAS_CORRECTED_SV_USED (0x00000020) --  Bitmask to specify whether only SBAS corrected SVs are used for fix \n
+       If mask is not set, All-in-view SVs are used for fix
  */
 
   /* Optional */
@@ -2868,6 +2914,13 @@ typedef struct {
         emergency notification. Emergency notification
         can be given even without an Emergency SUPL Location Platform (ESLP)
         address. */
+
+  /* Optional */
+  /*  isInEmergencySession */
+  uint8_t isInEmergencySession_valid;  /**< Must be set to true if isInEmergencySession is being passed */
+  uint8_t isInEmergencySession;
+  /**<   isInEmergencySession is reported as TRUE when the device is currently
+         in an emergency session or emergencyCallbackWindow. */
 }qmiLocEventNiNotifyVerifyReqIndMsgT_v02;  /* Message */
 /**
     @}
@@ -5551,8 +5604,8 @@ typedef struct {
 typedef enum {
   QMILOCLOCKENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
   eQMI_LOC_LOCK_NONE_V02 = 1, /**<  Do not lock any position sessions  */
-  eQMI_LOC_LOCK_MI_V02 = 2, /**<  Lock mobile-initiated position sessions  */
-  eQMI_LOC_LOCK_MT_V02 = 3, /**<  Lock mobile-terminated position sessions  */
+  eQMI_LOC_LOCK_MI_V02 = 2, /**<  Lock application framework/AFW position sessions  */
+  eQMI_LOC_LOCK_MT_V02 = 3, /**<  Lock Non-AFW/NFW position sessions  */
   eQMI_LOC_LOCK_ALL_V02 = 4, /**<  Lock all position sessions  */
   QMILOCLOCKENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocLockEnumT_v02;
@@ -5574,6 +5627,10 @@ typedef enum {
     @}
   */
 
+typedef uint32_t qmiLocLockClientMaskT_v02;
+#define QMI_LOC_LOCK_CLIENT_MASK_AFW_V02 ((qmiLocLockClientMaskT_v02)0x00000001) /**<  Lock AFW client  */
+#define QMI_LOC_LOCK_CLIENT_MASK_NFW_V02 ((qmiLocLockClientMaskT_v02)0x00000002) /**<  Lock NFW client  */
+#define QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED_V02 ((qmiLocLockClientMaskT_v02)0x00000004) /**<  Lock privileged client  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5587,8 +5644,8 @@ typedef struct {
 
  Valid values: \n
       - eQMI_LOC_LOCK_NONE (1) --  Do not lock any position sessions
-      - eQMI_LOC_LOCK_MI (2) --  Lock mobile-initiated position sessions
-      - eQMI_LOC_LOCK_MT (3) --  Lock mobile-terminated position sessions
+      - eQMI_LOC_LOCK_MI (2) --  Lock application framework/AFW position sessions
+      - eQMI_LOC_LOCK_MT (3) --  Lock Non-AFW/NFW position sessions
       - eQMI_LOC_LOCK_ALL (4) --  Lock all position sessions
  */
 
@@ -5602,6 +5659,19 @@ typedef struct {
       - eQMI_LOC_LOCK_DV_SUB (1) --  Lock Dedicated Voice Subscription (DV sub)
       - eQMI_LOC_LOCK_DD_SUB (2) --  Lock Dedicated Data Subscription (DD sub)
       - eQMI_LOC_LOCK_ALL_SUB (3) --  Lock all subscription
+ */
+
+  /* Optional */
+  /*  Lock Client */
+  uint8_t lockClient_valid;  /**< Must be set to true if lockClient is being passed */
+  qmiLocLockClientMaskT_v02 lockClient;
+  /**<   If specified by the control point, the client(s) will be
+ blocked to request position.
+ Note: lockClient will overwrite lockType
+ Valid values: \n
+      - QMI_LOC_LOCK_CLIENT_MASK_AFW (0x00000001) --  Lock AFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_NFW (0x00000002) --  Lock NFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED (0x00000004) --  Lock privileged client
  */
 }qmiLocSetEngineLockReqMsgT_v02;  /* Message */
 /**
@@ -5695,8 +5765,8 @@ typedef struct {
 
  Valid values: \n
       - eQMI_LOC_LOCK_NONE (1) --  Do not lock any position sessions
-      - eQMI_LOC_LOCK_MI (2) --  Lock mobile-initiated position sessions
-      - eQMI_LOC_LOCK_MT (3) --  Lock mobile-terminated position sessions
+      - eQMI_LOC_LOCK_MI (2) --  Lock application framework/AFW position sessions
+      - eQMI_LOC_LOCK_MT (3) --  Lock Non-AFW/NFW position sessions
       - eQMI_LOC_LOCK_ALL (4) --  Lock all position sessions
  */
 
@@ -5709,6 +5779,17 @@ typedef struct {
       - eQMI_LOC_LOCK_DV_SUB (1) --  Lock Dedicated Voice Subscription (DV sub)
       - eQMI_LOC_LOCK_DD_SUB (2) --  Lock Dedicated Data Subscription (DD sub)
       - eQMI_LOC_LOCK_ALL_SUB (3) --  Lock all subscription
+ */
+
+  /* Optional */
+  /*  Lock Client */
+  uint8_t lockClient_valid;  /**< Must be set to true if lockClient is being passed */
+  qmiLocLockClientMaskT_v02 lockClient;
+  /**<   The client(s) who have been locked to request position.
+ Valid values: \n
+      - QMI_LOC_LOCK_CLIENT_MASK_AFW (0x00000001) --  Lock AFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_NFW (0x00000002) --  Lock NFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED (0x00000004) --  Lock privileged client
  */
 }qmiLocGetEngineLockIndMsgT_v02;  /* Message */
 /**
@@ -8464,6 +8545,16 @@ typedef struct {
       - QMI_LOC_LPPE_MASK_CP_AP_SRN_BTLE_MEASUREMENT (0x00000004) --  Enable SRN BTLE Measurement mode on the LPPe user plane.
       - QMI_LOC_LPPE_MASK_CP_UBP (0x00000008) --  Enable the Uncompromised Barometer Pressure Measurement mode on the LPPe user plane.
  */
+
+  /* Optional */
+  /*  Emergency Callback Window */
+  uint8_t emergencyCallbackWindow_valid;  /**< Must be set to true if emergencyCallbackWindow is being passed */
+  uint32_t emergencyCallbackWindow;
+  /**<     The emergency callback window extends the period of time
+         during which eQMI_LOC_LOCK_MT is ignored.\n
+       - Units: Seconds \n
+       - Default: 0s
+  */
 }qmiLocSetProtocolConfigParametersReqMsgT_v02;  /* Message */
 /**
     @}
@@ -8481,6 +8572,7 @@ typedef uint64_t qmiLocProtocolConfigParamMaskT_v02;
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_WIFI_SCAN_INJECT_TIMEOUT_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000100ull) /**<  Mask for the Wi-Fi scan injection timeout configuration parameter  */
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_UP_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000200ull) /**<  Mask for the LPPe user plane configuration parameter  */
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_CP_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000400ull) /**<  Mask for the LPPe control plane configuration parameter  */
+#define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_EMERGENCY_CB_WINDOW_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000800ull) /**<  Mask for the emergency callback window configuration parameter  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -8527,6 +8619,7 @@ typedef struct {
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_WIFI_SCAN_INJECT_TIMEOUT (0x0000000000000100) --  Mask for the Wi-Fi scan injection timeout configuration parameter
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_UP (0x0000000000000200) --  Mask for the LPPe user plane configuration parameter
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_CP (0x0000000000000400) --  Mask for the LPPe control plane configuration parameter
+      - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_EMERGENCY_CB_WINDOW (0x0000000000000800) --  Mask for the emergency callback window configuration parameter
  */
 }qmiLocSetProtocolConfigParametersIndMsgT_v02;  /* Message */
 /**
@@ -8557,6 +8650,7 @@ typedef struct {
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_WIFI_SCAN_INJECT_TIMEOUT (0x0000000000000100) --  Mask for the Wi-Fi scan injection timeout configuration parameter
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_UP (0x0000000000000200) --  Mask for the LPPe user plane configuration parameter
       - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPPE_CP (0x0000000000000400) --  Mask for the LPPe control plane configuration parameter
+      - QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_EMERGENCY_CB_WINDOW (0x0000000000000800) --  Mask for the emergency callback window configuration parameter
  */
 }qmiLocGetProtocolConfigParametersReqMsgT_v02;  /* Message */
 /**
@@ -8721,6 +8815,16 @@ typedef struct {
       - QMI_LOC_LPPE_MASK_CP_AP_SRN_BTLE_MEASUREMENT (0x00000004) --  Enable SRN BTLE Measurement mode on the LPPe user plane.
       - QMI_LOC_LPPE_MASK_CP_UBP (0x00000008) --  Enable the Uncompromised Barometer Pressure Measurement mode on the LPPe user plane.
  */
+
+  /* Optional */
+  /*  Emergency Callback Window */
+  uint8_t emergencyCallbackWindow_valid;  /**< Must be set to true if emergencyCallbackWindow is being passed */
+  uint32_t emergencyCallbackWindow;
+  /**<     The emergency callback window extends the period of time
+         during which MT LOCK is ignored.\n
+       - Units: Seconds \n
+       - Default: 0s
+  */
 }qmiLocGetProtocolConfigParametersIndMsgT_v02;  /* Message */
 /**
     @}
@@ -13969,6 +14073,12 @@ typedef struct {
   uint8_t reportFullSvPolyDb_valid;  /**< Must be set to true if reportFullSvPolyDb is being passed */
   uint8_t reportFullSvPolyDb;
   /**<   Request indicating client needs complete SV polynomials */
+
+  /* Optional */
+  /*  Request Complete Iono Data */
+  uint8_t reportFullIonoDb_valid;  /**< Must be set to true if reportFullIonoDb is being passed */
+  uint8_t reportFullIonoDb;
+  /**<   Request indicating client needs complete Iono */
 }qmiLocSetGNSSConstRepConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -17613,6 +17723,7 @@ typedef enum {
   eQMI_LOC_SUPPORTED_FEATURE_AGPM_V02 = 6, /**<  Support the advanced GNSS power management feature  */
   eQMI_LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY_V02 = 7, /**<  Support the XTRA integrity feature  */
   eQMI_LOC_SUPPORTED_FEATURE_FDCL_2_V02 = 8, /**<  Support the FDCL version 2 feature  */
+  eQMI_LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY_V02 = 9, /**<  Support the location privacy feature  */
   QMILOCSUPPORTEDFEATUREENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSupportedFeatureEnumT_v02;
 /**
@@ -19369,8 +19480,8 @@ typedef struct {
   */
 typedef enum {
   QMILOCENGINELOCKSTATEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
-  eQMI_LOC_ENGINE_LOCK_STATE_ENABLED_V02 = 1, /**<  location engine is enabled  */
-  eQMI_LOC_ENGINE_LOCK_STATE_DISABLED_V02 = 2, /**<  location engine is disabled  */
+  eQMI_LOC_ENGINE_LOCK_STATE_ENABLED_V02 = 1, /**<  location engine is enabled for mobile initiated sessions  */
+  eQMI_LOC_ENGINE_LOCK_STATE_DISABLED_V02 = 2, /**<  location engine is disabled for mobile initiated sessions  */
   QMILOCENGINELOCKSTATEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocEngineLockStateEnumT_v02;
 /**
@@ -19388,8 +19499,31 @@ typedef struct {
   qmiLocEngineLockStateEnumT_v02 engineLockState;
   /**<   Location engine lock state.
  Valid values: \n
-      - eQMI_LOC_ENGINE_LOCK_STATE_ENABLED (1) --  location engine is enabled
-      - eQMI_LOC_ENGINE_LOCK_STATE_DISABLED (2) --  location engine is disabled
+      - eQMI_LOC_ENGINE_LOCK_STATE_ENABLED (1) --  location engine is enabled for mobile initiated sessions
+      - eQMI_LOC_ENGINE_LOCK_STATE_DISABLED (2) --  location engine is disabled for mobile initiated sessions
+ */
+
+  /* Optional */
+  /*  Subscription Type */
+  uint8_t subType_valid;  /**< Must be set to true if subType is being passed */
+  qmiLocLockSubInfoEnumT_v02 subType;
+  /**<   Subscription to which Lock Type should be applied.
+ Valid values: \n
+      - eQMI_LOC_LOCK_DV_SUB (1) --  Lock Dedicated Voice Subscription (DV sub)
+      - eQMI_LOC_LOCK_DD_SUB (2) --  Lock Dedicated Data Subscription (DD sub)
+      - eQMI_LOC_LOCK_ALL_SUB (3) --  Lock all subscription
+ */
+
+  /* Optional */
+  /*  Lock Client */
+  uint8_t lockClient_valid;  /**< Must be set to true if lockClient is being passed */
+  qmiLocLockClientMaskT_v02 lockClient;
+  /**<   The client(s) who have been locked to request position.
+ If specified, the control point shall ignore engineLockState.
+ Valid values: \n
+      - QMI_LOC_LOCK_CLIENT_MASK_AFW (0x00000001) --  Lock AFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_NFW (0x00000002) --  Lock NFW client
+      - QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED (0x00000004) --  Lock privileged client
  */
 }qmiLocEventEngineLockStateIndMsgT_v02;  /* Message */
 /**
@@ -20729,6 +20863,11 @@ typedef uint64_t qmiLocEventReportMaskT_v02;
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00200000ull) /**<  Reserved Delete SV Poly Bit 5.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00400000ull) /**<  Reserved Delete SV Poly Bit 6.  */
 #define QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL_V02 ((qmiLocEventReportMaskT_v02)0x00800000ull) /**<  Reserved Delete SV Poly Bit 7.  */
+#define QMI_LOC_DELETE_GPS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x01000000ull) /**<  GPS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_GLO_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x02000000ull) /**<  GLONASS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_BDS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x04000000ull) /**<  BDS IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_GAL_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x08000000ull) /**<  GALILEO IONO parameters have been deleted.  */
+#define QMI_LOC_DELETE_QZSS_IONO_ALL_V02 ((qmiLocEventReportMaskT_v02)0x10000000ull) /**<  QZSS IONO parameters have been deleted.  */
 /** @addtogroup loc_qmi_aggregates
     @{
   */
@@ -20833,6 +20972,11 @@ typedef struct {
       - QMI_LOC_DELETE_RESERVED_SV_POLY_5_ALL (0x00200000) --  Reserved Delete SV Poly Bit 5.
       - QMI_LOC_DELETE_RESERVED_SV_POLY_6_ALL (0x00400000) --  Reserved Delete SV Poly Bit 6.
       - QMI_LOC_DELETE_RESERVED_SV_POLY_7_ALL (0x00800000) --  Reserved Delete SV Poly Bit 7.
+      - QMI_LOC_DELETE_GPS_IONO_ALL (0x01000000) --  GPS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_GLO_IONO_ALL (0x02000000) --  GLONASS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_BDS_IONO_ALL (0x04000000) --  BDS IONO parameters have been deleted.
+      - QMI_LOC_DELETE_GAL_IONO_ALL (0x08000000) --  GALILEO IONO parameters have been deleted.
+      - QMI_LOC_DELETE_QZSS_IONO_ALL (0x10000000) --  QZSS IONO parameters have been deleted.
  */
 
   /* Optional */
@@ -21010,6 +21154,155 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCREQUESTPROTOCOLENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_CTRL_PLANE_V02 = 0, /**<  Cellular control plane requests the location  */
+  eQMI_LOC_SUPL_V02 = 1, /**<  SUPL requests the location  */
+  eQMI_LOC_IMS_V02 = 2, /**<  IMS requests the location  */
+  eQMI_LOC_SIM_V02 = 3, /**<  SIM requests the location  */
+  eQMI_LOC_MDT_V02 = 4, /**<  MDT requests the location  */
+  eQMI_LOC_TLOC_V02 = 5, /**<  Trusted location requests the location  */
+  eQMI_LOC_OTHER_V02 = 6, /**<  Other protocol stack requests the location  */
+  QMILOCREQUESTPROTOCOLENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocRequestProtocolEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCREQUESTORENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_REQUESTOR_CARRIER_V02 = 0, /**<  Wireless service provider  */
+  eQMI_LOC_REQUESTOR_OEM_V02 = 1, /**<  Device manufacturer  */
+  eQMI_LOC_REQUESTOR_MODEM_CHIPSET_VENDOR_V02 = 2, /**<  Modem chipset vendor  */
+  eQMI_LOC_REQUESTOR_GNSS_CHIPSET_VENDOR_V02 = 3, /**<  GNSS chipset vendor  */
+  eQMI_LOC_REQUESTOR_OTHER_CHIPSET_VENDOR_V02 = 4, /**<  Other chipset vendor  */
+  eQMI_LOC_REQUESTOR_AUTOMOBILE_CLIENT_V02 = 5, /**<  Automobile client  */
+  eQMI_LOC_REQUESTOR_OTHER_V02 = 6, /**<  Other requestor  */
+  QMILOCREQUESTORENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocRequestorEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCREQUESTRESPONSETYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_REJECTED_V02 = 0, /**<  Request rejected because framework has not given permission for this use case  */
+  eQMI_LOC_ACCEPTED_NO_LOCATION_PROVIDED_V02 = 1, /**<  Request accepted but could not provide location because of a failure  */
+  eQMI_LOC_ACCEPTED_LOCATION_PROVIDED_V02 = 2, /**<  Request accepted and location provided  */
+  QMILOCREQUESTRESPONSETYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocRequestResponseTypeEnumT_v02;
+/**
+    @}
+  */
+
+typedef uint32_t qmiLocResponseLocProtocolMaskT_v02;
+#define QMI_LOC_GNSS_POSITION_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000001) /**<  GNSS position has been reported to the client  */
+#define QMI_LOC_GNSS_MEASUREMENT_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000002) /**<  GNSS measurement has been reported to the client  */
+#define QMI_LOC_OTDOA_MEASUREMENT_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000004) /**<  OTDOA measurement has been reported to the client  */
+#define QMI_LOC_DBH_DATA_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000008) /**<  DBH data has been reported to the client  */
+#define QMI_LOC_SRN_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000010) /**<  SRN has been reported to the client  */
+#define QMI_LOC_ECID_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000020) /**<  Enhanced Cell ID has been reported to the client  */
+#define QMI_LOC_WLAN_V02 ((qmiLocResponseLocProtocolMaskT_v02)0x00000040) /**<  WLAN measurement has been reported to the client  */
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Notify the application framework that "location
+                    related information" has been requested. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Location request protocol stack */
+  qmiLocRequestProtocolEnumT_v02 protocolStack;
+  /**<   Protocol stack that is requesting the non-framework location information.
+ Valid values: \n
+      - eQMI_LOC_CTRL_PLANE (0) --  Cellular control plane requests the location
+      - eQMI_LOC_SUPL (1) --  SUPL requests the location
+      - eQMI_LOC_IMS (2) --  IMS requests the location
+      - eQMI_LOC_SIM (3) --  SIM requests the location
+      - eQMI_LOC_MDT (4) --  MDT requests the location
+      - eQMI_LOC_TLOC (5) --  Trusted location requests the location
+      - eQMI_LOC_OTHER (6) --  Other protocol stack requests the location
+ */
+
+  /* Mandatory */
+  /*  Location requestor */
+  qmiLocRequestorEnumT_v02 requestor;
+  /**<   Entity that is requesting/receiving the location information.
+ Valid values: \n
+      - eQMI_LOC_REQUESTOR_CARRIER (0) --  Wireless service provider
+      - eQMI_LOC_REQUESTOR_OEM (1) --  Device manufacturer
+      - eQMI_LOC_REQUESTOR_MODEM_CHIPSET_VENDOR (2) --  Modem chipset vendor
+      - eQMI_LOC_REQUESTOR_GNSS_CHIPSET_VENDOR (3) --  GNSS chipset vendor
+      - eQMI_LOC_REQUESTOR_OTHER_CHIPSET_VENDOR (4) --  Other chipset vendor
+      - eQMI_LOC_REQUESTOR_AUTOMOBILE_CLIENT (5) --  Automobile client
+      - eQMI_LOC_REQUESTOR_OTHER (6) --  Other requestor
+ */
+
+  /* Mandatory */
+  /*  Requestor identification string */
+  char requestorId[QMI_LOC_MAX_REQUESTOR_ID_STRING_LENGTH_V02 + 1];
+  /**<   String identification of the endpoint receiving the location information.
+       */
+
+  /* Mandatory */
+  /*  Location requestor response type */
+  qmiLocRequestResponseTypeEnumT_v02 responseType;
+  /**<   Indicates whether the location information was provided for this request.
+ Valid values: \n
+      - eQMI_LOC_REJECTED (0) --  Request rejected because framework has not given permission for this use case
+      - eQMI_LOC_ACCEPTED_NO_LOCATION_PROVIDED (1) --  Request accepted but could not provide location because of a failure
+      - eQMI_LOC_ACCEPTED_LOCATION_PROVIDED (2) --  Request accepted and location provided
+ */
+
+  /* Mandatory */
+  /*  Location response protocol mask */
+  qmiLocResponseLocProtocolMaskT_v02 responseProtocol;
+  /**<   Indicates types of location information that have been reported.
+ Valid values: \n
+      - QMI_LOC_GNSS_POSITION (0x00000001) --  GNSS position has been reported to the client
+      - QMI_LOC_GNSS_MEASUREMENT (0x00000002) --  GNSS measurement has been reported to the client
+      - QMI_LOC_OTDOA_MEASUREMENT (0x00000004) --  OTDOA measurement has been reported to the client
+      - QMI_LOC_DBH_DATA (0x00000008) --  DBH data has been reported to the client
+      - QMI_LOC_SRN (0x00000010) --  SRN has been reported to the client
+      - QMI_LOC_ECID (0x00000020) --  Enhanced Cell ID has been reported to the client
+      - QMI_LOC_WLAN (0x00000040) --  WLAN measurement has been reported to the client
+ */
+
+  /* Mandatory */
+  /*  Emergency mode */
+  uint8_t inEmergencyMode;
+  /**<   Is the device in a user initiated emergency session.
+       */
+
+  /* Mandatory */
+  /*  Cached location */
+  uint8_t isCachedLocation;
+  /**<   Is the cached location provided.
+       */
+
+  /* Optional */
+  /*  Client Identification String */
+  uint8_t clientStrId_valid;  /**< Must be set to true if clientStrId is being passed */
+  char clientStrId[QMI_LOC_MAX_CLIENT_ID_STRING_LENGTH_V02 + 1];
+  /**<   String identification of the client who requested the location,
+       \begin{itemize1}
+       \item    Type: NULL-terminated string
+       \item    Maximum string length (including NULL terminator): 5
+       \vspace{-0.18in} \end{itemize1} */
+}qmiLocLocationRequestNotificationIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -21138,6 +21431,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_INJECT_WIFI_POSITION_V02
 //#define REMOVE_QMI_LOC_INJECT_XTRA_DATA_V02
 //#define REMOVE_QMI_LOC_INJECT_XTRA_PCID_V02
+//#define REMOVE_QMI_LOC_LOCATION_REQUEST_NOTIFICATION_V02
 //#define REMOVE_QMI_LOC_NOTIFY_WIFI_ATTACHMENT_STATUS_V02
 //#define REMOVE_QMI_LOC_NOTIFY_WIFI_ENABLED_STATUS_V02
 //#define REMOVE_QMI_LOC_NOTIFY_WIFI_STATUS_V02
@@ -21612,6 +21906,7 @@ typedef struct {
 #define QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02 0x00CC
 #define QMI_LOC_EVENT_REPORT_IND_V02 0x00CD
 #define QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02 0x00CE
+#define QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02 0x00CF
 /**
     @}
   */

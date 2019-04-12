@@ -25,16 +25,18 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef LOCHALDAEMONIPCRECEIVER_H
-#define LOCHALDAEMONIPCRECEIVER_H
+#ifndef LOCHALDAEMON_IPC_RECEIVER_H
+#define LOCHALDAEMON_IPC_RECEIVER_H
 
 #include <string>
 
 #include <LocIpc.h>
+#include <LocQsocket.h>
+#include <LocationApiMsg.h>
 #include <gps_extended_c.h>
 
 using loc_util::LocIpc;
+using loc_util::LocQsocket;
 
 // forward declaration
 class LocationApiService;
@@ -49,9 +51,12 @@ public:
             mService(service) { }
     virtual ~LocHalDaemonIPCReceiver() { }
 
-    bool start() {
-        return startListeningBlocking(SOCKET_TO_LOCATION_HAL_DAEMON);
-        // never return
+    bool start(bool blocking) {
+        if (true == blocking) {
+            return startListeningBlocking(SOCKET_TO_LOCATION_HAL_DAEMON);
+        } else {
+            return startListeningNonBlocking(SOCKET_TO_LOCATION_HAL_DAEMON);
+        }
     }
 
     void stop() {
@@ -67,5 +72,44 @@ private:
     LocationApiService *mService;
 };
 
-#endif //LOCHALDAEMONIPCRECEIVER_H
+class LocHalDaemonQsockReceiver : public LocQsocket
+{
+public:
+    LocHalDaemonQsockReceiver(LocationApiService* service) :
+            mService(service),
+            LocQsocket(){ }
+    virtual ~LocHalDaemonQsockReceiver() { }
+
+    bool start(bool blocking) {
+        char qsocketName[MAX_SOCKET_PATHNAME_LENGTH];
+        int numChars = snprintf(qsocketName, sizeof(qsocketName), "%u.%u",
+                                LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
+                                LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);
+        if (numChars >= (sizeof(qsocketName)-1)) {
+            LOC_LOGe("qsocketName to small, need %d, buffer size %d",
+                     numChars, sizeof(qsocketName));
+            return false;
+        }
+
+        if (true == blocking) {
+            return startListeningBlocking(qsocketName);
+        } else {
+            return startListeningNonBlocking(qsocketName);
+        }
+    }
+
+    void stop() {
+        // not used
+        stopListening();
+    }
+
+    // override from LocIpc
+    void onReceive(const std::string& data) override;
+    void onListenerReady() override;
+
+private:
+    LocationApiService *mService;
+};
+
+#endif //LOCHALDAEMON_IPC_RECEIVER_H
 

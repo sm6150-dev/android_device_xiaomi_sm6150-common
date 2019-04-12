@@ -64,6 +64,10 @@ AC_ARG_WITH([systemd],
 
 AM_CONDITIONAL(USE_SYSTEMD, test "x${with_systemd}" = "xyes")
 
+PKG_CHECK_MODULES([LOCQSOCKET], [loc-qsocket])
+AC_SUBST([LOCQSOCKET_CFLAGS])
+AC_SUBST([LOCQSOCKET_LIBS])
+
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))

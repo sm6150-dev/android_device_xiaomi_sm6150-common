@@ -1,11 +1,11 @@
-# configure.ac -- Autoconf script for gps location-client-api
+# configure.ac -- Autoconf script for gps loc-qsocket
 #
 # Process this file with autoconf to produce a configure script
 
 # Requires autoconf tool later than 2.61
 AC_PREREQ(2.61)
-# Initialize the location_client_api package version 1.0.0
-AC_INIT([location-client-api],1.0.0)
+# Initialize the loc_qsocket package version 1.0.0
+AC_INIT([loc-qsocket],1.0.0)
 # Does not strictly follow GNU Coding standards
 AM_INIT_AUTOMAKE([foreign])
 # Disables auto rebuilding of configure, Makefile.ins
@@ -33,26 +33,6 @@ PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
 
-AC_ARG_WITH([external_ap],
-    AC_HELP_STRING([--with-external_ap=@<:@dir@:>@],
-        [Using External Application Processor]),
-    [],
-    with_external_ap=no)
-
-if test "x$with_external_ap" != "xno"; then
-    CPPFLAGS="${CPPFLAGS} -DFEATURE_EXTERNAL_AP"
-    PKG_CHECK_MODULES([LOCSOCKET], [loc-socket])
-    AC_SUBST([LOCSOCKET_CFLAGS])
-    AC_SUBST([LOCSOCKET_LIBS])
-else
-    # Checks for libraries.
-    PKG_CHECK_MODULES([LOCHALDAEMON], [location-hal-daemon])
-    AC_SUBST([LOCHALDAEMON_CFLAGS])
-    AC_SUBST([LOCHALDAEMON_LIBS])
-fi
-
-AM_CONDITIONAL(USE_EXTERNAL_AP, test "x${with_external_ap}" = "xyes")
-
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))
@@ -74,7 +54,7 @@ AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 
 AC_CONFIG_FILES([ \
         Makefile \
-        location-client-api.pc
+        loc-qsocket.pc
         ])
 
 AC_OUTPUT

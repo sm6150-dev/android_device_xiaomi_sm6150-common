@@ -823,7 +823,6 @@ vendor/lib/vendor.qti.hardware.tui_comm@1.0.so
 vendor/bin/cnss-daemon
 vendor/bin/nv_mac
 vendor/etc/wifi/p2p_supplicant_overlay.conf
-vendor/etc/wifi/WCNSS_qcom_cfg.ini
 vendor/etc/wifi/wpa_supplicant_overlay.conf
 
 # WiFi Display

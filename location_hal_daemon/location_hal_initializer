@@ -1,3 +1,4 @@
+
 #!/bin/sh
 #
 # Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
@@ -38,36 +39,24 @@ wait_for_dir_mount() {
     done
 }
 
+create_set_folder() {
+    if [ ! -d "${1}" ]
+    then
+        mkdir -p "${1}"
+        chown -R "${2}" "${1}"
+        chmod "${3}" "${1}"
+    fi
+}
+
 # for location hal daemon
 case "$1" in
   start)
         echo -n "Starting location_hal_initializer" > /dev/kmsg
         wait_for_dir_mount
-        # create required directories for location services
-        if [ ! -d /dev/socket/location ]
-        then
-            mkdir -p /dev/socket/location
-            # change the ownership of directory to gps user/group.
-            chown -R gps:gps /dev/socket/location
-        fi
-
-        # for loc_client
-        if [ ! -d /dev/socket/loc_client ]
-        then
-            mkdir -p /dev/socket/loc_client
-            # change the ownership of directory to gps user/group.
-            chown -R gps:locclient /dev/socket/loc_client
-            chmod 770 /dev/socket/loc_client
-        fi
-
-        # for engine hub
-        if [ ! -d /dev/socket/location/ehub ]
-        then
-            mkdir -p /dev/socket/location/ehub
-            # change the ownership of directory to gps user/group.
-            chown -R gps:gps /dev/socket/location/ehub
-        fi
-
+        create_set_folder "/dev/socket/location" "gps:gps" 755
+        create_set_folder "/dev/socket/loc_client" "gps:locclient" 775
+        create_set_folder "/data/vendor/location/extap_locclient" "gps:gps" 755
+        create_set_folder "/dev/socket/location/ehub" "gps:gps" 755
         echo "Done creating folders for location hal daemon"
         ;;
   stop)
@@ -85,4 +74,3 @@ case "$1" in
 esac
 
 exit 0
-

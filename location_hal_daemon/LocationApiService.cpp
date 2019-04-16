@@ -151,21 +151,28 @@ LocationApiService::~LocationApiService() {
 
 void LocationApiService::onListenerReady(bool externalApIpc) {
 
-    // traverse client sockets directory - then broadcast READY message
-    LOC_LOGd(">-- onListenerReady Finding client sockets...");
-
-    DIR *dirp = opendir(SOCKET_DIR_TO_CLIENT);
-    if (!dirp) {
-        return;
+    // traverse the directory reserved for client - then broadcast READY message
+    const char * dirName = nullptr;
+    const char * fnamebase = nullptr;
+    int fnamebaseLen = 0;
+    if (false == externalApIpc) {
+        dirName = SOCKET_DIR_TO_CLIENT;
+        fnamebase = SOCKET_TO_LOCATION_CLIENT_BASE;
+    } else {
+        dirName = DIR_FOR_EXT_AP_LOC_CLIENT;
+        fnamebase = FILE_FOR_EXT_AP_LOC_CLIENT_BASE;
     }
+    fnamebaseLen = strlen(fnamebase);
+    LOC_LOGe(">-- onListenerReady %d, finding client under %s", externalApIpc, dirName);
 
     struct dirent *dp = nullptr;
     struct stat sbuf = {0};
-    const std::string fnamebase = SOCKET_TO_LOCATION_CLIENT_BASE;
+
+    DIR *dirp = opendir(dirName);
     while (nullptr != (dp = readdir(dirp))) {
-        std::string fnameExtAp = SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE;
-        std::string fname = SOCKET_DIR_TO_CLIENT;
+        std::string fname = dirName;
         fname += dp->d_name;
+
         if (-1 == lstat(fname.c_str(), &sbuf)) {
             continue;
         }
@@ -174,24 +181,22 @@ void LocationApiService::onListenerReady(bool externalApIpc) {
         }
 
         const char* clientName = NULL;
-        if ((false == externalApIpc) &&
-            (0 == fname.compare(0, fnamebase.size(), fnamebase))) {
-            // client that resides on same processor as daemon
-            clientName = fname.c_str();
-        } else if ((true == externalApIpc) &&
-                   (0 == fname.compare(0, fnameExtAp.size(), fnameExtAp))) {
-            // client resides on external processor
-            clientName = fname.c_str() + strlen(SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE);
-            LOC_LOGe("<-- Sending ready to socket: %s, size %d", clientName,
-                     strlen(SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE));
+        if (0 == fname.compare(0, fnamebaseLen, fnamebase)) {
+            if (false == externalApIpc) {
+                // client that resides on same processor as daemon
+                clientName = fname.c_str();
+            } else {
+                // client that reside on a different processor than hal daemon
+                clientName = fname.c_str() + fnamebaseLen;
+            }
         }
 
         if (NULL != clientName) {
             LocHalDaemonIPCSender* pIpcSender = new LocHalDaemonIPCSender(clientName);
             LocAPIHalReadyIndMsg msg(SERVICE_NAME);
-            LOC_LOGd("<-- Sending ready to socket: %s, msg size %d", clientName, sizeof(msg));
+            LOC_LOGd("<-- Sending ready to client: %s, msg size %d", clientName, sizeof(msg));
             bool sendSuccessful = pIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
-            // Remove this external AP client as the socket it has is no longer reachable.
+            // Remove this external AP client when the client is no longer reachable.
             // For MDM location API client, the socket file will be removed automatically when
             // its process exits/crashes.
             if ((false == sendSuccessful) && (true == externalApIpc)) {

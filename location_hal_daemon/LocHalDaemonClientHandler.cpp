@@ -336,7 +336,7 @@ void LocHalDaemonClientHandler::cleanup() {
                 sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
         char fileName[MAX_SOCKET_PATHNAME_LENGTH];
         snprintf (fileName, sizeof(fileName), "%s%s",
-                  SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
+                  FILE_FOR_EXT_AP_LOC_CLIENT_BASE, mName.c_str());
         LOC_LOGv("removed file name %s", fileName);
         if (0 != remove(fileName)) {
             LOC_LOGe("<-- failed to remove file %s", fileName);

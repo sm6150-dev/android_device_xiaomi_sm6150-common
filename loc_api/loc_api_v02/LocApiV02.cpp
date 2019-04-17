@@ -4439,6 +4439,7 @@ void LocApiV02::reportLocationRequestNotification(
              loc_req_notif->clientStrId,
              loc_req_notif->requestor,
              loc_req_notif->requestorId,
+             loc_req_notif->responseType,
              loc_req_notif->inEmergencyMode,
              loc_req_notif->isCachedLocation);
 
@@ -4527,6 +4528,7 @@ void LocApiV02::reportLocationRequestNotification(
         notification.otherProtocolStackName,
         notification.requestor,
         notification.requestorId,
+        notification.responseType,
         notification.inEmergencyMode,
         notification.isCachedLocation);
 

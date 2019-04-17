@@ -5434,6 +5434,10 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
         for (it = mADRdata.begin(); it != mADRdata.end(); ++it) {
             tempAdrData = *it;
             if (gnss_measurement_report_ptr.system == tempAdrData.system &&
+                ((gnss_measurement_report_ptr.gnssSignalType_valid &&
+                (gnss_measurement_report_ptr.gnssSignalType == tempAdrData.gnssSignalType)) ||
+                 (!gnss_measurement_report_ptr.gnssSignalType_valid &&
+                    (0 == tempAdrData.gnssSignalType))) &&
                 gnss_measurement_info.gnssSvId == tempAdrData.gnssSvId) {
                 bFound = true;
                 break;
@@ -5476,6 +5480,11 @@ bool LocApiV02 :: convertGnssMeasurements (GnssMeasurementsData& measurementData
             // now add the current satellite info to the vector
             tempAdrData.counter = mCounter;
             tempAdrData.system = gnss_measurement_report_ptr.system;
+            if (gnss_measurement_report_ptr.gnssSignalType_valid) {
+                tempAdrData.gnssSignalType = gnss_measurement_report_ptr.gnssSignalType;
+            } else {
+                tempAdrData.gnssSignalType = 0;
+            }
             tempAdrData.gnssSvId = gnss_measurement_info.gnssSvId;
             tempAdrData.validMask = gnss_measurement_info.validMask;
             tempAdrData.cycleSlipCount = gnss_measurement_info.cycleSlipCount;

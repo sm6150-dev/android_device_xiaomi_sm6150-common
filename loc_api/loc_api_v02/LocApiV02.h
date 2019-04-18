@@ -92,7 +92,7 @@ private:
   uint32_t mCounter;
   uint32_t mMinInterval;
   std::vector<adrData>  mADRdata;
-  GnssSvMeasurementSet*  mSvMeasurementSet;
+  GnssMeasurements*  mGnssMeasurements;
   size_t mBatchSize, mDesiredBatchSize;
   size_t mTripBatchSize, mDesiredTripBatchSize;
 
@@ -122,7 +122,7 @@ private:
       uint8_t gloFrequency);
 
   /*convert GnssMeasurement type from QMI LOC to loc eng format*/
-  bool convertGnssMeasurements (GnssMeasurementsData& measurementData,
+  bool convertGnssMeasurements (
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr,
       int index);
 
@@ -140,6 +140,9 @@ private:
 
   /* get sv used count from sv mask */
   static int getNumSvUsed (uint64_t svUsedIdsMask, int totalSvCntInOneConstellation);
+
+  void convertGnssMeasurementsHeader(const Gnss_LocSvSystemEnumType locSvSystemType,
+      const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_info);
 
   /*convert LocGnssClock type from QMI LOC to loc eng format*/
   int convertGnssClock (GnssMeasurementsClock& clock,
@@ -160,9 +163,6 @@ private:
   /* convert satellite report to loc eng format and  send the converted
      report to loc eng */
   void reportSv (const qmiLocEventGnssSvInfoIndMsgT_v02 *gnss_report_ptr);
-
-  void reportSvMeasurement (
-  const qmiLocEventGnssSvMeasInfoIndMsgT_v02 *gnss_raw_measurement_ptr);
 
   void  reportSvPolynomial (
   const qmiLocEventGnssSvPolyIndMsgT_v02 *gnss_sv_poly_ptr);

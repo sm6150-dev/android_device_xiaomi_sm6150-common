@@ -4101,6 +4101,8 @@ case "$target" in
 		echo 20000 > $l3prime/mem_latency/ratio_ceil
 	    done
 	done
+    echo N > /sys/module/lpm_levels/parameters/sleep_disabled
+    ;;
 esac
 
 case "$target" in

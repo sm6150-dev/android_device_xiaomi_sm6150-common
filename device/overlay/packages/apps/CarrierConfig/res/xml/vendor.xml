@@ -97,6 +97,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
 
         <!-- Enable SS over UT by default-->
         <boolean name="carrier_supports_ss_over_ut_bool" value="true" />
+
+        <!-- Config to allow hold in video calls -->
+        <boolean name="allow_holding_video_call" value="true"/>
     </carrier_config>
 
     <carrier_config mcc="001" mnc="01">

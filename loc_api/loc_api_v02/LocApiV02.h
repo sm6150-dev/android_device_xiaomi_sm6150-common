@@ -93,6 +93,10 @@ private:
   uint32_t mMinInterval;
   std::vector<adrData>  mADRdata;
   GnssMeasurements*  mGnssMeasurements;
+  bool mGPSreceived;
+  int  mMsInWeek;
+  bool mAgcIsPresent;
+
   size_t mBatchSize, mDesiredBatchSize;
   size_t mTripBatchSize, mDesiredTripBatchSize;
 
@@ -217,6 +221,20 @@ private:
   /* convert and report GNSS measurement data to loc eng */
   void reportGnssMeasurementData(
     const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr);
+
+  void reportSvMeasurementInternal();
+
+  inline void resetSvMeasurementReport(){
+      memset(mGnssMeasurements, 0, sizeof(GnssMeasurements));
+      mGnssMeasurements->size = sizeof(GnssMeasurements);
+      mGnssMeasurements->gnssSvMeasurementSet.size = sizeof(GnssSvMeasurementSet);
+      mGnssMeasurements->gnssSvMeasurementSet.isNhz = false;
+      mGnssMeasurements->gnssSvMeasurementSet.svMeasSetHeader.size =
+          sizeof(GnssSvMeasurementHeader);
+      mGPSreceived = false;
+      mMsInWeek = -1;
+      mAgcIsPresent = false;
+  }
 
   /* convert and report ODCPI request */
   void requestOdcpi(

@@ -1,1 +1,5 @@
 user=system seinfo=platform name=org.lineageos.devicesettings domain=devicesettings_app type=system_app_data_file
+
+# Use a custom domain for GoogleCamera, to allow for Hexagon DSP access
+user=_app seinfo=google name=org.codeaurora.snapcam domain=google_camera_app type=app_data_file levelFrom=all
+user=_app seinfo=google name=com.google.android.GoogleCamera domain=google_camera_app type=app_data_file levelFrom=all

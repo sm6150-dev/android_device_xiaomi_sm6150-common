@@ -107,6 +107,7 @@ endif
 #----------------------------------------------------------------------
 # Generate persist image (persist.img)
 #----------------------------------------------------------------------
+ifneq ($(strip $(BOARD_PERSISTIMAGE_PARTITION_SIZE)),)
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 
 TARGET_OUT_PERSIST := $(PRODUCT_OUT)/persist
@@ -135,6 +136,7 @@ droidcore: $(INSTALLED_PERSISTIMAGE_TARGET)
 .PHONY: persistimage
 persistimage: $(INSTALLED_PERSISTIMAGE_TARGET)
 
+endif
 endif
 
 #----------------------------------------------------------------------

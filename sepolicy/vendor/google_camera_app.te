@@ -1,0 +1,76 @@
+## Custom security policy for Google Camera App, the default camera application on Pixel devices.
+##
+## Google Camera App is a standard app for the most part, but on Pixel devices
+## it has access to hardware accelerators such as Hexagon and Airbrush.
+##
+## This policy defines the extra rules necessary for that access.
+
+## Untrusted_app_domain disallows access to new HW services, and since
+## GCA needs to talk to airbrush, this doesn't work.  So the following
+## rules duplicate untrusted_app_domain to the extent needed by GCA,
+## by copying from core/sepolicy/private/untrusted_app_all.te and
+## other .te files that refer to untrusted_app_all.
+
+# Some apps ship with shared libraries and binaries that they write out
+# to their sandbox directory and then execute.
+allow google_camera_app privapp_data_file:file { r_file_perms execute };
+allow google_camera_app app_data_file:file     { r_file_perms execute };
+auditallow google_camera_app app_data_file:file execute;
+
+# Allow handling of less common filesystem objects
+allow google_camera_app app_data_file:{ lnk_file sock_file fifo_file } create_file_perms;
+
+# Read and write system app data files passed over Binder.
+# Motivating case was /data/data/com.android.settings/cache/*.jpg for
+# cropping or taking user photos.
+allow google_camera_app system_app_data_file:file { read write getattr };
+
+allow google_camera_app audioserver_service:service_manager find;
+allow google_camera_app cameraserver_service:service_manager find;
+allow google_camera_app drmserver_service:service_manager find;
+allow google_camera_app mediaserver_service:service_manager find;
+allow google_camera_app mediaextractor_service:service_manager find;
+allow google_camera_app mediacodec_service:service_manager find;
+allow google_camera_app mediametrics_service:service_manager find;
+allow google_camera_app mediadrmserver_service:service_manager find;
+allow google_camera_app radio_service:service_manager find;
+allow google_camera_app app_api_service:service_manager find;
+allow google_camera_app vr_manager_service:service_manager find;
+allow google_camera_app gpu_service:service_manager find;
+
+# Allow untrusted apps to interact with gpuservice
+binder_call(google_camera_app, gpuservice)
+
+# Allow GMS core to access perfprofd output, which is stored
+# in /data/misc/perfprofd/. GMS core will need to list all
+# data stored in that directory to process them one by one.
+userdebug_or_eng(`
+  allow google_camera_app perfprofd_data_file:file r_file_perms;
+  allow google_camera_app perfprofd_data_file:dir r_dir_perms;
+')
+
+# gdbserver for ndk-gdb ptrace attaches to app process.
+allow google_camera_app self:process ptrace;
+
+# Android Studio Instant Run has the application connect to a
+# runas_app socket listening in the abstract namespace.
+# https://developer.android.com/studio/run/
+# b/123297648
+allow google_camera_app runas_app:unix_stream_socket connectto;
+
+# Untrusted apps need to be able to send a SIGCHLD to runas_app
+# when running under a debugger (b/123612207)
+allow google_camera_app runas_app:process sigchld;
+
+# allow untrusted apps to use UDP sockets provided by the system server but not
+# modify them other than to connect
+allow google_camera_app system_server:udp_socket {
+        connect getattr read recvfrom sendto write getopt setopt };
+
+## Extra capabilities for Google Camera App
+## Access to Hexagon DSP kernel device
+allow google_camera_app qdsp_device:chr_file r_file_perms;
+
+# Read adsp files, for Hexagon access
+allow google_camera_app adsprpcd_file:lnk_file r_file_perms;
+

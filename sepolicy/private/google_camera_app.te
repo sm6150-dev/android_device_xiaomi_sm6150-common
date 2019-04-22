@@ -1,0 +1,23 @@
+## Custom security policy for Google Camera App, the default camera application on Pixel devices.
+##
+## Google Camera App is a standard app for the most part, but on Pixel devices
+## it has access to hardware accelerators such as Hexagon and Airbrush.
+##
+## This policy defines the extra rules necessary for that access,
+## that reference private core sepolicy
+
+# Duplicate all access that normal untrusted_app has, except for untrusted_app_domain
+app_domain(google_camera_app)
+net_domain(google_camera_app)
+bluetooth_domain(google_camera_app)
+
+# Write app-specific trace data to the Perfetto traced damon. This requires
+# connecting to its producer socket and obtaining a (per-process) tmpfs fd.
+allow google_camera_app traced:fd use;
+allow google_camera_app traced_tmpfs:file { read write getattr map };
+unix_socket_connect(google_camera_app, traced_producer, traced)
+
+# Allow heap profiling if the app opts in by being marked
+# profileable/debuggable.
+can_profile_heap(google_camera_app)
+

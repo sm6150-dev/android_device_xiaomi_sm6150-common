@@ -4053,7 +4053,8 @@ void LocApiV02::reportLocationRequestNotification(
              loc_req_notif->inEmergencyMode,
              loc_req_notif->isCachedLocation);
 
-    strlcpy(notification.proxyAppPackageName, "NFW app",
+    strlcpy(notification.proxyAppPackageName,
+            ContextBase::mGps_conf.PROXY_APP_PACKAGE_NAME,
             sizeof(notification.proxyAppPackageName));
     switch (loc_req_notif->protocolStack) {
     case eQMI_LOC_CTRL_PLANE_V02:

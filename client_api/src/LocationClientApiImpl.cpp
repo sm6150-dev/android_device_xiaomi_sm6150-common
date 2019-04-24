@@ -629,6 +629,10 @@ static GnssSv parseGnssSv(const ::GnssSv &halGnssSv) {
             gnssSv.type = GNSS_SV_TYPE_GALILEO;
             break;
 
+        case GNSS_SV_TYPE_NAVIC:
+            gnssSv.type = GNSS_SV_TYPE_NAVIC;
+            break;
+
         default:
             gnssSv.type = GNSS_SV_TYPE_UNKNOWN;
             break;

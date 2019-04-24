@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Fri Mar  8 2019 (Spin 0)
+   It was generated on: Fri Apr  5 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x69
+#define LOC_V02_IDL_MINOR_VERS 0x6C
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -777,17 +777,17 @@ typedef struct {
       - eQMI_LOC_CLIENT_AFW (1) --  Application FrameWork client
       - eQMI_LOC_CLIENT_NFW (2) --  Non-AFW client
       - eQMI_LOC_CLIENT_PRIVILEGED (3) --  Privileged client
-        */
+ */
 
   /* Optional */
   /*  enablePosRequestNotification */
   uint8_t enablePosRequestNotification_valid;  /**< Must be set to true if enablePosRequestNotification is being passed */
   uint8_t enablePosRequestNotification;
   /**<   If not specified, defaults to FALSE.
-         If set to TRUE, then each positioning request made by this client shall
+       If set to TRUE, then each positioning request made by this client shall
        generate a notification to the application framework.
        The value will be ignored if the client registers as an AFW client. \n
-        */
+      */
 }qmiLocRegEventsReqMsgT_v02;  /* Message */
 /**
     @}
@@ -1269,6 +1269,7 @@ typedef enum {
   eQMI_LOC_TIME_SRC_QZSS_TOW_DECODE_V02 = 15, /**<  Time is set after decoding QZSS satellites  */
   eQMI_LOC_TIME_SRC_BDS_TOW_DECODE_V02 = 16, /**<  Time is set after decoding BDS satellites  */
   eQMI_LOC_TIME_SRC_GAL_TOW_DECODE_V02 = 17, /**<  Time is set after decoding GAL satellites  */
+  eQMI_LOC_TIME_SRC_NAVIC_TOW_DECODE_V02 = 18, /**<  Time is set after decoding NAVIC satellites  */
   QMILOCTIMESOURCEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocTimeSourceEnumT_v02;
 /**
@@ -1326,6 +1327,7 @@ typedef uint64_t qmiLocGnssSignalTypeMaskT_v02;
 #define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00008000ull) /**<  QZSS L2C_L RF Band  */
 #define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00010000ull) /**<  QZSS L5_Q RF Band  */
 #define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00020000ull) /**<  SBAS L1_CA RF Band  */
+#define QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5_V02 ((qmiLocGnssSignalTypeMaskT_v02)0x00040000ull) /**<  NAVIC L5 Signal  */
 /** @addtogroup loc_qmi_enums
     @{
   */
@@ -1350,6 +1352,7 @@ typedef enum {
   eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L2C_L_V02 = 16, /**<  QZSS L2C_L RF Band  */
   eQMI_LOC_GNSS_SIGNAL_TYPE_QZSS_L5_Q_V02 = 17, /**<  QZSS L5_Q RF Band  */
   eQMI_LOC_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 = 18, /**<  SBAS L1_CA RF Band  */
+  eQMI_LOC_GNSS_SIGNAL_TYPE_NAVIC_L5_V02 = 19, /**<  NAVIC L5 RF Band  */
   QMILOCGNSSSIGNALTYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocGnssSignalTypeEnumT_v02;
 /**
@@ -1649,7 +1652,8 @@ typedef struct {
        GNSS time is maintained irrespective of the GNSS receiver state
       - eQMI_LOC_TIME_SRC_QZSS_TOW_DECODE (15) --  Time is set after decoding QZSS satellites
       - eQMI_LOC_TIME_SRC_BDS_TOW_DECODE (16) --  Time is set after decoding BDS satellites
-      - eQMI_LOC_TIME_SRC_GAL_TOW_DECODE (17) --  Time is set after decoding GAL satellites  */
+      - eQMI_LOC_TIME_SRC_GAL_TOW_DECODE (17) --  Time is set after decoding GAL satellites
+      - eQMI_LOC_TIME_SRC_NAVIC_TOW_DECODE (18) --  Time is set after decoding NAVIC satellites  */
 
   /* Optional */
   /*  Sensor Data Usage */
@@ -1678,7 +1682,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -1785,7 +1790,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -1815,6 +1821,7 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal
  */
 
   /* Optional */
@@ -1841,6 +1848,7 @@ typedef enum {
   eQMI_LOC_SV_SYSTEM_GLONASS_V02 = 5, /**<  GLONASS satellite  */
   eQMI_LOC_SV_SYSTEM_BDS_V02 = 6, /**<  BDS satellite  */
   eQMI_LOC_SV_SYSTEM_QZSS_V02 = 7, /**<  QZSS satellite  */
+  eQMI_LOC_SV_SYSTEM_NAVIC_V02 = 8, /**<  NAVIC satellite  */
   QMILOCSVSYSTEMENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSvSystemEnumT_v02;
 /**
@@ -1903,6 +1911,7 @@ typedef struct {
       - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
       - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
       - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+      - eQMI_LOC_SV_SYSTEM_NAVIC (8) --  NAVIC satellite
  */
 
   uint16_t gnssSvId;
@@ -1910,11 +1919,12 @@ typedef struct {
          \begin{itemize1}
          \item Range:  \begin{itemize1}
            \item For GPS:      1 to 32
-           \item For GLONASS:  1 to 32
+           \item For GLONASS:  65 to 96
            \item For SBAS:     120 to 158 and 183 to 191
            \item For QZSS:     193 to 197
            \item For BDS:      201 to 237
            \item For GAL:      301 to 336
+           \item For NAVIC:    401 to 414
          \end{itemize1} \end{itemize1}
 
         The GPS and GLONASS SVs can be disambiguated using the system field. */
@@ -2034,7 +2044,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 }qmiLocEventGnssSvInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -4009,7 +4020,8 @@ typedef struct {
          - For SBAS:    120 to 158 and 183 to 191 \n
          - For QZSS:    193 to 197 \n
          - For BDS:     201 to 237 \n
-         - For GAL:     301 to 336
+         - For GAL:     301 to 336 \n
+         - For NAVIC:   401 to 414
         */
 
   /* Optional */
@@ -4032,7 +4044,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -4060,7 +4073,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 }qmiLocEventGeofenceBatchedBreachIndMsgT_v02;  /* Message */
 /**
     @}
@@ -4222,7 +4236,8 @@ typedef struct {
          - For SBAS:    120 to 158 and 183 to 191 \n
          - For QZSS:    193 to 197 \n
          - For BDS:     201 to 237 \n
-         - For GAL:     301 to 336
+         - For GAL:     301 to 336 \n
+         - For NAVIC:   401 to 414
         */
 
   /* Optional */
@@ -4245,7 +4260,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -4273,7 +4289,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 }qmiLocEventGeofenceBatchedDwellIndMsgT_v02;  /* Message */
 /**
     @}
@@ -5553,7 +5570,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -5620,17 +5638,17 @@ typedef enum {
   QMILOCLOCKSUBINFOENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
   eQMI_LOC_LOCK_DV_SUB_V02 = 1, /**<  Lock Dedicated Voice Subscription (DV sub) */
   eQMI_LOC_LOCK_DD_SUB_V02 = 2, /**<  Lock Dedicated Data Subscription (DD sub)  */
-  eQMI_LOC_LOCK_ALL_SUB_V02 = 3, /**<  Lock all subscription     */
+  eQMI_LOC_LOCK_ALL_SUB_V02 = 3, /**<  Lock all subscription  */
   QMILOCLOCKSUBINFOENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocLockSubInfoEnumT_v02;
 /**
     @}
   */
 
-typedef uint32_t qmiLocLockClientMaskT_v02;
-#define QMI_LOC_LOCK_CLIENT_MASK_AFW_V02 ((qmiLocLockClientMaskT_v02)0x00000001) /**<  Lock AFW client  */
-#define QMI_LOC_LOCK_CLIENT_MASK_NFW_V02 ((qmiLocLockClientMaskT_v02)0x00000002) /**<  Lock NFW client  */
-#define QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED_V02 ((qmiLocLockClientMaskT_v02)0x00000004) /**<  Lock privileged client  */
+typedef uint64_t qmiLocLockClientMaskT_v02;
+#define QMI_LOC_LOCK_CLIENT_MASK_AFW_V02 ((qmiLocLockClientMaskT_v02)0x00000001ull) /**<  Lock AFW client  */
+#define QMI_LOC_LOCK_CLIENT_MASK_NFW_V02 ((qmiLocLockClientMaskT_v02)0x00000002ull) /**<  Lock NFW client  */
+#define QMI_LOC_LOCK_CLIENT_MASK_PRIVILEGED_V02 ((qmiLocLockClientMaskT_v02)0x00000004ull) /**<  Lock privileged client  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5809,7 +5827,7 @@ typedef struct {
        \begin{itemize1}
        \item    0x01 (TRUE) -- SBAS configuration is enabled
        \item    0x00 (FALSE) -- SBAS configuration is disabled
-       \vspace{-0.18in} \end{itemize1}    */
+       \vspace{-0.18in} \end{itemize1}  */
 
   /* Optional */
   /*  QZSS-L1S Config */
@@ -5819,7 +5837,7 @@ typedef struct {
        \begin{itemize1}
        \item    0x01 (TRUE) -- QZSS-L1S configuration is enabled
        \item    0x00 (FALSE) -- QZSS-L1S configuration is disabled
-       \vspace{-0.18in} \end{itemize1}       */
+       \vspace{-0.18in} \end{itemize1}     */
 }qmiLocSetSbasConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -6450,6 +6468,18 @@ typedef uint32_t qmiLocDeleteClockInfoMaskT_v02;
       clock information  */
 #define QMI_LOC_MASK_DELETE_CLOCK_INFO_GALWEEK_NUMBER_V02 ((qmiLocDeleteClockInfoMaskT_v02)0x00800000) /**<  Mask to delete the GAL week number from the clock information  */
 #define QMI_LOC_MASK_DELETE_CLOCK_INFO_GAL_RF_GRP_DELAY_V02 ((qmiLocDeleteClockInfoMaskT_v02)0x01000000) /**<  Mask to delete the GAL RF GRP delay from the clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TIME_EST_V02 ((qmiLocDeleteClockInfoMaskT_v02)0x02000000) /**<  Mask to delete a NAVIC time estimate from the clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_WEEK_NUMBER_V02 ((qmiLocDeleteClockInfoMaskT_v02)0x04000000) /**<  Mask to delete the NAVIC week number from the clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_RF_GRP_DELAY_V02 ((qmiLocDeleteClockInfoMaskT_v02)0x08000000) /**<  Mask to delete the NAVIC RF GRP delay from the clock information  */
+typedef uint64_t qmiLocExtDeleteClockInfoMaskT_v02;
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GPS_TB_V02 ((qmiLocExtDeleteClockInfoMaskT_v02)0x000001ull) /**<  Mask to delete NAVIC-to-GPS time bias-related information from the
+      clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GLO_TB_V02 ((qmiLocExtDeleteClockInfoMaskT_v02)0x000002ull) /**<  Mask to delete NAVIC-to-GLO time bias-related information from the
+      clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_BDS_TB_V02 ((qmiLocExtDeleteClockInfoMaskT_v02)0x000004ull) /**<  Mask to delete NAVIC-to-BDS time bias-related information from the
+      clock information  */
+#define QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GAL_TB_V02 ((qmiLocExtDeleteClockInfoMaskT_v02)0x000008ull) /**<  Mask to delete NAVIC-to-GAL time bias-related information from the
+      clock information  */
 typedef uint8_t qmiLocDeleteSvInfoMaskT_v02;
 #define QMI_LOC_MASK_DELETE_EPHEMERIS_V02 ((qmiLocDeleteSvInfoMaskT_v02)0x01) /**<  Delete ephemeris for the satellite  */
 #define QMI_LOC_MASK_DELETE_ALMANAC_V02 ((qmiLocDeleteSvInfoMaskT_v02)0x02) /**<  Delete almanac for the satellite  */
@@ -6478,6 +6508,7 @@ typedef struct {
       - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
       - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
       - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+      - eQMI_LOC_SV_SYSTEM_NAVIC (8) --  NAVIC satellite
  */
 
   qmiLocDeleteSvInfoMaskT_v02 deleteSvInfoMask;
@@ -6659,6 +6690,9 @@ typedef struct {
       clock information
       - QMI_LOC_MASK_DELETE_CLOCK_INFO_GALWEEK_NUMBER (0x00800000) --  Mask to delete the GAL week number from the clock information
       - QMI_LOC_MASK_DELETE_CLOCK_INFO_GAL_RF_GRP_DELAY (0x01000000) --  Mask to delete the GAL RF GRP delay from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TIME_EST (0x02000000) --  Mask to delete a NAVIC time estimate from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_WEEK_NUMBER (0x04000000) --  Mask to delete the NAVIC week number from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_RF_GRP_DELAY (0x08000000) --  Mask to delete the NAVIC RF GRP delay from the clock information
  */
 
   /* Optional */
@@ -8333,6 +8367,7 @@ typedef enum {
   eQMI_LOC_SUPL_VERSION_1_0_V02 = 1, /**<  SUPL version 1.0  */
   eQMI_LOC_SUPL_VERSION_2_0_V02 = 2, /**<  SUPL version 2.0  */
   eQMI_LOC_SUPL_VERSION_2_0_2_V02 = 3, /**<    SUPL version 2.0.2  */
+  eQMI_LOC_SUPL_VERSION_2_0_4_V02 = 4, /**<    SUPL version 2.0.4  */
   QMILOCSUPLVERSIONENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSuplVersionEnumT_v02;
 /**
@@ -8371,6 +8406,7 @@ typedef enum {
   QMILOCSUPLTLSVERSIONENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
   eQMI_LOC_SUPL_TLS_VERSION_1_0_V02 = 0, /**<  SUPL TLS version 1.0  */
   eQMI_LOC_SUPL_TLS_VERSION_1_1_V02 = 1, /**<  SUPL TLS version 1.1  */
+  eQMI_LOC_SUPL_TLS_VERSION_1_2_V02 = 2, /**<  SUPL TLS version 1.2  */
   QMILOCSUPLTLSVERSIONENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSuplTlsVersionEnumT_v02;
 /**
@@ -8438,6 +8474,7 @@ typedef struct {
       - eQMI_LOC_SUPL_VERSION_1_0 (1) --  SUPL version 1.0
       - eQMI_LOC_SUPL_VERSION_2_0 (2) --  SUPL version 2.0
       - eQMI_LOC_SUPL_VERSION_2_0_2 (3) --    SUPL version 2.0.2
+      - eQMI_LOC_SUPL_VERSION_2_0_4 (4) --    SUPL version 2.0.4
  */
 
   /* Optional */
@@ -8491,6 +8528,7 @@ typedef struct {
  Valid values: \n
       - eQMI_LOC_SUPL_TLS_VERSION_1_0 (0) --  SUPL TLS version 1.0
       - eQMI_LOC_SUPL_TLS_VERSION_1_1 (1) --  SUPL TLS version 1.1
+      - eQMI_LOC_SUPL_TLS_VERSION_1_2 (2) --  SUPL TLS version 1.2
  */
 
   /* Optional */
@@ -8715,6 +8753,7 @@ typedef struct {
       - eQMI_LOC_SUPL_VERSION_1_0 (1) --  SUPL version 1.0
       - eQMI_LOC_SUPL_VERSION_2_0 (2) --  SUPL version 2.0
       - eQMI_LOC_SUPL_VERSION_2_0_2 (3) --    SUPL version 2.0.2
+      - eQMI_LOC_SUPL_VERSION_2_0_4 (4) --    SUPL version 2.0.4
  */
 
   /* Optional */
@@ -8767,6 +8806,7 @@ typedef struct {
  Valid values: \n
       - eQMI_LOC_SUPL_TLS_VERSION_1_0 (0) --  SUPL TLS version 1.0
       - eQMI_LOC_SUPL_TLS_VERSION_1_1 (1) --  SUPL TLS version 1.1
+      - eQMI_LOC_SUPL_TLS_VERSION_1_2 (2) --  SUPL TLS version 1.2
  */
 
   /* Optional */
@@ -11411,6 +11451,7 @@ typedef struct {
       - eQMI_LOC_TIME_SRC_QZSS_TOW_DECODE (15) --  Time is set after decoding QZSS satellites
       - eQMI_LOC_TIME_SRC_BDS_TOW_DECODE (16) --  Time is set after decoding BDS satellites
       - eQMI_LOC_TIME_SRC_GAL_TOW_DECODE (17) --  Time is set after decoding GAL satellites
+      - eQMI_LOC_TIME_SRC_NAVIC_TOW_DECODE (18) --  Time is set after decoding NAVIC satellites
  */
 
   /* Optional */
@@ -11432,7 +11473,8 @@ typedef struct {
        - For SBAS:    120 to 158 and 183 to 191 \n
        - For QZSS:    193 to 197 \n
        - For BDS:     201 to 237 \n
-       - For GAL:     301 to 336
+       - For GAL:     301 to 336 \n
+       - For NAVIC:   401 to 414
        */
 
   /* Optional */
@@ -11465,7 +11507,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -11493,7 +11536,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 }qmiLocGetBestAvailablePositionIndMsgT_v02;  /* Message */
 /**
     @}
@@ -13054,7 +13098,7 @@ typedef struct {
 
   char ssid[QMI_LOC_MAX_WIFI_AP_SSID_STR_LENGTH_V02 + 1];
   /**<   The NULL-terminated SSID of the Wi-Fi AP.
-       Its maximum length according to the ASCII standard is 32 octets.    \n
+       Its maximum length according to the ASCII standard is 32 octets. \n
        Type: string */
 
   int32_t apHighResolutionRssi;
@@ -13855,6 +13899,7 @@ typedef struct {
       - eQMI_LOC_TIME_SRC_QZSS_TOW_DECODE (15) --  Time is set after decoding QZSS satellites
       - eQMI_LOC_TIME_SRC_BDS_TOW_DECODE (16) --  Time is set after decoding BDS satellites
       - eQMI_LOC_TIME_SRC_GAL_TOW_DECODE (17) --  Time is set after decoding GAL satellites
+      - eQMI_LOC_TIME_SRC_NAVIC_TOW_DECODE (18) --  Time is set after decoding NAVIC satellites
  */
 }qmiLocGetAvailWwanPositionIndMsgT_v02;  /* Message */
 /**
@@ -14256,6 +14301,7 @@ typedef struct {
       - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
       - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
       - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+      - eQMI_LOC_SV_SYSTEM_NAVIC (8) --  NAVIC satellite
  */
 
   uint16_t systemWeek;
@@ -14365,6 +14411,7 @@ typedef struct {
       - eQMI_LOC_TIME_SRC_QZSS_TOW_DECODE (15) --  Time is set after decoding QZSS satellites
       - eQMI_LOC_TIME_SRC_BDS_TOW_DECODE (16) --  Time is set after decoding BDS satellites
       - eQMI_LOC_TIME_SRC_GAL_TOW_DECODE (17) --  Time is set after decoding GAL satellites
+      - eQMI_LOC_TIME_SRC_NAVIC_TOW_DECODE (18) --  Time is set after decoding NAVIC satellites
  */
 }qmiLocGnssTimeExtStructT_v02;  /* Type */
 /**
@@ -14473,6 +14520,7 @@ typedef struct {
          \item    For QZSS:    193 to 197
          \item    For BDS:     201 to 237
          \item    For GAL:     301 to 336
+         \item    For NAVIC:   401 to 414
          \vspace{-0.18in} \end{itemize1} \end{itemize1} */
 
   uint8_t gloFrequency;
@@ -14656,6 +14704,7 @@ typedef struct {
       - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
       - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
       - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+      - eQMI_LOC_SV_SYSTEM_NAVIC (8) --  NAVIC satellite
  */
 
   /* Optional */
@@ -14789,7 +14838,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 
   /* Optional */
   /*  Jammer Indicator */
@@ -14887,6 +14937,50 @@ typedef struct {
          - Type: character string \n
          - Maximum length of the array: 8
          When the measurement code type eQMI_LOC_GNSS_CODE_TYPE_OTHER is used, the name of the code is specified in the char array above.  */
+
+  /* Optional */
+  /*  GPS to NAVIC Intersystem Time Bias */
+  uint8_t gpsNavicInterSystemBias_valid;  /**< Must be set to true if gpsNavicInterSystemBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 gpsNavicInterSystemBias;
+  /**<   \vspace{4pt} \n
+       This is reported if both GPS and NAVIC system
+       information reporting are enabled. \n
+       - System 1: GPS \n
+       - System 2: NAVIC
+  */
+
+  /* Optional */
+  /*  GAL to NAVIC Intersystem Time Bias */
+  uint8_t galNavicInterSystemBias_valid;  /**< Must be set to true if galNavicInterSystemBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 galNavicInterSystemBias;
+  /**<   \vspace{4pt} \n
+       This is reported if both GAL and NAVIC system
+       information reporting are enabled. \n
+       - System 1: GAL \n
+       - System 2: NAVIC
+  */
+
+  /* Optional */
+  /*  GLO to NAVIC Intersystem Time Bias */
+  uint8_t gloNavicInterSystemBias_valid;  /**< Must be set to true if gloNavicInterSystemBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 gloNavicInterSystemBias;
+  /**<   \vspace{4pt} \n
+       This is reported if both GLO and NAVIC system
+       information reporting are enabled. \n
+       - System 1: GLO \n
+       - System 2: NAVIC
+  */
+
+  /* Optional */
+  /*  BDS to NAVIC Intersystem Time Bias */
+  uint8_t bdsNavicInterSystemBias_valid;  /**< Must be set to true if bdsNavicInterSystemBias is being passed */
+  qmiLocInterSystemBiasStructT_v02 bdsNavicInterSystemBias;
+  /**<   \vspace{4pt} \n
+       This is reported if both BDS and NAVIC system
+       information reporting are enabled. \n
+       - System 1: BDS \n
+       - System 2: NAVIC
+  */
 }qmiLocEventGnssSvMeasInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -14917,6 +15011,7 @@ typedef struct {
          \item    For QZSS:    193 to 197
          \item    For BDS:     201 to 237
          \item    For GAL:     301 to 336
+         \item    For NAVIC:   401 to 414
        \vspace{-0.18in} \end{itemize1} \end{itemize1} */
 
   /* Mandatory */
@@ -16462,7 +16557,8 @@ typedef struct {
       - For SBAS:    120 to 158 and 183 to 191 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
   */
 
   /* Optional */
@@ -16501,7 +16597,8 @@ typedef struct {
       - For GLONASS: 65 to 96 \n
       - For QZSS:    193 to 197 \n
       - For BDS:     201 to 237 \n
-      - For GAL:     301 to 336
+      - For GAL:     301 to 336 \n
+      - For NAVIC:   401 to 414
       */
 
   /* Optional */
@@ -16529,7 +16626,8 @@ typedef struct {
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S (0x00004000) --  QZSS L1S RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L (0x00008000) --  QZSS L2C_L RF Band
       - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q (0x00010000) --  QZSS L5_Q RF Band
-      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band  */
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA (0x00020000) --  SBAS L1_CA RF Band
+      - QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5 (0x00040000) --  NAVIC L5 Signal  */
 }qmiLocEventDbtPositionReportIndMsgT_v02;  /* Message */
 /**
     @}
@@ -17373,6 +17471,7 @@ typedef uint32_t qmiLocGNSSConstellMaskT_v02;
 #define QMI_LOC_SYSTEM_BDS_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000004) /**<  System BDS data  */
 #define QMI_LOC_SYSTEM_GAL_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000008) /**<  System GALILEO data  */
 #define QMI_LOC_SYSTEM_QZSS_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000010) /**<  System QZSS data  */
+#define QMI_LOC_SYSTEM_NAVIC_V02 ((qmiLocGNSSConstellMaskT_v02)0x00000020) /**<  System NAVIC data  */
 /** @addtogroup loc_qmi_aggregates
     @{
   */
@@ -17387,6 +17486,7 @@ typedef struct {
       - QMI_LOC_SYSTEM_BDS (0x00000004) --  System BDS data
       - QMI_LOC_SYSTEM_GAL (0x00000008) --  System GALILEO data
       - QMI_LOC_SYSTEM_QZSS (0x00000010) --  System QZSS data
+      - QMI_LOC_SYSTEM_NAVIC (0x00000020) --  System NAVIC data
  */
 
   qmiLocDeleteSatelliteDataMaskT_v02 deleteSatelliteDataMask;
@@ -17468,6 +17568,9 @@ typedef struct {
       clock information
       - QMI_LOC_MASK_DELETE_CLOCK_INFO_GALWEEK_NUMBER (0x00800000) --  Mask to delete the GAL week number from the clock information
       - QMI_LOC_MASK_DELETE_CLOCK_INFO_GAL_RF_GRP_DELAY (0x01000000) --  Mask to delete the GAL RF GRP delay from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TIME_EST (0x02000000) --  Mask to delete a NAVIC time estimate from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_WEEK_NUMBER (0x04000000) --  Mask to delete the NAVIC week number from the clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_RF_GRP_DELAY (0x08000000) --  Mask to delete the NAVIC RF GRP delay from the clock information
  */
 
   /* Optional */
@@ -17507,6 +17610,24 @@ typedef struct {
   uint8_t deleteSatelliteData_valid;  /**< Must be set to true if deleteSatelliteData is being passed */
   qmiLocDeleteSatelliteDataStructT_v02 deleteSatelliteData;
   /**<   Request to delete the GNSS service data.*/
+
+  /* Optional */
+  /*  Requested Bitmask of Clock Info Data to be Deleted */
+  uint8_t deleteExtClockInfoMask_valid;  /**< Must be set to true if deleteExtClockInfoMask is being passed */
+  qmiLocExtDeleteClockInfoMaskT_v02 deleteExtClockInfoMask;
+  /**<   Extended Mask for the clock information service data that is to be deleted.
+ If QMI_LOC_DELETE_DATA_MASK_TIME is set in deleteServiceDataMask,
+ deleteExtClockInfoMask will be ignored.
+ Valid values: \n
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GPS_TB (0x000001) --  Mask to delete NAVIC-to-GPS time bias-related information from the
+      clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GLO_TB (0x000002) --  Mask to delete NAVIC-to-GLO time bias-related information from the
+      clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_BDS_TB (0x000004) --  Mask to delete NAVIC-to-BDS time bias-related information from the
+      clock information
+      - QMI_LOC_MASK_DELETE_CLOCK_INFO_NAVIC_TO_GAL_TB (0x000008) --  Mask to delete NAVIC-to-GAL time bias-related information from the
+      clock information
+ */
 }qmiLocDeleteGNSSServiceDataReqMsgT_v02;  /* Message */
 /**
     @}
@@ -17724,6 +17845,7 @@ typedef enum {
   eQMI_LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY_V02 = 7, /**<  Support the XTRA integrity feature  */
   eQMI_LOC_SUPPORTED_FEATURE_FDCL_2_V02 = 8, /**<  Support the FDCL version 2 feature  */
   eQMI_LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY_V02 = 9, /**<  Support the location privacy feature  */
+  eQMI_LOC_SUPPORTED_FEATURE_NAVIC_V02 = 10, /**<  Support the NAVIC constellation  */
   QMILOCSUPPORTEDFEATUREENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocSupportedFeatureEnumT_v02;
 /**
@@ -19326,6 +19448,7 @@ typedef uint64_t qmiLocConstellationMaskT_v02;
 #define QMI_LOC_CONSTELLATION_BDS_V02 ((qmiLocConstellationMaskT_v02)0x00000002ull) /**<  Enable BDS.  */
 #define QMI_LOC_CONSTELLATION_QZSS_V02 ((qmiLocConstellationMaskT_v02)0x00000004ull) /**<  Enable QZSS.  */
 #define QMI_LOC_CONSTELLATION_GAL_V02 ((qmiLocConstellationMaskT_v02)0x00000008ull) /**<  Enable GALILEO.  */
+#define QMI_LOC_CONSTELLATION_NAVIC_V02 ((qmiLocConstellationMaskT_v02)0x00000010ull) /**<  Enable NAVIC.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -19353,7 +19476,8 @@ typedef struct {
       - QMI_LOC_CONSTELLATION_GLO (0x00000001) --  Enable GLONASS.
       - QMI_LOC_CONSTELLATION_BDS (0x00000002) --  Enable BDS.
       - QMI_LOC_CONSTELLATION_QZSS (0x00000004) --  Enable QZSS.
-      - QMI_LOC_CONSTELLATION_GAL (0x00000008) --  Enable GALILEO.  */
+      - QMI_LOC_CONSTELLATION_GAL (0x00000008) --  Enable GALILEO.
+      - QMI_LOC_CONSTELLATION_NAVIC (0x00000010) --  Enable NAVIC.  */
 
   /* Optional */
   /*  GNSS Constellations to be Disabled */
@@ -19366,7 +19490,8 @@ typedef struct {
       - QMI_LOC_CONSTELLATION_GLO (0x00000001) --  Enable GLONASS.
       - QMI_LOC_CONSTELLATION_BDS (0x00000002) --  Enable BDS.
       - QMI_LOC_CONSTELLATION_QZSS (0x00000004) --  Enable QZSS.
-      - QMI_LOC_CONSTELLATION_GAL (0x00000008) --  Enable GALILEO.  */
+      - QMI_LOC_CONSTELLATION_GAL (0x00000008) --  Enable GALILEO.
+      - QMI_LOC_CONSTELLATION_NAVIC (0x00000010) --  Enable NAVIC.  */
 }qmiLocSetConstellationConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -19784,6 +19909,21 @@ typedef struct {
       - eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT (102) --  Disabled by the external client
       - eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY (103) --  Could not be enabled due to memory allocation failure
  */
+
+  /* Optional */
+  /*  NAVIC Constellation Status */
+  uint8_t navic_status_valid;  /**< Must be set to true if navic_status is being passed */
+  qmiLocConstellationStatusEnumT_v02 navic_status;
+  /**<   Specifies the enablement status of NAVIC. \n
+ Valid values: \n
+      - eQMI_LOC_CONSTELLATION_ENABLED_MANDATORY (0) --  Mandatory Constellation. Always Enabled
+      - eQMI_LOC_CONSTELLATION_ENABLED_INTERNALLY (1) --  Enabled internally by the system software
+      - eQMI_LOC_CONSTELLATION_ENABLED_BY_CLIENT (2) --  Enabled by the external client
+      - eQMI_LOC_CONSTELLATION_DISABLED_NOT_SUPPORTED (100) --  Constellation not supported
+      - eQMI_LOC_CONSTELLATION_DISABLED_INTERNALLY (101) --  Disabled internally by the system software
+      - eQMI_LOC_CONSTELLATION_DISABLED_BY_CLIENT (102) --  Disabled by the external client
+      - eQMI_LOC_CONSTELLATION_DISABLED_NO_MEMORY (103) --  Could not be enabled due to memory allocation failure
+ */
 }qmiLocGetConstellationConfigIndMsgT_v02;  /* Message */
 /**
     @}
@@ -20148,6 +20288,7 @@ typedef struct {
          \item    For QZSS:    193 to 197
          \item    For BDS:     201 to 237
          \item    For GAL:     301 to 336
+         \item    For NAVIC;   401 to 414
        \vspace{-0.18in} \end{itemize1} \end{itemize1} */
 
   qmiLocEphUpdateActionEnumT_v02 updateAction;
@@ -20883,6 +21024,7 @@ typedef struct {
       - eQMI_LOC_SV_SYSTEM_GLONASS (5) --  GLONASS satellite
       - eQMI_LOC_SV_SYSTEM_BDS (6) --  BDS satellite
       - eQMI_LOC_SV_SYSTEM_QZSS (7) --  QZSS satellite
+      - eQMI_LOC_SV_SYSTEM_NAVIC (8) --  NAVIC satellite
  */
 
   float alpha0;

@@ -197,7 +197,8 @@ enum GnssSvType {
     GNSS_SV_TYPE_GLONASS,
     GNSS_SV_TYPE_QZSS,
     GNSS_SV_TYPE_BEIDOU,
-    GNSS_SV_TYPE_GALILEO
+    GNSS_SV_TYPE_GALILEO,
+    GNSS_SV_TYPE_NAVIC
 };
 
 enum GnssLocationInfoFlagMask {

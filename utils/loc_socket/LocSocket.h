@@ -171,7 +171,7 @@ public:
         bool rtv = true;
 
         if ((nullptr != data) && (false == mServiceDeleted)){
-            if ((addr.sq_node == 0) && (addr.sq_port == 0)) {
+            if ((mDestAddr.sq_node == 0) && (mDestAddr.sq_port == 0)) {
                 LOC_LOGe("service not ready");
             } else{
                 rtv = LocSocket::sendData(mSocket, mDestAddr, data, length);

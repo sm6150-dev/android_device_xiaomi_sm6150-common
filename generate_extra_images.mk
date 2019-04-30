@@ -242,6 +242,7 @@ $(OUT_IMAGE_PATH): $(MKEXTUSERIMG) $(MAKE_EXT4FS)
 	$(create-commonvendor-config)
 ALL_DEFAULT_INSTALLED_MODULES += $(OUT_IMAGE_PATH)
 ALL_MODULES.$(LOCAL_MODULE).INSTALLED += $(OUT_IMAGE_PATH)
+droidcore: $(OUT_IMAGE_PATH)
 .PHONY: commonvendor
 commonvendor: $(OUT_IMAGE_PATH)
 endif

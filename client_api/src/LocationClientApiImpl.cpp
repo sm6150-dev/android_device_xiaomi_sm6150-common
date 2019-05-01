@@ -1608,14 +1608,9 @@ void LocationClientApiImpl::onListenerReady() {
         virtual ~ClientRegisterReq() {}
         void proc() const {
             LocAPIClientRegisterReqMsg msg(mApiImpl->mSocketName);
-            bool rc = true;
-#ifdef FEATURE_EXTERNAL_AP
-            rc = mApiImpl->mIpcSender->findNewService();
-#endif
-            if (rc == true) {
-                rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t *>(&msg), sizeof(msg));
-                LOC_LOGd(">>> onListenerReady::ClientRegisterReqMsg rc=%d", rc);
-            }
+            bool rc = mApiImpl->mIpcSender->send(reinterpret_cast<uint8_t *>(&msg),
+                                                 sizeof(msg));
+            LOC_LOGd(">>> onListenerReady::ClientRegisterReqMsg rc=%d", rc);
         }
         LocationClientApiImpl *mApiImpl;
     };
@@ -1654,8 +1649,13 @@ void LocationClientApiImpl::onReceive(const string& data) {
                         // flag to false to prevent messages to be sent to hal
                         // before registeration completes
                         mApiImpl->mHalRegistered = false;
+
                         // set mSessionId to invalid so session can be restarted
                         mApiImpl->mSessionId = LOCATION_CLIENT_SESSION_ID_INVALID;
+                        // when hal daemon crashes, we need to find the new node/port
+                        #ifdef FEATURE_EXTERNAL_AP
+                            mApiImpl->mIpcSender->findNewService();
+                        #endif
                         mApiImpl->onListenerReady();
                         break;
                     }

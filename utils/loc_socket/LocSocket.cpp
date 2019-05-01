@@ -43,7 +43,7 @@ namespace loc_util {
 #define LOC_MSG_HEAD "$MSGLEN$"
 #define LOC_MSG_ABORT "LocSocketMsg::ABORT"
 #define RETRY_FINDSERVICE_MAX_COUNT 10
-#define RETRY_FINDSERVICE_SLEEP_MS  5
+#define RETRY_FINDSERVICE_SLEEP_MS  2
 
 static inline __le32 cpu_to_le32(uint32_t x) { return htole32(x); }
 static inline uint32_t le32_to_cpu(__le32 x) { return le32toh(x); }
@@ -92,6 +92,10 @@ bool LocSocket::startListeningBlocking(const std::string& name) {
         return false;
     }
 
+    timeval timeout;
+    timeout.tv_sec = SOCKET_TIMEOUT_SEC;
+    timeout.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
     // get socket name
     sockaddr_qrtr addr = {0};
     socklen_t sl = sizeof(addr);
@@ -294,7 +298,7 @@ bool LocSocket::send(int service, int instance, const std::string& data) {
     return send(service, instance, (const uint8_t*)data.c_str(), data.length());
 }
 
-// static
+// static function: only used to send abort message to the servce itself
 bool LocSocket::send(int service, int instance, const uint8_t data[], uint32_t length) {
 
     bool result = false;
@@ -303,6 +307,11 @@ bool LocSocket::send(int service, int instance, const uint8_t data[], uint32_t l
         LOC_LOGe("create socket error. reason:%s", strerror(errno));
         return false;
     }
+
+    timeval timeout;
+    timeout.tv_sec = SOCKET_TIMEOUT_SEC;
+    timeout.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
     sockaddr_qrtr addr;
     memset(&addr, 0, sizeof(addr));

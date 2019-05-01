@@ -4436,7 +4436,8 @@ void LocApiV02 :: reportNiRequest(
         if (ni_req_ptr->isInEmergencySession_valid &&
             ((ni_req_ptr->suplEmergencyNotification_valid) || (ni_req_ptr->NiUmtsCpInd_valid))) {
             if (ni_req_ptr->isInEmergencySession ||
-                (GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES)) {
+                ((GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES) &&
+                 (ni_req_ptr->suplEmergencyNotification_valid))) {
                 informNiResponse(GNSS_NI_RESPONSE_ACCEPT, (const void*)ni_req_copy_ptr);
             } else {
                 informNiResponse(GNSS_NI_RESPONSE_DENY, (const void*)ni_req_copy_ptr);

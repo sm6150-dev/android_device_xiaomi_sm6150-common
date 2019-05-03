@@ -40,7 +40,6 @@
 #else
 #include <endian.h>
 #include <linux/qrtr.h>
-#include <libqrtr.h>
 #endif
 
 #include <log_util.h>

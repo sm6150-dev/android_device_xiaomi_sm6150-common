@@ -4389,7 +4389,7 @@ void LocApiV02 :: reportNiRequest(
                     supl_req->clientName.formattedString_len);
             LOC_LOGv("SUPL NI: client_name: %s \n", notif.message);
         } else {
-            LOC_LOGv("%s:%d]: SUPL NI: client_name not present.");
+            LOC_LOGv("SUPL NI: client_name not present.");
         }
 
         // Requestor ID

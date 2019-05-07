@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -66,15 +66,15 @@ namespace loc_core
 class SystemStatusItemBase
 {
 public:
-    timespec mUtcTime;     // UTC timestamp when this info was last updated
-    timespec mUtcReported; // UTC timestamp when this info was reported
+    timespec  mUtcTime;
+    timespec  mUtcReported;
     static const uint32_t maxItem = 5;
 
     SystemStatusItemBase() {
-        struct timespec tv;
-        clock_gettime(CLOCK_MONOTONIC, &tv);
+        timeval tv;
+        gettimeofday(&tv, NULL);
         mUtcTime.tv_sec  = tv.tv_sec;
-        mUtcTime.tv_nsec = tv.tv_nsec;
+        mUtcTime.tv_nsec = tv.tv_usec*1000ULL;
         mUtcReported = mUtcTime;
     };
     virtual ~SystemStatusItemBase() {};

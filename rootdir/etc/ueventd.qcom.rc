@@ -151,6 +151,10 @@ firmware_directories /vendor/firmware_mnt/image/
 #QDSS
 /dev/byte-cntr            0660   system    oem_2902
 
+#qg
+/dev/qg                   0660  system     system
+/dev/qg_battery           0660  system     system
+
 # wlan
 /dev/wcnss_wlan           0660   system     system
 /dev/wcnss_ctrl           0660   system     system

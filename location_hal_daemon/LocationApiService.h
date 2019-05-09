@@ -50,10 +50,6 @@
 
 #define SERVICE_NAME "locapiservice"
 
-// forward declaration
-class LocHalDaemonIPCReceiver;
-class LocHalDaemonQsockReceiver;
-
 /******************************************************************************
 LocationApiService
 ******************************************************************************/
@@ -79,7 +75,7 @@ public:
     }
 
     // APIs can be invoked by IPC
-    void processClientMsg(const std::string& data);
+    void processClientMsg(const char* data, uint32_t length);
 
     // from IPC receiver
     void onListenerReady(bool externalApIpc);
@@ -165,10 +161,8 @@ private:
     static LocationApiService *mInstance;
 
     // IPC interface
-    LocHalDaemonIPCReceiver* mIpcReceiver;
-
-    // QSocket interface
-    LocHalDaemonQsockReceiver* mQsockReceiver;
+    LocIpc mIpc;
+    unique_ptr<LocIpcRecver> mBlockingRecver;
 
     // Client propery database
     std::unordered_map<std::string, LocHalDaemonClientHandler*> mClients;

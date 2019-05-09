@@ -33,9 +33,39 @@ PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
 
-PKG_CHECK_MODULES([QMIFW], [qmi-framework])
-AC_SUBST([QMIFW_CFLAGS])
-AC_SUBST([QMIFW_LIBS])
+AC_ARG_ENABLE([coretech20],
+         [  --enable-coretech20 Enable core tech 2.0],
+         [case "${enableval}" in
+             yes) coretech20=true ;;
+             no)  coretech20=false ;;
+             *) AC_MSG_ERROR([bad value ${enableval} for --enable-coretech20]) ;;
+         esac],[coretech20=false])
+
+if (test "x${coretech20}" = "xtrue"); then
+    AC_MSG_NOTICE([Core tech is 2.0])
+    PKG_CHECK_MODULES([QMIFW], [qmi-framework-vendor])
+    AC_SUBST([QMIFW_CFLAGS])
+    AC_SUBST([QMIFW_LIBS])
+else
+    AC_MSG_NOTICE([Core tech is 1.0])
+    PKG_CHECK_MODULES([QMIFW], [qmi-framework])
+    AC_SUBST([QMIFW_CFLAGS])
+    AC_SUBST([QMIFW_LIBS])
+fi
+
+AC_ARG_WITH([kernel-qrtr],
+       AC_HELP_STRING([--with-kernel-qrtr],
+          [enable kernel qrtr, kernel supports qrtr]))
+AC_ARG_ENABLE([kernel-qrtr],
+         [  --enable-kernel-qrtr kernel qrtr is enabled],
+         [case "${enableval}" in
+             yes) kernelqrtr=true ;;
+             no)  kernelqrtr=false ;;
+             *) AC_MSG_ERROR([bad value ${enableval} for --enable-kernel-qrtr]) ;;
+         esac],[kernelqrtr=false])
+
+AM_CONDITIONAL(USE_QSOCKET, test "x${kernelqrtr}" = "xfalse")
+
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))

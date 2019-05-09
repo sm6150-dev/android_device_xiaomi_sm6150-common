@@ -41,9 +41,6 @@ AC_ARG_WITH([external_ap],
 
 if test "x$with_external_ap" != "xno"; then
     CPPFLAGS="${CPPFLAGS} -DFEATURE_EXTERNAL_AP"
-    PKG_CHECK_MODULES([LOCSOCKET], [loc-socket])
-    AC_SUBST([LOCSOCKET_CFLAGS])
-    AC_SUBST([LOCSOCKET_LIBS])
 else
     # Checks for libraries.
     PKG_CHECK_MODULES([LOCHALDAEMON], [location-hal-daemon])

@@ -3,8 +3,7 @@ AM_CFLAGS = \
     -I./ \
     $(LOCCORE_CFLAGS) \
     $(GPSUTILS_CFLAGS) \
-    $(LOCQSOCKET_CFLAGS) \
-    -std=c++11
+     -std=c++11
 
 if USE_SYSTEMD
 AM_CFLAGS += -DINIT_SYSTEM_SYSTEMD
@@ -14,19 +13,14 @@ endif
 
 requiredlibs = \
     $(LOCATIONAPI_LIBS) \
-    $(GPSUTILS_LIBS) \
-    $(LOCQSOCKET_LIBS)
+    $(GPSUTILS_LIBS)
 
 h_sources = \
     LocationApiMsg.h \
-    LocHalDaemonIPCReceiver.h \
-    LocHalDaemonIPCSender.h \
     LocHalDaemonClientHandler.h \
     LocationApiService.h
 
 c_sources = \
-    LocHalDaemonIPCReceiver.cpp \
-    LocHalDaemonIPCSender.cpp \
     LocHalDaemonClientHandler.cpp \
     LocationApiService.cpp \
     main.cpp

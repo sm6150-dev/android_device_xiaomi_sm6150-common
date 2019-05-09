@@ -497,6 +497,10 @@ static GnssLocation parseLocationInfo(const ::GnssLocationInfoNotification &halL
         flags |= GNSS_LOCATION_INFO_TIME_UNC_BIT;
     }
 
+    if (GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT & halLocationInfo.flags) {
+        flags |= GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT;
+    }
+
     locationInfo.gnssInfoFlags = (GnssLocationInfoFlagMask)flags;
     locationInfo.altitudeMeanSeaLevel = halLocationInfo.altitudeMeanSeaLevel;
     locationInfo.pdop = halLocationInfo.pdop;
@@ -518,6 +522,7 @@ static GnssLocation parseLocationInfo(const ::GnssLocationInfoNotification &halL
     locationInfo.northVelocityStdDeviation = halLocationInfo.northVelocityStdDeviation;
     locationInfo.eastVelocityStdDeviation = halLocationInfo.eastVelocityStdDeviation;
     locationInfo.upVelocityStdDeviation = halLocationInfo.upVelocityStdDeviation;
+    locationInfo.numSvUsedInPosition = halLocationInfo.numSvUsedInPosition;
     locationInfo.svUsedInPosition =
             parseLocationSvUsedInPosition(halLocationInfo.svUsedInPosition);
     parseGnssMeasUsageInfo(halLocationInfo, locationInfo.measUsageInfo);

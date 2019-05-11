@@ -43,6 +43,8 @@
 
 using namespace std;
 
+#define MAX_GEOFENCE_COUNT (200)
+
 typedef void* (getLocationInterface)();
 
 /******************************************************************************
@@ -609,6 +611,10 @@ void LocationApiService::addGeofences(LocAPIAddGeofencesReqMsg* pMsg) {
         LOC_LOGe(">-- start invlalid client=%s", pMsg->mSocketName);
         return;
     }
+    if (pMsg->geofences.count > MAX_GEOFENCE_COUNT) {
+        LOC_LOGe(">-- geofence count greater than MAX =%d", pMsg->geofences.count);
+        return;
+    }
     GeofenceOption* gfOptions =
             (GeofenceOption*)malloc(pMsg->geofences.count * sizeof(GeofenceOption));
     GeofenceInfo* gfInfos = (GeofenceInfo*)malloc(pMsg->geofences.count * sizeof(GeofenceInfo));
@@ -655,7 +661,7 @@ void LocationApiService::removeGeofences(LocAPIRemoveGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("removeGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
@@ -670,6 +676,14 @@ void LocationApiService::removeGeofences(LocAPIRemoveGeofencesReqMsg* pMsg) {
 void LocationApiService::modifyGeofences(LocAPIModifyGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (nullptr == pClient) {
+        LOC_LOGe("modifyGeofences - Null client!");
+        return;
+    }
+    if (pMsg->geofences.count > MAX_GEOFENCE_COUNT) {
+        LOC_LOGe("modifyGeofences - geofence count greater than MAX =%d", pMsg->geofences.count);
+        return;
+    }
     GeofenceOption* gfOptions = (GeofenceOption*)
             malloc(sizeof(GeofenceOption) * pMsg->geofences.count);
     uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * pMsg->geofences.count);
@@ -703,7 +717,7 @@ void LocationApiService::pauseGeofences(LocAPIPauseGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("pauseGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
@@ -719,7 +733,7 @@ void LocationApiService::resumeGeofences(LocAPIResumeGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("resumeGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);

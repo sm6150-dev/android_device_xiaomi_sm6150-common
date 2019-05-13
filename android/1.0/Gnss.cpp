@@ -84,7 +84,7 @@ GnssAPIClient* Gnss::getApi() {
     return mApi;
 }
 
-const Gnss::getGnssInterface() {
+const GnssInterface* Gnss::getGnssInterface() {
     static bool getGnssInterfaceFailed = false;
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
         LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);

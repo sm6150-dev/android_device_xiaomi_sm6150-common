@@ -538,6 +538,17 @@ config_kona_dcc_ddr()
 config_kona_dcc_gemnoc()
 {
     #GemNOC for KONA start
+    echo 0x091A9020 1 > $DCC_PATH/config
+    echo 0x5 0x1 > $DCC_PATH/rd_mod_wr
+    echo 0x09102008 1 > $DCC_PATH/config
+    echo 0x2 0x2 > $DCC_PATH/rd_mod_wr
+    echo 0x09142008 1 > $DCC_PATH/config
+    echo 0x2 0x2 > $DCC_PATH/rd_mod_wr
+    echo 0x09102408 1 > $DCC_PATH/config
+    echo 0x2 0x2 > $DCC_PATH/rd_mod_wr
+    echo 0x09142408 1 > $DCC_PATH/config
+    echo 0x2 0x2 > $DCC_PATH/rd_mod_wr
+
     #Dump Coherent even debug chain
     echo 0x09103808 1 > $DCC_PATH/config
     echo 3 > $DCC_PATH/loop

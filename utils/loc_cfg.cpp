@@ -881,7 +881,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
             i = 0;
             char* temp_arg = ('/' == child_proc[j].name[0][0]) ?
                 (strrchr(child_proc[j].name[0], '/') + 1) : child_proc[j].name[0];
-            strlcpy (child_proc[j].args[i++], temp_arg, sizeof (child_proc[j].args[i++]));
+            strlcpy (child_proc[j].args[i++], temp_arg, sizeof (child_proc[j].args[0]));
 
             if(conf.premium_feature) {
                if(conf.loc_feature_mask & loc_service_mask) {

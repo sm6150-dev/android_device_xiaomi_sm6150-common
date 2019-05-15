@@ -38,12 +38,7 @@
 
 namespace location_client {
 
-static uint32_t gDebug = 0;
 
-static const loc_param_s_type gConfigTable[] =
-{
-    {"DEBUG_LEVEL", &gDebug, NULL, 'n'}
-};
 
 bool Geofence::operator==(Geofence& other) {
     return mGeofenceImpl != nullptr && other.mGeofenceImpl != nullptr &&
@@ -55,10 +50,6 @@ LocationClientApi
 ******************************************************************************/
 LocationClientApi::LocationClientApi(CapabilitiesCb capabitiescb) :
         mApiImpl(new LocationClientApiImpl(capabitiescb)) {
-
-    // read configuration file
-    UTIL_READ_CONF(LOC_PATH_GPS_CONF, gConfigTable);
-    LOC_LOGd("gDebug=%u", gDebug);
 }
 
 LocationClientApi::~LocationClientApi() {

@@ -52,6 +52,22 @@ static const loc_param_s_type gConfigTable[] =
     {"GNSS_SESSION_TBF_MS", &gGnssSessionTbfMs, NULL, 'n'}
 };
 
+// this function will block until the directory specified in
+// dirName has been created
+static inline void waitForDir(const char* dirName) {
+    // wait for parent direcoty to be created...
+    struct stat buf_stat;
+    while (1) {
+        LOC_LOGd("waiting for %s...", dirName);
+        int rc = stat(dirName, &buf_stat);
+        if (!rc) {
+            break;
+        }
+        usleep(100000); //100ms
+    }
+    LOC_LOGd("done");
+}
+
 int main(int argc, char *argv[])
 {
     // read configuration file
@@ -59,34 +75,11 @@ int main(int argc, char *argv[])
 
     LOC_LOGi("location hal daemon - ver %s", HAL_DAEMON_VERSION);
 
-    // wait for parent direcoty to be created...
-    struct stat buf_stat;
-    while (1) {
-        LOC_LOGd("waiting for %s...", SOCKET_DIR_LOCATION);
-        int rc = stat(SOCKET_DIR_LOCATION, &buf_stat);
-        if (!rc) {
-            break;
-        }
-        usleep(100000); //100ms
-    }
-    LOC_LOGd("done");
-    while (1) {
-        LOC_LOGd("waiting for %s...", SOCKET_DIR_TO_CLIENT);
-        int rc = stat(SOCKET_DIR_TO_CLIENT, &buf_stat);
-        if (!rc) {
-            break;
-        }
-        usleep(100000); //100ms
-    }
-    LOC_LOGd("done");
-    while (1) {
-        LOC_LOGd("waiting for %s...", SOCKET_DIR_EHUB);
-        int rc = stat(SOCKET_DIR_EHUB, &buf_stat);
-        if (!rc) {
-            break;
-        }
-        usleep(100000); //100ms
-    }
+    waitForDir(SOCKET_DIR_LOCATION);
+    waitForDir(SOCKET_LOC_CLIENT_DIR);
+    waitForDir(EAP_LOC_CLIENT_DIR);
+    waitForDir(SOCKET_DIR_EHUB);
+
     LOC_LOGd("starting loc_hal_daemon");
 
 #ifdef INIT_SYSTEM_SYSV

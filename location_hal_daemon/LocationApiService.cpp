@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
-
+#include <memory>
 #include <SystemStatus.h>
 #include <LocationApiMsg.h>
 #include <gps_extended_c.h>
@@ -37,11 +37,13 @@
 #ifdef POWERMANAGER_ENABLED
 #include <PowerEvtHandler.h>
 #endif
-#include <LocHalDaemonIPCReceiver.h>
-#include <LocHalDaemonIPCSender.h>
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
 #include <location_interface.h>
+
+using namespace std;
+
+#define MAX_GEOFENCE_COUNT (200)
 
 typedef void* (getLocationInterface)();
 
@@ -50,6 +52,67 @@ LocationApiService - static members
 ******************************************************************************/
 LocationApiService* LocationApiService::mInstance = nullptr;
 std::mutex LocationApiService::mMutex;
+
+/******************************************************************************
+LocHaldIpcListener
+******************************************************************************/
+class LocHaldIpcListener : public ILocIpcListener {
+    LocationApiService& mService;
+    const char* mLocalSocketName;
+    const string mClientSockPath;
+    const string mClientSockPathnamePrefix;
+public:
+    inline LocHaldIpcListener(LocationApiService& service, const char* clientSockPath,
+            const char* clientSockNamePrefix, const char* localSockName = nullptr) :
+            mService(service), mLocalSocketName(localSockName),
+            mClientSockPath(clientSockPath),
+            mClientSockPathnamePrefix(string(mClientSockPath).append(clientSockNamePrefix)) {
+    }
+    // override from LocIpc
+    inline void onReceive(const char* data, uint32_t length) override {
+        mService.processClientMsg(data, length);
+    }
+    inline void onListenerReady() override {
+        if (nullptr != mLocalSocketName) {
+            if (0 != chown(mLocalSocketName, UID_GPS, GID_LOCCLIENT)) {
+                LOC_LOGe("chown to group locclient failed %s", strerror(errno));
+            }
+        }
+
+        // traverse client sockets directory - then broadcast READY message
+        LOC_LOGd(">-- onListenerReady Finding client sockets...");
+
+        DIR *dirp = opendir(mClientSockPath.c_str());
+        if (!dirp) {
+            LOC_LOGw("%s not created", mClientSockPath.c_str());
+            return;
+        }
+
+        struct dirent *dp = nullptr;
+        struct stat sbuf = {0};
+        while (nullptr != (dp = readdir(dirp))) {
+            std::string fname = mClientSockPath;
+            fname += dp->d_name;
+            if (-1 == lstat(fname.c_str(), &sbuf)) {
+                continue;
+            }
+            if ('.' == (dp->d_name[0])) {
+                continue;
+            }
+
+            if (0 == fname.compare(0, mClientSockPathnamePrefix.size(),
+                                   mClientSockPathnamePrefix)) {
+                shared_ptr<LocIpcSender> sender = LocHalDaemonClientHandler::createSender(fname);
+                LocAPIHalReadyIndMsg msg(SERVICE_NAME);
+                LOC_LOGd("<-- Sending ready to socket: %s, msg size %d",
+                         fname.c_str(), sizeof(msg));
+                LocIpc::send(*sender, reinterpret_cast<const uint8_t*>(&msg),
+                             sizeof(msg));
+            }
+        }
+        closedir(dirp);
+    }
+};
 
 /******************************************************************************
 LocationApiService - constructors
@@ -75,20 +138,6 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
             [this](size_t count, LocationError *errs, uint32_t *ids) {
         onControlCollectiveResponseCallback(count, errs, ids);
     };
-
-    // create IPC receiver
-    mIpcReceiver = new LocHalDaemonIPCReceiver(this);
-    if (nullptr == mIpcReceiver) {
-        LOC_LOGd("Failed to create LocHalDaemonIPCReceiver");
-        return;
-    }
-
-    // create Qsock receiver
-    mQsockReceiver = new LocHalDaemonQsockReceiver(this);
-    if (nullptr == mQsockReceiver) {
-        LOC_LOGe("Failed to create LocHalDaemonQsockReceiver");
-        return;
-    }
 
 #ifdef POWERMANAGER_ENABLED
     // register power event handler
@@ -116,27 +165,24 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     }
 
     // start receiver - never return
-    LOC_LOGd("Ready, start Ipc Receiver");
+    LOC_LOGd("Ready, start Ipc Receivers");
+    auto recver = LocIpc::getLocIpcLocalRecver(
+            make_shared<LocHaldIpcListener>(*this, SOCKET_LOC_CLIENT_DIR, LOC_CLIENT_NAME_PREFIX,
+                                            SOCKET_TO_LOCATION_HAL_DAEMON),
+            SOCKET_TO_LOCATION_HAL_DAEMON);
     // blocking: set to false
-    mIpcReceiver->start(false);
+    mIpc.startNonBlockingListening(recver);
 
-    LOC_LOGd("Ready, start qsock Receiver");
-    // blocking: set to true
-    mQsockReceiver->start(true);
+    mBlockingRecver = LocIpc::getLocIpcQsockRecver(
+            make_shared<LocHaldIpcListener>(*this, EAP_LOC_CLIENT_DIR, LOC_CLIENT_NAME_PREFIX),
+            LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
+            LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);
+    mIpc.startBlockingListening(*mBlockingRecver);
 }
 
 LocationApiService::~LocationApiService() {
-
-    // stop ipc receiver thread
-    if (nullptr != mIpcReceiver) {
-        mIpcReceiver->stop();
-        delete mIpcReceiver;
-    }
-
-    if (nullptr != mQsockReceiver) {
-        mQsockReceiver->stop();
-        delete mQsockReceiver;
-    }
+    mIpc.stopNonBlockingListening();
+    mIpc.stopBlockingListening(*mBlockingRecver);
 
     // free resource associated with the client
     for (auto each : mClients) {
@@ -149,75 +195,20 @@ LocationApiService::~LocationApiService() {
     mLocationControlApi->destroy();
 }
 
-void LocationApiService::onListenerReady(bool externalApIpc) {
-
-    // traverse client sockets directory - then broadcast READY message
-    LOC_LOGd(">-- onListenerReady Finding client sockets...");
-
-    DIR *dirp = opendir(SOCKET_DIR_TO_CLIENT);
-    if (!dirp) {
-        return;
-    }
-
-    struct dirent *dp = nullptr;
-    struct stat sbuf = {0};
-    const std::string fnamebase = SOCKET_TO_LOCATION_CLIENT_BASE;
-    while (nullptr != (dp = readdir(dirp))) {
-        std::string fnameExtAp = SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE;
-        std::string fname = SOCKET_DIR_TO_CLIENT;
-        fname += dp->d_name;
-        if (-1 == lstat(fname.c_str(), &sbuf)) {
-            continue;
-        }
-        if ('.' == (dp->d_name[0])) {
-            continue;
-        }
-
-        const char* clientName = NULL;
-        if ((false == externalApIpc) &&
-            (0 == fname.compare(0, fnamebase.size(), fnamebase))) {
-            // client that resides on same processor as daemon
-            clientName = fname.c_str();
-        } else if ((true == externalApIpc) &&
-                   (0 == fname.compare(0, fnameExtAp.size(), fnameExtAp))) {
-            // client resides on external processor
-            clientName = fname.c_str() + strlen(SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE);
-            LOC_LOGe("<-- Sending ready to socket: %s, size %d", clientName,
-                     strlen(SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE));
-        }
-
-        if (NULL != clientName) {
-            LocHalDaemonIPCSender* pIpcSender = new LocHalDaemonIPCSender(clientName);
-            LocAPIHalReadyIndMsg msg(SERVICE_NAME);
-            LOC_LOGd("<-- Sending ready to socket: %s, msg size %d", clientName, sizeof(msg));
-            bool sendSuccessful = pIpcSender->send(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
-            // Remove this external AP client as the socket it has is no longer reachable.
-            // For MDM location API client, the socket file will be removed automatically when
-            // its process exits/crashes.
-            if ((false == sendSuccessful) && (true == externalApIpc)) {
-                remove(fname.c_str());
-                LOC_LOGd("<-- remove file %s", fname.c_str());
-            }
-            delete pIpcSender;
-        }
-    }
-    closedir(dirp);
-}
-
 /******************************************************************************
 LocationApiService - implementation - registration
 ******************************************************************************/
-void LocationApiService::processClientMsg(const std::string& data) {
+void LocationApiService::processClientMsg(const char* data, uint32_t length) {
 
     // parse received message
-    LocAPIMsgHeader* pMsg = (LocAPIMsgHeader*)(data.data());
+    LocAPIMsgHeader* pMsg = (LocAPIMsgHeader*)data;
     LOC_LOGd(">-- onReceive len=%u remote=%s msgId=%u",
-            data.length(), pMsg->mSocketName, pMsg->msgId);
+            length, pMsg->mSocketName, pMsg->msgId);
 
     switch (pMsg->msgId) {
         case E_LOCAPI_CLIENT_REGISTER_MSG_ID: {
             // new client
-            if (sizeof(LocAPIClientRegisterReqMsg) != data.length()) {
+            if (sizeof(LocAPIClientRegisterReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -226,7 +217,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
         }
         case E_LOCAPI_CLIENT_DEREGISTER_MSG_ID: {
             // delete client
-            if (sizeof(LocAPIClientDeregisterReqMsg) != data.length()) {
+            if (sizeof(LocAPIClientDeregisterReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -236,7 +227,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
 
         case E_LOCAPI_START_TRACKING_MSG_ID: {
             // start
-            if (sizeof(LocAPIStartTrackingReqMsg) != data.length()) {
+            if (sizeof(LocAPIStartTrackingReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -245,7 +236,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
         }
         case E_LOCAPI_STOP_TRACKING_MSG_ID: {
             // stop
-            if (sizeof(LocAPIStopTrackingReqMsg) != data.length()) {
+            if (sizeof(LocAPIStopTrackingReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -254,7 +245,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
         }
         case E_LOCAPI_UPDATE_CALLBACKS_MSG_ID: {
             // update subscription
-            if (sizeof(LocAPIUpdateCallbacksReqMsg) != data.length()) {
+            if (sizeof(LocAPIUpdateCallbacksReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -262,7 +253,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID: {
-            if (sizeof(LocAPIUpdateTrackingOptionsReqMsg) != data.length()) {
+            if (sizeof(LocAPIUpdateTrackingOptionsReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -273,7 +264,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
 
         case E_LOCAPI_START_BATCHING_MSG_ID: {
             // start
-            if (sizeof(LocAPIStartBatchingReqMsg) != data.length()) {
+            if (sizeof(LocAPIStartBatchingReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -282,7 +273,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
         }
         case E_LOCAPI_STOP_BATCHING_MSG_ID: {
             // stop
-            if (sizeof(LocAPIStopBatchingReqMsg) != data.length()) {
+            if (sizeof(LocAPIStopBatchingReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -290,7 +281,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_UPDATE_BATCHING_OPTIONS_MSG_ID: {
-            if (sizeof(LocAPIUpdateBatchingOptionsReqMsg) != data.length()) {
+            if (sizeof(LocAPIUpdateBatchingOptionsReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -299,7 +290,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_ADD_GEOFENCES_MSG_ID: {
-            if (sizeof(LocAPIAddGeofencesReqMsg) != data.length()) {
+            if (sizeof(LocAPIAddGeofencesReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -307,7 +298,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_REMOVE_GEOFENCES_MSG_ID: {
-            if (sizeof(LocAPIRemoveGeofencesReqMsg) != data.length()) {
+            if (sizeof(LocAPIRemoveGeofencesReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -315,7 +306,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_MODIFY_GEOFENCES_MSG_ID: {
-            if (sizeof(LocAPIModifyGeofencesReqMsg) != data.length()) {
+            if (sizeof(LocAPIModifyGeofencesReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -323,7 +314,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_PAUSE_GEOFENCES_MSG_ID: {
-            if (sizeof(LocAPIPauseGeofencesReqMsg) != data.length()) {
+            if (sizeof(LocAPIPauseGeofencesReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -331,7 +322,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_RESUME_GEOFENCES_MSG_ID: {
-            if (sizeof(LocAPIResumeGeofencesReqMsg) != data.length()) {
+            if (sizeof(LocAPIResumeGeofencesReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -339,7 +330,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_CONTROL_UPDATE_CONFIG_MSG_ID: {
-            if (sizeof(LocAPIUpdateConfigReqMsg) != data.length()) {
+            if (sizeof(LocAPIUpdateConfigReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -348,7 +339,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID: {
-            if (sizeof(LocAPIDeleteAidingDataReqMsg) != data.length()) {
+            if (sizeof(LocAPIDeleteAidingDataReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -357,7 +348,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_CONTROL_UPDATE_NETWORK_AVAILABILITY_MSG_ID: {
-            if (sizeof(LocAPIUpdateNetworkAvailabilityReqMsg) != data.length()) {
+            if (sizeof(LocAPIUpdateNetworkAvailabilityReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -366,7 +357,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID: {
-            if (sizeof(LocAPIGetGnssEnergyConsumedReqMsg) != data.length()) {
+            if (sizeof(LocAPIGetGnssEnergyConsumedReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -375,7 +366,7 @@ void LocationApiService::processClientMsg(const std::string& data) {
             break;
         }
         case E_LOCAPI_PINGTEST_MSG_ID: {
-            if (sizeof(LocAPIPingTestReqMsg) != data.length()) {
+            if (sizeof(LocAPIPingTestReqMsg) != length) {
                 LOC_LOGe("invalid message");
                 break;
             }
@@ -620,6 +611,10 @@ void LocationApiService::addGeofences(LocAPIAddGeofencesReqMsg* pMsg) {
         LOC_LOGe(">-- start invlalid client=%s", pMsg->mSocketName);
         return;
     }
+    if (pMsg->geofences.count > MAX_GEOFENCE_COUNT) {
+        LOC_LOGe(">-- geofence count greater than MAX =%d", pMsg->geofences.count);
+        return;
+    }
     GeofenceOption* gfOptions =
             (GeofenceOption*)malloc(pMsg->geofences.count * sizeof(GeofenceOption));
     GeofenceInfo* gfInfos = (GeofenceInfo*)malloc(pMsg->geofences.count * sizeof(GeofenceInfo));
@@ -666,7 +661,7 @@ void LocationApiService::removeGeofences(LocAPIRemoveGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("removeGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
@@ -681,6 +676,14 @@ void LocationApiService::removeGeofences(LocAPIRemoveGeofencesReqMsg* pMsg) {
 void LocationApiService::modifyGeofences(LocAPIModifyGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+    if (nullptr == pClient) {
+        LOC_LOGe("modifyGeofences - Null client!");
+        return;
+    }
+    if (pMsg->geofences.count > MAX_GEOFENCE_COUNT) {
+        LOC_LOGe("modifyGeofences - geofence count greater than MAX =%d", pMsg->geofences.count);
+        return;
+    }
     GeofenceOption* gfOptions = (GeofenceOption*)
             malloc(sizeof(GeofenceOption) * pMsg->geofences.count);
     uint32_t* clientIds = (uint32_t*)malloc(sizeof(uint32_t) * pMsg->geofences.count);
@@ -714,7 +717,7 @@ void LocationApiService::pauseGeofences(LocAPIPauseGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("pauseGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);
@@ -730,7 +733,7 @@ void LocationApiService::resumeGeofences(LocAPIResumeGeofencesReqMsg* pMsg) {
     std::lock_guard<std::mutex> lock(mMutex);
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (nullptr == pClient) {
-        LOC_LOGe("Null client!");
+        LOC_LOGe("resumeGeofences - Null client!");
         return;
     }
     uint32_t* sessions = pClient->getSessionIds(pMsg->gfClientIds.count, pMsg->gfClientIds.gfIds);

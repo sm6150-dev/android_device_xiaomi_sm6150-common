@@ -197,7 +197,8 @@ enum GnssSvType {
     GNSS_SV_TYPE_GLONASS,
     GNSS_SV_TYPE_QZSS,
     GNSS_SV_TYPE_BEIDOU,
-    GNSS_SV_TYPE_GALILEO
+    GNSS_SV_TYPE_GALILEO,
+    GNSS_SV_TYPE_NAVIC
 };
 
 enum GnssLocationInfoFlagMask {
@@ -217,7 +218,8 @@ enum GnssLocationInfoFlagMask {
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MINOR_BIT = (1<<6),
     /** valid accuracy elipsode azimuth */
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7),
-    /** valid gnss sv used in pos data */
+    /** valid gnss sv used in pos data, including: svUsedInPosition
+     *  and measUsageInfo */
     GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8),
     /** valid navSolutionMask */
     GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT            = (1<<9),
@@ -248,7 +250,9 @@ enum GnssLocationInfoFlagMask {
     /** valid leap_seconds */
     GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<22),
     /** valid timeUncMs */
-    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23)
+    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23),
+    /** valid numSvUsedInPosition */
+    GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT      = (1<<24),
 };
 
 enum LocationReliability {
@@ -514,6 +518,8 @@ struct GnssLocation : public Location {
     float northVelocityStdDeviation;
     float eastVelocityStdDeviation;
     float upVelocityStdDeviation;
+    /** number of SV used in position report */
+    uint16_t numSvUsedInPosition;
     /** Gnss sv used in position data */
     GnssLocationSvUsedInPosition svUsedInPosition;
     /** Nav solution mask to indicate sbas corrections */

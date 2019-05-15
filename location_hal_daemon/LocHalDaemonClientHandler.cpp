@@ -32,6 +32,11 @@
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
 
+shared_ptr<LocIpcSender> LocHalDaemonClientHandler::createSender(const string socket) {
+    SockNode sockNode(SockNode::create(socket));
+    return sockNode.createSender(true);
+}
+
 /******************************************************************************
 LocHalDaemonClientHandler - updateSubscriptionMask
 ******************************************************************************/
@@ -332,20 +337,15 @@ void LocHalDaemonClientHandler::cleanup() {
 
     // check whether this is client from external AP,
     // mName for client on external ap is of format "serviceid.instanceid"
-    if (strncmp(mName.c_str(), SOCKET_DIR_TO_CLIENT,
-                sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
+    if (strncmp(mName.c_str(), EAP_LOC_CLIENT_DIR,
+                sizeof(EAP_LOC_CLIENT_DIR)-1) != 0 ) {
         char fileName[MAX_SOCKET_PATHNAME_LENGTH];
-        snprintf (fileName, sizeof(fileName), "%s%s",
-                  SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
+        snprintf (fileName, sizeof(fileName), "%s%s%s",
+                  EAP_LOC_CLIENT_DIR, LOC_CLIENT_NAME_PREFIX, mName.c_str());
         LOC_LOGv("removed file name %s", fileName);
         if (0 != remove(fileName)) {
             LOC_LOGe("<-- failed to remove file %s", fileName);
         }
-    }
-
-    if (mIpcSender) {
-        delete mIpcSender;
-        mIpcSender = nullptr;
     }
 
     if (mLocationApi) {

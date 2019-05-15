@@ -26,334 +26,242 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#include <unistd.h>
+#include <memory>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <LocSocket.h>
-#include <log_util.h>
+#include <sys/socket.h>
+#include <errno.h>
+
+#ifdef USE_QSOCKET
+#include <sys/ioctl.h>
+#include <poll.h>
+#include <qsocket.h>
+#include <qsocket_ipcr.h>
+#else
+#include <endian.h>
+#include <linux/qrtr.h>
 #include <libqrtr.h>
+#endif
+
+#include <log_util.h>
+#include <LocIpc.h>
 
 namespace loc_util {
 
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "LocSvc_LocSocket"
+#define LOG_TAG "LocSvc_Qrtr"
 
-#define LOC_MSG_BUF_LEN 8192
-#define LOC_MSG_HEAD "$MSGLEN$"
-#define LOC_MSG_ABORT "LocSocketMsg::ABORT"
-#define RETRY_FINDSERVICE_MAX_COUNT 10
-#define RETRY_FINDSERVICE_SLEEP_MS  5
+class ServiceInfo {
+    const int32_t mServiceId;
+    const int32_t mInstanceId;
+    const string mName;
+public:
+    inline ServiceInfo(int32_t service, int32_t instance) :
+            mServiceId(service), mInstanceId(instance),
+            mName(to_string(service) + ":" + to_string(instance)) {}
+    inline const char* getName() const { return mName.data(); }
+    inline int32_t getServiceId() const { return mServiceId; }
+    inline int32_t getInstanceId() const { return mInstanceId; }
+};
+
+#ifdef USE_QSOCKET
+
+class LocIpcQsockSender : public LocIpcSender {
+protected:
+    shared_ptr<Sock> mSock;
+    const ServiceInfo mServiceInfo;
+    qsockaddr_ipcr mAddr;
+    mutable bool mLookupPending;
+    inline virtual bool isOperable() const override {
+        return mSock != nullptr && mSock->mSid != -1;
+    }
+    inline void serviceLookup() const {
+        if (mLookupPending && mSock->isValid()) {
+            ipcr_name_t ipcrName = {
+                .service = (uint32_t)mServiceInfo.getServiceId(),
+                .instance = (uint32_t)mServiceInfo.getInstanceId()
+            };
+            uint32_t numEntries = 1;
+            int rc = ipcr_find_name(mSock->mSid, &ipcrName,
+                    (struct qsockaddr_ipcr*)&mAddr, NULL, &numEntries, 0);
+            if (rc < 0 || 1 != numEntries) {
+                LOC_LOGe("Failed ipcr_find_name, service: %d, reason: %s",
+                         mServiceInfo.getServiceId(), strerror(errno));
+                mSock->close();
+            }
+            mLookupPending = false;
+        }
+    }
+    inline virtual ssize_t send(const uint8_t data[], uint32_t length,
+                                int32_t /* msgId */) const override {
+        serviceLookup();
+        return mSock->send(data, length, 0, (struct sockaddr*)&mAddr,
+                           sizeof(mAddr));
+    }
+public:
+    inline LocIpcQsockSender(int service, int instance) :
+            LocIpcSender(),
+            mSock(make_shared<Sock>(::socket(AF_IPC_ROUTER, SOCK_DGRAM, 0))),
+            mServiceInfo(service, instance), mAddr({}), mLookupPending(true) {
+    }
+};
+
+class LocIpcQsockRecver : public LocIpcQsockSender, public LocIpcRecver {
+protected:
+    inline virtual ssize_t recv() const override {
+        socklen_t size = sizeof(mAddr);
+        return mSock->recv(mDataCb, 0, (struct sockaddr*)&mAddr, &size);
+    }
+public:
+    inline LocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
+                             int service, int instance) :
+            LocIpcQsockSender(service, instance),
+            LocIpcRecver(listener, *this) {
+        qsockaddr_ipcr addr = {
+            AF_IPC_ROUTER,
+            {
+                IPCR_ADDR_NAME,
+                {
+                    (uint32_t)service,
+                    (uint32_t)instance
+                }
+            },
+            0
+        };
+        if (mSock->isValid() &&
+            ::bind(mSock->mSid, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+            LOC_LOGe("bind socket error. sock fd: %d,reason: %s",
+                     mSock->mSid, strerror(errno));
+            mSock->close();
+        }
+    }
+    inline virtual const char* getName() const override {
+        return mServiceInfo.getName();
+    }
+    inline virtual void abort() const override {
+        if (isSendable()) {
+            serviceLookup();
+            mSock->sendAbort(0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+        }
+    }
+};
+
+shared_ptr<LocIpcSender> createLocIpcQsockSender(int service, int instance) {
+    return make_shared<LocIpcQsockSender>(service, instance);
+}
+unique_ptr<LocIpcRecver> createLocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
+                                                 int service, int instance) {
+    return make_unique<LocIpcQsockRecver>(listener, service, instance);
+}
+
+#else
 
 static inline __le32 cpu_to_le32(uint32_t x) { return htole32(x); }
 static inline uint32_t le32_to_cpu(__le32 x) { return le32toh(x); }
 
-class LocSocketRunnable : public LocRunnable {
-friend LocSocket;
-public:
-    LocSocketRunnable(LocSocket& locSocket, const std::string& socketName)
-            : mLocSocket(locSocket), mSocketName(socketName) {}
-    bool run() override {
-        if (!mLocSocket.startListeningBlocking(mSocketName)) {
-            LOC_LOGe("listen to socket failed");
+class LocIpcQrtrSender : public LocIpcSender {
+protected:
+    const ServiceInfo mServiceInfo;
+    shared_ptr<Sock> mSock;
+    mutable sockaddr_qrtr mAddr;
+    mutable struct qrtr_ctrl_pkt mCtrlPkt;
+    mutable bool mLookupPending;
+    bool ctrlCmdAndResponse(enum qrtr_pkt_type cmd) const {
+        if (mSock->isValid()) {
+            int rc = 0;
+            sockaddr_qrtr addr = mAddr;
+            addr.sq_port = QRTR_PORT_CTRL;
+            mCtrlPkt.cmd = cpu_to_le32(cmd);
+            if ((rc = ::sendto(mSock->mSid, &mCtrlPkt, sizeof(mCtrlPkt), 0,
+                               (const struct sockaddr *)&addr, sizeof(addr))) < 0) {
+                LOC_LOGe("failed: sendto rc=%d reason=(%s)\n", rc, strerror(errno));
+                mSock->close();
+            } else if (QRTR_TYPE_NEW_LOOKUP == cmd) {
+                int len;
+                struct qrtr_ctrl_pkt pkt;
+                while ((len = ::recv(mSock->mSid, &pkt, sizeof(pkt), 0)) > 0 &&
+                       (len < (decltype(len))sizeof(pkt) ||
+                        (cpu_to_le32(QRTR_TYPE_NEW_SERVER) != pkt.cmd) ||
+                        (0 == pkt.server.service))) {
+                }
+                if (len < 0) {
+                    LOC_LOGe("failed: recv len=%d reason=(%s)\n", len, strerror(errno));
+                    mSock->close();
+                } else {
+                    mAddr.sq_node = le32_to_cpu(pkt.server.node);
+                    mAddr.sq_port = le32_to_cpu(pkt.server.port);
+                }
+            }
         }
-
-        return false;
+        return mSock->isValid();
     }
-private:
-     LocSocket& mLocSocket;
-     const std::string mSocketName;
+    inline virtual bool isOperable() const override {
+        return mSock != nullptr && mSock->isValid();
+    }
+    inline virtual ssize_t send(const uint8_t data[], uint32_t length,
+                                int32_t /* msgId */) const override {
+        if (mLookupPending) {
+            mLookupPending = false;
+            ctrlCmdAndResponse(QRTR_TYPE_NEW_LOOKUP);
+        }
+        return mSock->send(data, length, 0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+    }
+public:
+    inline LocIpcQrtrSender(int service, int instance) : LocIpcSender(),
+            mServiceInfo(service, instance),
+            mSock(make_shared<Sock>(::socket(AF_QIPCRTR, SOCK_DGRAM, 0))),
+            mAddr({AF_QIPCRTR, 0, 0}),
+            mCtrlPkt({}),
+            mLookupPending(true) {
+        socklen_t sl = sizeof(mAddr);
+        int rc = 0;
+        if ((rc = getsockname(mSock->mSid, (struct sockaddr*)&mAddr, &sl)) ||
+            mAddr.sq_family != AF_QIPCRTR || sl != sizeof(mAddr)) {
+            LOC_LOGe("failed: getsockname rc=%d reason=(%s), mAddr.sq_family=%d",
+                     rc, strerror(errno), mAddr.sq_family);
+            mSock->close();
+        } else {
+            mCtrlPkt.server.service = cpu_to_le32(service);
+            mCtrlPkt.server.instance = cpu_to_le32(instance);
+            mCtrlPkt.server.node = cpu_to_le32(mAddr.sq_node);
+            mCtrlPkt.server.port = cpu_to_le32(mAddr.sq_port);
+        }
+    }
 };
 
-bool LocSocket::startListeningNonBlocking(const std::string& name) {
-    mRunnable = new LocSocketRunnable(*this, name);
-    std::string threadName("LocSocket-");
-    threadName.append(name);
-    return mThread.start(threadName.c_str(), mRunnable);
+class LocIpcQrtrRecver : public LocIpcQrtrSender, public LocIpcRecver {
+protected:
+    inline virtual ssize_t recv() const override {
+        socklen_t size = sizeof(mAddr);
+        return mSock->recv(mDataCb, 0, (struct sockaddr*)&mAddr, &size);
+    }
+public:
+    inline LocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
+                            int service, int instance) :
+            LocIpcQrtrSender(service, instance), LocIpcRecver(listener, *this) {
+        ctrlCmdAndResponse(QRTR_TYPE_NEW_SERVER);
+    }
+    inline ~LocIpcQrtrRecver() { ctrlCmdAndResponse(QRTR_TYPE_DEL_SERVER); }
+    inline virtual const char* getName() const override {
+        return mServiceInfo.getName();
+    }
+    inline virtual void abort() const override {
+        if (isSendable()) {
+            mSock->sendAbort(0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+        }
+    }
+};
+
+shared_ptr<LocIpcSender> createLocIpcQrtrSender(int service, int instance) {
+    return make_shared<LocIpcQrtrSender>(service, instance);
+}
+unique_ptr<LocIpcRecver> createLocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
+                                                int service, int instance) {
+    return make_unique<LocIpcQrtrRecver>(listener, service, instance);
 }
 
-bool LocSocket::startListeningBlocking(const std::string& name) {
-    bool stopRequested = false;
+#endif
 
-    // name is of format "serviceid.instanceid", and thus
-    // should not exceed 65 bytes
-    mService = atoi(name.c_str());
-    const char* instance_ptr = strchr(name.c_str(), '.');
-    if (nullptr != instance_ptr) {
-        instance_ptr++;
-    }
-
-    mInstance = atoi(instance_ptr);
-
-    // socket
-    int fd = socket(AF_QIPCRTR, SOCK_DGRAM, 0);
-    if (fd < 0) {
-        LOC_LOGe("create socket error. reason:%s", strerror(errno));
-        return false;
-    }
-
-    // get socket name
-    sockaddr_qrtr addr = {0};
-    socklen_t sl = sizeof(addr);
-    int rc = getsockname(fd, (void*)&addr, &sl);
-    if (rc || addr.sq_family != AF_QIPCRTR || sl != sizeof(addr)) {
-        LOC_LOGe("error: getsockname rc=%d errno=%d (%s)", rc, errno, strerror(errno));
-        return false;
-    }
-
-    LOC_LOGv("family=%u, node=%d, port=%d", addr.sq_family, addr.sq_node, addr.sq_port);
-    // register this server by sending control packet
-    struct qrtr_ctrl_pkt pkt = {0};
-    pkt.cmd = cpu_to_le32(QRTR_TYPE_NEW_SERVER);
-    pkt.server.service = cpu_to_le32(mService);
-    pkt.server.instance = cpu_to_le32(mInstance);
-    pkt.server.node = cpu_to_le32(addr.sq_node);
-    pkt.server.port = cpu_to_le32(addr.sq_port);
-    addr.sq_port = QRTR_PORT_CTRL;
-    rc = sendto(fd, &pkt, sizeof(pkt), 0, (void*)&addr, sizeof(addr));
-    if (rc < 0) {
-        LOC_LOGe("send control packet failed");
-        return false;
-    }
-
-    mFdMe = fd;
-    LOC_LOGv("family=%u, node=%d, port=%d", mDestAddr.sq_family, mDestAddr.sq_node, mDestAddr.sq_port);
-
-    // inform that the socket is ready to receive message
-    onListenerReady();
-
-    ssize_t nBytes = 0;
-    std::string msg = "";
-    std::string abort = LOC_MSG_ABORT;
-    while (1) {
-        struct sockaddr_qrtr tmpAddr = {0};
-        socklen_t tmpAddrlen = sizeof(tmpAddr);
-
-        msg.resize(LOC_MSG_BUF_LEN);
-
-        nBytes = recvfrom(fd, (void*)(msg.data()), msg.size(), 0, (void*)&tmpAddr, &tmpAddrlen);
-        if (nBytes < 0) {
-            break;
-        } else if (nBytes == 0) {
-            continue;
-        }
-
-        if (strncmp(msg.data(), abort.c_str(), abort.length()) == 0) {
-            stopRequested = true;
-            LOC_LOGi("recvd abort msg.data %s", msg.data());
-            break;
-        }
-
-        struct sockaddr_qrtr clientAddr = {0};
-        clientAddr = tmpAddr;
-
-        if (strncmp(msg.data(), LOC_MSG_HEAD, sizeof(LOC_MSG_HEAD) - 1)) {
-            // short message
-            msg.resize(nBytes);
-            onReceive(msg);
-        } else {
-            // long message
-            size_t msgLen = 0;
-            sscanf(msg.data(), LOC_MSG_HEAD"%zu", &msgLen);
-            msg.resize(msgLen);
-            size_t msgLenReceived = 0;
-            while ((msgLenReceived < msgLen) && (nBytes > 0)) {
-                nBytes = recvfrom(fd, (void*)&(msg[msgLenReceived]),
-                        msg.size() - msgLenReceived, 0, NULL, NULL);
-                msgLenReceived += nBytes;
-            }
-
-            if (nBytes > 0) {
-                onReceive(msg);
-            } else {
-                break;
-            }
-        }
-    }
-
-    if (::close(fd)) {
-        LOC_LOGe("cannot close socket:%s", strerror(errno));
-    }
-
-    return stopRequested;
-}
-
-void LocSocket::stopListening() {
-
-    if (mFdMe >= 0) {
-        std::string abort = LOC_MSG_ABORT;
-        send(mService, mInstance, abort);
-        mFdMe = -1;
-    }
-
-    if (mRunnable) {
-        mRunnable = nullptr;
-    }
-}
-
-bool LocSocket::findServiceWithRetry(int fd, sockaddr_qrtr& addr, int service,
-                                     int instance, bool &serviceDeleted) {
-    int retryCount = 0;
-
-    bool result = false;
-    do {
-        result = LocSocket::findService(fd, addr, service, instance, serviceDeleted);
-        if ((true == result) || (true == serviceDeleted)) {
-            break;
-        }
-        usleep(RETRY_FINDSERVICE_SLEEP_MS * 1000);
-    } while (retryCount++ <= RETRY_FINDSERVICE_MAX_COUNT);
-
-    LOC_LOGe("find service with retry returned %d, retry count %d, serviceDeleted %d",
-             result, retryCount, serviceDeleted);
-    return result;
-}
-
-
-bool LocSocket::findService(int fd, sockaddr_qrtr& addr, int service,
-                            int instance, bool &serviceDeleted) {
-
-    bool serviceFound = false;
-    int len = 0;
-
-    do {
-        // service has been deleted and it has not restarted yet, simply return
-        if (true == serviceDeleted) {
-            break;
-        }
-
-        memset(&addr, 0, sizeof(addr));
-        socklen_t sl = sizeof(addr);
-
-        // get socket name
-        int rc = getsockname(fd, (void*)&addr, &sl);
-        if (rc || addr.sq_family != AF_QIPCRTR || sl != sizeof(addr)) {
-            LOC_LOGe("error: getsockname rc=%d errno=%d (%s)", rc, errno, strerror(errno));
-            break;
-        }
-
-        addr.sq_port = QRTR_PORT_CTRL;
-        // send control packet
-        struct qrtr_ctrl_pkt pkt = {0};
-        pkt.cmd = cpu_to_le32(QRTR_TYPE_NEW_LOOKUP);
-        pkt.server.service = cpu_to_le32(service);
-        pkt.server.instance = cpu_to_le32(instance);
-        rc = sendto(fd, &pkt, sizeof(pkt), 0, (void*)&addr, sizeof(addr));
-        if (rc < 0) {
-            LOC_LOGe("sendto failed!");
-            break;
-        }
-
-        // get server addr from ipc router
-        serviceFound = false;
-        while ((len = recv(fd, &pkt, sizeof(pkt), 0)) > 0) {
-            unsigned int type = le32_to_cpu(pkt.cmd);
-
-            if (QRTR_TYPE_DEL_SERVER == type) {
-                serviceDeleted = true;
-                LOC_LOGe("server deleted");
-                break;
-            }
-
-            if (len < sizeof(pkt)) {
-                LOC_LOGe("invalid/short packet size %d, expected size %d", len, sizeof(pkt));
-                continue;
-            }
-
-            if (type != QRTR_TYPE_NEW_SERVER) {
-                LOC_LOGe("unexpected packet type %d", type);
-                continue;
-            }
-
-            LOC_LOGd("service=%d", le32_to_cpu(pkt.server.service));
-            LOC_LOGd("version=%d", le32_to_cpu(pkt.server.instance) & 0xff);
-            LOC_LOGd("instance=%d", le32_to_cpu(pkt.server.instance) >> 8);
-            LOC_LOGd("node=%d", le32_to_cpu(pkt.server.node));
-            LOC_LOGd("port=%d", le32_to_cpu(pkt.server.port));
-
-            if (0 != pkt.server.service) {
-                serviceFound = true;
-                break;
-            }
-        }
-
-        if (true == serviceFound) {
-            addr.sq_node = le32_to_cpu(pkt.server.node);
-            addr.sq_port = le32_to_cpu(pkt.server.port);
-        }
-
-        LOC_LOGd("after while loop len %d, serviceFound = %d!", len, serviceFound);
-
-    } while (0);
-
-    return serviceFound;
-}
-
-// static
-bool LocSocket::send(int service, int instance, const std::string& data) {
-    return send(service, instance, (const uint8_t*)data.c_str(), data.length());
-}
-
-// static
-bool LocSocket::send(int service, int instance, const uint8_t data[], uint32_t length) {
-
-    bool result = false;
-    int fd = socket(AF_QIPCRTR, SOCK_DGRAM, 0);
-    if (fd < 0) {
-        LOC_LOGe("create socket error. reason:%s", strerror(errno));
-        return false;
-    }
-
-    sockaddr_qrtr addr;
-    memset(&addr, 0, sizeof(addr));
-    // this routine is used to send an abort message to
-    // the socket itself, so it is safe to set serviceDeleted to false
-    bool serviceDeleted = false;
-    result = findServiceWithRetry(fd, addr, service, instance, serviceDeleted);
-    if (true == result) {
-        result = sendData(fd, addr, data, length);
-    }
-
-    (void)close(fd);
-    return result;
-}
-
-// static
-bool LocSocket::sendData(int fd, const sockaddr_qrtr& addr, const uint8_t data[], uint32_t length) {
-
-    bool result = true;
-
-    LOC_LOGd("sendData begin");
-    if (length <= LOC_MSG_BUF_LEN) {
-        if (sendto(fd, data, length, 0, (void*)&addr, sizeof(addr)) < 0) {
-            LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
-            result = false;
-        }
-    } else {
-        std::string head = LOC_MSG_HEAD;
-        head.append(std::to_string(length));
-        if (sendto(fd, head.c_str(), head.length(), 0, (void*)&addr, sizeof(addr)) < 0) {
-            LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
-            result = false;
-        } else {
-            size_t sentBytes = 0;
-            while(sentBytes < length) {
-                size_t partLen = length - sentBytes;
-                if (partLen > LOC_MSG_BUF_LEN) {
-                    partLen = LOC_MSG_BUF_LEN;
-                }
-                ssize_t rv = sendto(fd, (data + sentBytes), partLen, 0, (void*)&addr, sizeof(addr));
-                if (rv < 0) {
-                    LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
-                    result = false;
-                    break;
-                }
-                sentBytes += rv;
-            }
-        }
-    }
-
-    LOC_LOGd("sendto finished with result %d", result);
-    return result;
-}
 }

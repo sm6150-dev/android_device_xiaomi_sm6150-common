@@ -36,7 +36,8 @@
 
 #include <LocationAPI.h>
 #include <LocIpc.h>
-#include <LocHalDaemonIPCSender.h>
+
+using namespace loc_util;
 
 // forward declaration
 class LocationApiService;
@@ -61,29 +62,12 @@ public:
                 mGfPendingMessages(),
                 mSubscriptionMask(0),
                 mGeofenceIds(nullptr),
-                mIpcSender(nullptr) {
-        if (mName != "default") {
-            mIpcSender = new LocHalDaemonIPCSender(mName.c_str());
-
-            // Create a file name with instanceId. The file handle
-            // will be used by hal daemon when it crashes to figure out
-            // the running clients.
-            if (strncmp(mName.c_str(), SOCKET_DIR_TO_CLIENT,
-                sizeof(SOCKET_DIR_TO_CLIENT)-1) != 0 ) {
-
-                char fileName[MAX_SOCKET_PATHNAME_LENGTH];
-                snprintf (fileName, sizeof(fileName), "%s%s",
-                          SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE, mName.c_str());
-                LOC_LOGv("<-- attempt to open file %s", fileName);
-                if (nullptr == fopen (fileName, "w")) {
-                    LOC_LOGe("<-- failed to open file %s", fileName);
-                }
-            }
-        }
+                mIpcSender(createSender(clientname.c_str())) {
         updateSubscription(0);
         mLocationApi = LocationAPI::createInstance(mCallbacks);
     }
 
+    static shared_ptr<LocIpcSender> createSender(const string socket);
     void cleanup();
 
     // public APIs
@@ -152,18 +136,7 @@ private:
 
     // send ipc message to this client for serialized payload
     bool sendMessage(const uint8_t* pmsg, size_t msglen) {
-        bool ret = false;
-        if (mIpcSender) {
-            ret = mIpcSender->send(pmsg, msglen);
-            if (!ret) {
-                LOC_LOGe("Failed to send message. Disconnected client.");
-                delete mIpcSender;
-                mIpcSender = nullptr;
-            }
-        } else {
-            ret = true;
-        }
-        return ret;
+        return LocIpc::send(*mIpcSender, pmsg, msglen);
     }
 
     // pointer to parent service
@@ -187,9 +160,8 @@ private:
     // bitmask to hold this client's request to engine info related subscription
     uint32_t mEngineInfoRequestMask;
 
-
     uint32_t* mGeofenceIds;
-    LocHalDaemonIPCSender* mIpcSender;
+    shared_ptr<LocIpcSender> mIpcSender;
     std::unordered_map<uint32_t, uint32_t> mGfIdsMap; //geofence ID map, clientId-->session
 };
 

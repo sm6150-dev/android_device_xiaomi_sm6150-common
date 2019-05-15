@@ -159,7 +159,7 @@ PRODUCT_PACKAGES += \
     libtinyxml \
     libvulkan \
     memtrack.sm6150 \
-    vendor.qti.hardware.display.allocator@1.0-service
+    vendor.qti.hardware.display.allocator-service
 
 # DRM
 PRODUCT_PACKAGES += \

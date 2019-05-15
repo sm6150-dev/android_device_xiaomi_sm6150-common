@@ -38,6 +38,7 @@ QCOM_BOARD_PLATFORMS += msmnile_au
 QCOM_BOARD_PLATFORMS += qcs605
 QCOM_BOARD_PLATFORMS += $(MSMSTEPPE)
 QCOM_BOARD_PLATFORMS += kona
+QCOM_BOARD_PLATFORMS += lito
 
 QSD8K_BOARD_PLATFORMS := qsd8k
 
@@ -153,6 +154,7 @@ AUDIO_HARDWARE += audio.primary.qcs605
 AUDIO_HARDWARE += audio.primary.msmnile
 AUDIO_HARDWARE += audio.primary.$(MSMSTEPPE)
 AUDIO_HARDWARE += audio.primary.kona
+AUDIO_HARDWARE += audio.primary.lito
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084

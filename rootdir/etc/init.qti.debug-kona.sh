@@ -125,8 +125,7 @@ enable_stm_events_kona()
         return
     fi
 
-    echo $etr_size > /sys/bus/coresight/devices/coresight-tmc-etr/mem_size
-    echo sg > /sys/bus/coresight/devices/coresight-tmc-etr/mem_type
+    echo $etr_size > /sys/bus/coresight/devices/coresight-tmc-etr/buffer_size
     echo 1 > /sys/bus/coresight/devices/coresight-tmc-etr/$sinkenable
     echo 1 > /sys/bus/coresight/devices/coresight-stm/$srcenable
     echo 1 > /sys/kernel/debug/tracing/tracing_on

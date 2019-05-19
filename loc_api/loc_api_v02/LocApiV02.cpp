@@ -4156,9 +4156,6 @@ void LocApiV02::reportLocationRequestNotification(
              loc_req_notif->inEmergencyMode,
              loc_req_notif->isCachedLocation);
 
-    strlcpy(notification.proxyAppPackageName,
-            ContextBase::mGps_conf.PROXY_APP_PACKAGE_NAME,
-            sizeof(notification.proxyAppPackageName));
     switch (loc_req_notif->protocolStack) {
     case eQMI_LOC_CTRL_PLANE_V02:
         notification.protocolStack = GNSS_NFW_CTRL_PLANE;
@@ -4212,9 +4209,6 @@ void LocApiV02::reportLocationRequestNotification(
         notification.requestor = GNSS_NFW_OTHER_REQUESTOR;
         break;
     }
-    strlcpy(notification.requestorId,
-            loc_req_notif->requestorId,
-            sizeof(notification.requestorId));
     switch (loc_req_notif->responseType) {
     case eQMI_LOC_REJECTED_V02:
         notification.responseType = GNSS_NFW_REJECTED;
@@ -4229,24 +4223,50 @@ void LocApiV02::reportLocationRequestNotification(
     notification.inEmergencyMode = (bool)loc_req_notif->inEmergencyMode;
     notification.isCachedLocation = (bool)loc_req_notif->isCachedLocation;
 
-    LOC_LOGv("OUT: proxyAppPackageName=%s"
-        " ,protocolStack=%d"
-        " ,otherProtocolStackName=%s"
-        " ,requestor=%d"
-        " ,requestorId=%s"
-        " ,responseType=%d"
-        " ,inEmergencyMode=%d"
-        " ,isCachedLocation=%u",
-        notification.proxyAppPackageName,
-        notification.protocolStack,
-        notification.otherProtocolStackName,
-        notification.requestor,
-        notification.requestorId,
-        notification.responseType,
-        notification.inEmergencyMode,
-        notification.isCachedLocation);
+    bool isImpossibleScenario = false;
+    // we need to reject various impossible scenarios
+    if (notification.inEmergencyMode) {
+        if (notification.protocolStack != GNSS_NFW_CTRL_PLANE &&
+            notification.protocolStack != GNSS_NFW_SUPL) {
+            isImpossibleScenario = true;
+            LOC_LOGe("inEmergencyMode is true, but protocolStack=%d",
+                notification.protocolStack);
+        }
+        if (GNSS_NFW_REJECTED == notification.responseType) {
+            isImpossibleScenario = true;
+            LOC_LOGe("inEmergencyMode is true, but responseType is REJECTED");
+        }
+    } else {
+        // requestorId is "" for emergency
+        strlcpy(notification.requestorId,
+                loc_req_notif->requestorId,
+                sizeof(notification.requestorId));
+        // proxyAppPackageName is "" for emergency
+        strlcpy(notification.proxyAppPackageName,
+                ContextBase::mGps_conf.PROXY_APP_PACKAGE_NAME,
+                sizeof(notification.proxyAppPackageName));
+    }
 
-    LocApiBase::sendNfwNotification(notification);
+    if (!isImpossibleScenario) {
+        LOC_LOGv("OUT: proxyAppPackageName=%s"
+                 " ,protocolStack=%d"
+                 " ,otherProtocolStackName=%s"
+                 " ,requestor=%d"
+                 " ,requestorId=%s"
+                 " ,responseType=%d"
+                 " ,inEmergencyMode=%d"
+                 " ,isCachedLocation=%u",
+                 notification.proxyAppPackageName,
+                 notification.protocolStack,
+                 notification.otherProtocolStackName,
+                 notification.requestor,
+                 notification.requestorId,
+                 notification.responseType,
+                 notification.inEmergencyMode,
+                 notification.isCachedLocation);
+
+        LocApiBase::sendNfwNotification(notification);
+    }
 }
 
 /* convert engine state report to loc eng format and send the converted

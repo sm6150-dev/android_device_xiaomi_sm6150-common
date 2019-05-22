@@ -759,6 +759,87 @@ config_kona_dcc_tcs()
     echo 0x18220D04 1 > $DCC_PATH/config
     echo 0x18220D00 1 > $DCC_PATH/config
 }
+config_kona_dcc_sys_agnoc()
+{
+    #SYSNOC start
+    echo 0x162C100 1 > $DCC_PATH/config
+    echo 0x162C104 1 > $DCC_PATH/config
+    echo 0x162C108 1 > $DCC_PATH/config
+    echo 0x162C10C 1 > $DCC_PATH/config
+    echo 0x162C300 1 > $DCC_PATH/config
+    echo 0x162C304 1 > $DCC_PATH/config
+    echo 0x162C308 1 > $DCC_PATH/config
+    echo 0x162C30C 1 > $DCC_PATH/config
+    echo 0x162C500 1 > $DCC_PATH/config
+    echo 0x162C504 1 > $DCC_PATH/config
+    echo 0x162C700 1 > $DCC_PATH/config
+    echo 0x162C900 1 > $DCC_PATH/config
+    #SYSNOC End
+
+    #AGNOC start
+    echo 0x16E0300 1 > $DCC_PATH/config
+    echo 0x16E0304 1 > $DCC_PATH/config
+    echo 0x16E0308 1 > $DCC_PATH/config
+    echo 0x16E030C 1 > $DCC_PATH/config
+    echo 0x16E0310 1 > $DCC_PATH/config
+    echo 0x16E0700 1 > $DCC_PATH/config
+    echo 0x1700500 1 > $DCC_PATH/config
+    echo 0x1700504 1 > $DCC_PATH/config
+    echo 0x1700508 1 > $DCC_PATH/config
+    echo 0x170050C 1 > $DCC_PATH/config
+    echo 0x1700900 1 > $DCC_PATH/config
+    echo 0x1700904 1 > $DCC_PATH/config
+    echo 0x1700908 1 > $DCC_PATH/config
+    echo 0x1700B00 1 > $DCC_PATH/config
+    echo 0x1700B04 1 > $DCC_PATH/config
+    #AGNOC End
+
+    #cdspnoc start
+    echo 0x1700D00 1 > $DCC_PATH/config
+    echo 0x1700D04 1 > $DCC_PATH/config
+    echo 0x1700D08 1 > $DCC_PATH/config
+    echo 0x1700D0C 1 > $DCC_PATH/config
+    #End
+
+    #DCNOC Start
+    echo 0x90C4100 1 > $DCC_PATH/config
+    echo 0x90C4104 1 > $DCC_PATH/config
+    echo 0x90C4108 1 > $DCC_PATH/config
+    echo 0x90C410C 1 > $DCC_PATH/config
+    echo 0x90C4110 1 > $DCC_PATH/config
+    echo 0x90C4114 1 > $DCC_PATH/config
+    #DCNOC End
+
+    #MNOC Start
+    echo 0x1740300 1 > $DCC_PATH/config
+    echo 0x1740304 1 > $DCC_PATH/config
+    echo 0x1740308 1 > $DCC_PATH/config
+    echo 0x174030C 1 > $DCC_PATH/config
+    echo 0x1740310 1 > $DCC_PATH/config
+    echo 0x1740314 1 > $DCC_PATH/config
+    echo 0x1740318 1 > $DCC_PATH/config
+    echo 0x174031C 1 > $DCC_PATH/config
+    #MNOC End
+
+    #CNOC Start
+    echo 0x1501100 1 > $DCC_PATH/config
+    echo 0x1501104 1 > $DCC_PATH/config
+    echo 0x1501108 1 > $DCC_PATH/config
+    echo 0x1501300 1 > $DCC_PATH/config
+    echo 0x1501500 1 > $DCC_PATH/config
+    echo 0x1501700 1 > $DCC_PATH/config
+    echo 0x1501704 1 > $DCC_PATH/config
+    echo 0x1501708 1 > $DCC_PATH/config
+    echo 0x1501900 1 > $DCC_PATH/config
+    echo 0x1501904 1 > $DCC_PATH/config
+    echo 0x1501908 1 > $DCC_PATH/config
+    echo 0x1501D00 1 > $DCC_PATH/config
+    echo 0x1501D04 1 > $DCC_PATH/config
+    echo 0x1501F00 1 > $DCC_PATH/config
+    echo 0x1501F04 1 > $DCC_PATH/config
+    #CNOC End
+
+}
 # Function kona DCC configuration
 enable_kona_dcc_config()
 {
@@ -780,6 +861,7 @@ enable_kona_dcc_config()
     config_kona_dcc_lpm
     config_kona_dcc_core
     config_kona_dcc_gemnoc
+    config_kona_dcc_sys_agnoc
 
     echo 6 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type

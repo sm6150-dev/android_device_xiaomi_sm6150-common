@@ -2624,7 +2624,7 @@ void LocApiV02 :: reportPosition (
        locationExtended.timeStamp.apTimeStampUncertaintyMs = FLT_MAX;
        LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
     }
-    LOC_LOGd("QMI_PosPacketTime %" PRIu64 " (sec) %" PRIu64 " (nsec), QMI_spoofReportMask 0x%x",
+    LOC_LOGd("QMI_PosPacketTime %ld (sec) %ld (nsec), QMI_spoofReportMask %" PRIu64,
                  locationExtended.timeStamp.apTimeStamp.tv_sec,
                  locationExtended.timeStamp.apTimeStamp.tv_nsec,
                  location_report_ptr->spoofReportMask);
@@ -3333,7 +3333,7 @@ void  LocApiV02 :: reportSv (
             {
                 GnssSvOptionsMask mask = 0;
 
-                LOC_LOGv("i:%d sv-id:%d count:%d sys:%d en:0x%X",
+                LOC_LOGv("i:%d sv-id:%d count:%d sys:%d en:%" PRIu64,
                     i, sv_info_ptr->gnssSvId, SvNotify.count, sv_info_ptr->system,
                     gnss_report_ptr->gnssSignalTypeList[SvNotify.count]);
 
@@ -4784,7 +4784,8 @@ void LocApiV02::reportGnssMeasurementData(
             for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
                     mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
                     index++) {
-                LOC_LOGv("index=%u count=%zu", index, mGnssMeasurements->gnssMeasNotification.count);
+                LOC_LOGv("index=%u count=%" PRIu32,
+                    index, mGnssMeasurements->gnssMeasNotification.count);
                 if ((gnss_measurement_report_ptr.svMeasurement[index].validMeasStatusMask &
                      QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02) &&
                     (gnss_measurement_report_ptr.svMeasurement[index].measurementStatus &
@@ -4797,7 +4798,7 @@ void LocApiV02::reportGnssMeasurementData(
                     LOC_LOGv("Measurements are stale, do not report");
                 }
             }
-            LOC_LOGv("there are %d SV measurements now, total=%zu",
+            LOC_LOGv("there are %d SV measurements now, total=%" PRIu32,
                      gnss_measurement_report_ptr.svMeasurement_len,
                      mGnssMeasurements->gnssMeasNotification.count);
 
@@ -4814,7 +4815,7 @@ void LocApiV02::reportGnssMeasurementData(
                 for (uint32_t index = 0; index < gnss_measurement_report_ptr.extSvMeasurement_len &&
                         mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
                         index++) {
-                    LOC_LOGv("index=%u count=%zu", index, mGnssMeasurements->gnssMeasNotification.count);
+                    LOC_LOGv("index=%u count=%" PRIu32, index, mGnssMeasurements->gnssMeasNotification.count);
                     if ((gnss_measurement_report_ptr.extSvMeasurement[index].validMeasStatusMask &
                          QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02) &&
                         (gnss_measurement_report_ptr.extSvMeasurement[index].measurementStatus &
@@ -4828,13 +4829,13 @@ void LocApiV02::reportGnssMeasurementData(
                         LOC_LOGv("Measurements are stale, do not report");
                     }
                 }
-                LOC_LOGv("there are %d SV measurements now, total=%zu",
+                LOC_LOGv("there are %d SV measurements now, total=%" PRIu32,
                          gnss_measurement_report_ptr.extSvMeasurement_len,
                          mGnssMeasurements->gnssMeasNotification.count);
             }
         }
     } else {
-        LOC_LOGv("there is no valid GNSS measurement for system %d, total=%zu",
+        LOC_LOGv("there is no valid GNSS measurement for system %d, total=%" PRIu32,
                  gnss_measurement_report_ptr.system,
             mGnssMeasurements->gnssMeasNotification.count);
     }
@@ -5538,7 +5539,7 @@ bool LocApiV02 :: convertGnssMeasurements(
 
     // carrier frequency
     if (gnss_measurement_report_ptr.gnssSignalType_valid) {
-        LOC_LOGv("gloFrequency = 0x%X, sigType=0x%X",
+        LOC_LOGv("gloFrequency = 0x%X, sigType=%" PRIu64,
                  gloFrequency, gnss_measurement_report_ptr.gnssSignalType);
         measurementData.carrierFrequencyHz = convertSignalTypeToCarrierFrequency(
                 gnss_measurement_report_ptr.gnssSignalType, gloFrequency);
@@ -5757,7 +5758,7 @@ bool LocApiV02 :: convertGnssMeasurements(
              "  svTimeMs=%u svTimeSubMs=%.2f svTimeUncMs=%.2f codeType=%d"
              "  carrierPhase=%.2f carrierPhaseUnc=%.6f cycleSlipCount=%u\n"
              " GNSS measurement data after conversion:"
-             " Output => size=%zu svid=%d time_offset_ns=%.2f stateMask=0x%08x"
+             " Output => size=%" PRIu32 "svid=%d time_offset_ns=%.2f stateMask=0x%08x"
              "  received_sv_time_in_ns=%" PRIu64 " received_sv_time_uncertainty_in_ns=%" PRIu64
              "  c_n0_dbhz=%.2f"
              "  pseudorange_rate_mps=%.2f pseudorange_rate_uncertainty_mps=%.2f"

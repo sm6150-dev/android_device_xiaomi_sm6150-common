@@ -110,6 +110,7 @@ using namespace loc_core;
 #define BEIDOU_B1C_CARRIER_FREQUENCY    1575420000.0
 #define BEIDOU_B2_I_CARRIER_FREQUENCY   1207140000.0
 #define BEIDOU_B2A_I_CARRIER_FREQUENCY  1176450000.0
+#define BEIDOU_B2A_Q_CARRIER_FREQUENCY  1176450000.0
 #define QZSS_L1CA_CARRIER_FREQUENCY     1575420000.0
 #define QZSS_L1S_CARRIER_FREQUENCY      1575420000.0
 #define QZSS_L2C_L_CARRIER_FREQUENCY    1227600000.0
@@ -3282,6 +3283,10 @@ float LocApiV02::convertSignalTypeToCarrierFrequency(
         carrierFrequency = SBAS_L1_CA_CARRIER_FREQUENCY;
         break;
 
+    case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_Q_V02:
+        carrierFrequency = BEIDOU_B2A_Q_CARRIER_FREQUENCY;
+        break;
+
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5_V02:
         carrierFrequency = NAVIC_L5_CARRIER_FREQUENCY;
         break;
@@ -5749,6 +5754,7 @@ bool LocApiV02 :: convertGnssMeasurements(
                     gnss_measurement_report_ptr.otherCodeTypeName,
                     std::min((uint32_t)sizeof(measurementData.otherCodeTypeName),
                              (uint32_t)gnss_measurement_report_ptr.otherCodeTypeName_len+1));
+            LOC_LOGv("measurementData.otherCodeTypeName = %s", measurementData.otherCodeTypeName);
         }
     }
 

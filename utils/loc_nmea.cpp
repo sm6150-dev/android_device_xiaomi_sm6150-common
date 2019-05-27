@@ -773,6 +773,7 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_nmea_generate_DTM(const LocLla &ref_lla,
                                   const LocLla &local_lla,
+                                  char *talker,
                                   char *sentence,
                                   int bufSize)
 {
@@ -809,7 +810,7 @@ static void loc_nmea_generate_DTM(const LocLla &ref_lla,
         default:
             break;
     }
-    length = snprintf(pMarker , lengthRemaining , "$GPDTM,%s,," , local_datum);
+    length = snprintf(pMarker , lengthRemaining , "$%sDTM,%s,," , talker, local_datum);
     if (length < 0 || length >= lengthRemaining) {
         LOC_LOGE("NMEA Error in string formatting");
         return;
@@ -1293,7 +1294,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         // -------------------
         // ------$--DTM-------
         // -------------------
-        loc_nmea_generate_DTM(ref_lla, local_lla, sentence_DTM, sizeof(sentence_DTM));
+        loc_nmea_generate_DTM(ref_lla, local_lla, talker, sentence_DTM, sizeof(sentence_DTM));
 
         // -------------------
         // ------$--RMC-------

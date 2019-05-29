@@ -4139,8 +4139,9 @@ case "$target" in
 	echo 95 95 > /proc/sys/kernel/sched_upmigrate
 	echo 85 85 > /proc/sys/kernel/sched_downmigrate
 	echo 100 > /proc/sys/kernel/sched_group_upmigrate
-	echo 95 > /proc/sys/kernel/sched_group_downmigrate
+	echo 85 > /proc/sys/kernel/sched_group_downmigrate
 	echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
+	echo 400000000 > /proc/sys/kernel/sched_coloc_downmigrate_ns
 
 	# cpuset parameters
 	echo 0-3 > /dev/cpuset/background/cpus

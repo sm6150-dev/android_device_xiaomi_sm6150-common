@@ -2624,7 +2624,7 @@ void LocApiV02 :: reportPosition (
        locationExtended.timeStamp.apTimeStampUncertaintyMs = FLT_MAX;
        LOC_LOGE("%s:%d Error in clock_gettime() ",__func__, __LINE__);
     }
-    LOC_LOGd("QMI_PosPacketTime %" PRIu64 " (sec) %" PRIu64 " (nsec), QMI_spoofReportMask 0x%x",
+    LOC_LOGd("QMI_PosPacketTime %ld (sec) %ld (nsec), QMI_spoofReportMask %" PRIu64,
                  locationExtended.timeStamp.apTimeStamp.tv_sec,
                  locationExtended.timeStamp.apTimeStamp.tv_nsec,
                  location_report_ptr->spoofReportMask);
@@ -3333,7 +3333,7 @@ void  LocApiV02 :: reportSv (
             {
                 GnssSvOptionsMask mask = 0;
 
-                LOC_LOGv("i:%d sv-id:%d count:%d sys:%d en:0x%X",
+                LOC_LOGv("i:%d sv-id:%d count:%d sys:%d en:%" PRIu64,
                     i, sv_info_ptr->gnssSvId, SvNotify.count, sv_info_ptr->system,
                     gnss_report_ptr->gnssSignalTypeList[SvNotify.count]);
 
@@ -4156,9 +4156,6 @@ void LocApiV02::reportLocationRequestNotification(
              loc_req_notif->inEmergencyMode,
              loc_req_notif->isCachedLocation);
 
-    strlcpy(notification.proxyAppPackageName,
-            ContextBase::mGps_conf.PROXY_APP_PACKAGE_NAME,
-            sizeof(notification.proxyAppPackageName));
     switch (loc_req_notif->protocolStack) {
     case eQMI_LOC_CTRL_PLANE_V02:
         notification.protocolStack = GNSS_NFW_CTRL_PLANE;
@@ -4212,9 +4209,6 @@ void LocApiV02::reportLocationRequestNotification(
         notification.requestor = GNSS_NFW_OTHER_REQUESTOR;
         break;
     }
-    strlcpy(notification.requestorId,
-            loc_req_notif->requestorId,
-            sizeof(notification.requestorId));
     switch (loc_req_notif->responseType) {
     case eQMI_LOC_REJECTED_V02:
         notification.responseType = GNSS_NFW_REJECTED;
@@ -4229,24 +4223,50 @@ void LocApiV02::reportLocationRequestNotification(
     notification.inEmergencyMode = (bool)loc_req_notif->inEmergencyMode;
     notification.isCachedLocation = (bool)loc_req_notif->isCachedLocation;
 
-    LOC_LOGv("OUT: proxyAppPackageName=%s"
-        " ,protocolStack=%d"
-        " ,otherProtocolStackName=%s"
-        " ,requestor=%d"
-        " ,requestorId=%s"
-        " ,responseType=%d"
-        " ,inEmergencyMode=%d"
-        " ,isCachedLocation=%u",
-        notification.proxyAppPackageName,
-        notification.protocolStack,
-        notification.otherProtocolStackName,
-        notification.requestor,
-        notification.requestorId,
-        notification.responseType,
-        notification.inEmergencyMode,
-        notification.isCachedLocation);
+    bool isImpossibleScenario = false;
+    // we need to reject various impossible scenarios
+    if (notification.inEmergencyMode) {
+        if (notification.protocolStack != GNSS_NFW_CTRL_PLANE &&
+            notification.protocolStack != GNSS_NFW_SUPL) {
+            isImpossibleScenario = true;
+            LOC_LOGe("inEmergencyMode is true, but protocolStack=%d",
+                notification.protocolStack);
+        }
+        if (GNSS_NFW_REJECTED == notification.responseType) {
+            isImpossibleScenario = true;
+            LOC_LOGe("inEmergencyMode is true, but responseType is REJECTED");
+        }
+    } else {
+        // requestorId is "" for emergency
+        strlcpy(notification.requestorId,
+                loc_req_notif->requestorId,
+                sizeof(notification.requestorId));
+        // proxyAppPackageName is "" for emergency
+        strlcpy(notification.proxyAppPackageName,
+                ContextBase::mGps_conf.PROXY_APP_PACKAGE_NAME,
+                sizeof(notification.proxyAppPackageName));
+    }
 
-    LocApiBase::sendNfwNotification(notification);
+    if (!isImpossibleScenario) {
+        LOC_LOGv("OUT: proxyAppPackageName=%s"
+                 " ,protocolStack=%d"
+                 " ,otherProtocolStackName=%s"
+                 " ,requestor=%d"
+                 " ,requestorId=%s"
+                 " ,responseType=%d"
+                 " ,inEmergencyMode=%d"
+                 " ,isCachedLocation=%u",
+                 notification.proxyAppPackageName,
+                 notification.protocolStack,
+                 notification.otherProtocolStackName,
+                 notification.requestor,
+                 notification.requestorId,
+                 notification.responseType,
+                 notification.inEmergencyMode,
+                 notification.isCachedLocation);
+
+        LocApiBase::sendNfwNotification(notification);
+    }
 }
 
 /* convert engine state report to loc eng format and send the converted
@@ -4762,27 +4782,60 @@ void LocApiV02::reportGnssMeasurementData(
                 bAgcIsPresent = true;
             }
             for (uint32_t index = 0; index < gnss_measurement_report_ptr.svMeasurement_len &&
-                mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
+                    mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
                     index++) {
-                LOC_LOGv("index=%u count=%zu", index, mGnssMeasurements->gnssMeasNotification.count);
+                LOC_LOGv("index=%u count=%" PRIu32,
+                    index, mGnssMeasurements->gnssMeasNotification.count);
                 if ((gnss_measurement_report_ptr.svMeasurement[index].validMeasStatusMask &
                      QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02) &&
                     (gnss_measurement_report_ptr.svMeasurement[index].measurementStatus &
                      QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02)) {
                     bAgcIsPresent &= convertGnssMeasurements(
                         gnss_measurement_report_ptr,
-                        index);
+                        index, false);
                     mGnssMeasurements->gnssMeasNotification.count++;
                 } else {
                     LOC_LOGv("Measurements are stale, do not report");
                 }
             }
-            LOC_LOGv("there are %d SV measurements now, total=%zu",
+            LOC_LOGv("there are %d SV measurements now, total=%" PRIu32,
                      gnss_measurement_report_ptr.svMeasurement_len,
-                mGnssMeasurements->gnssMeasNotification.count);
+                     mGnssMeasurements->gnssMeasNotification.count);
+
+            /* now check if more measurements are available (some constellations such
+            as BDS have more measurements available in extSvMeasurement)
+            */
+            if (gnss_measurement_report_ptr.extSvMeasurement_valid &&
+                gnss_measurement_report_ptr.extSvMeasurement_len != 0 &&
+                gnss_measurement_report_ptr.extSvMeasurement_len <=
+                    QMI_LOC_EXT_SV_MEAS_LIST_MAX_SIZE_V02) {
+                // the array of measurements
+                LOC_LOGv("More measurements received for GNSS system %d",
+                         gnss_measurement_report_ptr.system);
+                for (uint32_t index = 0; index < gnss_measurement_report_ptr.extSvMeasurement_len &&
+                        mGnssMeasurements->gnssMeasNotification.count < GNSS_MEASUREMENTS_MAX;
+                        index++) {
+                    LOC_LOGv("index=%u count=%" PRIu32, index, mGnssMeasurements->gnssMeasNotification.count);
+                    if ((gnss_measurement_report_ptr.extSvMeasurement[index].validMeasStatusMask &
+                         QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_STAT_BIT_VALID_V02) &&
+                        (gnss_measurement_report_ptr.extSvMeasurement[index].measurementStatus &
+                         QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02)) {
+                        bAgcIsPresent &= convertGnssMeasurements(
+                            gnss_measurement_report_ptr,
+                            index, true);
+                        mGnssMeasurements->gnssMeasNotification.count++;
+                    }
+                    else {
+                        LOC_LOGv("Measurements are stale, do not report");
+                    }
+                }
+                LOC_LOGv("there are %d SV measurements now, total=%" PRIu32,
+                         gnss_measurement_report_ptr.extSvMeasurement_len,
+                         mGnssMeasurements->gnssMeasNotification.count);
+            }
         }
     } else {
-        LOC_LOGv("there is no valid GNSS measurement for system %d, total=%zu",
+        LOC_LOGv("there is no valid GNSS measurement for system %d, total=%" PRIu32,
                  gnss_measurement_report_ptr.system,
             mGnssMeasurements->gnssMeasNotification.count);
     }
@@ -5133,7 +5186,7 @@ void LocApiV02::wifiStatusInformSync()
 /*convert GnssMeasurement type from QMI LOC to loc eng format*/
 bool LocApiV02 :: convertGnssMeasurements(
     const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr,
-    int index)
+    int index, bool isExt)
 {
     uint8_t gloFrequency = 0;
     bool bAgcIsPresent = false;
@@ -5486,7 +5539,7 @@ bool LocApiV02 :: convertGnssMeasurements(
 
     // carrier frequency
     if (gnss_measurement_report_ptr.gnssSignalType_valid) {
-        LOC_LOGv("gloFrequency = 0x%X, sigType=0x%X",
+        LOC_LOGv("gloFrequency = 0x%X, sigType=%" PRIu64,
                  gloFrequency, gnss_measurement_report_ptr.gnssSignalType);
         measurementData.carrierFrequencyHz = convertSignalTypeToCarrierFrequency(
                 gnss_measurement_report_ptr.gnssSignalType, gloFrequency);
@@ -5523,15 +5576,28 @@ bool LocApiV02 :: convertGnssMeasurements(
     }
 
     // accumulatedDeltaRangeUncertaintyM
-    if (gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) {
-        measurementData.adrUncertaintyMeters =
-            (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
-            gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
-        LOC_LOGv("carrierPhaseUnc = %.6f adrMetersUnc = %.6f",
-                 gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index],
-                 measurementData.adrUncertaintyMeters);
+    if (!isExt) {
+        if (gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) {
+            measurementData.adrUncertaintyMeters =
+                (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
+                gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
+            LOC_LOGv("carrierPhaseUnc = %.6f adrMetersUnc = %.6f",
+                     gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index],
+                     measurementData.adrUncertaintyMeters);
+        } else {
+            measurementData.adrUncertaintyMeters = 0.0;
+        }
     } else {
-        measurementData.adrUncertaintyMeters = 0.0;
+        if (gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty_valid) {
+            measurementData.adrUncertaintyMeters =
+                (SPEED_OF_LIGHT / measurementData.carrierFrequencyHz) *
+                gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty[index];
+            LOC_LOGv("extCarrierPhaseUnc = %.6f adrMetersUnc = %.6f",
+                     gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty[index],
+                     measurementData.adrUncertaintyMeters);
+        } else {
+            measurementData.adrUncertaintyMeters = 0.0;
+        }
     }
 
     // accumulatedDeltaRangeState
@@ -5692,7 +5758,7 @@ bool LocApiV02 :: convertGnssMeasurements(
              "  svTimeMs=%u svTimeSubMs=%.2f svTimeUncMs=%.2f codeType=%d"
              "  carrierPhase=%.2f carrierPhaseUnc=%.6f cycleSlipCount=%u\n"
              " GNSS measurement data after conversion:"
-             " Output => size=%zu svid=%d time_offset_ns=%.2f stateMask=0x%08x"
+             " Output => size=%" PRIu32 "svid=%d time_offset_ns=%.2f stateMask=0x%08x"
              "  received_sv_time_in_ns=%" PRIu64 " received_sv_time_uncertainty_in_ns=%" PRIu64
              "  c_n0_dbhz=%.2f"
              "  pseudorange_rate_mps=%.2f pseudorange_rate_uncertainty_mps=%.2f"

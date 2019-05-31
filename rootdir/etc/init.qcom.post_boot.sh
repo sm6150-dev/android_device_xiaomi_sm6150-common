@@ -3225,10 +3225,8 @@ case "$target" in
     # Turn off scheduler boost at the end
     echo 0 > /proc/sys/kernel/sched_boost
 
-    # Turn off sleep modes & core-isolation
-    # Need to enable them back after bringup stability w.r.t deep-sleep
-    echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
-    echo 6 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
+    # Turn on sleep modes
+    echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
     ;;
 esac
 

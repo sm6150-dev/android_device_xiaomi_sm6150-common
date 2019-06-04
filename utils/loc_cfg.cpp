@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, 2018, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -464,7 +464,6 @@ void loc_read_conf(const char* conf_file_name, const loc_param_s_type* config_ta
 #define LOC_FEATURE_MASK_SAP_BASIC                 0x40
 #define LOC_FEATURE_MASK_SAP_PREMIUM               0X80
 #define LOC_FEATURE_MASK_GTP_WAA_BASIC             0X100
-#define LOC_FEATURE_MASK_GTP_WAA_PREMIUM           0x200
 #define LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC      0X400
 #define LOC_FEATURE_MASK_GTP_MODEM_CELL_PREMIUM    0X800
 #define LOC_FEATURE_MASK_ODCPI                     0x1000
@@ -483,6 +482,7 @@ typedef struct {
     char baseband[LOC_MAX_PARAM_STRING];
     unsigned int sglte_target;
     char feature_gtp_mode[LOC_MAX_PARAM_STRING];
+    char feature_gtp_waa[LOC_MAX_PARAM_STRING];
     char feature_sap[LOC_MAX_PARAM_STRING];
     char feature_odcpi[LOC_MAX_PARAM_STRING];
     char feature_free_wifi_scan_inject[LOC_MAX_PARAM_STRING];
@@ -502,6 +502,7 @@ static const loc_param_s_type gps_conf_parameter_table[] = {
 /* location feature conf, e.g.: izat.conf feature mode table*/
 static const loc_param_s_type loc_feature_conf_table[] = {
     {"GTP_MODE",              &conf.feature_gtp_mode,               NULL, 's'},
+    {"GTP_WAA",               &conf.feature_gtp_waa,                NULL, 's'},
     {"SAP",                   &conf.feature_sap,                    NULL, 's'},
     {"ODCPI",                 &conf.feature_odcpi,                  NULL, 's'},
     {"FREE_WIFI_SCAN_INJECT", &conf.feature_free_wifi_scan_inject,  NULL, 's'},
@@ -615,7 +616,18 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     }
 
     //Set service mask for GTP_WAA
-    LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
+    if (strcmp(conf.feature_gtp_waa, "BASIC") == 0) {
+        LOC_LOGD("%s:%d]: Setting GTP WAA to mode: BASIC", __func__, __LINE__);
+        loc_service_mask |= LOC_FEATURE_MASK_GTP_WAA_BASIC;
+    }
+    else if (strcmp(conf.feature_gtp_waa, "DISABLED") == 0) {
+        LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
+    }
+    //conf file has a garbage value
+    else {
+        LOC_LOGE("%s:%d]: Unrecognized value for GTP WAA Mode."\
+               " Setting GTP WAA to default mode: DISABLED", __func__, __LINE__);
+    }
 
     //Set service mask for SAP
     if(strcmp(conf.feature_sap, "PREMIUM") == 0) {
@@ -971,18 +983,11 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
                                      LOC_PROCESS_MAX_ARG_STR_LENGTH);
                        }
                     }
-                    if(conf.loc_feature_mask &
-                       (LOC_FEATURE_MASK_GTP_WAA_BASIC | LOC_FEATURE_MASK_GTP_WAA_PREMIUM)) {
+                    if (conf.loc_feature_mask & LOC_FEATURE_MASK_GTP_WAA_BASIC) {
                         if(loc_service_mask & LOC_FEATURE_MASK_GTP_WAA_BASIC) {
                             strlcpy(child_proc[j].args[i++], arg_gtp_waa,
                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                             strlcpy(child_proc[j].args[i++], arg_basic,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else if(loc_service_mask & LOC_FEATURE_MASK_GTP_WAA_PREMIUM) {
-                            strlcpy(child_proc[j].args[i++], arg_gtp_waa,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_premium,
                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                         }
                         else

@@ -4142,7 +4142,7 @@ void  LocApiV02 :: reportSystemInfo(
 void LocApiV02::reportLocationRequestNotification(
     const qmiLocLocationRequestNotificationIndMsgT_v02* loc_req_notif)
 {
-    static GnssNfwNotification notification = {};
+    GnssNfwNotification notification = {};
 
     LOC_LOGv("IN: protocolStack=%d"
              " ,clientStrId_valid=%d"

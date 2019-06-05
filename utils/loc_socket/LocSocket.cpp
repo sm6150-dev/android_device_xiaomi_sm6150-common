@@ -85,9 +85,8 @@ protected:
             uint32_t numEntries = 1;
             int rc = ipcr_find_name(mSock->mSid, &ipcrName,
                     (struct qsockaddr_ipcr*)&mAddr, NULL, &numEntries, 0);
+            LOC_LOGd("serviceLookup, rc = %d, numEntries = %d\n", rc, numEntries);
             if (rc < 0 || 1 != numEntries) {
-                LOC_LOGe("Failed ipcr_find_name, service: %d, reason: %s",
-                         mServiceInfo.getServiceId(), strerror(errno));
                 mSock->close();
             }
             mLookupPending = false;
@@ -157,6 +156,10 @@ unique_ptr<LocIpcRecver> createLocIpcQrtrRecver(const shared_ptr<ILocIpcListener
 
 #else
 
+#define RETRY_FINDNEWSERVICE_MAX_COUNT 10000
+#define RETRY_FINDNEWSERVICE_SLEEP_MS  5
+#define SOCKET_TIMEOUT_SEC 2
+
 static inline __le32 cpu_to_le32(uint32_t x) { return htole32(x); }
 static inline uint32_t le32_to_cpu(__le32 x) { return le32toh(x); }
 
@@ -176,29 +179,40 @@ protected:
             if ((rc = ::sendto(mSock->mSid, &mCtrlPkt, sizeof(mCtrlPkt), 0,
                                (const struct sockaddr *)&addr, sizeof(addr))) < 0) {
                 LOC_LOGe("failed: sendto rc=%d reason=(%s)\n", rc, strerror(errno));
-                mSock->close();
             } else if (QRTR_TYPE_NEW_LOOKUP == cmd) {
                 int len;
                 struct qrtr_ctrl_pkt pkt;
-                while ((len = ::recv(mSock->mSid, &pkt, sizeof(pkt), 0)) > 0 &&
-                       (len < (decltype(len))sizeof(pkt) ||
-                        (cpu_to_le32(QRTR_TYPE_NEW_SERVER) != pkt.cmd) ||
-                        (0 == pkt.server.service))) {
+                bool serviceFound = false;
+                while ((len = ::recv(mSock->mSid, &pkt, sizeof(pkt), 0)) > 0) {
+                    if (cpu_to_le32(QRTR_TYPE_DEL_SERVER) == pkt.cmd) {
+                        LOC_LOGe("server deleted");
+                        break;
+                    }
+
+                   if ((len >= (decltype(len))sizeof(pkt)) &&
+                       (cpu_to_le32(QRTR_TYPE_NEW_SERVER) == pkt.cmd) &&
+                       (0 != pkt.server.service)) {
+                       serviceFound = true;
+                       break;
+                   }
                 }
-                if (len < 0) {
-                    LOC_LOGe("failed: recv len=%d reason=(%s)\n", len, strerror(errno));
-                    mSock->close();
-                } else {
+
+                if (serviceFound == true) {
                     mAddr.sq_node = le32_to_cpu(pkt.server.node);
                     mAddr.sq_port = le32_to_cpu(pkt.server.port);
+                    LOC_LOGd("pkt.cmd %d, service %d, node, %d, port %d",
+                             pkt.cmd, pkt.server.service, mAddr.sq_node, mAddr.sq_port);
                 }
             }
         }
         return mSock->isValid();
     }
+
     inline virtual bool isOperable() const override {
-        return mSock != nullptr && mSock->isValid();
+        return mSock != nullptr && mSock->isValid() &&
+            (mAddr.sq_node != 0 || mAddr.sq_port != 0);
     }
+
     inline virtual ssize_t send(const uint8_t data[], uint32_t length,
                                 int32_t /* msgId */) const override {
         if (mLookupPending) {
@@ -207,6 +221,7 @@ protected:
         }
         return mSock->send(data, length, 0, (struct sockaddr*)&mAddr, sizeof(mAddr));
     }
+
 public:
     inline LocIpcQrtrSender(int service, int instance) : LocIpcSender(),
             mServiceInfo(service, instance),
@@ -214,6 +229,13 @@ public:
             mAddr({AF_QIPCRTR, 0, 0}),
             mCtrlPkt({}),
             mLookupPending(true) {
+        // set timeout so if failed to send, call will return after 2 seconds timeout
+        // otherwise, call may never return
+        timeval timeout;
+        timeout.tv_sec = SOCKET_TIMEOUT_SEC;
+        timeout.tv_usec = 0;
+        setsockopt(mSock->mSid, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
         socklen_t sl = sizeof(mAddr);
         int rc = 0;
         if ((rc = getsockname(mSock->mSid, (struct sockaddr*)&mAddr, &sl)) ||
@@ -227,6 +249,34 @@ public:
             mCtrlPkt.server.node = cpu_to_le32(mAddr.sq_node);
             mCtrlPkt.server.port = cpu_to_le32(mAddr.sq_port);
         }
+    }
+
+    // when the qrtr socket sender is informed that the socket
+    // receiver has restarted, it need to find the re-started
+    // service node/port as the old node/port is no longer valid
+    inline virtual void informRecverRestarted() override {
+
+        sockaddr_qrtr oldAddr = mAddr;
+        int retryCount = 0;
+
+        while (retryCount < RETRY_FINDNEWSERVICE_MAX_COUNT) {
+            if (true == ctrlCmdAndResponse(QRTR_TYPE_NEW_LOOKUP)) {
+                LOC_LOGd("retry count %d, old %d %d, new %d %d",
+                         retryCount, oldAddr.sq_node, oldAddr.sq_port,
+                         mAddr.sq_node, mAddr.sq_port);
+                if ((mAddr.sq_node != 0 || mAddr.sq_port != 0) &&
+                    (mAddr.sq_node != oldAddr.sq_node) ||
+                    (mAddr.sq_port != oldAddr.sq_port)) {
+                    break;
+                }
+            }
+            usleep(RETRY_FINDNEWSERVICE_SLEEP_MS*1000*10);
+            retryCount++;
+        }
+
+        LOC_LOGd("retry count %d, old %d %d, new %d %d",
+                 retryCount, oldAddr.sq_node, oldAddr.sq_port,
+                 mAddr.sq_node, mAddr.sq_port);
     }
 };
 

@@ -152,7 +152,6 @@ private:
     LocationAPI* mLocationApi;
     LocationCallbacks mCallbacks;
     TrackingOptions mOptions;
-//    LocationOptions mBatchLocOptions;
     BatchingOptions mBatchOptions;
 
     // bitmask to hold this client's subscription

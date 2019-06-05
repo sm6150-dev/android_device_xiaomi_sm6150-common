@@ -872,13 +872,13 @@ void LocationClientApiImpl::destroy() {
                 mApiImpl->mMsgTask->destroy();
             }
 
-        #ifdef ENABLE_USE_LOC_SOCKET
+#ifdef FEATURE_EXTERNAL_AP
             // get clientId
             lock_guard<mutex> lock(mMutex);
             mApiImpl->mClientIdGenerator &= ~(1UL << mApiImpl->mClientId);
             LOC_LOGd("client id generarator 0x%x, id %d",
                      mApiImpl->mClientIdGenerator, mApiImpl->mClientId);
-        #endif
+#endif //FEATURE_EXTERNAL_AP
             delete mApiImpl;
         }
         LocationClientApiImpl* mApiImpl;
@@ -1686,13 +1686,19 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                     LOC_LOGw("payload size does not match for message with id: %d",
                              pMsg->msgId);
                 }
+
+                // when hal daemon crashes, we need to find the new node/port
+                // when remote socket api is used
+                // this code can not be moved to inside of onListenerReady as
+                // onListenerReady can be invoked from other places
+                if (mApiImpl.mIpcSender != nullptr) {
+                    mApiImpl.mIpcSender->informRecverRestarted();
+                }
+
                 // location hal deamon has restarted, need to set this
                 // flag to false to prevent messages to be sent to hal
                 // before registeration completes
                 mApiImpl.mHalRegistered = false;
-                // set mSessionId to invalid so session can be restarted
-                mApiImpl.mSessionId = LOCATION_CLIENT_SESSION_ID_INVALID;
-                // when hal daemon crashes, we need to find the new node/port
                 mListener.onListenerReady();
                 break;
             }

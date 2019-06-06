@@ -127,7 +127,7 @@ public:
                     LOC_LOGe("<-- failed to open file %s", sock);
                 }
             }
-            return LocIpc::getLocIpcQsockSender(getId1(), getId2());
+            return LocIpc::getLocIpcQrtrSender(getId1(), getId2());
         default:
             return nullptr;
         }

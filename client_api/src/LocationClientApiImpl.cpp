@@ -796,11 +796,11 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
     SockNodeEap sock(LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID,
                      pid * 100 + mClientId);
     strlcpy(mSocketName, sock.getNodePathname().c_str(), sizeof(mSocketName));
-    unique_ptr<LocIpcRecver> recver = LocIpc::getLocIpcQsockRecver(
+    unique_ptr<LocIpcRecver> recver = LocIpc::getLocIpcQrtrRecver(
             make_shared<IpcListener>(*this, *mMsgTask), sock.getId1(), sock.getId2());
 
     // establish an ipc sender to the hal daemon
-    mIpcSender = LocIpc::getLocIpcQsockSender(LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
+    mIpcSender = LocIpc::getLocIpcQrtrSender(LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
                                      LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);
     if (mIpcSender == nullptr) {
         LOC_LOGe("create sender socket failed for service id: %d instance id: %d",

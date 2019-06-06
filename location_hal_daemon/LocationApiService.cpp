@@ -173,7 +173,7 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     // blocking: set to false
     mIpc.startNonBlockingListening(recver);
 
-    mBlockingRecver = LocIpc::getLocIpcQsockRecver(
+    mBlockingRecver = LocIpc::getLocIpcQrtrRecver(
             make_shared<LocHaldIpcListener>(*this, EAP_LOC_CLIENT_DIR, LOC_CLIENT_NAME_PREFIX),
             LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
             LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);

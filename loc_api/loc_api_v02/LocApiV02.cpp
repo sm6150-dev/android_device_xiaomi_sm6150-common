@@ -2997,6 +2997,10 @@ void LocApiV02 :: reportPosition (
                                     locationExtended.gnss_mb_sv_used_ids.bds_b2ai_sv_used_ids_mask
                                             |= (1 << (gnssSvIdUsed - BDS_SV_PRN_MIN));
                                     break;
+                                case GNSS_SIGNAL_BEIDOU_B2AQ:
+                                    locationExtended.gnss_mb_sv_used_ids.bds_b2aq_sv_used_ids_mask
+                                            |= (1 << (gnssSvIdUsed - BDS_SV_PRN_MIN));
+                                    break;
                                 }
                             } else {
                                 locationExtended.measUsageInfo[idx].gnssSignalType =

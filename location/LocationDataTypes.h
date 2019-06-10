@@ -914,7 +914,8 @@ typedef struct {
 } GnssSystemTime;
 
 typedef struct {
-    uint32_t size;                        // set to sizeof(GnssLocationInfo)
+    uint32_t size;                      // set to sizeof(GnssLocationInfo)
+    Location location;                  // basic locaiton info, latitude, longitude, and etc
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
     float altitudeMeanSeaLevel;         // altitude wrt mean sea level
     float pdop;                         // position dilusion of precision
@@ -950,8 +951,7 @@ typedef struct {
     uint8_t calibrationConfidence;                // Sensor calibration confidence percent,
                                                   // in range of [0, 100]
     DrCalibrationStatusMask calibrationStatus;    // Sensor calibration status
-    Location location;
-} GnssLocationInfoNotification;
+ } GnssLocationInfoNotification;
 
 typedef struct {
     uint32_t size;                           // set to sizeof(GnssNiNotification)

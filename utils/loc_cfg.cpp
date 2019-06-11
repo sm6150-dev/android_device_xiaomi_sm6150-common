@@ -233,7 +233,7 @@ int loc_fill_conf_item(char* input_buf,
         config_value.param_name = strtok_r(input_buf, "=", &lasts);
         /* skip lines that do not contain "=" */
         if (config_value.param_name) {
-            config_value.param_str_value = strtok_r(NULL, "=", &lasts);
+            config_value.param_str_value = strtok_r(NULL, "\0", &lasts);
 
             /* skip lines that do not contain two operands */
             if (config_value.param_str_value) {

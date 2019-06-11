@@ -5674,7 +5674,6 @@ bool LocApiV02 :: convertGnssMeasurements(
             }
         }
         measurementData.adrStateMask |= GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT;
-        measurementData.adrStateMask |= GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT;
         if (bFound) {
             LOC_LOGv("Found the carrier phase for this satellite from last epoch");
             if (tempAdrData.validMask & QMI_LOC_SV_CARRIER_PHASE_VALID_V02) {
@@ -5684,9 +5683,7 @@ bool LocApiV02 :: convertGnssMeasurements(
                     (tempAdrData.counter == (mCounter - 1))) {
                     // at this point prior epoch does have carrier phase valid
                     measurementData.adrStateMask &=
-                        ~GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT;
-                    measurementData.adrStateMask &=
-                        ~GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT;
+                            ~GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT;
                     if (tempAdrData.validMask & QMI_LOC_SV_CYCLESLIP_COUNT_VALID_V02 &&
                         gnss_measurement_info.validMask & QMI_LOC_SV_CYCLESLIP_COUNT_VALID_V02) {
                         LOC_LOGv("cycle slip count is valid for both current and prior epochs");

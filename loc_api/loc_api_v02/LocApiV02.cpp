@@ -8395,7 +8395,7 @@ LocApiV02::startDistanceBasedTracking(uint32_t sessionId,
 void
 LocApiV02::stopDistanceBasedTracking(uint32_t sessionId, LocApiResponse* adapterResponse)
 {
-    sendMsg(new LocApiMsg([this, sessionId] () {
+    sendMsg(new LocApiMsg([this, sessionId, adapterResponse] () {
 
     LOC_LOGD("%s] id %u", __func__, sessionId);
     LocationError err = LOCATION_ERROR_SUCCESS;
@@ -8423,6 +8423,7 @@ LocApiV02::stopDistanceBasedTracking(uint32_t sessionId, LocApiResponse* adapter
               __func__, status, stop_dbt_Ind.status);
     }
 
+    adapterResponse->returnToSender(err);
     }));
 }
 

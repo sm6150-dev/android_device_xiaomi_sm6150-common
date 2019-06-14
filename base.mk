@@ -39,6 +39,7 @@ QCOM_BOARD_PLATFORMS += qcs605
 QCOM_BOARD_PLATFORMS += $(MSMSTEPPE)
 QCOM_BOARD_PLATFORMS += kona
 QCOM_BOARD_PLATFORMS += lito
+QCOM_BOARD_PLATFORMS += $(TRINKET)
 
 QSD8K_BOARD_PLATFORMS := qsd8k
 
@@ -71,10 +72,10 @@ SKIP_BOOT_JARS_CHECK := true
 BOARD_CHARGER_ENABLE_SUSPEND := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm710 qcs605 msmnile $(MSMSTEPPE) kona
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm710 qcs605 msmnile $(MSMSTEPPE) kona $(TRINKET)
 
 #List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv sdm710 qcs605 msmnile $(MSMSTEPPE)
+MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv sdm710 qcs605 msmnile $(MSMSTEPPE) $(TRINKET)
 
 #List of targets where Vulkan feature level is restricted to 0
 VULKAN_FEATURE_LEVEL_0_TARGETS_LIST := msm8937_32 msm8937_64 sdm660_32 sdm660_64 msm8998 msm8998_32 msm8996 msm8953_64 msm8953_32
@@ -161,6 +162,7 @@ AUDIO_HARDWARE += audio.primary.msmnile
 AUDIO_HARDWARE += audio.primary.$(MSMSTEPPE)
 AUDIO_HARDWARE += audio.primary.kona
 AUDIO_HARDWARE += audio.primary.lito
+AUDIO_HARDWARE += audio.primary.$(TRINKET)
 #
 AUDIO_POLICY := audio_policy.mpq8064
 AUDIO_POLICY += audio_policy.apq8084
@@ -450,6 +452,7 @@ LIBCAMERA += camera.sdm660
 LIBCAMERA += camera.msm8952
 LIBCAMERA += camera.msm8937
 LIBCAMERA += camera.msm8953
+LIBCAMERA += camera.$(TRINKET)
 LIBCAMERA += libcamera
 LIBCAMERA += libmmcamera_interface
 LIBCAMERA += libmmcamera_interface2
@@ -528,6 +531,7 @@ LIBGRALLOC += gralloc.sdm660
 LIBGRALLOC += gralloc.sdm710
 LIBGRALLOC += gralloc.qcs605
 LIBGRALLOC += gralloc.$(MSMSTEPPE)
+LIBGRALLOC += gralloc.$(TRINKET)
 
 #memtrack
 LIBMEMTRACK := memtrack.default
@@ -552,6 +556,7 @@ LIBMEMTRACK += memtrack.apq8098_latv
 LIBMEMTRACK += memtrack.sdm710
 LIBMEMTRACK += memtrack.qcs605
 LIBMEMTRACK += memtrack.$(MSMSTEPPE)
+LIBMEMTRACK += memtrack.$(TRINKET)
 
 #LIBLIGHTS
 LIBLIGHTS := lights.msm8660
@@ -583,6 +588,7 @@ LIBLIGHTS += lights.apq8098_latv
 LIBLIGHTS += lights.sdm710
 LIBLIGHTS += lights.qcs605
 LIBLIGHTS += lights.$(MSMSTEPPE)
+LIBLIGHTS += lights.$(TRINKET)
 
 #LIBHWCOMPOSER
 LIBHWCOMPOSER := hwcomposer.msm8660
@@ -615,6 +621,7 @@ LIBHWCOMPOSER += hwcomposer.apq8098_latv
 LIBHWCOMPOSER += hwcomposer.sdm710
 LIBHWCOMPOSER += hwcomposer.qcs605
 LIBHWCOMPOSER += hwcomposer.$(MSMSTEPPE)
+LIBHWCOMPOSER += hwcomposer.$(TRINKET)
 
 #LIBAUDIOPARAM -- Exposing AudioParameter as dynamic library for SRS TruMedia to work
 LIBAUDIOPARAM := libaudioparameter

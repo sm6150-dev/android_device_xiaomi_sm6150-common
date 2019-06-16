@@ -876,6 +876,15 @@ public:
         rounded up the next interval granularity supported by the underlying
         system.
         0 to indicate don't care.
+
+        When distanceInMeters is set to none zero, intervalInMs indicates
+        the max latency that position report should be reported after the
+        min distance criteria has been met. For example device has been
+        static, at UTC time of “x” millisecond, the device starts to move,
+        at UTC time of “y” milliseconds, the device has moved by
+        “distanceInMeters”. Then the location API client shall expect
+        to get a fix no later at UTC time of “y+intervalInMs” milli-seconds.
+
         1)  The underlying system may have a minimum interval threshold
         (e.g. 100 ms or 1000 ms). Effective intervals will not be smaller
         than this lower bound.

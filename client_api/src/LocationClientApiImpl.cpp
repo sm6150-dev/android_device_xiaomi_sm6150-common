@@ -1008,6 +1008,7 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
                         mApiImpl, const_cast<TrackingOptions&>(mOption));
             } else {
                 LOC_LOGd(">>> StartTrackingReq - no change in option");
+                mApiImpl->mResponseCb(LOCATION_RESPONSE_SUCCESS);
             }
         }
         LocationClientApiImpl* mApiImpl;

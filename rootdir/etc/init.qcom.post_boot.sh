@@ -4235,7 +4235,7 @@ case "$target" in
 		echo 6881 > $llccbw/max_freq
 	    done
 
-	    for npubw in $device/*npu*-npu-ddr-bw/devfreq/*npu*-npu-ddr-bw
+	    for npubw in $device/*npu*-ddr-bw/devfreq/*npu*-ddr-bw
 	    do
 		echo "bw_hwmon" > $npubw/governor
 		echo 40 > $npubw/polling_interval
@@ -4250,6 +4250,20 @@ case "$target" in
 		echo 1600 > $npubw/bw_hwmon/idle_mbps
 	    done
 
+	    for npullccbw in $device/*npu*-llcc-bw/devfreq/*npu*-llcc-bw
+	    do
+		echo "bw_hwmon" > $npullccbw/governor
+		echo 40 > $npullccbw/polling_interval
+		echo "4577 7110 9155 12298 14236 15258" > $npullccbw/bw_hwmon/mbps_zones
+		echo 4 > $npullccbw/bw_hwmon/sample_ms
+		echo 100 > $npullccbw/bw_hwmon/io_percent
+		echo 20 > $npullccbw/bw_hwmon/hist_memory
+		echo 10 > $npullccbw/bw_hwmon/hyst_length
+		echo 30 > $npullccbw/bw_hwmon/down_thres
+		echo 0 > $npullccbw/bw_hwmon/guard_band_mbps
+		echo 250 > $npullccbw/bw_hwmon/up_scale
+		echo 1600 > $npullccbw/bw_hwmon/idle_mbps
+	    done
 	    #Enable mem_latency governor for L3 scaling
 	    for memlat in $device/*qcom,devfreq-l3/*cpu*-lat/devfreq/*cpu*-lat
 	    do

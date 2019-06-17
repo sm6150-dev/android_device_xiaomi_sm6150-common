@@ -39,7 +39,8 @@
 #include <LocationClientApi.h>
 #include <MsgTask.h>
 #include <LocationApiMsg.h>
-
+#include <LocDiagIface.h>
+#include <LocationClientApiLog.h>
 
 using namespace std;
 using namespace loc_util;
@@ -57,8 +58,27 @@ struct ClientCallbacks {
     location_client::LocationSystemInfoCb systemInfoCb;
 };
 
+typedef LocDiagIface* (getLocDiagIface_t)();
+
 namespace location_client
 {
+void translateDiagGnssLocationPositionDynamics(clientDiagGnssLocationPositionDynamics& out,
+        const GnssLocationPositionDynamics& in);
+static clientDiagGnssSystemTimeStructType parseDiagGnssTime(
+        const GnssSystemTimeStructType &halGnssTime);
+static clientDiagGnssGloTimeStructType parseDiagGloTime(const GnssGloTimeStructType &halGloTime);
+static void translateDiagSystemTime(clientDiagGnssSystemTime& out,
+        const GnssSystemTime& in);
+static clientDiagGnssLocationSvUsedInPosition parseDiagLocationSvUsedInPosition(
+        const GnssLocationSvUsedInPosition &halSv);
+static void translateDiagGnssMeasUsageInfo(clientDiagGnssMeasUsageInfo& out,
+        const GnssMeasUsageInfo& in);
+void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr,
+        const GnssLocation& gnssLocation);
+static void translateDiagGnssSv(clientDiagGnssSv& out, const GnssSv& in);
+void populateClientDiagGnssSv(clientDiagGnssSvStructType* diagGnssSvPtr,
+        std::vector<GnssSv>& gnssSvs);
+
 typedef std::function<void(
     uint32_t response
 )> PingTestCb;
@@ -189,6 +209,8 @@ private:
 
     LocIpc                     mIpc;
     shared_ptr<LocIpcSender>   mIpcSender;
+    // wrapper around diag interface to handle case when diag service starts late
+    LocDiagIface*           mDiagIface;
 };
 
 } // namespace location_client

@@ -40,7 +40,6 @@
 #else
 #include <endian.h>
 #include <linux/qrtr.h>
-#include <libqrtr.h>
 #endif
 
 #include <log_util.h>
@@ -148,10 +147,10 @@ public:
     }
 };
 
-shared_ptr<LocIpcSender> createLocIpcQsockSender(int service, int instance) {
+shared_ptr<LocIpcSender> createLocIpcQrtrSender(int service, int instance) {
     return make_shared<LocIpcQsockSender>(service, instance);
 }
-unique_ptr<LocIpcRecver> createLocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
+unique_ptr<LocIpcRecver> createLocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
                                                  int service, int instance) {
     return make_unique<LocIpcQsockRecver>(listener, service, instance);
 }

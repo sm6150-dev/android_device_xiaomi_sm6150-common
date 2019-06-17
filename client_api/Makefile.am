@@ -3,6 +3,8 @@ AM_CFLAGS = \
     -I src/ \
     -I inc/ \
     $(GPSUTILS_CFLAGS) \
+    $(DIAGIFACE_CFLAGS) \
+    $(DIAG_CFLAGS) \
     $(LOCHALDAEMON_CFLAGS) \
     -std=c++11
 
@@ -10,19 +12,23 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -std=c++11
 
 requiredlibs = \
+    $(DIAGIFACE_LIBS) \
+    $(DIAG_LIBS) \
     $(GPSUTILS_LIBS)
 
 h_sources = \
     src/LocationClientApiImpl.h \
+    src/LocationClientApiLog.h \
     inc/LocationClientApi.h
 
 c_sources = \
     src/LocationClientApiImpl.cpp \
+    src/LocationClientApiUtils.cpp \
     src/LocationClientApi.cpp
 
 liblocation_client_api_la_SOURCES = \
     $(c_sources) $(h_sources)
-
+liblocation_client_api_la_h_sources = $(h_sources)
 ######################
 # Build location_client_api
 ######################
@@ -42,7 +48,7 @@ AM_CFLAGS += $(LOCSOCKET_CFLAGS)
 requiredlibs += $(LOCSOCKET_LIBS)
 endif
 
-liblocation_client_api_la_LIBADD = $(requiredlibs) -lstdc++
+liblocation_client_api_la_LIBADD = $(requiredlibs) -lstdc++ -ldl
 
 #Create and Install libraries
 library_include_HEADERS = $(h_sources)

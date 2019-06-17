@@ -34,6 +34,8 @@
 #include <gps_extended_c.h>
 #include <unistd.h>
 #include <sstream>
+#include <dlfcn.h>
+#include <loc_misc_utils.h>
 
 static uint32_t gDebug = 0;
 
@@ -263,34 +265,35 @@ static LocationReliability parseLocationReliability(const ::LocationReliability 
 static GnssSystemTimeStructType parseGnssTime(const ::GnssSystemTimeStructType &halGnssTime) {
 
     GnssSystemTimeStructType   gnssTime;
+    memset(&gnssTime, 0, sizeof(gnssTime));
     uint32_t gnssTimeFlags = 0;
 
     if (GNSS_SYSTEM_TIME_WEEK_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_TIME_WEEK_VALID;
+        gnssTime.systemWeek = halGnssTime.systemWeek;
     }
     if (GNSS_SYSTEM_TIME_WEEK_MS_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_TIME_WEEK_MS_VALID;
+        gnssTime.systemMsec = halGnssTime.systemMsec;
     }
     if (GNSS_SYSTEM_CLK_TIME_BIAS_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_CLK_TIME_BIAS_VALID;
+        gnssTime.systemClkTimeBias = halGnssTime.systemClkTimeBias;
     }
     if (GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID;
+        gnssTime.systemClkTimeUncMs = halGnssTime.systemClkTimeUncMs;
     }
     if (GNSS_SYSTEM_REF_FCOUNT_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_REF_FCOUNT_VALID;
+        gnssTime.refFCount = halGnssTime.refFCount;
     }
     if (GNSS_SYSTEM_NUM_CLOCK_RESETS_VALID & halGnssTime.validityMask) {
         gnssTimeFlags |= GNSS_SYSTEM_NUM_CLOCK_RESETS_VALID;
+        gnssTime.numClockResets = halGnssTime.numClockResets;
     }
 
     gnssTime.validityMask = (GnssSystemTimeStructTypeFlags)gnssTimeFlags;
-    gnssTime.systemWeek = halGnssTime.systemWeek;
-    gnssTime.systemMsec = halGnssTime.systemMsec;
-    gnssTime.systemClkTimeBias = halGnssTime.systemClkTimeBias;
-    gnssTime.systemClkTimeUncMs = halGnssTime.systemClkTimeUncMs;
-    gnssTime.refFCount = halGnssTime.refFCount;
-    gnssTime.numClockResets = halGnssTime.numClockResets;
 
     return gnssTime;
 }
@@ -298,38 +301,39 @@ static GnssSystemTimeStructType parseGnssTime(const ::GnssSystemTimeStructType &
 static GnssGloTimeStructType parseGloTime(const ::GnssGloTimeStructType &halGloTime) {
 
     GnssGloTimeStructType   gloTime;
+    memset(&gloTime, 0, sizeof(gloTime));
     uint32_t gloTimeFlags = 0;
 
     if (GNSS_CLO_DAYS_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_CLO_DAYS_VALID;
+        gloTime.gloDays = halGloTime.gloDays;
     }
     if (GNSS_GLO_MSEC_VALID  & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_MSEC_VALID ;
+        gloTime.gloMsec = halGloTime.gloMsec;
     }
     if (GNSS_GLO_CLK_TIME_BIAS_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_CLK_TIME_BIAS_VALID;
+        gloTime.gloClkTimeBias = halGloTime.gloClkTimeBias;
     }
     if (GNSS_GLO_CLK_TIME_BIAS_UNC_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_CLK_TIME_BIAS_UNC_VALID;
+        gloTime.gloClkTimeUncMs = halGloTime.gloClkTimeUncMs;
     }
     if (GNSS_GLO_REF_FCOUNT_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_REF_FCOUNT_VALID;
+        gloTime.refFCount = halGloTime.refFCount;
     }
     if (GNSS_GLO_NUM_CLOCK_RESETS_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_NUM_CLOCK_RESETS_VALID;
+        gloTime.numClockResets = halGloTime.numClockResets;
     }
     if (GNSS_GLO_FOUR_YEAR_VALID & halGloTime.validityMask) {
         gloTimeFlags |= GNSS_GLO_FOUR_YEAR_VALID;
+        gloTime.gloFourYear = halGloTime.gloFourYear;
     }
 
     gloTime.validityMask = (GnssGloTimeStructTypeFlags)gloTimeFlags;
-    gloTime.gloDays = halGloTime.gloDays;
-    gloTime.gloMsec = halGloTime.gloMsec;
-    gloTime.gloClkTimeBias = halGloTime.gloClkTimeBias;
-    gloTime.gloClkTimeUncMs = halGloTime.gloClkTimeUncMs;
-    gloTime.refFCount = halGloTime.refFCount;
-    gloTime.numClockResets = halGloTime.numClockResets;
-    gloTime.gloFourYear = halGloTime.gloFourYear;
 
     return gloTime;
 }
@@ -759,7 +763,7 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mCallbacksMask(0), mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
         mLocationSysInfoCb(nullptr),
-        mLocationSysInfoResponseCb(nullptr)
+        mLocationSysInfoResponseCb(nullptr), mDiagIface(nullptr)
 {
     // read configuration file
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, gConfigTable);
@@ -796,11 +800,11 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
     SockNodeEap sock(LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID,
                      pid * 100 + mClientId);
     strlcpy(mSocketName, sock.getNodePathname().c_str(), sizeof(mSocketName));
-    unique_ptr<LocIpcRecver> recver = LocIpc::getLocIpcQsockRecver(
+    unique_ptr<LocIpcRecver> recver = LocIpc::getLocIpcQrtrRecver(
             make_shared<IpcListener>(*this, *mMsgTask), sock.getId1(), sock.getId2());
 
     // establish an ipc sender to the hal daemon
-    mIpcSender = LocIpc::getLocIpcQsockSender(LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
+    mIpcSender = LocIpc::getLocIpcQrtrSender(LOCATION_CLIENT_API_QSOCKET_HALDAEMON_SERVICE_ID,
                                      LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID);
     if (mIpcSender == nullptr) {
         LOC_LOGe("create sender socket failed for service id: %d instance id: %d",
@@ -1636,8 +1640,9 @@ void IpcListener::onListenerReady() {
 void IpcListener::onReceive(const char* data, uint32_t length) {
     struct OnReceiveHandler : public LocMsg {
         OnReceiveHandler(LocationClientApiImpl& apiImpl, IpcListener& listener,
-                         const char* data, uint32_t length) :
-                mApiImpl(apiImpl), mListener(listener), mMsgData(data, length) {}
+                         const char* data, uint32_t length, LocDiagIface* mDiagIface) :
+                mApiImpl(apiImpl), mListener(listener), mMsgData(data, length),
+                mDiagInterface(mDiagIface) {}
         virtual ~OnReceiveHandler() {}
         void proc() const {
             LocAPIMsgHeader *pMsg = (LocAPIMsgHeader *)(mMsgData.data());
@@ -1796,7 +1801,7 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
 
             case E_LOCAPI_LOCATION_INFO_MSG_ID:
             {
-                LOC_LOGd("<<< message = location info\n");
+                LOC_LOGd("<<< message = location info");
                 if (sizeof(LocAPILocationInfoIndMsg) != mMsgData.length()) {
                     LOC_LOGe("invalid message");
                     break;
@@ -1810,13 +1815,31 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                     if (mApiImpl.mGnssReportCbs.gnssLocationCallback) {
                         mApiImpl.mGnssReportCbs.gnssLocationCallback(gnssLocation);
                     }
+
+                    if (!mDiagInterface) {
+                        break;
+                    }
+                    diagBuffSrc bufferSrc = BUFFER_INVALID;
+                    clientDiagGnssLocationStructType* diagGnssLocPtr = nullptr;
+                    diagGnssLocPtr = (clientDiagGnssLocationStructType*)
+                        mDiagInterface->logAlloc(LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
+                                sizeof(clientDiagGnssLocationStructType), &bufferSrc);
+                    if (diagGnssLocPtr == NULL) {
+                        LOC_LOGv("memory alloc failed");
+                        break;
+                    }
+                    populateClientDiagLocation(diagGnssLocPtr, gnssLocation);
+                    diagGnssLocPtr->version = LOG_CLIENT_DIAG_MSG_VERSION;
+
+                    mDiagInterface->logCommit(diagGnssLocPtr, bufferSrc,
+                            LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
+                            sizeof(clientDiagGnssLocationStructType));
                 }
                 break;
             }
-
             case E_LOCAPI_SATELLITE_VEHICLE_MSG_ID:
             {
-                LOC_LOGd("<<< message = sv\n");
+                LOC_LOGd("<<< message = sv");
                 if (sizeof(LocAPISatelliteVehicleIndMsg) != mMsgData.length()) {
                     LOC_LOGe("invalid message");
                     break;
@@ -1833,6 +1856,25 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                     if (mApiImpl.mGnssReportCbs.gnssSvCallback) {
                         mApiImpl.mGnssReportCbs.gnssSvCallback(gnssSvsVector);
                     }
+
+                    if (!mDiagInterface) {
+                        break;
+                    }
+                    diagBuffSrc bufferSrc = BUFFER_INVALID;
+                    clientDiagGnssSvStructType* diagGnssSvPtr = nullptr;
+                    diagGnssSvPtr = (clientDiagGnssSvStructType*)mDiagInterface->logAlloc(
+                            LOG_GNSS_CLIENT_API_SV_REPORT_C,
+                            sizeof(clientDiagGnssSvStructType), &bufferSrc);
+                    if (diagGnssSvPtr == NULL) {
+                        LOC_LOGv("memory alloc failed");
+                        break;
+                    }
+                    populateClientDiagGnssSv(diagGnssSvPtr, gnssSvsVector);
+                    diagGnssSvPtr->version = LOG_CLIENT_DIAG_MSG_VERSION;
+
+                    mDiagInterface->logCommit(diagGnssSvPtr, bufferSrc,
+                            LOG_GNSS_CLIENT_API_SV_REPORT_C,
+                            sizeof(clientDiagGnssSvStructType));
                 }
                 break;
             }
@@ -1949,8 +1991,20 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
         LocationClientApiImpl& mApiImpl;
         IpcListener& mListener;
         const string mMsgData;
+        LocDiagIface* mDiagInterface;
     };
-    mMsgTask.sendMsg(new (nothrow) OnReceiveHandler(mApiImpl, *this, data, length));
+    if (mApiImpl.mDiagIface == nullptr) {
+        void* libHandle = nullptr;
+        getLocDiagIface_t* getter = (getLocDiagIface_t*)dlGetSymFromLib(libHandle,
+                "liblocdiagiface.so.1.0.0", "getLocDiagIface");
+        if (getter != nullptr) {
+            mApiImpl.mDiagIface = (*getter)();
+        } else {
+            LOC_LOGe("<<< failed to load LocDiagIface library\n");
+        }
+    }
+    mMsgTask.sendMsg(new (nothrow) OnReceiveHandler(mApiImpl, *this, data, length,
+                mApiImpl.mDiagIface));
 }
 
 /******************************************************************************

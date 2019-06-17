@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -160,6 +160,7 @@ static GnssLocationSvUsedInPosition parseLocationSvUsedInPosition(
     clientSv.galSvUsedIdsMask = halSv.galSvUsedIdsMask;
     clientSv.bdsSvUsedIdsMask = halSv.bdsSvUsedIdsMask;
     clientSv.qzssSvUsedIdsMask = halSv.qzssSvUsedIdsMask;
+    clientSv.navicSvUsedIdsMask = halSv.navicSvUsedIdsMask;
 
     return clientSv;
 }
@@ -367,6 +368,10 @@ static GnssSystemTime parseSystemTime(const ::GnssSystemTime &halSystemTime) {
            systemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_QZSS;
            systemTime.u.qzssSystemTime = parseGnssTime(halSystemTime.u.qzssSystemTime);
            break;
+        case GNSS_LOC_SV_SYSTEM_NAVIC:
+            systemTime.gnssSystemTimeSrc = GNSS_LOC_SV_SYSTEM_NAVIC;
+            systemTime.u.navicSystemTime = parseGnssTime(halSystemTime.u.navicSystemTime);
+            break;
     }
 
     return systemTime;
@@ -663,7 +668,11 @@ static GnssSv parseGnssSv(const ::GnssSv &halGnssSv) {
     if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT & halGnssSv.gnssSvOptionsMask) {
         gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
     }
+    if (GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT & halGnssSv.gnssSvOptionsMask) {
+        gnssSvOptionsMask |= GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT;
+    }
     gnssSv.gnssSvOptionsMask = (GnssSvOptionsMask)gnssSvOptionsMask;
+    gnssSv.gnssSignalTypeMask = (GnssSignalTypeMask)(halGnssSv.gnssSignalTypeMask);
 
     return gnssSv;
 }

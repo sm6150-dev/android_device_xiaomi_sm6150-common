@@ -1275,7 +1275,8 @@ PRODUCT_PACKAGES_DEBUG += \
     init.qti.debug-msmnile-slpi.sh \
     init.qti.debug-talos.sh \
     init.qti.debug-msmnile.sh \
-    init.qti.debug-kona.sh
+    init.qti.debug-kona.sh \
+    init.qti.debug-lito.sh
 
 PRODUCT_PACKAGES += liboemaids_system
 PRODUCT_PACKAGES += liboemaids_vendor

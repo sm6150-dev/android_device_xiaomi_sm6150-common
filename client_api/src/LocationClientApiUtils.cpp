@@ -225,6 +225,9 @@ void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr
     }
     diagGnssLocPtr->leapSeconds = gnssLocation.leapSeconds;
     diagGnssLocPtr->timeUncMs = gnssLocation.timeUncMs;
+    diagGnssLocPtr->numSvUsedInPosition = gnssLocation.numSvUsedInPosition;
+    diagGnssLocPtr->calibrationConfidencePercent = gnssLocation.calibrationConfidencePercent;
+    diagGnssLocPtr->calibrationStatus = gnssLocation.calibrationStatus;
 }
 
 void translateDiagGnssSv(clientDiagGnssSv& out, const GnssSv& in) {

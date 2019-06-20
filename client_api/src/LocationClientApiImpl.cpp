@@ -509,9 +509,17 @@ static GnssLocation parseLocationInfo(const ::GnssLocationInfoNotification &halL
     if (GNSS_LOCATION_INFO_TIME_UNC_BIT & halLocationInfo.flags) {
         flags |= GNSS_LOCATION_INFO_TIME_UNC_BIT;
     }
-
     if (GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT & halLocationInfo.flags) {
         flags |= GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT;
+    }
+    if (GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_BIT & halLocationInfo.flags) {
+        flags |= GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_PERCENT_BIT;
+        locationInfo.calibrationConfidencePercent = halLocationInfo.calibrationConfidence;
+    }
+    if (GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT & halLocationInfo.flags) {
+        flags |= GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT;
+        locationInfo.calibrationStatus =
+                (DrCalibrationStatusMask)halLocationInfo.calibrationStatus;
     }
 
     locationInfo.gnssInfoFlags = (GnssLocationInfoFlagMask)flags;

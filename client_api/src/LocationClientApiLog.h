@@ -342,6 +342,25 @@ typedef enum {
     CLIENT_DIAG_LOCATION_TECHNOLOGY_SENSORS_BIT  = (1<<3),
 } clientDiagLocationTechnologyBits;
 
+typedef uint16_t clientDiagDrCalibrationStatusMask;
+typedef enum {
+    /** Indicate that roll calibration is needed. Need to take more
+     *  turns on level ground */
+    CLIENT_DIAG_DR_ROLL_CALIBRATION_NEEDED  = (1<<0),
+    /** Indicate that pitch calibration is needed. Need to take more
+     *  turns on level ground */
+    CLIENT_DIAG_DR_PITCH_CALIBRATION_NEEDED = (1<<1),
+    /** Indicate that yaw calibration is needed. Need to accelerate
+     *  in a straight line  */
+    CLIENT_DIAG_DR_YAW_CALIBRATION_NEEDED   = (1<<2),
+    /** Indicate that odo calibration is needed. Need to accelerate
+     *  in a straight line  */
+    CLIENT_DIAG_DR_ODO_CALIBRATION_NEEDED   = (1<<3),
+    /** Indicate that gyro calibration is needed. Need to take more
+     *  turns on level ground */
+    CLIENT_DIAG_DR_GYRO_CALIBRATION_NEEDED  = (1<<4)
+} clientDiagDrCalibrationStatusBits;
+
 typedef uint32_t clientDiagGnssLocationInfoFlagMask;
 typedef enum {
     /** valid altitude mean sea level */
@@ -391,7 +410,13 @@ typedef enum {
     /** valid leap seconds */
     CLIENT_DIAG_GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<22),
     /** valid time uncertainty */
-    CLIENT_DIAG_GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23)
+    CLIENT_DIAG_GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23),
+    /** valid numSvUsedInPosition */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT      = (1<<24),
+    /** valid calibrationConfidencePercent */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_PERCENT_BIT = (1<<25),
+    /** valid calibrationStatus */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT           = (1<<26),
 } clientDiagGnssLocationInfoFlagBits;
 
 typedef enum {
@@ -529,6 +554,12 @@ typedef PACKED struct PACKED_POST {
     uint8_t leapSeconds;
     /** Time uncertainty in milliseconds   */
     float timeUncMs;
+    /** number of SV used in position report */
+    uint16_t numSvUsedInPosition;
+    /** Sensor calibration confidence percent, valid range [0,
+     *  100] */
+    uint8_t calibrationConfidencePercent;
+    clientDiagDrCalibrationStatusMask calibrationStatus;
 } clientDiagGnssLocationStructType;
 
 typedef PACKED struct PACKED_POST {

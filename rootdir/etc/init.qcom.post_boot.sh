@@ -4133,6 +4133,11 @@ case "$target" in
 esac
 case "$target" in
 	"kona")
+
+	ddr_type=`od -An -tx /proc/device-tree/memory/ddr_device_type`
+	ddr_type4="07"
+	ddr_type5="08"
+
 	# Core control parameters for gold
 	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
 	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
@@ -4223,7 +4228,11 @@ case "$target" in
 	    do
 		echo "bw_hwmon" > $llccbw/governor
 		echo 40 > $llccbw/polling_interval
-		echo "1720 2086 2929 3879 5931 6881 7980 10437" > $llccbw/bw_hwmon/mbps_zones
+		if [ ${ddr_type:4:2} == $ddr_type4 ]; then
+			echo "1720 2086 2929 3879 5161 5931 6881 7980" > $llccbw/bw_hwmon/mbps_zones
+		elif [ ${ddr_type:4:2} == $ddr_type5 ]; then
+			echo "1720 2086 2929 3879 5931 6881 7980 10437" > $llccbw/bw_hwmon/mbps_zones
+		fi
 		echo 4 > $llccbw/bw_hwmon/sample_ms
 		echo 80 > $llccbw/bw_hwmon/io_percent
 		echo 20 > $llccbw/bw_hwmon/hist_memory
@@ -4239,7 +4248,11 @@ case "$target" in
 	    do
 		echo "bw_hwmon" > $npubw/governor
 		echo 40 > $npubw/polling_interval
-		echo "1720 2086 2929 3879 5931 6881 7980 10437" > $npubw/bw_hwmon/mbps_zones
+		if [ ${ddr_type:4:2} == $ddr_type4 ]; then
+			echo "1720 2086 2929 3879 5931 6881 7980" > $npubw/bw_hwmon/mbps_zones
+		elif [ ${ddr_type:4:2} == $ddr_type5 ]; then
+			echo "1720 2086 2929 3879 5931 6881 7980 10437" > $npubw/bw_hwmon/mbps_zones
+		fi
 		echo 4 > $npubw/bw_hwmon/sample_ms
 		echo 80 > $npubw/bw_hwmon/io_percent
 		echo 20 > $npubw/bw_hwmon/hist_memory

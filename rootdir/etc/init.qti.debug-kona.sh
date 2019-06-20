@@ -1232,9 +1232,10 @@ enable_kona_core_hang_config()
     echo 0xffffffff > $CORE_PATH_SILVER/threshold
     echo 0xffffffff > $CORE_PATH_GOLD/threshold
 
-    #To the enable core hang detection
-    echo 0x1 > $CORE_PATH_SILVER/enable
-    echo 0x1 > $CORE_PATH_GOLD/enable
+    #To the enable core hang detection.
+    #It's a boolean variable. DO NOT USE HEX values to enable/disable.
+    echo 1 > $CORE_PATH_SILVER/enable
+    echo 1 > $CORE_PATH_GOLD/enable
 }
 
 ftrace_disable=`getprop persist.debug.ftrace_events_disable`

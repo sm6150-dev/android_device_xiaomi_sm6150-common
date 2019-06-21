@@ -117,17 +117,19 @@ public:
 /******************************************************************************
 LocationApiService - constructors
 ******************************************************************************/
-LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms) :
+LocationApiService::LocationApiService(const configParamToRead & configParamRead) :
 
     mLocationControlId(0),
-    mAutoStartGnss(autostart)
+    mAutoStartGnss(configParamRead.autoStartGnss)
 #ifdef POWERMANAGER_ENABLED
     ,mPowerEventObserver(nullptr)
 #endif
     {
 
     LOC_LOGd("AutoStartGnss=%u", mAutoStartGnss);
-    LOC_LOGd("GnssSessionTbfMs=%u", sessiontbfms);
+    LOC_LOGd("GnssSessionTbfMs=%u", configParamRead.gnssSessionTbfMs);
+    LOC_LOGd("DeleteAllBeforeAutoStart=%u", configParamRead.deleteAllBeforeAutoStart);
+    LOC_LOGd("DeleteAllOnEnginesMask=%u", configParamRead.posEngineMask);
 
     // create Location control API
     mControlCallabcks.size = sizeof(mControlCallabcks);
@@ -151,6 +153,14 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     // create a default client if enabled by config
     if (mAutoStartGnss) {
         checkEnableGnss();
+        if ((configParamRead.deleteAllBeforeAutoStart) &&
+                (configParamRead.posEngineMask != 0)) {
+            GnssAidingData aidingData = {};
+            aidingData.deleteAll = true;
+            aidingData.posEngineMask = configParamRead.posEngineMask;
+
+            gnssDeleteAidingData(aidingData);
+        }
 
         LOC_LOGd("--> Starting a default client...");
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
@@ -161,7 +171,7 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
 
         LocationOptions locationOption;
         locationOption.size = sizeof(locationOption);
-        locationOption.minInterval = sessiontbfms;
+        locationOption.minInterval = configParamRead.gnssSessionTbfMs;
         locationOption.minDistance = 0;
 
         pClient->startTracking(locationOption);

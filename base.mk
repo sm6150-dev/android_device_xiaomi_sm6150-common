@@ -871,16 +871,6 @@ WLAN += qca_cld_wlan.ko
 FSTMAN := fstman
 FSTMAN += fstman.ini
 
-# WIGIG
-WIGIG := host_manager_11ad
-WIGIG += wigig_remoteserver
-WIGIG += wigig_wiburn
-WIGIG += wigig_logcollector
-WIGIG += wigig_logcollector.ini
-WIGIG += libwigig_utils
-WIGIG += libwigig_flashaccess
-WIGIG += libwigig_pciaccess
-
 #FD_LEAK
 FD_LEAK := libc_leak_detector
 
@@ -1046,7 +1036,6 @@ PRODUCT_PACKAGES += $(CRDA)
 PRODUCT_PACKAGES += $(WLAN)
 PRODUCT_PACKAGES += $(IPACM)
 PRODUCT_PACKAGES += $(FSTMAN)
-PRODUCT_PACKAGES += $(WIGIG)
 PRODUCT_PACKAGES += $(FD_LEAK)
 PRODUCT_PACKAGES += $(IMS_EXT)
 # Temp workarround for b/36603742

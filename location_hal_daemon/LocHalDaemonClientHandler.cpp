@@ -102,6 +102,16 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         mCallbacks.gnssLocationInfoCb = nullptr;
     }
 
+    // engine locations info
+    if (mSubscriptionMask & E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT) {
+        mCallbacks.engineLocationsInfoCb =
+                [this](uint32_t count, GnssLocationInfoNotification* notificationArr) {
+            onEngLocationsInfoCb(count, notificationArr);
+        };
+    } else {
+        mCallbacks.engineLocationsInfoCb = nullptr;
+    }
+
     // sv info
     if (mSubscriptionMask & E_LOC_CB_GNSS_SV_BIT) {
         mCallbacks.gnssSvCb = [this](GnssSvNotification notification) {
@@ -151,19 +161,22 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
 }
 
 uint32_t LocHalDaemonClientHandler::startTracking() {
+    LOC_LOGd("distance %d, internal %d, req mask %x",
+             mOptions.minDistance, mOptions.minInterval,
+             mOptions.locReqEngTypeMask);
     if (mSessionId == 0 && mLocationApi) {
         mSessionId = mLocationApi->startTracking(mOptions);
     }
     return mSessionId;
 }
 
-uint32_t LocHalDaemonClientHandler::startTracking(uint32_t minDistance, uint32_t minInterval) {
+uint32_t LocHalDaemonClientHandler::startTracking(LocationOptions & locOptions) {
+    LOC_LOGd("distance %d, internal %d, req mask %x",
+          locOptions.minDistance, locOptions.minInterval,
+             locOptions.locReqEngTypeMask);
     if (mSessionId == 0 && mLocationApi) {
         // update option
-        mOptions.size = sizeof(mOptions);
-        mOptions.minDistance = minDistance;
-        mOptions.minInterval = minInterval;
-        mOptions.mode = GNSS_SUPL_MODE_STANDALONE;
+        mOptions = locOptions;
         mSessionId = mLocationApi->startTracking(mOptions);
     }
     return mSessionId;
@@ -184,14 +197,21 @@ void LocHalDaemonClientHandler::stopTracking() {
     }
 }
 
-void LocHalDaemonClientHandler::updateTrackingOptions(uint32_t minDistance, uint32_t minInterval) {
+void LocHalDaemonClientHandler::updateTrackingOptions(LocationOptions & locOptions) {
     if (mSessionId != 0 && mLocationApi) {
-        // update option
-        mOptions.size = sizeof(mOptions);
-        mOptions.minDistance = minDistance;
-        mOptions.minInterval = minInterval;
-        mOptions.mode = GNSS_SUPL_MODE_STANDALONE;
-        mLocationApi->updateTrackingOptions(mSessionId, mOptions);
+        LOC_LOGe("distance %d, internal %d, req mask %x",
+             locOptions.minDistance, locOptions.minInterval,
+             locOptions.locReqEngTypeMask);
+
+        if ((mOptions.minDistance != locOptions.minDistance) ||
+            (mOptions.minInterval != locOptions.minInterval)) {
+
+            TrackingOptions trackingOption;
+            trackingOption.setLocationOptions(locOptions);
+            mLocationApi->updateTrackingOptions(mSessionId, trackingOption);
+        }
+        // save other info: eng req type that will be used in filtering
+        mOptions = locOptions;
     }
 }
 
@@ -668,6 +688,45 @@ void LocHalDaemonClientHandler::onGnssLocationInfoCb(GnssLocationInfoNotificatio
             (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT)) {
         LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
         int rc = sendMessage(msg);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+}
+
+void LocHalDaemonClientHandler::onEngLocationsInfoCb(
+        uint32_t count,
+        GnssLocationInfoNotification* engLocationsInfoNotification
+) {
+
+    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
+    LOC_LOGd("--< onEngLocationInfoCb count: %d, locReqEngTypeMask 0x%x",
+             count, mOptions.locReqEngTypeMask);
+
+    if ((nullptr != mIpcSender) &&
+        (mSubscriptionMask & E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT)) {
+
+        int reportCount = 0;
+        GnssLocationInfoNotification engineLocationInfoNotification[LOC_OUTPUT_ENGINE_COUNT];
+        for (int i = 0; i < count; i++) {
+            GnssLocationInfoNotification* locPtr = engLocationsInfoNotification+i;
+
+            LOC_LOGv("--< onEngLocationInfoCb i %d, type %d", i, locPtr->locOutputEngType);
+            if (((locPtr->locOutputEngType == LOC_OUTPUT_ENGINE_FUSED) &&
+                 (mOptions.locReqEngTypeMask & LOC_REQ_ENGINE_FUSED_BIT)) ||
+                ((locPtr->locOutputEngType == LOC_OUTPUT_ENGINE_SPE) &&
+                 (mOptions.locReqEngTypeMask & LOC_REQ_ENGINE_SPE_BIT)) ||
+                ((locPtr->locOutputEngType == LOC_OUTPUT_ENGINE_PPE) &&
+                 (mOptions.locReqEngTypeMask & LOC_REQ_ENGINE_PPE_BIT ))) {
+                engineLocationInfoNotification[reportCount++] = *locPtr;
+            }
+        }
+
+        LocAPIEngineLocationsInfoIndMsg msg(SERVICE_NAME, reportCount,
+                                            engineLocationInfoNotification);
+        int rc = sendMessage((const uint8_t*)&msg, msg.getMsgSize());
         // purge this client if failed
         if (!rc) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());

@@ -3617,6 +3617,85 @@ void  LocApiV02 :: reportSvPolynomial (
       svPolynomial.enhancedIOD = gnss_sv_poly_ptr->enhancedIOD;
     }
 
+    if(1 == gnss_sv_poly_ptr->gpsIscL1ca_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GPS_ISC_L1CA;
+        svPolynomial.gpsIscL1ca = gnss_sv_poly_ptr->gpsIscL1ca;
+    }
+
+    if(1 == gnss_sv_poly_ptr->gpsIscL2c_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GPS_ISC_L2C;
+        svPolynomial.gpsIscL2c = gnss_sv_poly_ptr->gpsIscL2c;
+    }
+
+    if(1 == gnss_sv_poly_ptr->gpsIscL5I5_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GPS_ISC_L5I5;
+        svPolynomial.gpsIscL5I5 = gnss_sv_poly_ptr->gpsIscL5I5;
+    }
+
+    if(1 == gnss_sv_poly_ptr->gpsIscL5Q5_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GPS_ISC_L5Q5;
+        svPolynomial.gpsIscL5Q5 = gnss_sv_poly_ptr->gpsIscL5Q5;
+    }
+
+    if(1 == gnss_sv_poly_ptr->gpsTgd_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GPS_TGD;
+        svPolynomial.gpsTgd = gnss_sv_poly_ptr->gpsTgd;
+    }
+
+    if(1 == gnss_sv_poly_ptr->gloTgdG1G2_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GLO_TGD_G1G2;
+        svPolynomial.gloTgdG1G2 = gnss_sv_poly_ptr->gloTgdG1G2;
+    }
+
+    if(1 == gnss_sv_poly_ptr->bdsTgdB1_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_BDS_TGD_B1;
+        svPolynomial.bdsTgdB1 = gnss_sv_poly_ptr->bdsTgdB1;
+    }
+
+    if(1 == gnss_sv_poly_ptr->bdsTgdB2_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_BDS_TGD_B2;
+        svPolynomial.bdsTgdB2= gnss_sv_poly_ptr->bdsTgdB2;
+    }
+
+    if(1 == gnss_sv_poly_ptr->bdsTgdB2a_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_BDS_TGD_B2A;
+        svPolynomial.bdsTgdB2a = gnss_sv_poly_ptr->bdsTgdB2a;
+    }
+
+    if(1 == gnss_sv_poly_ptr->bdsIscB2a_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_BDS_ISC_B2A;
+        svPolynomial.bdsIscB2a = gnss_sv_poly_ptr->bdsIscB2a;
+    }
+
+    if(1 == gnss_sv_poly_ptr->galBgdE1E5a_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GAL_BGD_E1E5A;
+        svPolynomial.galBgdE1E5a = gnss_sv_poly_ptr->galBgdE1E5a;
+    }
+
+    if(1 == gnss_sv_poly_ptr->galBgdE1E5b_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_GAL_BGD_E1E5B;
+        svPolynomial.galBgdE1E5b = gnss_sv_poly_ptr->galBgdE1E5b;
+    }
+
+    if(1 == gnss_sv_poly_ptr->navicTgdL5_valid)
+    {
+        svPolynomial.is_valid |= ULP_GNSS_SV_POLY_BIT_NAVIC_TGD_L5;
+        svPolynomial.navicTgdL5 = gnss_sv_poly_ptr->navicTgdL5;
+    }
+
+
     LocApiBase::reportSvPolynomial(svPolynomial);
 
     LOC_LOGV("[SV_POLY_QMI] SV-Id:%d\n", svPolynomial.gnssSvId);

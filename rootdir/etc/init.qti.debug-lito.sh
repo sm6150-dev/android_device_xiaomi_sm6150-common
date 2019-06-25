@@ -2046,6 +2046,8 @@ config_lito_dcc_gcc(){
     echo 0x10303c > $DCC_PATH/config
     echo 0x103040 > $DCC_PATH/config
     echo 0x10401c > $DCC_PATH/config
+    echo 0x105008 > $DCC_PATH/config
+    echo 0x10504c > $DCC_PATH/config
     echo 0x105064 > $DCC_PATH/config
     echo 0x106100 > $DCC_PATH/config
     echo 0x109004 > $DCC_PATH/config
@@ -2175,7 +2177,12 @@ config_lito_dcc_gcc(){
     echo 0x145380 > $DCC_PATH/config
     echo 0x145384 > $DCC_PATH/config
     echo 0x145398 > $DCC_PATH/config
+    echo 0x147000 > $DCC_PATH/config
+    echo 0x14700c > $DCC_PATH/config
+    echo 0x147014 > $DCC_PATH/config
+    echo 0x17100c > $DCC_PATH/config
     echo 0x171010 > $DCC_PATH/config
+    echo 0x171018 > $DCC_PATH/config
     echo 0x171250 > $DCC_PATH/config
     echo 0x174000 > $DCC_PATH/config
     echo 0x174004 > $DCC_PATH/config
@@ -2208,6 +2215,7 @@ config_lito_dcc_gcc(){
     echo 0x17603c > $DCC_PATH/config
     echo 0x176040 > $DCC_PATH/config
     echo 0x178040 > $DCC_PATH/config
+    echo 0x182010 > $DCC_PATH/config
     echo 0x182884 > $DCC_PATH/config
     echo 0x182888 > $DCC_PATH/config
     echo 0x18288c > $DCC_PATH/config
@@ -2245,6 +2253,8 @@ config_lito_dcc_gcc(){
     echo 0x197100 > $DCC_PATH/config
     echo 0x19b100 > $DCC_PATH/config
     echo 0x19c100 > $DCC_PATH/config
+    echo 0x3D91078 > $DCC_PATH/config
+    echo 0x3D95000 > $DCC_PATH/config
 }
 
 config_lito_dcc_l3_rsc(){
@@ -2441,9 +2451,10 @@ enable_lito_dcc_config()
         return
     fi
 
+    #DCC will trigger in following order LL6 -> LL4 -> LL3
     echo 0 > $DCC_PATH/enable
     echo 1 > $DCC_PATH/config_reset
-    echo 3 > $DCC_PATH/curr_list
+    echo 6 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
     echo sram > $DCC_PATH/data_sink
     config_lito_dcc_lpm
@@ -2466,7 +2477,7 @@ enable_lito_dcc_config()
     # config_lito_dcc_ddr
 
     echo 1 > /sys/bus/coresight/devices/coresight-tpdm-dcc/enable_source
-    echo 6 > $DCC_PATH/curr_list
+    echo 3 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
     echo atb > $DCC_PATH/data_sink
     lito_dcc_async_package

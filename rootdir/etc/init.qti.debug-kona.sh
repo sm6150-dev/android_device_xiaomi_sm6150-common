@@ -1183,7 +1183,7 @@ enable_kona_dcc_config()
 
     echo 0 > $DCC_PATH/enable
     echo 1 > $DCC_PATH/config_reset
-    echo 3 > $DCC_PATH/curr_list
+    echo 6 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
     echo sram > $DCC_PATH/data_sink
     #config_kona_dcc_tcs
@@ -1192,19 +1192,20 @@ enable_kona_dcc_config()
     config_kona_dcc_sys_agnoc
     config_kona_dcc_edu
     config_kona_dcc_lpm_pcu
+    config_kona_dcc_ddr
 
-    echo 6 > $DCC_PATH/curr_list
+    echo 4 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
     echo sram > $DCC_PATH/data_sink
     config_kona_dcc_ddr
 
-    echo 7 > $DCC_PATH/curr_list
-    echo cap > $DCC_PATH/func_type
-    echo sram > $DCC_PATH/data_sink
-    config_kona_dcc_ddr
+    #echo 7 > $DCC_PATH/curr_list
+    #echo cap > $DCC_PATH/func_type
+    #echo sram > $DCC_PATH/data_sink
+    #config_kona_dcc_ddr
 
     echo 1 > /sys/bus/coresight/devices/coresight-tpdm-dcc/enable_source
-    echo 4 > $DCC_PATH/curr_list
+    echo 3 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
     echo atb > $DCC_PATH/data_sink
     kona_dcc_async_package

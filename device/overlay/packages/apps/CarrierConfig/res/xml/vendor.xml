@@ -1971,6 +1971,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_rtt_upgrade_supported" value="true"/>
         <boolean name="carrier_rtt_downgrade_supported" value="true"/>
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="use_wfc_home_network_mode_in_roaming_network_bool" value="true" />
     </carrier_config>
 
     <carrier_config mcc="313" mnc="110">

@@ -18,27 +18,54 @@
 
 #include "FingerprintInscreen.h"
 
+#include <android-base/file.h>
 #include <android-base/logging.h>
-#include <fstream>
 #include <cmath>
 
 #define FINGERPRINT_ERROR_VENDOR 8
 
-#define COMMAND_NIT 10
-#define PARAM_NIT_630_FOD 1
-#define PARAM_NIT_NONE 0
+#define ON 1
+#define OFF 0
 
-#define DISPPARAM_PATH "/sys/devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/disp_param"
-#define DISPPARAM_HBM_FOD_ON "0x20000"
-#define DISPPARAM_HBM_FOD_OFF "0xE0000"
+#define COMMAND_NIT 10
 
 #define Touch_Fod_Enable 10
-#define Touch_Aod_Enable 11
 
 #define FOD_SENSOR_X 445
 #define FOD_SENSOR_Y 1931
 #define FOD_SENSOR_SIZE 190
 
+namespace {
+
+#define PPCAT_NX(A, B) A/B
+#define PPCAT(A, B) PPCAT_NX(A, B)
+#define STRINGIFY_INNER(x) #x
+#define STRINGIFY(x) STRINGIFY_INNER(x)
+#define DEV(x) PPCAT(/sys/devices/platform/soc, x)
+#define DSP "soc:qcom,dsi-display";
+#define DSI(x) STRINGIFY(PPCAT(DEV(DSP), x))
+
+using ::android::base::ReadFileToString;
+using ::android::base::WriteStringToFile;
+
+// Write value to path and close file.
+bool WriteToFile(const std::string& path, uint32_t content) {
+    return WriteStringToFile(std::to_string(content), path);
+}
+
+void CalDimAlpha() {
+    std::string buf;
+    uint32_t bkl_;
+    ReadFileToString(DSI(bkl), &buf);
+    bkl_ = std::stoi(buf);
+    int realBrightness =  bkl_ * 2047 / 255;
+    double dim = (1.0 - pow(realBrightness/2047.0, 1/2.2));
+    int alpha = (int)(255.0 * dim);
+    LOG(INFO) << "Setting Xiaomi dim alpha to " << alpha << ", from " << bkl_;
+    WriteToFile(DSI(dim_alpha), alpha);
+}
+
+}
 namespace vendor {
 namespace lineage {
 namespace biometrics {
@@ -46,12 +73,6 @@ namespace fingerprint {
 namespace inscreen {
 namespace V1_0 {
 namespace implementation {
-
-template <typename T>
-static void set(const std::string& path, const T& value) {
-    std::ofstream file(path);
-    file << value;
-}
 
 FingerprintInscreen::FingerprintInscreen() {
     TouchFeatureService = ITouchFeature::getService();
@@ -79,16 +100,17 @@ Return<void> FingerprintInscreen::onFinishEnroll() {
 }
 
 Return<void> FingerprintInscreen::onPress() {
-    set(DISPPARAM_PATH, DISPPARAM_HBM_FOD_ON);
-    TouchFeatureService->setTouchMode(Touch_Fod_Enable, 1);
-    xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_630_FOD);
+    CalDimAlpha();
+    WriteToFile(DSI(hbm), ON);
+    TouchFeatureService->setTouchMode(Touch_Fod_Enable, ON);
+    xiaomiFingerprintService->extCmd(COMMAND_NIT, ON);
     return Void();
 }
 
 Return<void> FingerprintInscreen::onRelease() {
-    set(DISPPARAM_PATH, DISPPARAM_HBM_FOD_OFF);
+    WriteToFile(DSI(hbm), OFF);
     TouchFeatureService->resetTouchMode(Touch_Fod_Enable);
-    xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_NONE);
+    xiaomiFingerprintService->extCmd(COMMAND_NIT, ON);
     return Void();
 }
 
@@ -114,16 +136,8 @@ Return<void> FingerprintInscreen::setLongPressEnabled(bool) {
     return Void();
 }
 
-Return<int32_t> FingerprintInscreen::getDimAmount(int32_t brightness) {
-    float alpha;
-
-    if (brightness > 62) {
-        alpha = 1.0 - pow(brightness / 255.0 * 430.0 / 600.0, 0.45);
-    } else {
-        alpha = 1.0 - pow(brightness / 200.0, 0.45);
-    }
-
-    return 255 * alpha;
+Return<int32_t> FingerprintInscreen::getDimAmount(int32_t /*brightness*/) {
+    return 0;
 }
 
 Return<bool> FingerprintInscreen::shouldBoostBrightness() {

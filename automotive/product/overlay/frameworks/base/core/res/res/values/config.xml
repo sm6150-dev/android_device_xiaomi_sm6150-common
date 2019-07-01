@@ -51,5 +51,5 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <bool name="config_dynamic_bind_ims">true</bool>
 
     <!-- The name of the package that will hold the dialer role by default. -->
-    <string name="config_defaultDialer" translatable="false">org.codeaurora.dialer</string>
+    <string name="config_defaultDialer" translatable="false">com.android.car.dialer</string>
 </resources>

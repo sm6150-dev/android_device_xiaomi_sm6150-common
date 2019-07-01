@@ -443,7 +443,7 @@ function configure_memory_parameters() {
 ProductName=`getprop ro.product.name`
 low_ram=`getprop ro.config.low_ram`
 
-if [ "$ProductName" == "msmnile" ]; then
+if [ "$ProductName" == "msmnile" ] || [ "$ProductName" == "kona" ] ; then
       # Enable ZRAM
       configure_zram_parameters
       configure_read_ahead_kb_values
@@ -4566,6 +4566,7 @@ case "$target" in
 	    done
 	done
     echo N > /sys/module/lpm_levels/parameters/sleep_disabled
+    configure_memory_parameters
     ;;
 esac
 

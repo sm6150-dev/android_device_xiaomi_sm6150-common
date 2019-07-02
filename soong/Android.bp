@@ -1,0 +1,16 @@
+bootstrap_go_package {
+    name: "soong-fod-hal-binary",
+    pkgPath: "device/xiaomi/sm6150-common",
+    deps: [
+        "blueprint",
+        "blueprint-pathtools",
+        "soong",
+        "soong-android",
+        "soong-cc",
+        "soong-genrule",
+    ],
+    srcs: [
+        "fod.go",
+    ],
+    pluginFor: ["soong_build"],
+}

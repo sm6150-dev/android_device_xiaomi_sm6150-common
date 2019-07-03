@@ -203,16 +203,6 @@ vendor/lib64/libhdcpsrm.so
 vendor/lib64/liboemcrypto.so
 vendor/lib64/librmp.so
 
-# ESE-Powermanager
-vendor/bin/hw/vendor.qti.esepowermanager@1.0-service
-vendor/etc/init/vendor.qti.esepowermanager@1.0-service.rc
-lib/vendor.qti.esepowermanager@1.0.so
-lib64/vendor.qti.esepowermanager@1.0.so
-vendor/lib/hw/vendor.qti.esepowermanager@1.0-impl.so
-vendor/lib/vendor.qti.esepowermanager@1.0.so
-vendor/lib64/hw/vendor.qti.esepowermanager@1.0-impl.so
-vendor/lib64/vendor.qti.esepowermanager@1.0.so
-
 # Firmware
 vendor/firmware/a225p5_pm4.fw
 vendor/firmware/a225_pfp.fw
@@ -378,20 +368,6 @@ vendor/lib64/libtinyxml2_1.so|0019bedf2e12642fe4113093bc5a5590f6f5021b
 vendor/lib/hw/vulkan.sm6150.so|30648c2a2f721ce273c8e204439c42b6ac86a9a3
 vendor/lib64/hw/vulkan.sm6150.so|d1732f8f1f654a8f44ee7c9ce9831530c3916794
 
-# IO prefetcher
-vendor/bin/hw/vendor.qti.hardware.iop@2.0-service
-vendor/etc/init/vendor.qti.hardware.iop@2.0-service.rc
-vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so
-vendor/lib64/libqti-iopd-client.so
-vendor/lib64/libqti-iopd.so
-vendor/lib64/vendor.qti.hardware.iop@1.0.so
-vendor/lib64/vendor.qti.hardware.iop@2.0.so
-vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so
-vendor/lib/libqti-iopd-client.so
-vendor/lib/libqti-iopd.so
-vendor/lib/vendor.qti.hardware.iop@1.0.so
-vendor/lib/vendor.qti.hardware.iop@2.0.so
-
 # IPA-Firmware
 vendor/firmware/ipa_fws.b00
 vendor/firmware/ipa_fws.b01
@@ -416,8 +392,6 @@ vendor/lib64/libqtikeymaster4.so
 # Listen
 vendor/lib/hw/sound_trigger.primary.sm6150.so
 vendor/lib/libadpcmdec.so
-vendor/lib/libcapiv2svacnn.so
-vendor/lib/libcapiv2vop.so
 vendor/lib/libgcs-calwrapper.so
 vendor/lib/libgcs-ipc.so
 vendor/lib/libgcs-osal.so
@@ -425,8 +399,6 @@ vendor/lib/libgcs.so
 vendor/lib/liblistensoundmodel2.so
 vendor/lib/libsmwrapper.so
 vendor/lib64/hw/sound_trigger.primary.sm6150.so
-vendor/lib64/libcapiv2svacnn.so
-vendor/lib64/libcapiv2vop.so
 vendor/lib64/libgcs-calwrapper.so
 vendor/lib64/libgcs-ipc.so
 vendor/lib64/libgcs-osal.so
@@ -534,29 +506,15 @@ vendor/lib64/libqti-perfd.so
 vendor/lib64/libqti-util.so
 vendor/lib64/libqti-utils.so
 vendor/lib64/vendor.qti.hardware.perf@1.0.so
-vendor/lib/libperfgluelayer.so
-vendor/lib/libqti-perfd-client.so
-vendor/lib/libqti-perfd.so
-vendor/lib/libqti-util.so
-vendor/lib/libqti-utils.so
-vendor/lib/vendor.qti.hardware.perf@1.0.so
 
 # Peripheral
 vendor/bin/pm-proxy
 vendor/bin/pm-service
 vendor/lib64/libperipheral_client.so
-vendor/lib/libperipheral_client.so
 
 # Postprocessing - from LA.UM.7.9.r1-07800-sm6150.0
 vendor/bin/hw/vendor.display.color@1.0-service|79e81bbafe578644ff3ba2b27bb921d00ae973ff|174ba843ca7ad283a7ee1512f0727b46ce740756
 vendor/etc/init/vendor.display.color@1.0-service.rc|5ad673f879b3685a0e79b5633437e5499cb94f48
-vendor/lib/libdisp-aba.so|63f582c9aa3fc2317f91fb597a6fe1216777996d
-vendor/lib/libdisplayqos.so|ced9edb374ca30638ab827d780d2493a1ff2c63f
-vendor/lib/vendor.display.color@1.0.so|d300cdd7fe9a8af4110b688380b90364eba7685e
-vendor/lib/vendor.display.color@1.1.so|115db5990f36cf04a2d86e397413bdf31df8d9f7
-vendor/lib/vendor.display.color@1.2.so|3bc49869bcb123ab28a14ff32cb5a6824c5b7505
-vendor/lib/vendor.display.color@1.3.so|65f7021c945601194eff1562adaf356f4b9e13db
-vendor/lib/vendor.display.postproc@1.0.so|70bcdd7718f352efd3871bacc7935160132f729e
 vendor/lib64/libdisp-aba.so|929bf65552ee1e8f7ae08338f9e79489bfaac05b
 vendor/lib64/libdisplayqos.so|b67d8ba7846f4dfeef4fecb805c0273b040db3b3
 vendor/lib64/vendor.display.color@1.0.so|13f4bfa44661430bdad8212561a94cf52267bd8d
@@ -567,12 +525,6 @@ vendor/lib64/vendor.display.postproc@1.0.so|4cd18d45c61ae95c43f8c6a63a8053800229
 
 # Power-off charging daemon
 -sbin/charger:sbin/chargeonlymode;rootfs
-
-# Qualcomm Display Utils - from LA.UM.7.9.r1-07800-sm6150.0
-vendor/bin/hw/vendor.qti.hardware.qdutils_disp@1.0-service-qti|068424fa14b1dacda58cdc81eb32ca3ebab01af5
-vendor/etc/init/vendor.qti.hardware.qdutils_disp@1.0-service-qti.rc|69d9cbc54f8ac0a0fb010f92bfa7de5981d643cf
-vendor/lib/vendor.qti.hardware.qdutils_disp@1.0.so|99cc88a3bc93f89beda2cd469b0f8e6c2a82a118
-vendor/lib64/vendor.qti.hardware.qdutils_disp@1.0.so|97e8551bf312c9e85368ed75451c003b9ce3948f
 
 # Qualcomm MSM Interface
 etc/permissions/qti_libpermissions.xml
@@ -790,7 +742,6 @@ vendor/lib64/libtime_genoff.so
 vendor/bin/hw/vendor.qti.hardware.tui_comm@1.0-service-qti
 vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so
-vendor/lib/vendor.qti.hardware.tui_comm@1.0.so
 
 # WiFi
 vendor/bin/cnss-daemon

@@ -182,7 +182,8 @@ public:
     void requestLocation();
     void requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     void releaseATL(int connHandle);
-    void requestNiNotify(GnssNiNotification &notify, const void* data);
+    void requestNiNotify(GnssNiNotification &notify, const void* data,
+                         const LocInEmergency emergencyState);
     void reportGnssMeasurementData(GnssMeasurementsNotification& measurements, int msInWeek);
     void reportWwanZppFix(LocGpsLocation &zppLoc);
     void reportZppBestAvailableFix(LocGpsLocation &zppLoc, GpsLocationExtended &location_extended,

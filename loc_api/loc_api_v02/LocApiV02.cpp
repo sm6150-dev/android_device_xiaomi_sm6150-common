@@ -5130,6 +5130,10 @@ void LocApiV02::convertGnssMeasurementsHeader(const Gnss_LocSvSystemEnumType loc
             systemTimeFlags = GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME;
             systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT;
             break;
+        case GNSS_LOC_SV_SYSTEM_GLONASS:
+            systemTimeExtPtr = &svMeasSetHead.gloSystemTimeExt;
+            systemTimeExtFlags = GNSS_SV_MEAS_HEADER_HAS_GLO_SYSTEM_TIME_EXT;
+            break;
         case GNSS_LOC_SV_SYSTEM_NAVIC:
             systemTimePtr = &svMeasSetHead.navicSystemTime;
             systemTimeExtPtr = &svMeasSetHead.navicSystemTimeExt;

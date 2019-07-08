@@ -5401,14 +5401,6 @@ bool LocApiV02 :: convertGnssMeasurements(
     uint64_t bitSynMask = QMI_LOC_MASK_MEAS_STATUS_BE_CONFIRM_V02 |
                           QMI_LOC_MASK_MEAS_STATUS_SB_VALID_V02;
     double gpsTowUncNs = (double)gnss_measurement_info.svTimeSpeed.svTimeUncMs * 1e6;
-    bool isGloTimeValid = false;
-
-    if ((GNSS_SV_TYPE_GLONASS == measurementData.svType) &&
-        (gnss_measurement_report_ptr.gloTime_valid) &&
-        (gnss_measurement_report_ptr.gloTime.gloFourYear != 255) && /* 255 is unknown */
-        (gnss_measurement_report_ptr.gloTime.gloDays != 65535)) { /* 65535 is unknown */
-        isGloTimeValid = true;
-    }
 
     bool bBandNotAvailable = !gnss_measurement_report_ptr.gnssSignalType_valid;
     qmiLocGnssSignalTypeMaskT_v02 gnssBand;
@@ -5455,46 +5447,10 @@ bool LocApiV02 :: convertGnssMeasurements(
     }
 
     if (validMeasStatus & QMI_LOC_MASK_MEAS_STATUS_MS_VALID_V02) {
-        // deal first with TOD_KNOWN and TOW_KNOWN bits
-        // GLONASS G1
-        if (GNSS_SV_TYPE_GLONASS == measurementData.svType &&
-            (bBandNotAvailable ||
-            (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 == gnssBand))) {
-            if (isGloTimeValid) {
-                measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT |
-                                              GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT);
-            }
-        }
-        if (gnss_measurement_report_ptr.systemTime_valid &&
-            65535 != gnss_measurement_report_ptr.systemTime.systemWeek) {
-            // GPS L1
-            if (eQMI_LOC_SV_SYSTEM_GPS_V02 == gnss_measurement_report_ptr.systemTime.system &&
-                (bBandNotAvailable ||
-                (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA_V02 == gnssBand))) {
-                measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
-            }
-            // BDS B1 I
-            if (eQMI_LOC_SV_SYSTEM_BDS_V02 == gnss_measurement_report_ptr.systemTime.system &&
-                (bBandNotAvailable ||
-                (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I_V02 == gnssBand))) {
-                measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
-            }
-            // GAL E1C
-            if (eQMI_LOC_SV_SYSTEM_GALILEO_V02 == gnss_measurement_report_ptr.systemTime.system &&
-                (bBandNotAvailable ||
-                (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02 == gnssBand))) {
-                measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
-            }
-            // SBAS
-            if (eQMI_LOC_SV_SYSTEM_SBAS_V02 == gnss_measurement_report_ptr.systemTime.system &&
-                (bBandNotAvailable ||
-                (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02 == gnssBand))) {
-                measurementData.stateMask |= GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT;
-            }
-        }
         /* sub-frame decode & TOW decode */
         measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_SUBFRAME_SYNC_BIT |
                                       GNSS_MEASUREMENTS_STATE_TOW_DECODED_BIT |
+                                      GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT |
                                       GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT |
                                       GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT);
         // GLO
@@ -5503,11 +5459,8 @@ bool LocApiV02 :: convertGnssMeasurements(
             (QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02 == gnssBand))) {
 
             measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT |
-                                          GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT);
-            if (isGloTimeValid) {
-                measurementData.stateMask |= (GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT |
-                                              GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT);
-            }
+                                          GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT |
+                                          GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT);
         }
 
         // GAL

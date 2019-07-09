@@ -4859,8 +4859,9 @@ void LocApiV02::reportGnssMeasurementData(
     }
 
     if (gnss_measurement_report_ptr.maxMessageNum == gnss_measurement_report_ptr.seqNum) {
-        LOC_LOGv("Report the measurements to the upper layers");
+        LOC_LOGv("Report the measurements to the upper layer");
         reportSvMeasurementInternal();
+        resetSvMeasurementReport();
         // set up flag to indicate that no new info in mGnssMeasurements
         newMeasProcessed = false;
     }

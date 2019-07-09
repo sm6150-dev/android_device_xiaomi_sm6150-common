@@ -502,7 +502,7 @@ void LocationApiService::updateNetworkAvailability(bool availability) {
     GnssInterface* gnssInterface = getGnssInterface();
     if (gnssInterface) {
         gnssInterface->updateConnectionStatus(
-                availability, loc_core::NetworkInfoDataItemBase::TYPE_UNKNOWN,
+                availability, loc_core::TYPE_UNKNOWN,
                 false, NETWORK_HANDLE_UNKNOWN);
     }
 }

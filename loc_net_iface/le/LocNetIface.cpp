@@ -630,7 +630,7 @@ bool LocNetIface::setupWwanCall() {
     LOC_LOGD("DSI_CALL_INFO_TECH_PREF = DSI_RADIO_TECH_UNKNOWN");
     dsi_set_data_call_param(mDsiHandle, DSI_CALL_INFO_TECH_PREF, &callParams);
 
-    /* APN from gps.conf 
+    /* APN from gps.conf
       As this is read using loc cfg routine, the buffer size
       max is LOC_MAX_PARAM_STRING. */
     char* apnName = getApnNameFromConfig();
@@ -985,12 +985,14 @@ bool LocNetIface::connectBackhaul() {
         LOC_LOGE("Failed to get wwan status, err 0x%x", qmi_err_num);
         return false;
     }
-    if (v4_status == QCMAP_MSGR_WWAN_STATUS_CONNECTING_V01) {
+    if (v4_status == QCMAP_MSGR_WWAN_STATUS_CONNECTING_V01 ||
+        v6_status == QCMAP_MSGR_WWAN_STATUS_IPV6_CONNECTING_V01) {
         LOC_LOGI("Ongoing connection attempt, ignoring connect.");
         mConnectReqRecvCount++;
         return true;
     }
-    if (v4_status == QCMAP_MSGR_WWAN_STATUS_CONNECTED_V01) {
+    if (v4_status == QCMAP_MSGR_WWAN_STATUS_CONNECTED_V01 ||
+        v6_status == QCMAP_MSGR_WWAN_STATUS_IPV6_CONNECTED_V01) {
         LOC_LOGV("Backhaul already connected, ignoring connect.");
         if (mWwanCallStatusCb != NULL) {
             mWwanCallStatusCb(

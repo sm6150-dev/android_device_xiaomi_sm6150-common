@@ -5606,7 +5606,8 @@ bool LocApiV02 :: convertGnssMeasurements(
 
     // accumulatedDeltaRangeState
     measurementData.adrStateMask = GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_UNKNOWN;
-    if (gnss_measurement_info.validMask & QMI_LOC_SV_CARRIER_PHASE_VALID_V02) {
+    if ((gnss_measurement_info.validMask & QMI_LOC_SV_CARRIER_PHASE_VALID_V02) &&
+        (gnss_measurement_info.carrierPhase != 0.0)) {
         measurementData.adrStateMask = GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT;
 
         bool bFound = false;

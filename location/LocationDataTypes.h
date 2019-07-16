@@ -610,6 +610,13 @@ typedef enum {
     GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES = 20    /**<  Maximum number of signal types */
 } Gnss_LocSignalEnumType;
 
+typedef uint32_t PositioningEngineMask;
+typedef enum {
+    STANDARD_POSITIONING_ENGINE = (1 << 0),
+    DEAD_RECKONING_ENGINE = (1 << 1),
+    PRECISE_POSITIONING_ENGINE = (1 << 2)
+} PositioningEngineBits;
+
 typedef uint64_t GnssDataMask;
 typedef enum {
     // Jammer Indicator is available
@@ -662,6 +669,7 @@ typedef struct {
     bool deleteAll;              // if true, delete all aiding data and ignore other params
     GnssAidingDataSv sv;         // SV specific aiding data
     GnssAidingDataCommon common; // common aiding data
+    PositioningEngineMask posEngineMask; // engines to perform the delete operation on.
 } GnssAidingData;
 
 typedef uint16_t DrCalibrationStatusMask;

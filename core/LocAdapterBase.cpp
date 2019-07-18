@@ -80,7 +80,6 @@ void LocAdapterBase::
                         const GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask,
-                        bool /*fromEngineHub*/,
                         GnssDataNotification* pDataNotify,
                         int msInWeek)
 {

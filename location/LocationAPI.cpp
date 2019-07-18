@@ -84,6 +84,7 @@ static const T1* loadLocationInterface(const char* library, const char* name) {
 static bool needsGnssTrackingInfo(LocationCallbacks& locationCallbacks)
 {
     return (locationCallbacks.gnssLocationInfoCb != nullptr ||
+            locationCallbacks.engineLocationsInfoCb != nullptr ||
             locationCallbacks.gnssSvCb != nullptr ||
             locationCallbacks.gnssNmeaCb != nullptr ||
             locationCallbacks.gnssDataCb != nullptr ||
@@ -95,6 +96,7 @@ static bool isGnssClient(LocationCallbacks& locationCallbacks)
     return (locationCallbacks.gnssNiCb != nullptr ||
             locationCallbacks.trackingCb != nullptr ||
             locationCallbacks.gnssLocationInfoCb != nullptr ||
+            locationCallbacks.engineLocationsInfoCb != nullptr ||
             locationCallbacks.gnssMeasurementsCb != nullptr);
 }
 

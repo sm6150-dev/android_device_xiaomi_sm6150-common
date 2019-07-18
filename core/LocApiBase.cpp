@@ -343,7 +343,6 @@ void LocApiBase::reportPosition(UlpLocation& location,
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportPositionEvent(location, locationExtended,
                                              status, loc_technology_mask,
-                                             false,
                                              pDataNotify, msInWeek)
     );
 }

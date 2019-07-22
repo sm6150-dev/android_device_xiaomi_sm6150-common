@@ -158,9 +158,79 @@ clientDiagGnssLocationSvUsedInPosition parseDiagLocationSvUsedInPosition(
     return clientSv;
 }
 
+void translateDiagGnssSignalType(clientDiagGnssSignalTypeMask& out, GnssSignalTypeMask in) {
+    switch (in) {
+        case GNSS_SIGNAL_GPS_L1CA_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L1CA;
+            break;
+        case GNSS_SIGNAL_GPS_L1C_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L1C;
+            break;
+        case GNSS_SIGNAL_GPS_L2_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L2;
+            break;
+        case GNSS_SIGNAL_GPS_L5_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L5;
+            break;
+        case GNSS_SIGNAL_GLONASS_G1_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G1;
+            break;
+        case GNSS_SIGNAL_GLONASS_G2_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G2;
+            break;
+        case GNSS_SIGNAL_GALILEO_E1_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E1;
+            break;
+        case GNSS_SIGNAL_GALILEO_E5A_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5A;
+            break;
+        case GNSS_SIGNAL_GALILEO_E5B_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5B;
+            break;
+        case GNSS_SIGNAL_BEIDOU_B1I_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1I;
+            break;
+        case GNSS_SIGNAL_BEIDOU_B1C_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1C;
+            break;
+        case GNSS_SIGNAL_BEIDOU_B2I_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2I;
+            break;
+        case GNSS_SIGNAL_BEIDOU_B2AI_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AI;
+            break;
+        case GNSS_SIGNAL_QZSS_L1CA_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1CA;
+            break;
+        case GNSS_SIGNAL_QZSS_L1S_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1S;
+            break;
+        case GNSS_SIGNAL_QZSS_L2_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L2;
+            break;
+        case GNSS_SIGNAL_QZSS_L5_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L5;
+            break;
+        case GNSS_SIGNAL_SBAS_L1_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_SBAS_L1;
+            break;
+        case GNSS_SIGNAL_NAVIC_L5_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_NAVIC_L5;
+            break;
+        case GNSS_SIGNAL_BEIDOU_B2AQ_BIT:
+            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AQ;
+            break;
+        default:
+            out = (clientDiagGnssSignalTypeMask)0xFF;
+            break;
+    }
+}
+
 void translateDiagGnssMeasUsageInfo(clientDiagGnssMeasUsageInfo& out,
         const GnssMeasUsageInfo& in) {
-    out.gnssSignalType = in.gnssSignalType;
+    clientDiagGnssSignalTypeMask diagGnssSignalType;
+    translateDiagGnssSignalType(diagGnssSignalType, in.gnssSignalType);
+    out.gnssSignalType = diagGnssSignalType;
    /** Specifies GNSS Constellation Type */
     out.gnssConstellation = (clientDiagGnss_LocSvSystemEnumType)in.gnssConstellation;
     /**  GNSS SV ID.
@@ -254,6 +324,12 @@ void translateDiagGnssSv(clientDiagGnssSv& out, const GnssSv& in) {
     out.azimuth = in.azimuth;
     /** Bitwise OR of GnssSvOptionsBits */
     out.gnssSvOptionsMask = in.gnssSvOptionsMask;
+    /** carrier frequency of SV (in Hz) */
+    out.carrierFrequencyHz = in.carrierFrequencyHz;
+    /** Bitwise OR of clientDiagGnssSignalTypeBits */
+    clientDiagGnssSignalTypeMask diagGnssSignalType;
+    translateDiagGnssSignalType(diagGnssSignalType, in.gnssSignalTypeMask);
+    out.gnssSignalTypeMask = diagGnssSignalType;
 }
 
 void populateClientDiagGnssSv(clientDiagGnssSvStructType* diagGnssSvPtr,

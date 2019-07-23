@@ -571,6 +571,25 @@ struct GnssLocation : public Location {
     uint8_t calibrationConfidencePercent;
     /** sensor calibration status  */
     DrCalibrationStatusMask calibrationStatus;
+    /* Default constructor to initalize GnssLocation structure*/
+    inline GnssLocation() :
+            Location({}), gnssInfoFlags((GnssLocationInfoFlagMask)0),
+            altitudeMeanSeaLevel(0.0f), pdop(0.0f), hdop(0.0f),
+            vdop(0.0f), gdop(0.0f), tdop(0.0f), magneticDeviation(0.0f),
+            horReliability(LOCATION_RELIABILITY_NOT_SET),
+            verReliability(LOCATION_RELIABILITY_NOT_SET),
+            horUncEllipseSemiMajor(0.0f), horUncEllipseSemiMinor(0.0f),
+            horUncEllipseOrientAzimuth(0.0f), northStdDeviation(0.0f),
+            eastStdDeviation(0.0f), northVelocity(0.0f), eastVelocity(0.0f),
+            upVelocity(0.0f), northVelocityStdDeviation(0.0f),
+            eastVelocityStdDeviation(0.0f), upVelocityStdDeviation(0.0f),
+            numSvUsedInPosition(0), svUsedInPosition({}),
+            navSolutionMask((GnssLocationNavSolutionMask)0),
+            posTechMask((GnssLocationPosTechMask)0), bodyFrameData({}),
+            gnssSystemTime({}), measUsageInfo(), leapSeconds(0),
+            timeUncMs(0.0f), calibrationConfidencePercent(0),
+            calibrationStatus((DrCalibrationStatusMask)0) {
+    }
 };
 
 struct GnssSv {

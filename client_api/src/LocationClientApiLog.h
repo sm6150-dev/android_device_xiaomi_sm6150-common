@@ -559,7 +559,12 @@ typedef PACKED struct PACKED_POST {
     /** Sensor calibration confidence percent, valid range [0,
      *  100] */
     uint8_t calibrationConfidencePercent;
+    /** Sensor calibration status */
     clientDiagDrCalibrationStatusMask calibrationStatus;
+    /** boot timestamp in nano-second when this diag log packet is
+     *  created and filled with the info at location client api
+     *  layer */
+    uint64_t bootTimestampNs;
 } clientDiagGnssLocationStructType;
 
 typedef PACKED struct PACKED_POST {

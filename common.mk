@@ -30,7 +30,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.rat_on=combine \
     persist.backup.ntpServer=0.pool.ntp.org \
-    sys.vendor.shutdown.waittime=500
+    sys.vendor.shutdown.waittime=500 \
+    persist.vendor.radio.procedure_bytes=SKIP
 
 ifneq ($(BOARD_FRP_PARTITION_NAME),)
     PRODUCT_PROPERTY_OVERRIDES += ro.frp.pst=/dev/block/bootdevice/by-name/$(BOARD_FRP_PARTITION_NAME)

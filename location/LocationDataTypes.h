@@ -505,7 +505,8 @@ typedef enum {
     GNSS_CONSTELLATION_TYPE_QZSS_BIT     = (1<<2),
     GNSS_CONSTELLATION_TYPE_BEIDOU_BIT   = (1<<3),
     GNSS_CONSTELLATION_TYPE_GALILEO_BIT  = (1<<4),
-    GNSS_CONSTELLATION_TYPE_SBAS_BIT     = (1<<5)
+    GNSS_CONSTELLATION_TYPE_SBAS_BIT     = (1<<5),
+    GNSS_CONSTELLATION_TYPE_NAVIC_BIT    = (1<<6),
 } GnssConstellationTypeBits;
 
 #define GNSS_CONSTELLATION_TYPE_MASK_ALL\
@@ -589,7 +590,9 @@ typedef enum
     /**< BDS satellite. */
     GNSS_LOC_SV_SYSTEM_QZSS                   = 6,
     /**< QZSS satellite. */
-    GNSS_LOC_SV_SYSTEM_MAX                    = 6,
+    GNSS_LOC_SV_SYSTEM_NAVIC                  = 7,
+    /**< NAVIC satellite. */
+    GNSS_LOC_SV_SYSTEM_MAX                    = 7,
     /**< Max enum of valid SV system. */
 } Gnss_LocSvSystemEnumType;
 

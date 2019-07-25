@@ -50,7 +50,9 @@
 
 #define RAD2DEG    (180.0 / M_PI)
 #define PROCESS_NAME_ENGINE_SERVICE "engine-service"
-
+#define BILLION_NSEC (1000000000ULL)
+#define NMEA_MIN_THRESHOLD_MSEC (99)
+#define NMEA_MAX_THRESHOLD_MSEC (975)
 using namespace loc_core;
 
 /* Method to fetch status cb from loc_net_iface library */
@@ -2432,6 +2434,8 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
     bool reportToClientWithNoWait = true;
 
     if (mTrackingSessions.empty()) {
+        /*Reset previous NMEA reported time stamp */
+        mPrevNmeaRptTimeNsec = 0;
         startTracking(client, sessionId, options);
         // need to wait for QMI callback
         reportToClientWithNoWait = false;
@@ -2487,7 +2491,8 @@ GnssAdapter::startTracking(LocationAPI* client, uint32_t sessionId,
 
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, trackingOptions);
-
+    //Update Position mode parameters
+    setLocPositionMode(locPosMode);
     // inform engine hub that GNSS session is about to start
     mEngHubProxy->gnssSetFixMode(locPosMode);
     mEngHubProxy->gnssStartFix();
@@ -3110,6 +3115,39 @@ GnssAdapter::needReport(const UlpLocation& ulpLocation,
     return reported;
 }
 
+bool GnssAdapter::needToGenerateNmeaReport(const uint32_t &gpsTimeOfWeekMs,
+        const struct timespec32_t &apTimeStamp)
+{
+    bool retVal = false;
+    uint64_t currentTimeNsec = 0;
+
+    if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER && !mTrackingSessions.empty()) {
+        currentTimeNsec = (apTimeStamp.tv_sec * BILLION_NSEC + apTimeStamp.tv_nsec);
+        if ((GNSS_NMEA_REPORT_RATE_NHZ == ContextBase::sNmeaReportRate) ||
+                (GPS_DEFAULT_FIX_INTERVAL_MS <= mLocPositionMode.min_interval)) {
+            retVal = true;
+        } else { /*tbf is less than 1000 milli-seconds and NMEA reporting rate is set to 1Hz */
+            /* Always send NMEA string for first position report
+             * Send when gpsTimeOfWeekMs is closely aligned with integer boundary
+             */
+            if ((0 == mPrevNmeaRptTimeNsec) ||
+                (0 != gpsTimeOfWeekMs) && (NMEA_MIN_THRESHOLD_MSEC >= (gpsTimeOfWeekMs % 1000))) {
+                retVal = true;
+            } else {
+                uint64_t timeDiffMsec = ((currentTimeNsec - mPrevNmeaRptTimeNsec) / 1000000);
+                // Send when the delta time becomes >= 1 sec
+                if (NMEA_MAX_THRESHOLD_MSEC <= timeDiffMsec) {
+                    retVal = true;
+                }
+            }
+        }
+        if (true == retVal) {
+            mPrevNmeaRptTimeNsec = currentTimeNsec;
+        }
+    }
+    return retVal;
+}
+
 void
 GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                             const GpsLocationExtended& locationExtended,
@@ -3160,7 +3198,8 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         }
     }
 
-    if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER && !mTrackingSessions.empty()) {
+    if (needToGenerateNmeaReport(locationExtended.gpsTime.gpsTimeOfWeekMs,
+            locationExtended.timeStamp.apTimeStamp)) {
         /*Only BlankNMEA sentence needs to be processed and sent, if both lat, long is 0 &
           horReliability is not set. */
         bool blank_fix = ((0 == ulpLocation.gpsLocation.latitude) &&

@@ -50,6 +50,7 @@ bool ContextBase::sIsEngineCapabilitiesKnown = false;
 uint64_t ContextBase::sSupportedMsgMask = 0;
 bool ContextBase::sGnssMeasurementSupported = false;
 uint8_t ContextBase::sFeaturesSupported[MAX_FEATURE_LENGTH];
+GnssNMEARptRate ContextBase::sNmeaReportRate = GNSS_NMEA_REPORT_RATE_NHZ;
 
 const loc_param_s_type ContextBase::mGps_conf_table[] =
 {
@@ -65,6 +66,7 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"INTERMEDIATE_POS",               &mGps_conf.INTERMEDIATE_POS,               NULL, 'n'},
   {"ACCURACY_THRES",                 &mGps_conf.ACCURACY_THRES,                 NULL, 'n'},
   {"NMEA_PROVIDER",                  &mGps_conf.NMEA_PROVIDER,                  NULL, 'n'},
+  {"NMEA_REPORT_RATE",               &mGps_conf.NMEA_REPORT_RATE,               NULL, 's'},
   {"CAPABILITIES",                   &mGps_conf.CAPABILITIES,                   NULL, 'n'},
   {"XTRA_VERSION_CHECK",             &mGps_conf.XTRA_VERSION_CHECK,             NULL, 'n'},
   {"XTRA_SERVER_1",                  &mGps_conf.XTRA_SERVER_1,                  NULL, 's'},
@@ -192,6 +194,12 @@ void ContextBase::readConfig()
         UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
         UTIL_READ_CONF(LOC_PATH_SAP_CONF, mSap_conf_table);
 
+        if (strncmp(mGps_conf.NMEA_REPORT_RATE, "1HZ", sizeof(mGps_conf.NMEA_REPORT_RATE)) == 0) {
+            /* NMEA reporting is configured at 1Hz*/
+            sNmeaReportRate = GNSS_NMEA_REPORT_RATE_1HZ;
+        } else {
+            sNmeaReportRate = GNSS_NMEA_REPORT_RATE_NHZ;
+        }
         LOC_LOGI("%s] GNSS Deployment: %s", __FUNCTION__,
                 ((mGps_conf.GNSS_DEPLOYMENT == 1) ? "SS5" :
                 ((mGps_conf.GNSS_DEPLOYMENT == 2) ? "QFUSION" : "QGNSS")));

@@ -494,6 +494,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
   }
 
   if ((eLOC_CLIENT_SUCCESS == status) && (LOC_CLIENT_INVALID_HANDLE_VALUE != clientHandle)) {
+
     qmiMask = convertMask(newMask);
 
     LOC_LOGd("clientHandle = %p mMask: 0x%" PRIx64 " Adapter mask: 0x%" PRIx64 " "
@@ -540,7 +541,7 @@ LocApiV02 :: open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 
 void LocApiV02 :: registerEventMask(LOC_API_ADAPTER_EVENT_MASK_T adapterMask)
 {
-    locClientEventMaskType qmiMask = adjustMaskIfNoSession(convertMask(adapterMask));
+    locClientEventMaskType qmiMask = adjustMaskIfNoSessionOrEngineOff(convertMask(adapterMask));
     if ((qmiMask != mQmiMask) &&
             (locClientRegisterEventMask(clientHandle, qmiMask, isMaster()))) {
         mQmiMask = qmiMask;
@@ -603,7 +604,7 @@ bool LocApiV02::sendRequestForAidingData(locClientEventMaskType qmiMask) {
 
 }
 
-locClientEventMaskType LocApiV02 :: adjustMaskIfNoSession(locClientEventMaskType qmiMask)
+locClientEventMaskType LocApiV02 :: adjustMaskIfNoSessionOrEngineOff(locClientEventMaskType qmiMask)
 {
     locClientEventMaskType oldQmiMask = qmiMask;
     if (!mInSession) {
@@ -617,9 +618,12 @@ locClientEventMaskType LocApiV02 :: adjustMaskIfNoSession(locClientEventMaskType
                                            QMI_LOC_EVENT_MASK_EPHEMERIS_REPORT_V02 |
                                            QMI_LOC_EVENT_MASK_GNSS_EVENT_REPORT_V02;
         qmiMask = qmiMask & ~clearMask;
+    } else if (!mEngineOn) {
+        locClientEventMaskType clearMask = QMI_LOC_EVENT_MASK_NMEA_V02;
+        qmiMask = qmiMask & ~clearMask;
     }
-    LOC_LOGd("oldQmiMask=%" PRIu64 " qmiMask=%" PRIu64 " mInSession: %d",
-            oldQmiMask, qmiMask, mInSession);
+    LOC_LOGd("oldQmiMask=%" PRIu64 " qmiMask=%" PRIu64 " mInSession: %d mEngineOn: %d",
+            oldQmiMask, qmiMask, mInSession, mEngineOn);
     return qmiMask;
 }
 
@@ -2407,8 +2411,12 @@ locClientEventMaskType LocApiV02 :: convertMask(
 
   /* treat NMEA_1Hz and NMEA_POSITION_REPORT the same*/
   if ((mask & LOC_API_ADAPTER_BIT_NMEA_POSITION_REPORT) ||
-      (mask & LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT) )
+      (mask & LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT) ) {
       eventMask |= QMI_LOC_EVENT_MASK_NMEA_V02;
+      // if registering for NMEA event, also register for ENGINE STATE event so that we can
+      // register for NMEA event when Engine turns ON and deregister when Engine turns OFF
+      eventMask |= QMI_LOC_EVENT_MASK_ENGINE_STATE_V02;
+  }
 
   if (mask & LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST)
       eventMask |= QMI_LOC_EVENT_MASK_NI_NOTIFY_VERIFY_REQ_V02;
@@ -4375,24 +4383,13 @@ void LocApiV02 :: reportEngineState (
       inline MsgUpdateEngineState(LocApiV02* pLocApiV02, bool engineOn) :
                  LocMsg(), mpLocApiV02(pLocApiV02), mEngineOn(engineOn) {}
       inline virtual void proc() const {
-          // If EngineOn is true and InSession is false and Engine is just turned off,
-          // then unregister the gps tracking specific event masks
-          if (mpLocApiV02->mEngineOn && !mpLocApiV02->mInSession && !mEngineOn) {
-              mpLocApiV02->registerEventMask(mpLocApiV02->mMask);
-          }
-          mpLocApiV02->mEngineOn = mEngineOn;
 
-          if (mEngineOn) {
-              // if EngineOn and not InSession, then we have already stopped
-              // the fix, so do not send ENGINE_ON
-              if (mpLocApiV02->mInSession) {
-                  mpLocApiV02->reportStatus(LOC_GPS_STATUS_ENGINE_ON);
-                  mpLocApiV02->reportStatus(LOC_GPS_STATUS_SESSION_BEGIN);
-              }
-          } else {
-              mpLocApiV02->reportStatus(LOC_GPS_STATUS_SESSION_END);
-              mpLocApiV02->reportStatus(LOC_GPS_STATUS_ENGINE_OFF);
-              mpLocApiV02->registerEventMask(mpLocApiV02->mMask);
+          // Call registerEventMask so that if qmi mask has changed,
+          // it will register the new qmi mask to the modem
+          mpLocApiV02->mEngineOn = mEngineOn;
+          mpLocApiV02->registerEventMask(mpLocApiV02->mMask);
+
+          if (!mEngineOn) {
               for (auto resender : mpLocApiV02->mResenders) {
                   LOC_LOGV("%s:%d]: resend failed command.", __func__, __LINE__);
                   resender();
@@ -4402,17 +4399,11 @@ void LocApiV02 :: reportEngineState (
       }
   };
 
-  if (engine_state_ptr->engineState == eQMI_LOC_ENGINE_STATE_ON_V02)
-  {
-    sendMsg(new MsgUpdateEngineState(this, true));
+  if (eQMI_LOC_ENGINE_STATE_ON_V02 == engine_state_ptr->engineState) {
+      sendMsg(new MsgUpdateEngineState(this, true));
   }
-  else if (engine_state_ptr->engineState == eQMI_LOC_ENGINE_STATE_OFF_V02)
-  {
-    sendMsg(new MsgUpdateEngineState(this, false));
-  }
-  else
-  {
-    reportStatus(LOC_GPS_STATUS_NONE);
+  else if (eQMI_LOC_ENGINE_STATE_OFF_V02 == engine_state_ptr->engineState) {
+      sendMsg(new MsgUpdateEngineState(this, false));
   }
 
 }

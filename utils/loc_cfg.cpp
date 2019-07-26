@@ -625,7 +625,12 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
         loc_service_mask |= LOC_FEATURE_MASK_SAP_BASIC;
     }
     else if(strcmp(conf.feature_sap, "DISABLED") == 0) {
+#ifdef USE_GLIB
+        /* Enable slim_daemon even when SAP is set to DISABLED*/
+        loc_service_mask |= LOC_FEATURE_MASK_SAP_BASIC;
+#else
         LOC_LOGD("%s:%d]: Setting SAP to mode: DISABLED", __func__, __LINE__);
+#endif
     }
     else {
        LOC_LOGE("%s:%d]: Unrecognized value for SAP Mode."\

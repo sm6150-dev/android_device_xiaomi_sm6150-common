@@ -1436,6 +1436,8 @@ typedef uint64_t GpsSvMeasHeaderFlags;
 #define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME_EXT        0x00040000
 #define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT       0x00080000
 #define GNSS_SV_MEAS_HEADER_HAS_GLO_SYSTEM_TIME_EXT        0x00100000
+#define GNSS_SV_MEAS_HEADER_HAS_REF_COUNT_TICKS            0x00200000
+
 
 typedef struct
 {
@@ -1475,6 +1477,8 @@ typedef struct
     /** GLONASS system RTC time information. */
     Gnss_LocGnssTimeExtStructType               gloSystemTimeExt;
 
+    /* Receiver tick at frame count */
+    uint64_t                                    refCountTicks;
 } GnssSvMeasurementHeader;
 
 typedef struct {

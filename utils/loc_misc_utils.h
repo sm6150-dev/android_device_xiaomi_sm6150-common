@@ -28,6 +28,7 @@
  */
 #ifndef _LOC_MISC_UTILS_H_
 #define _LOC_MISC_UTILS_H_
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

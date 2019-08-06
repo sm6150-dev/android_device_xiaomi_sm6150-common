@@ -491,8 +491,7 @@ typedef enum {
     /** Mask to indicate that the fused/default position is needed
       to be reported back via EngineLocationsCb for the tracking sessions.
       The default position is the propagated/aggregated reports from
-      all engines running on the system (e.g.: DR/SPE/PPE) according to
-      proprietary algorithm.
+      all engines running on the system (e.g.: DR/SPE/PPE).
     */
     LOC_REQ_ENGINE_FUSED_BIT = (1<<0),
     /** Mask to indicate that the unmodified SPE position is needed
@@ -509,8 +508,7 @@ typedef enum {
 
 typedef enum {
     /** This is the propagated/aggregated reports from all engines
-        running on the system (e.g.: DR/SPE/PPE) according to proprietary
-        algorithm. */
+        running on the system (e.g.: DR/SPE/PPE). */
     LOC_OUTPUT_ENGINE_FUSED = 0,
     /** This fix is the unmodified fix from modem GNSS engine */
     LOC_OUTPUT_ENGINE_SPE   = 1,
@@ -617,9 +615,8 @@ struct GnssLocation : public Location {
     /** location engine type. When the fix. when the type is set to
         LOC_ENGINE_SRC_FUSED, the fix is the propagated/aggregated
         reports from all engines running on the system (e.g.:
-        DR/SPE/PPE) based proprietary algorithm. To check which
-        location engine contributes to the fused output, check for
-        locOutputEngMask. */
+        DR/SPE/PPE). To check which location engine contributes to
+        the fused output, check for locOutputEngMask. */
     LocOutputEngineType locOutputEngType;
     /** when loc output eng type is set to fused, this field
         indicates the set of engines contribute to the fix. */
@@ -1134,7 +1131,7 @@ public:
                        unpropagated SPE report.
                        If LOC_REQ_ENGINE_FUSED_BIT is set, and there is at least one additional
                        engine running on the system other than SPE engine, then the fused position
-                       will be the propagated report to current time based on proprietary algorithm.
+                       will be the propagated report to current time.
                        The SPE and PPE report will be the original report from the position
                        engine without any modification.
                        If LOC_REQ_ENGINE_PPE_BIT is set, but PPE is not enabled on the system,

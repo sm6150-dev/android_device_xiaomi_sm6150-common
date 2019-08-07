@@ -54,6 +54,10 @@ function blob_fixup() {
         vendor/bin/mlipayd@1.1 | vendor/lib64/libmlipay.so | vendor/lib64/libmlipay@1.1.so )
                 patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         ;;
+        case "${1}" in
+        lib/libwfdnative.so | lib64/libwfdnative.so)
+                sed -i "s/android.hidl.base@1.0.so/libhidlbase.so\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/" "${2}"
+        ;;
         esac
 }
 
@@ -73,7 +77,5 @@ if [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
 fi
 
 COMMON_BLOB_ROOT="${LINEAGE_ROOT}/vendor/${VENDOR}/${DEVICE_COMMON}/proprietary"
-
-sed -i "s/android.hidl.base@1.0.so/libhidlbase.so\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/" "${COMMON_BLOB_ROOT}/lib64/libwfdnative.so" "${COMMON_BLOB_ROOT}/lib/libwfdnative.so"
 
 "${MY_DIR}/setup-makefiles.sh"

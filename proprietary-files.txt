@@ -444,6 +444,10 @@ vendor/etc/init/vendor.qti.hardware.mlshal@1.0-service.rc
 vendor/etc/lm/AdaptLaunchFeature.xml
 vendor/etc/lm/AppClassifierFeature.xml
 vendor/etc/lm/GameOptimizationFeature.xml
+vendor/lib64/libadaptlaunch.so
+vendor/lib64/libappclassifier.so
+vendor/lib64/libgameoptfeature.so
+vendor/lib64/libmeters-ns.so
 vendor/lib64/libreffeature.so
 vendor/lib64/hw/vendor.qti.hardware.mlshal@1.0-impl.so
 vendor/lib64/vendor.qti.hardware.mlshal@1.0-halimpl.so

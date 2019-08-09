@@ -276,11 +276,8 @@ config_lito_dcc_gemnoc()
     echo 0x9681000 > $DCC_PATH/config
     echo 1 > $DCC_PATH/loop
     echo 0x09680078 > $DCC_PATH/config
-    echo 0x9681004 13> $DCC_PATH/config
-    echo 0x06E41004 1 1 > $DCC_PATH/config_write
-    echo 0x06E41004 1 1 > $DCC_PATH/config
-    echo 0x09681004 > $DCC_PATH/config
-    echo 166 > $DCC_PATH/loop
+    echo 0x9681008 12> $DCC_PATH/config
+    echo 0xA6 > $DCC_PATH/loop
     echo 0x9681008 > $DCC_PATH/config
     echo 0x968100C > $DCC_PATH/config
     echo 1 > $DCC_PATH/loop
@@ -407,6 +404,7 @@ config_lito_dcc_core()
     echo 0x1805005C 1 > $DCC_PATH/config
     echo 0x1806005C 1 > $DCC_PATH/config
     echo 0x1807005C 1 > $DCC_PATH/config
+    echo 0x17C0003C 1 > $DCC_PATH/config
     #CPRh
     echo 0x18101908 1 > $DCC_PATH/config
     echo 0x18101C18 1 > $DCC_PATH/config

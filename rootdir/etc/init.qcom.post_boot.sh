@@ -3498,7 +3498,7 @@ case "$target" in
     echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
 
     # disable unfiltering
-    echo 0 > /proc/sys/kernel/sched_task_unfilter_nr_windows
+    echo 1 > /proc/sys/kernel/sched_task_unfilter_nr_windows
 
     # configure governor settings for silver cluster
     echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor

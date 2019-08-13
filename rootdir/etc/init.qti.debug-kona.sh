@@ -246,6 +246,7 @@ config_kona_dcc_ddr()
 
     # MC5
     echo 0x9270080 1 > $DCC_PATH/config
+    echo 0x9270310 1 > $DCC_PATH/config
     echo 0x9270400 1 > $DCC_PATH/config
     echo 0x9270410 6 > $DCC_PATH/config
     echo 0x9270430 1 > $DCC_PATH/config
@@ -254,14 +255,21 @@ config_kona_dcc_ddr()
     echo 0x92704A0 1 > $DCC_PATH/config
     echo 0x92704B0 1 > $DCC_PATH/config
     echo 0x92704B8 2 > $DCC_PATH/config
-    echo 0x92704D0 1 > $DCC_PATH/config
+    echo 0x92704D0 2 > $DCC_PATH/config
     echo 0x9271400 1 > $DCC_PATH/config
+    echo 0x9273410 1 > $DCC_PATH/config
     echo 0x92753B0 1 > $DCC_PATH/config
+    echo 0x9275804 1 > $DCC_PATH/config
     echo 0x9275C1C 1 > $DCC_PATH/config
     echo 0x9275C2C 1 > $DCC_PATH/config
     echo 0x9275C38 1 > $DCC_PATH/config
     echo 0x9276418 2 > $DCC_PATH/config
+    echo 0x9279100 1 > $DCC_PATH/config
+    echo 0x9279110 1 > $DCC_PATH/config
+    echo 0x9279120 1 > $DCC_PATH/config
+    echo 0x9279180 2 > $DCC_PATH/config
     echo 0x92F0080 1 > $DCC_PATH/config
+    echo 0x92F0310 1 > $DCC_PATH/config
     echo 0x92F0400 1 > $DCC_PATH/config
     echo 0x92F0410 6 > $DCC_PATH/config
     echo 0x92F0430 1 > $DCC_PATH/config
@@ -270,14 +278,21 @@ config_kona_dcc_ddr()
     echo 0x92F04A0 1 > $DCC_PATH/config
     echo 0x92F04B0 1 > $DCC_PATH/config
     echo 0x92F04B8 2 > $DCC_PATH/config
-    echo 0x92F04D0 1 > $DCC_PATH/config
+    echo 0x92F04D0 2 > $DCC_PATH/config
     echo 0x92F1400 1 > $DCC_PATH/config
+    echo 0x92F3410 1 > $DCC_PATH/config
     echo 0x92F53B0 1 > $DCC_PATH/config
+    echo 0x92F5804 1 > $DCC_PATH/config
     echo 0x92F5C1C 1 > $DCC_PATH/config
     echo 0x92F5C2C 1 > $DCC_PATH/config
     echo 0x92F5C38 1 > $DCC_PATH/config
     echo 0x92F6418 2 > $DCC_PATH/config
+    echo 0x92F9100 1 > $DCC_PATH/config
+    echo 0x92F9110 1 > $DCC_PATH/config
+    echo 0x92F9120 1 > $DCC_PATH/config
+    echo 0x92F9180 2 > $DCC_PATH/config
     echo 0x9370080 1 > $DCC_PATH/config
+    echo 0x9370310 1 > $DCC_PATH/config
     echo 0x9370400 1 > $DCC_PATH/config
     echo 0x9370410 6 > $DCC_PATH/config
     echo 0x9370430 1 > $DCC_PATH/config
@@ -286,14 +301,21 @@ config_kona_dcc_ddr()
     echo 0x93704A0 1 > $DCC_PATH/config
     echo 0x93704B0 1 > $DCC_PATH/config
     echo 0x93704B8 2 > $DCC_PATH/config
-    echo 0x93704D0 1 > $DCC_PATH/config
+    echo 0x93704D0 2 > $DCC_PATH/config
     echo 0x9371400 1 > $DCC_PATH/config
+    echo 0x9373410 1 > $DCC_PATH/config
     echo 0x93753B0 1 > $DCC_PATH/config
+    echo 0x9375804 1 > $DCC_PATH/config
     echo 0x9375C1C 1 > $DCC_PATH/config
     echo 0x9375C2C 1 > $DCC_PATH/config
     echo 0x9375C38 1 > $DCC_PATH/config
     echo 0x9376418 2 > $DCC_PATH/config
+    echo 0x9379100 1 > $DCC_PATH/config
+    echo 0x9379110 1 > $DCC_PATH/config
+    echo 0x9379120 1 > $DCC_PATH/config
+    echo 0x9379180 2 > $DCC_PATH/config
     echo 0x93F0080 1 > $DCC_PATH/config
+    echo 0x93F0310 1 > $DCC_PATH/config
     echo 0x93F0400 1 > $DCC_PATH/config
     echo 0x93F0410 6 > $DCC_PATH/config
     echo 0x93F0430 1 > $DCC_PATH/config
@@ -302,13 +324,19 @@ config_kona_dcc_ddr()
     echo 0x93F04A0 1 > $DCC_PATH/config
     echo 0x93F04B0 1 > $DCC_PATH/config
     echo 0x93F04B8 2 > $DCC_PATH/config
-    echo 0x93F04D0 1 > $DCC_PATH/config
+    echo 0x93F04D0 2 > $DCC_PATH/config
     echo 0x93F1400 1 > $DCC_PATH/config
+    echo 0x93F3410 1 > $DCC_PATH/config
     echo 0x93F53B0 1 > $DCC_PATH/config
+    echo 0x93F5804 1 > $DCC_PATH/config
     echo 0x93F5C1C 1 > $DCC_PATH/config
     echo 0x93F5C2C 1 > $DCC_PATH/config
     echo 0x93F5C38 1 > $DCC_PATH/config
     echo 0x93F6418 2 > $DCC_PATH/config
+    echo 0x93F9100 1 > $DCC_PATH/config
+    echo 0x93F9110 1 > $DCC_PATH/config
+    echo 0x93F9120 1 > $DCC_PATH/config
+    echo 0x93F9180 2 > $DCC_PATH/config
 
     # MC4
     echo 0x9260080 1 > $DCC_PATH/config
@@ -536,6 +564,79 @@ config_kona_dcc_ddr()
     echo 0x918D100 4 > $DCC_PATH/config
     echo 0x91A5100 1 > $DCC_PATH/config
     echo 0x91AD100 1 > $DCC_PATH/config
+
+    echo 0x610110 5 > $DCC_PATH/config
+
+    # SHRM
+    echo 0x06E0A00C 0x00600007 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x00136800 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136810 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136820 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136830 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136840 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136850 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136860 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x00136870 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003e9a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003c0a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003d1a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003d2a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003d5a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003d6a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003e8a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003eea0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003b1a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003b2a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003b5a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003b6a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003c2a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003c5a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A01C 0x0003c6a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x001368a0 1 > $DCC_PATH/config_write
+    echo 0x06E0A014 1 1 > $DCC_PATH/config
+    echo 0x06E0A014 0x0002000c 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x000368b0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x00000ba8 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x0013B6A0 1 > $DCC_PATH/config_write
+    echo 0x06E0A01C 0x00F1E000 1 > $DCC_PATH/config_write
+    echo 0x06E0A008 0x00000007 1 > $DCC_PATH/config_write
+    echo 0x09067E00 124 > $DCC_PATH/config
     #End Link list #6
 }
 config_kona_dcc_gemnoc()

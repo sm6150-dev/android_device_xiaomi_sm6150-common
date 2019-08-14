@@ -242,7 +242,7 @@ private:
 
   void registerEventMask(LOC_API_ADAPTER_EVENT_MASK_T adapterMask);
   bool sendRequestForAidingData(locClientEventMaskType qmiMask);
-  locClientEventMaskType adjustMaskIfNoSession(locClientEventMaskType qmiMask);
+  locClientEventMaskType adjustMaskIfNoSessionOrEngineOff(locClientEventMaskType qmiMask);
   bool cacheGnssMeasurementSupport();
   void registerMasterClient();
   int getGpsLock(uint8_t subType);

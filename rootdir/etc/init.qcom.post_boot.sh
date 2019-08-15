@@ -3535,8 +3535,8 @@ case "$target" in
     echo 51 > /proc/sys/kernel/sched_min_task_util_for_boost
     echo 51 > /proc/sys/kernel/sched_min_task_util_for_colocation
 
-    echo "0:1228800" > /sys/module/cpu_boost/parameters/input_boost_freq
-    echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
+    echo "0:1228800" > /sys/devices/system/cpu/cpu_boost/input_boost_freq
+    echo 40 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
 
     # Set Memory parameters
     configure_memory_parameters

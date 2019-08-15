@@ -31,6 +31,8 @@ using ::android::hardware::hidl_string;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 
+static bool is_poped = 0;
+
 class CameraMotor : public ICameraMotor {
   public:
     CameraMotor();

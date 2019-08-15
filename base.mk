@@ -285,7 +285,6 @@ FASTPOWERON := FastBoot
 #FM
 FM := qcom.fmradio
 FM += libqcomfm_jni
-FM += libfmjni
 FM += fm_helium
 FM += ftm_fm_lib
 FM += libfm-hci
@@ -908,7 +907,6 @@ PRODUCT_PACKAGES := \
     IM \
     VoiceDialer \
     FM2 \
-    FMRecord \
     SnapdragonGallery \
     SnapdragonMusic \
     VideoEditor \

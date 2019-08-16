@@ -1,13 +1,13 @@
-# configure.ac -- Autoconf script for gps location_client_api_testapp
+# configure.ac -- Autoconf script for gps location-integration-api
 #
 # Process this file with autoconf to produce a configure script
 
 # Requires autoconf tool later than 2.61
 AC_PREREQ(2.61)
-# Initialize the location_client_api_testapp package version 1.0.0
-AC_INIT([location_client_api_testapp],1.0.0)
+# Initialize the location_integration_api package version 1.0.0
+AC_INIT([location-integration-api],1.0.0)
 # Does not strictly follow GNU Coding standards
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign])
 # Disables auto rebuilding of configure, Makefile.ins
 AM_MAINTAINER_MODE
 # Verifies the --srcdir is correct by checking for the path
@@ -33,13 +33,6 @@ PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
 
-PKG_CHECK_MODULES([LOCCLIENTAPI], [location-client-api])
-AC_SUBST([LOCCLIENTAPI_CFLAGS])
-AC_SUBST([LOCCLIENTAPI_LIBS])
-
-PKG_CHECK_MODULES([LOCINTEGRATIONAPI], [location-integration-api])
-AC_SUBST([LOCINTEGRATIONAPI_CFLAGS])
-AC_SUBST([LOCINTEGRATIONAPI_LIBS])
 
 AC_ARG_WITH([external_ap],
     AC_HELP_STRING([--with-external_ap=@<:@dir@:>@],
@@ -55,6 +48,8 @@ else
     AC_SUBST([LOCHALDAEMON_CFLAGS])
     AC_SUBST([LOCHALDAEMON_LIBS])
 fi
+
+AM_CONDITIONAL(USE_EXTERNAL_AP, test "x${with_external_ap}" = "xyes")
 
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
@@ -77,7 +72,7 @@ AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 
 AC_CONFIG_FILES([ \
         Makefile \
-        location_client_api_testapp.pc
+        location-integration-api.pc
         ])
 
 AC_OUTPUT

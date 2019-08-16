@@ -6541,9 +6541,12 @@ int LocApiV02::setSvMeasurementConstellation(const locClientEventMaskType mask)
     return ret_val;
 }
 
-LocationError LocApiV02::setConstrainedTuncMode(bool enabled,
-                                                float tuncConstraint,
-                                                uint32_t energyBudget) {
+void LocApiV02::setConstrainedTuncMode(bool enabled,
+                                       float tuncConstraint,
+                                       uint32_t energyBudget,
+                                       LocApiResponse *adapterResponse) {
+    sendMsg(new LocApiMsg([this, enabled, tuncConstraint, energyBudget, adapterResponse] () {
+
     LocationError err = LOCATION_ERROR_SUCCESS;
     qmiLocSetConstrainedTuncModeReqMsgT_v02 req;
     qmiLocSetConstrainedTuncModeIndMsgT_v02 ind;
@@ -6579,11 +6582,18 @@ LocationError LocApiV02::setConstrainedTuncMode(bool enabled,
         err = LOCATION_ERROR_GENERAL_FAILURE;
     }
 
-    LOC_LOGd("Exit. err: %u", err);
-    return err;
+    if (adapterResponse) {
+        adapterResponse->returnToSender(err);
+    }
+    LOC_LOGv("Exit. err: %u", err);
+  }));
 }
 
-LocationError LocApiV02::setPositionAssistedClockEstimatorMode(bool enabled) {
+void LocApiV02::setPositionAssistedClockEstimatorMode
+        (bool enabled, LocApiResponse *adapterResponse) {
+
+    sendMsg(new LocApiMsg([this, enabled, adapterResponse] () {
+
     LocationError err = LOCATION_ERROR_SUCCESS;
     qmiLocEnablePositionAssistedClockEstReqMsgT_v02 req;
     qmiLocEnablePositionAssistedClockEstIndMsgT_v02 ind;
@@ -6606,9 +6616,11 @@ LocationError LocApiV02::setPositionAssistedClockEstimatorMode(bool enabled) {
                  loc_get_v02_qmi_status_name(ind.status));
         err = LOCATION_ERROR_GENERAL_FAILURE;
     }
-
-    LOC_LOGd("Exit. err: %u", err);
-    return err;
+    if (adapterResponse) {
+        adapterResponse->returnToSender(err);
+    }
+    LOC_LOGv("Exit. err: %u", err);
+    }));
 }
 
 LocationError LocApiV02::getGnssEnergyConsumed() {
@@ -7185,6 +7197,16 @@ LocApiV02::setBlacklistSvSync(const GnssSvIdConfig& config)
     setBlacklistSvMsg.gal_clear_persist_blacklist_sv_valid = true;
     setBlacklistSvMsg.gal_clear_persist_blacklist_sv = ~config.galBlacklistSvMask;
 
+    LOC_LOGd(">>> configConstellations, "
+             "glo blacklist mask =0x%" PRIx64 ", "
+             "qzss blacklist mask =0x%" PRIx64 ",\n"
+             "bds blacklist mask =0x%" PRIx64 ", "
+             "gal blacklist mask =0x%" PRIx64 ",\n",
+             setBlacklistSvMsg.glo_persist_blacklist_sv,
+             setBlacklistSvMsg.qzss_persist_blacklist_sv,
+             setBlacklistSvMsg.bds_persist_blacklist_sv,
+             setBlacklistSvMsg.gal_persist_blacklist_sv);
+
     // Update in request union
     req_union.pSetBlacklistSvReq = &setBlacklistSvMsg;
 
@@ -7234,9 +7256,10 @@ void LocApiV02::getBlacklistSv()
 }
 
 void
-LocApiV02::setConstellationControl(const GnssSvTypeConfig& config)
+LocApiV02::setConstellationControl(const GnssSvTypeConfig& config,
+                                   LocApiResponse *adapterResponse)
 {
-    sendMsg(new LocApiMsg([this, config] () {
+    sendMsg(new LocApiMsg([this, config, adapterResponse] () {
 
     locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
     locClientReqUnionType req_union = {};
@@ -7255,10 +7278,14 @@ LocApiV02::setConstellationControl(const GnssSvTypeConfig& config)
         setConstellationConfigMsg.enableMask_valid = true;
         setConstellationConfigMsg.enableMask = config.enabledSvTypesMask;
     }
-    if (config.blacklistedSvTypesMask != 0) {
-        setConstellationConfigMsg.disableMask_valid = true;
-        setConstellationConfigMsg.disableMask = config.blacklistedSvTypesMask;
-    }
+
+    // disableMask is not supported in modem
+    // if we set disableMask, QMI call will return error
+    LOC_LOGe("enable: %d 0x%" PRIx64 ", blacklisted: %d 0x%" PRIx64 "",
+             setConstellationConfigMsg.enableMask_valid,
+             setConstellationConfigMsg.enableMask,
+             setConstellationConfigMsg.disableMask_valid,
+             setConstellationConfigMsg.disableMask);
 
     // Update in request union
     req_union.pSetConstellationConfigReq = &setConstellationConfigMsg;
@@ -7275,6 +7302,15 @@ LocApiV02::setConstellationControl(const GnssSvTypeConfig& config)
         LOC_LOGe("Set Constellation Config failed. status: %s ind status %s",
                  loc_get_v02_client_status_name(status),
                  loc_get_v02_qmi_status_name(genReqStatusIndMsg.status));
+    }
+
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+    if (eLOC_CLIENT_SUCCESS == status) {
+        err = LOCATION_ERROR_SUCCESS;
+    }
+
+    if (adapterResponse != NULL) {
+        adapterResponse->returnToSender(err);
     }
 
     }));
@@ -7314,9 +7350,9 @@ LocApiV02::getConstellationControl()
 }
 
 void
-LocApiV02::resetConstellationControl()
+LocApiV02::resetConstellationControl(LocApiResponse *adapterResponse)
 {
-    sendMsg(new LocApiMsg([this] () {
+    sendMsg(new LocApiMsg([this, adapterResponse] () {
 
     locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
     locClientReqUnionType req_union = {};
@@ -7349,6 +7385,13 @@ LocApiV02::resetConstellationControl()
                  loc_get_v02_qmi_status_name(genReqStatusIndMsg.status));
     }
 
+    LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+    if (eLOC_CLIENT_SUCCESS == status) {
+        err = LOCATION_ERROR_SUCCESS;
+    }
+    if (adapterResponse) {
+        adapterResponse->returnToSender(err);
+    }
     }));
 }
 

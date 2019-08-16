@@ -404,8 +404,10 @@ public:
       handleZppBestAvailableFixIndication(const qmiLocGetBestAvailablePositionIndMsgT_v02 &zpp_ind);
   virtual void getBestAvailableZppFix();
   virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
-  virtual LocationError setConstrainedTuncMode(bool enabled, float tuncConstraint, uint32_t powerBudget);
-  virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
+  virtual void setConstrainedTuncMode(bool enabled, float tuncConstraint, uint32_t powerBudget,
+                                      LocApiResponse *adapterResponse=nullptr);
+  virtual void setPositionAssistedClockEstimatorMode(bool enabled,
+                                                     LocApiResponse *adapterResponse=nullptr);
   virtual LocationError getGnssEnergyConsumed();
   virtual void updateSystemPowerState(PowerStateType powerState);
   virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
@@ -435,9 +437,10 @@ public:
   virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);
   virtual void setBlacklistSv(const GnssSvIdConfig& config);
   virtual void getBlacklistSv();
-  virtual void setConstellationControl(const GnssSvTypeConfig& config);
+  virtual void setConstellationControl(const GnssSvTypeConfig& config,
+                                       LocApiResponse *adapterResponse=nullptr);
   virtual void getConstellationControl();
-  virtual void resetConstellationControl();
+  virtual void resetConstellationControl(LocApiResponse *adapterResponse=nullptr);
 
   locClientStatusEnumType locSyncSendReq(uint32_t req_id, locClientReqUnionType req_payload,
           uint32_t timeout_msec, uint32_t ind_id, void* ind_payload_ptr);

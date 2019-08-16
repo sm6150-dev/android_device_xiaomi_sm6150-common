@@ -37,9 +37,16 @@
 #include <sys/types.h>
 #include <sys/prctl.h>
 #include <semaphore.h>
+#include <loc_pla.h>
+#include <loc_cfg.h>
+#include <unordered_map>
 
 #include <LocationClientApi.h>
+#include <LocationIntegrationApi.h>
+
 using namespace location_client;
+using namespace location_integration;
+
 
 #define NUM_LOOP_PINGTEST (1000)
 
@@ -49,6 +56,13 @@ static uint32_t numGnssLocationCb = 0;
 static uint32_t numGnssSvCb = 0;
 static uint32_t numGnssNmeaCb = 0;
 static sem_t sem_pingcbreceived;
+#define DISABLE_TUNC "disableTunc"
+#define ENABLE_TUNC  "enableTunc"
+#define DISABLE_PACE "disablePACE"
+#define ENABLE_PACE  "enablePACE"
+#define CONFIG_SV    "configSV"
+#define DELETE_ALL   "deleteAll"
+#define CONFIG_LEVER_ARM    "configLeverArm"
 
 // debug utility
 static uint64_t getTimestamp() {
@@ -158,6 +172,11 @@ static void onPingTestCb(uint32_t response) {
     sem_post(&sem_pingcbreceived);
 }
 
+static void onConfigResponseCb(location_integration::LocConfigTypeEnum    requestType,
+                               location_integration::LocIntegrationResponse response) {
+    printf("<<< onConfigResponseCb, type %d, err %d\n", requestType, response);
+}
+
 static void printHelp() {
     printf("g: Gnss report session with 1000 ms interval\n");
     printf("u: Update a session with 2000 ms interval\n");
@@ -165,12 +184,138 @@ static void printHelp() {
     printf("s: Stop a session \n");
     printf("p: Ping test\n");
     printf("q: Quit\n");
+    printf("r: delete client\n");
+    printf("%s tuncThreshold energyBudget: enable tunc\n", ENABLE_TUNC);
+    printf("%s: disable tunc\n", DISABLE_TUNC);
+    printf("%s: enable PACE\n", ENABLE_PACE);
+    printf("%s: disable PACE\n", DISABLE_PACE);
+    printf("%s: configure sv \n", CONFIG_SV);
+    printf("%s: delete all aiding data\n", DELETE_ALL);
+    printf("%s: config lever arm\n", CONFIG_LEVER_ARM);
+}
+
+void setRequiredPermToRunAsLocClient()
+{
+#ifdef USE_GLIB
+    if (0 == getuid()) {
+        printf("Test app set perm");
+
+        // For LE, we need to also add "diag" to existing groups
+        // to run in loc client mode for diag logging.
+        // We need to add diag grpid at end, so MAX+1
+        gid_t appGrpsIds[LOC_PROCESS_MAX_NUM_GROUPS+1] = {};
+        int i = 0, numGrpIds = 0;
+
+        // Get current set of supplementary groups.
+        memset(appGrpsIds, 0, sizeof(appGrpsIds));
+        numGrpIds = getgroups(LOC_PROCESS_MAX_NUM_GROUPS, appGrpsIds);
+        if (numGrpIds == -1) {
+            printf("Could not find groups. ngroups:%d\n", numGrpIds);
+        }
+        else {
+            printf("Curr num_groups = %d, Current GIDs: ", numGrpIds);
+            for (i=0; i<numGrpIds; i++) {
+                printf("%d ", appGrpsIds[i]);
+            }
+        }
+
+        // get group id for diag and update supplementary groups to add "diag" to its list.
+        struct group* grp = getgrnam("diag");
+        if (grp) {
+            // we added diag also to grpid array and setgroups
+            appGrpsIds[numGrpIds] = grp->gr_gid;
+            printf("Diag Group id = %d", appGrpsIds[numGrpIds]);
+            numGrpIds++;
+            i = setgroups(numGrpIds, appGrpsIds);
+            if (i == -1) {
+                printf("Could not set groups. errno:%d, %s", errno, strerror(errno));
+            } else {
+                printf("Total of %d groups set for test app", numGrpIds);
+            }
+        }
+        if (-1 == setgid(GID_LOCCLIENT)) {
+            printf("%s:%d]: Error: setgid GID_LOCCLIENT failed. %s\n",
+                     __func__, __LINE__, strerror(errno));
+        }
+        if (-1 == setuid(UID_LOCCLIENT)) {
+            printf("%s:%d]: Error: setuid UID_LOCCLIENT failed. %s\n",
+                     __func__, __LINE__, strerror(errno));
+        }
+    } else {
+        printf("Test app started as user: %d", getuid());
+    }
+#endif// USE_GLIB
+}
+
+void parseSVConfig (char* buf, LocConfigBlacklistedSvIdList &svList) {
+    static char *save = nullptr;
+    char* token = strtok_r(buf, " ", &save); // skip first one of "configSV"
+    token = strtok_r(NULL, " ", &save);
+    if (token == nullptr) {
+        return;
+    }
+
+    while (token != nullptr) {
+        GnssSvIdInfo svIdInfo = {};
+        svIdInfo.constellation = (GnssConstellationType) atoi(token);
+        token = strtok_r(NULL, " ", &save);
+        if (token == NULL) {
+            break;
+        }
+        svIdInfo.svId = atoi(token);
+        svList.push_back(svIdInfo);
+        token = strtok_r(NULL, " ", &save);
+    }
+}
+
+void parseLeverArm (char* buf, LeverArmParamsMap &leverArmMap) {
+    static char *save = nullptr;
+    char* token = strtok_r(buf, " ", &save); // skip first one of "configLeverArm"
+    token = strtok_r(NULL, " ", &save);
+    while (token != nullptr) {
+        LeverArmParams leverArm = {};
+        LeverArmType type = (LeverArmType) 0;
+        if (strcmp(token, "vrp") == 0) {
+            type = location_integration::LEVER_ARM_TYPE_GNSS_TO_VRP;
+        } else if (strcmp(token, "drimu") == 0) {
+            type = location_integration::LEVER_ARM_TYPE_DR_IMU_TO_GNSS;
+        } else if (strcmp(token, "veppimu") == 0) {
+            type = location_integration::LEVER_ARM_TYPE_VEPP_IMU_TO_GNSS;
+        } else {
+            break;
+        }
+        token = strtok_r(NULL, " ", &save);
+        if (token == NULL) {
+            break;
+        }
+        leverArm.forwardOffsetMeters = atof(token);
+
+        token = strtok_r(NULL, " ", &save);
+        if (token == NULL) {
+            break;
+        }
+        leverArm.sidewaysOffsetMeters = atof(token);
+
+        token = strtok_r(NULL, " ", &save);
+        if (token == NULL) {
+            break;
+        }
+        leverArm.upOffsetMeters = atof(token);
+
+        printf("type %s, %f %f %f\n", type, leverArm.forwardOffsetMeters,
+               leverArm.sidewaysOffsetMeters, leverArm.upOffsetMeters);
+
+        leverArmMap.emplace(type, leverArm);
+        token = strtok_r(NULL, " ", &save);
+    }
 }
 
 /******************************************************************************
 Main function
 ******************************************************************************/
 int main(int argc, char *argv[]) {
+
+    setRequiredPermToRunAsLocClient();
 
     // create Location client API
     LocationClientApi* pClient = new LocationClientApi(onCapabilitiesCb);
@@ -181,12 +326,20 @@ int main(int argc, char *argv[]) {
     reportcbs.gnssSvCallback = GnssSvCb(onGnssSvCb);
     reportcbs.gnssNmeaCallback = GnssNmeaCb(onGnssNmeaCb);
 
-    //LocationClientApi* pClient2 = new LocationClientApi(onCapabilitiesCb2);
+    LocationClientApi* pClient2 = new LocationClientApi(onCapabilitiesCb2);
     // callbacks
     GnssReportCbs reportcbs2;
     reportcbs2.gnssLocationCallback = GnssLocationCb(onGnssLocationCb2);
     reportcbs2.gnssSvCallback = GnssSvCb(onGnssSvCb2);
     reportcbs2.gnssNmeaCallback = GnssNmeaCb(onGnssNmeaCb2);
+
+    // create location integratin API
+    LocIntegrationCbs intCbs;
+
+    intCbs.configCb = LocConfigCb(onConfigResponseCb);
+    LocConfigPriorityMap priorityMap;
+    location_integration::LocationIntegrationApi* pIntClient =
+            new LocationIntegrationApi(priorityMap, intCbs);
 
     printHelp();
     sleep(1); // wait for capability callback if you don't like sleep
@@ -239,11 +392,79 @@ int main(int argc, char *argv[]) {
                     } while (1);
                 }
                 break;
+            case 'r':
+                if (nullptr != pClient) {
+                    delete pClient;
+                    pClient = nullptr;
+                }
+                if (nullptr != pClient2) {
+                    delete pClient2;
+                    pClient2 = nullptr;
+                }
+                if (nullptr != pIntClient) {
+                    delete pIntClient;
+                    pIntClient = nullptr;
+                }
+                break;
             case 'q':
                 goto EXIT;
                 break;
             default:
-                printf("Unknown command...\n");
+                if (!pIntClient) {
+                    pIntClient =
+                        new LocationIntegrationApi(priorityMap, intCbs);
+                    if (nullptr == pIntClient) {
+                         printf("failed to create integration client\n");
+                         break;
+                    }
+                }
+                printf("execute command %s\n", buf);
+                if (strncmp(buf, DISABLE_TUNC, strlen(DISABLE_TUNC)) == 0) {
+                    pIntClient->configConstrainedTimeUncertainty(false);
+                }
+                else if (strncmp(buf, ENABLE_TUNC, strlen(ENABLE_TUNC)) == 0) {
+                    // get tuncThreshold and energyBudget from the command line
+                    static char *save = nullptr;
+                    float tuncThreshold = 0.0;
+                    int   energyBudget = 0;
+                    char* token = strtok_r(buf, " ", &save); // skip first one
+                    token = strtok_r(NULL, " ", &save);
+                    if (token != NULL) {
+                        tuncThreshold = atof(token);
+                        token = strtok_r(NULL, " ", &save);
+                        if (token != NULL) {
+                            energyBudget = atoi(token);
+                        }
+                    }
+                    printf("tuncThreshold %f, energyBudget %d\n",
+                           tuncThreshold, energyBudget);
+                    pIntClient->configConstrainedTimeUncertainty(
+                            true, tuncThreshold, energyBudget);
+
+                } else if (strncmp(buf, DISABLE_PACE, strlen(DISABLE_TUNC)) == 0) {
+                    pIntClient->configPositionAssistedClockEstimator(false);
+
+                    pIntClient->configPositionAssistedClockEstimator(true);
+                } else if (strncmp(buf, ENABLE_PACE, strlen(ENABLE_TUNC)) == 0) {
+                    pIntClient->configPositionAssistedClockEstimator(true);
+                } else if (strncmp(buf, DELETE_ALL, strlen(DELETE_ALL)) == 0) {
+                    pIntClient->deleteAllAidingData();
+                } else if (strncmp(buf, CONFIG_SV, strlen(CONFIG_SV)) == 0) {
+                    LocConfigBlacklistedSvIdList svList;
+                    parseSVConfig(buf, svList);
+                    if (svList.size() == 0) {
+                        pIntClient->configConstellations(nullptr);
+                    } else {
+                        pIntClient->configConstellations(&svList);
+                    }
+                }
+                else if (strncmp(buf, CONFIG_LEVER_ARM, strlen(CONFIG_LEVER_ARM)) == 0) {
+                    LeverArmParamsMap configInfo;
+                    parseLeverArm(buf, configInfo);
+                    pIntClient->configLeverArm(configInfo);
+                } else {
+                    printf("unknown command\n");
+                }
                 break;
         }
     }//while(1)
@@ -251,6 +472,10 @@ int main(int argc, char *argv[]) {
 EXIT:
     if (nullptr != pClient) {
         delete pClient;
+    }
+
+    if (nullptr != pIntClient) {
+        delete pIntClient;
     }
 
     printf("Done\n");

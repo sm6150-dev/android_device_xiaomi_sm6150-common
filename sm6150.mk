@@ -382,8 +382,5 @@ PRODUCT_PACKAGES += \
     vendor.qti.hardware.wifi.supplicant@2.0.vendor
 
 # WiFi Display
-PRODUCT_PACKAGES += \
-    libnl
-
 PRODUCT_BOOT_JARS += \
     WfdCommon

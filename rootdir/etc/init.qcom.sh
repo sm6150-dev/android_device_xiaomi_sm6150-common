@@ -120,7 +120,7 @@ start_msm_irqbalance_atoll()
          fi
 }
 
-start_msm_irqbalance()
+start_msm_irqbalance660()
 {
 	if [ -f /vendor/bin/msm_irqbalance ]; then
 		case "$platformid" in
@@ -129,6 +129,13 @@ start_msm_irqbalance()
 		    "318" | "327" | "385")
 			start vendor.msm_irqbl_sdm630;;
 		esac
+	fi
+}
+
+start_msm_irqbalance()
+{
+	if [ -f /vendor/bin/msm_irqbalance ]; then
+			start vendor.msm_irqbalance
 	fi
 }
 
@@ -228,7 +235,7 @@ case "$target" in
                   esac
                   ;;
        esac
-        start_msm_irqbalance
+        start_msm_irqbalance660
         ;;
     "apq8084")
         platformvalue=`cat /sys/devices/soc0/hw_platform`

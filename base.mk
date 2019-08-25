@@ -39,6 +39,7 @@ QCOM_BOARD_PLATFORMS += qcs605
 QCOM_BOARD_PLATFORMS += $(MSMSTEPPE)
 QCOM_BOARD_PLATFORMS += kona
 QCOM_BOARD_PLATFORMS += lito
+QCOM_BOARD_PLATFORMS += atoll
 QCOM_BOARD_PLATFORMS += $(TRINKET)
 
 QSD8K_BOARD_PLATFORMS := qsd8k
@@ -1283,7 +1284,8 @@ PRODUCT_PACKAGES_DEBUG += \
     init.qti.debug-msmnile.sh \
     init.qti.debug-kona.sh \
     init.qti.debug-lito.sh \
-    init.qti.debug-trinket.sh
+    init.qti.debug-trinket.sh \
+    init.qti.debug-atoll.sh
 
 PRODUCT_PACKAGES += liboemaids_system
 PRODUCT_PACKAGES += liboemaids_vendor

@@ -5,4 +5,6 @@ service vendor.wifi-mac-generator /vendor/bin/wifi-mac-generator
     disabled
 
 on post-fs-data
+    write /mnt/vendor/persist/wlan_mac.bin ""
+    chown wifi wifi /mnt/vendor/persist/wlan_mac.bin
     start vendor.wifi-mac-generator

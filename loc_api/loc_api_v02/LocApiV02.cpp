@@ -3523,6 +3523,7 @@ void  LocApiV02 :: reportSv (
                 }
 
                 if (gnss_report_ptr->gnssSignalTypeList_valid) {
+                    mask |= GNSS_SV_OPTIONS_HAS_GNSS_SIGNAL_TYPE_BIT;
                     if (SvNotify.count > gnss_report_ptr->gnssSignalTypeList_len - 1) {
                         LOC_LOGv("Frequency not available for this SV");
                     }

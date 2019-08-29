@@ -72,7 +72,8 @@ public:
             mClientSockPathnamePrefix(string(mClientSockPath).append(clientSockNamePrefix)) {
     }
     // override from LocIpc
-    inline void onReceive(const char* data, uint32_t length) override {
+    inline void onReceive(const char* data, uint32_t length,
+                          const LocIpcRecver* recver) override {
         mService.processClientMsg(data, length);
     }
     inline void onListenerReady() override {

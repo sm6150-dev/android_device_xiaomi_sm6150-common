@@ -834,7 +834,8 @@ public:
     inline IpcListener(LocationClientApiImpl& apiImpl, MsgTask& msgTask) :
             mMsgTask(msgTask), mApiImpl(apiImpl) {}
     virtual void onListenerReady() override;
-    virtual void onReceive(const char* data, uint32_t length) override;
+    virtual void onReceive(const char* data, uint32_t length,
+                           const LocIpcRecver* recver) override;
 };
 
 /******************************************************************************
@@ -1768,7 +1769,8 @@ void IpcListener::onListenerReady() {
     mMsgTask.sendMsg(new (nothrow) ClientRegisterReq(mApiImpl));
 }
 
-void IpcListener::onReceive(const char* data, uint32_t length) {
+void IpcListener::onReceive(const char* data, uint32_t length,
+                            const LocIpcRecver* recver) {
     struct OnReceiveHandler : public LocMsg {
 #ifndef FEATURE_EXTERNAL_AP
         OnReceiveHandler(LocationClientApiImpl& apiImpl, IpcListener& listener,

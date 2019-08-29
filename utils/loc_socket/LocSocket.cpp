@@ -99,10 +99,18 @@ protected:
                            sizeof(mAddr));
     }
 public:
+    inline LocIpcQsockSender(const shared_ptr<Sock>& sock, const qsockaddr_ipcr& destAddr) :
+            LocIpcSender(), mSock(sock),
+            mServiceInfo(0, 0), mAddr(destAddr), mLookupPending(false) {
+    }
     inline LocIpcQsockSender(int service, int instance) :
             LocIpcSender(),
             mSock(make_shared<Sock>(::socket(AF_IPC_ROUTER, SOCK_DGRAM, 0))),
             mServiceInfo(service, instance), mAddr({}), mLookupPending(true) {
+    }
+
+    unique_ptr<LocIpcRecver> getRecver(const shared_ptr<ILocIpcListener>& listener) override {
+        return make_unique<SockRecver>(listener, *this, mSock);
     }
 };
 
@@ -110,7 +118,7 @@ class LocIpcQsockRecver : public LocIpcQsockSender, public LocIpcRecver {
 protected:
     inline virtual ssize_t recv() const override {
         socklen_t size = sizeof(mAddr);
-        return mSock->recv(mDataCb, 0, (struct sockaddr*)&mAddr, &size);
+        return mSock->recv(*this, mDataCb, 0, (struct sockaddr*)&mAddr, &size);
     }
 public:
     inline LocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
@@ -134,6 +142,9 @@ public:
                      mSock->mSid, strerror(errno));
             mSock->close();
         }
+    }
+    inline virtual unique_ptr<LocIpcSender> getLastSender() const override {
+        return make_unique<LocIpcQsockSender>(mSock, mAddr);
     }
     inline virtual const char* getName() const override {
         return mServiceInfo.getName();
@@ -221,8 +232,11 @@ protected:
         }
         return mSock->send(data, length, 0, (struct sockaddr*)&mAddr, sizeof(mAddr));
     }
-
 public:
+    inline LocIpcQrtrSender(const shared_ptr<Sock>& sock, const sockaddr_qrtr& destAddr) :
+            LocIpcSender(), mServiceInfo(0, 0), mSock(sock),
+            mAddr(destAddr), mCtrlPkt({}), mLookupPending(false) {
+    }
     inline LocIpcQrtrSender(int service, int instance) : LocIpcSender(),
             mServiceInfo(service, instance),
             mSock(make_shared<Sock>(::socket(AF_QIPCRTR, SOCK_DGRAM, 0))),
@@ -265,8 +279,8 @@ public:
                          retryCount, oldAddr.sq_node, oldAddr.sq_port,
                          mAddr.sq_node, mAddr.sq_port);
                 if ((mAddr.sq_node != 0 || mAddr.sq_port != 0) &&
-                    (mAddr.sq_node != oldAddr.sq_node) ||
-                    (mAddr.sq_port != oldAddr.sq_port)) {
+                    ((mAddr.sq_node != oldAddr.sq_node) ||
+                     (mAddr.sq_port != oldAddr.sq_port))) {
                     break;
                 }
             }
@@ -278,13 +292,17 @@ public:
                  retryCount, oldAddr.sq_node, oldAddr.sq_port,
                  mAddr.sq_node, mAddr.sq_port);
     }
+
+    unique_ptr<LocIpcRecver> getRecver(const shared_ptr<ILocIpcListener>& listener) override {
+        return make_unique<SockRecver>(listener, *this, mSock);
+    }
 };
 
 class LocIpcQrtrRecver : public LocIpcQrtrSender, public LocIpcRecver {
 protected:
     inline virtual ssize_t recv() const override {
         socklen_t size = sizeof(mAddr);
-        return mSock->recv(mDataCb, 0, (struct sockaddr*)&mAddr, &size);
+        return mSock->recv(*this, mDataCb, 0, (struct sockaddr*)&mAddr, &size);
     }
 public:
     inline LocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
@@ -293,6 +311,9 @@ public:
         ctrlCmdAndResponse(QRTR_TYPE_NEW_SERVER);
     }
     inline ~LocIpcQrtrRecver() { ctrlCmdAndResponse(QRTR_TYPE_DEL_SERVER); }
+    inline virtual unique_ptr<LocIpcSender> getLastSender() const override {
+        return make_unique<LocIpcQrtrSender>(mSock, mAddr);
+    }
     inline virtual const char* getName() const override {
         return mServiceInfo.getName();
     }

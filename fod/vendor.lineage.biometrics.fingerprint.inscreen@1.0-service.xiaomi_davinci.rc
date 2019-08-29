@@ -5,9 +5,6 @@ on boot
     chmod 0644 /sys/devices/platform/soc/soc:qcom,dsi-display/fod_hbm
     chmod 0644 /sys/devices/virtual/touch/tp_dev/fod_status
 
-    chown system system /sys/class/drm/card0-DSI-1/disp_param
-    chmod 0700 /sys/class/drm/card0-DSI-1/disp_param
-
 service fingerprint-inscreen-1-0 /vendor/bin/hw/vendor.lineage.biometrics.fingerprint.inscreen@1.0-service.xiaomi_davinci
     interface vendor.lineage.biometrics.fingerprint.inscreen@1.0::IFingerprintInscreen default
     class hal

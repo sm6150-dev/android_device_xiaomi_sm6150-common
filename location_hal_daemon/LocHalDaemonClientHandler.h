@@ -76,9 +76,9 @@ public:
     // related to location session need to be unsubscribed
     void unsubscribeLocationSessionCb();
     uint32_t startTracking();
-    uint32_t startTracking(uint32_t minDistance, uint32_t minInterval);
+    uint32_t startTracking(LocationOptions & locOptions);
     void stopTracking();
-    void updateTrackingOptions(uint32_t minDistance, uint32_t minInterval);
+    void updateTrackingOptions(LocationOptions & locOptions);
     void onGnssEnergyConsumedInfoAvailable(LocAPIGnssEnergyConsumedIndMsg &msg);
     bool hasPendingEngineInfoRequest(uint32_t mask);
     void addEngineInfoRequst(uint32_t mask);
@@ -120,6 +120,8 @@ private:
             std::list<uint32_t>& listOfCompletedTrips);
     void onGnssLocationInfoCb(GnssLocationInfoNotification gnssLocationInfoNotification);
     void onGeofenceBreachCb(GeofenceBreachNotification geofenceBreachNotification);
+    void onEngLocationsInfoCb(uint32_t count,
+                              GnssLocationInfoNotification* engLocationsInfoNotification);
     void onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification);
     void onGnssSvCb(GnssSvNotification gnssSvNotification);
     void onGnssNmeaCb(GnssNmeaNotification);

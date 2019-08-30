@@ -196,6 +196,9 @@ enum ELocMsgID {
     //geofence breach
     E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
 
+    // engine position report
+    E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID = 30,
+
     // ping
     E_LOCAPI_PINGTEST_MSG_ID = 99
 };
@@ -211,12 +214,14 @@ enum ELocationCallbacksOption {
     E_LOC_CB_BATCHING_BIT               = (1<<6), /**< Register for Batching */
     E_LOC_CB_BATCHING_STATUS_BIT        = (1<<7), /**< Register for Batching  Status*/
     E_LOC_CB_GEOFENCE_BREACH_BIT        = (1<<8), /**< Register for Geofence Breach */
+    E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT  = (1<<9), /**< Register for multiple engine reports */
 };
+
 // Mask related to all info that are tied with a position session and need to be unsubscribed
 // when session is stopped
 #define LOCATION_SESSON_ALL_INFO_MASK (E_LOC_CB_TRACKING_BIT|E_LOC_CB_GNSS_LOCATION_INFO_BIT|\
                                        E_LOC_CB_GNSS_SV_BIT|E_LOC_CB_GNSS_NMEA_BIT|\
-                                       E_LOC_CB_GNSS_DATA_BIT)
+                                       E_LOC_CB_GNSS_DATA_BIT|E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT)
 
 typedef uint32_t EngineInfoCallbacksMask;
 enum EEngineInfoCallbacksMask {
@@ -362,15 +367,12 @@ IPC message structure - tracking
 // defintion for message with msg id of E_LOCAPI_START_TRACKING_MSG_ID
 struct LocAPIStartTrackingReqMsg: LocAPIMsgHeader
 {
-    uint32_t intervalInMs;
-    uint32_t distanceInMeters;
+    LocationOptions locOptions;
 
     inline LocAPIStartTrackingReqMsg(const char* name,
-                                     uint32_t sessionInterval,
-                                     uint32_t sessionDistance):
+                                     const LocationOptions & locSessionOptions):
         LocAPIMsgHeader(name, E_LOCAPI_START_TRACKING_MSG_ID),
-        intervalInMs(sessionInterval),
-        distanceInMeters(sessionDistance) { }
+        locOptions(locSessionOptions) { }
 };
 
 // defintion for message with msg id of E_LOCAPI_STOP_TRACKING_MSG_ID
@@ -394,15 +396,12 @@ struct LocAPIUpdateCallbacksReqMsg: LocAPIMsgHeader
 // defintion for message with msg id of E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID
 struct LocAPIUpdateTrackingOptionsReqMsg: LocAPIMsgHeader
 {
-    uint32_t intervalInMs;
-    uint32_t distanceInMeters;
+    LocationOptions locOptions;
 
     inline LocAPIUpdateTrackingOptionsReqMsg(const char* name,
-                                             uint32_t sessionInterval,
-                                             uint32_t sessionDistance):
+                                             const LocationOptions & locSessionOptions):
         LocAPIMsgHeader(name, E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID),
-        intervalInMs(sessionInterval),
-        distanceInMeters(sessionDistance) { }
+        locOptions(locSessionOptions) { }
 };
 
 /******************************************************************************
@@ -578,6 +577,34 @@ struct LocAPILocationInfoIndMsg: LocAPIMsgHeader
         GnssLocationInfoNotification& locationInfo) :
         LocAPIMsgHeader(name, E_LOCAPI_LOCATION_INFO_MSG_ID),
         gnssLocationInfoNotification(locationInfo) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID
+struct LocAPIEngineLocationsInfoIndMsg: LocAPIMsgHeader
+{
+    uint32_t count;
+    GnssLocationInfoNotification engineLocationsInfo[LOC_OUTPUT_ENGINE_COUNT];
+
+    inline LocAPIEngineLocationsInfoIndMsg(
+            const char* name,
+            int cnt,
+            GnssLocationInfoNotification* locationInfo) :
+            LocAPIMsgHeader(name, E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID),
+            count(cnt) {
+
+        if (count > LOC_OUTPUT_ENGINE_COUNT) {
+            count = LOC_OUTPUT_ENGINE_COUNT;
+        }
+        if (count > 0) {
+            memcpy(engineLocationsInfo, locationInfo,
+                   sizeof(GnssLocationInfoNotification) * count);
+        }
+    }
+
+    inline uint32_t getMsgSize() const {
+        return (sizeof(LocAPIEngineLocationsInfoIndMsg) -
+                (LOC_OUTPUT_ENGINE_COUNT - count) * sizeof(GnssLocationInfoNotification));
+    }
 };
 
 // defintion for message with msg id of E_LOCAPI_SATELLITE_VEHICLE_MSG_ID

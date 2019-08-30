@@ -526,6 +526,12 @@ static GnssLocation parseLocationInfo(const ::GnssLocationInfoNotification &halL
         locationInfo.calibrationStatus =
                 (DrCalibrationStatusMask)halLocationInfo.calibrationStatus;
     }
+    if (GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT & halLocationInfo.flags) {
+        flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT;
+    }
+    if (GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT & halLocationInfo.flags) {
+        flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT;
+    }
 
     locationInfo.gnssInfoFlags = (GnssLocationInfoFlagMask)flags;
     locationInfo.altitudeMeanSeaLevel = halLocationInfo.altitudeMeanSeaLevel;
@@ -551,6 +557,10 @@ static GnssLocation parseLocationInfo(const ::GnssLocationInfoNotification &halL
     locationInfo.numSvUsedInPosition = halLocationInfo.numSvUsedInPosition;
     locationInfo.svUsedInPosition =
             parseLocationSvUsedInPosition(halLocationInfo.svUsedInPosition);
+    locationInfo.locOutputEngType =
+            (LocOutputEngineType)halLocationInfo.locOutputEngType;
+    locationInfo.locOutputEngMask =
+            (PositioningEngineMask)halLocationInfo.locOutputEngMask;
     parseGnssMeasUsageInfo(halLocationInfo, locationInfo.measUsageInfo);
 
     flags = 0;
@@ -776,16 +786,26 @@ LocationClientApiImpl - constructors
 LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mSessionId(LOCATION_CLIENT_SESSION_ID_INVALID),
         mBatchingId(LOCATION_CLIENT_SESSION_ID_INVALID),
-        mCapabilitiesCb(capabitiescb), mLastAddedClientIds({}),
-        mHalRegistered(false), mLocationCb(nullptr), mBatchingCb(nullptr),
-        mCallbacksMask(0), mGnssEnergyConsumedInfoCb(nullptr),
+        mHalRegistered(false),
+        mCallbacksMask(0),
+        mCapsMask((LocationCapabilitiesMask)0),
+        mLastAddedClientIds({}),
+        mCapabilitiesCb(capabitiescb),
+        mResponseCb(nullptr),
+        mLocationCb(nullptr),
+        mGnssLocationCb(nullptr),
+        mEngLocationsCb(nullptr),
+        mGnssSvCb(nullptr),
+        mGnssNmeaCb(nullptr),
+        mGnssDataCb(nullptr),
+        mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
         mLocationSysInfoCb(nullptr),
-        mLocationSysInfoResponseCb(nullptr)
+        mLocationSysInfoResponseCb(nullptr),
+        mPingTestCb(nullptr)
 #ifndef FEATURE_EXTERNAL_AP
         ,mDiagIface(nullptr)
 #endif
-
 {
     // read configuration file
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, gConfigTable);
@@ -900,11 +920,13 @@ void LocationClientApiImpl::destroy() {
 /******************************************************************************
 LocationClientApiImpl - implementation
 ******************************************************************************/
-void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs) {
+void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs,
+                                                    ReportCbEnumType reportCbType) {
 
     struct UpdateCallbackFunctionsReq : public LocMsg {
-        UpdateCallbackFunctionsReq(LocationClientApiImpl* apiImpl, const ClientCallbacks& cbs) :
-                mApiImpl(apiImpl), mCbs(cbs) {}
+        UpdateCallbackFunctionsReq(LocationClientApiImpl* apiImpl, const ClientCallbacks& cbs,
+                                   ReportCbEnumType reportCbType) :
+                mApiImpl(apiImpl), mCbs(cbs), mReportCbType(reportCbType) {}
         virtual ~UpdateCallbackFunctionsReq() {}
         void proc() const {
             // update callback functions
@@ -913,12 +935,24 @@ void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs) 
             mApiImpl->mLocationCb = mCbs.locationcb;
             mApiImpl->mBatchingCb = mCbs.batchingcb;
             mApiImpl->mGfBreachCb = mCbs.gfbreachcb;
-            mApiImpl->mGnssReportCbs = mCbs.gnssreportcbs;
+
+            if (REPORT_CB_GNSS_INFO == mReportCbType) {
+                mApiImpl->mGnssLocationCb = mCbs.gnssreportcbs.gnssLocationCallback;
+                mApiImpl->mGnssSvCb       = mCbs.gnssreportcbs.gnssSvCallback;
+                mApiImpl->mGnssNmeaCb     = mCbs.gnssreportcbs.gnssNmeaCallback;
+                mApiImpl->mGnssDataCb     = mCbs.gnssreportcbs.gnssDataCallback;
+            } else if (REPORT_CB_ENGINE_INFO == mReportCbType) {
+                mApiImpl->mEngLocationsCb = mCbs.engreportcbs.engLocationsCallback;
+                mApiImpl->mGnssSvCb       = mCbs.engreportcbs.gnssSvCallback;
+                mApiImpl->mGnssNmeaCb     = mCbs.engreportcbs.gnssNmeaCallback;
+                mApiImpl->mGnssDataCb     = mCbs.engreportcbs.gnssDataCallback;
+            }
         }
         LocationClientApiImpl* mApiImpl;
         const ClientCallbacks mCbs;
+        ReportCbEnumType mReportCbType;
     };
-    mMsgTask->sendMsg(new (nothrow) UpdateCallbackFunctionsReq(this, cbs));
+    mMsgTask->sendMsg(new (nothrow) UpdateCallbackFunctionsReq(this, cbs, reportCbType));
 }
 
 void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
@@ -936,6 +970,9 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             }
             if (mCallBacks.gnssLocationInfoCb) {
                 callBacksMask |= E_LOC_CB_GNSS_LOCATION_INFO_BIT;
+            }
+            if (mCallBacks.engineLocationsInfoCb) {
+                callBacksMask |= E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT;
             }
             if (mCallBacks.gnssSvCb) {
                 callBacksMask |= E_LOC_CB_GNSS_SV_BIT;
@@ -990,8 +1027,10 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
         void proc() const {
             // check if option is updated
             bool isOptionUpdated = false;
+
             if ((mApiImpl->mLocationOptions.minInterval != mOption.minInterval) ||
-                (mApiImpl->mLocationOptions.minDistance != mOption.minDistance)) {
+                (mApiImpl->mLocationOptions.minDistance != mOption.minDistance) ||
+                (mApiImpl->mLocationOptions.locReqEngTypeMask != mOption.locReqEngTypeMask)) {
                 isOptionUpdated = true;
             }
 
@@ -1011,13 +1050,13 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
                 if ((0 != mApiImpl->mLocationOptions.minInterval) ||
                     (0 != mApiImpl->mLocationOptions.minDistance)) {
                     LocAPIStartTrackingReqMsg msg(mApiImpl->mSocketName,
-                                                  mApiImpl->mLocationOptions.minInterval,
-                                                  mApiImpl->mLocationOptions.minDistance);
-                    mApiImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg),
-                                          sizeof(msg));
-                    LOC_LOGd(">>> StartTrackingReq Interval=%d Distance=%d",
+                                                  mApiImpl->mLocationOptions);
+                    bool rc = mApiImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg),
+                                                    sizeof(msg));
+                    LOC_LOGd(">>> StartTrackingReq Interval=%d Distance=%d, locReqEngTypeMask=0x%x",
                              mApiImpl->mLocationOptions.minInterval,
-                             mApiImpl->mLocationOptions.minDistance);
+                             mApiImpl->mLocationOptions.minDistance,
+                             mApiImpl->mLocationOptions.locReqEngTypeMask);
                 }
             } else if (isOptionUpdated) {
                 //update a tracking session, mApiImpl->mLocationOptions
@@ -1026,7 +1065,9 @@ uint32_t LocationClientApiImpl::startTracking(TrackingOptions& option) {
                         mApiImpl, const_cast<TrackingOptions&>(mOption));
             } else {
                 LOC_LOGd(">>> StartTrackingReq - no change in option");
-                mApiImpl->mResponseCb(LOCATION_RESPONSE_SUCCESS);
+                if (mApiImpl->mResponseCb) {
+                    mApiImpl->mResponseCb(LOCATION_RESPONSE_SUCCESS);
+                }
             }
         }
         LocationClientApiImpl* mApiImpl;
@@ -1090,45 +1131,21 @@ void LocationClientApiImpl::updateTrackingOptionsSync(
                 (pImpl->mLocationOptions.minDistance == 0))) {
         // update option from passive listening to none passive listening,
         // we need to start the session
-        LocAPIStartTrackingReqMsg msg(pImpl->mSocketName,
-                                      option.minInterval,
-                                      option.minDistance);
+        LocAPIStartTrackingReqMsg msg(pImpl->mSocketName, option);
         rc = pImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg),
                                         sizeof(msg));
         LOC_LOGd(">>> start tracking Interval=%d Distance=%d",
                  option.minInterval, option.minDistance);
     } else {
-        LocAPIUpdateTrackingOptionsReqMsg
-                msg(pImpl->mSocketName, option.minInterval, option.minDistance);
+        LocAPIUpdateTrackingOptionsReqMsg msg(pImpl->mSocketName, option);
         bool rc = pImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg), sizeof(msg));
-        LOC_LOGd(">>> updateTrackingOptionsSync Interval=%d Distance=%d",
-                option.minInterval, option.minDistance);
+        LOC_LOGd(">>> updateTrackingOptionsSync Interval=%d Distance=%d, reqTypeMask=0x%x",
+                option.minInterval, option.minDistance, option.locReqEngTypeMask);
     }
 
     pImpl->mLocationOptions = option;
 }
 
-void LocationClientApiImpl::updateTrackingOptions(uint32_t, TrackingOptions& option) {
-
-    struct UpdateTrackingOptionsReq : public LocMsg {
-        UpdateTrackingOptionsReq(LocationClientApiImpl* apiImpl, TrackingOptions& option) :
-                mApiImpl(apiImpl), mOption(option) {}
-        virtual ~UpdateTrackingOptionsReq() {}
-        void proc() const {
-            if ((mApiImpl->mLocationOptions.minInterval != mOption.minInterval) ||
-                (mApiImpl->mLocationOptions.minDistance != mOption.minDistance)) {
-                mApiImpl->updateTrackingOptionsSync(
-                        mApiImpl, const_cast<TrackingOptions&>(mOption));
-            } else {
-                LOC_LOGd("No UpdateTrackingOptions because same Interval=%d Distance=%d",
-                        mOption.minInterval, mOption.minDistance);
-            }
-        }
-        LocationClientApiImpl* mApiImpl;
-        TrackingOptions mOption;
-    };
-    mMsgTask->sendMsg(new (nothrow) UpdateTrackingOptionsReq(this, option));
-}
 
 //Batching
 uint32_t LocationClientApiImpl::startBatching(BatchingOptions& batchOptions) {
@@ -1608,9 +1625,10 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID msgId, const void* msg
     mHalRegistered = true;
     const LocAPICapabilitiesIndMsg* pCapabilitiesIndMsg =
             (LocAPICapabilitiesIndMsg*)(msgData);
-    LocationCapabilitiesMask capsMask = parseCapabilitiesMask(pCapabilitiesIndMsg->capabilitiesMask);
+    mCapsMask = parseCapabilitiesMask(pCapabilitiesIndMsg->capabilitiesMask);
+
     if (mCapabilitiesCb) {
-        mCapabilitiesCb(capsMask);
+        mCapabilitiesCb(mCapsMask);
     }
 
     // send updatecallback request
@@ -1620,6 +1638,7 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID msgId, const void* msg
         LOC_LOGd(">>> UpdateCallbacksReq callBacksMask=0x%x rc=%d", mCallbacksMask, rc);
     }
 
+    LOC_LOGe(">>> session id %d, cap mask 0x%x", mSessionId, mCapsMask);
     if (0 != mLocationOptions.minInterval) {
         TrackingOptions trackOption;
         trackOption.setLocationOptions(mLocationOptions);
@@ -1642,6 +1661,30 @@ void LocationClientApiImpl::pingTest(PingTestCb pingTestCallback) {
     };
     mMsgTask->sendMsg(new (nothrow) PingTestReq(this));
     return;
+}
+
+void LocationClientApiImpl::diagLogGnssLocation(const GnssLocation &gnssLocation) {
+#ifndef FEATURE_EXTERNAL_AP
+    if (!mDiagIface) {
+        return;
+    }
+
+    diagBuffSrc bufferSrc = BUFFER_INVALID;
+    clientDiagGnssLocationStructType* diagGnssLocPtr = nullptr;
+    diagGnssLocPtr = (clientDiagGnssLocationStructType*)
+            mDiagIface->logAlloc(LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
+                                 sizeof(clientDiagGnssLocationStructType), &bufferSrc);
+    if (diagGnssLocPtr == NULL) {
+        LOC_LOGv("diag memory alloc failed");
+        return;
+    }
+    populateClientDiagLocation(diagGnssLocPtr, gnssLocation);
+    diagGnssLocPtr->version = LOG_CLIENT_DIAG_MSG_VERSION;
+
+    mDiagIface->logCommit(diagGnssLocPtr, bufferSrc,
+                          LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
+                          sizeof(clientDiagGnssLocationStructType));
+#endif // FEATURE_EXTERNAL_AP
 }
 
 /******************************************************************************
@@ -1848,32 +1891,43 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                         (LocAPILocationInfoIndMsg*)(pMsg);
                     GnssLocation gnssLocation =
                         parseLocationInfo(pLocationInfoIndMsg->gnssLocationInfoNotification);
-                    if (mApiImpl.mGnssReportCbs.gnssLocationCallback) {
-                        mApiImpl.mGnssReportCbs.gnssLocationCallback(gnssLocation);
-                    }
-#ifndef FEATURE_EXTERNAL_AP
-                    if (!mDiagInterface) {
-                        break;
-                    }
-                    diagBuffSrc bufferSrc = BUFFER_INVALID;
-                    clientDiagGnssLocationStructType* diagGnssLocPtr = nullptr;
-                    diagGnssLocPtr = (clientDiagGnssLocationStructType*)
-                        mDiagInterface->logAlloc(LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
-                                sizeof(clientDiagGnssLocationStructType), &bufferSrc);
-                    if (diagGnssLocPtr == NULL) {
-                        LOC_LOGv("memory alloc failed");
-                        break;
-                    }
-                    populateClientDiagLocation(diagGnssLocPtr, gnssLocation);
-                    diagGnssLocPtr->version = LOG_CLIENT_DIAG_MSG_VERSION;
 
-                    mDiagInterface->logCommit(diagGnssLocPtr, bufferSrc,
-                            LOG_GNSS_CLIENT_API_LOCATION_REPORT_C,
-                            sizeof(clientDiagGnssLocationStructType));
-#endif
+                    if (mApiImpl.mGnssLocationCb) {
+                        mApiImpl.mGnssLocationCb(gnssLocation);
+                    }
+                    mApiImpl.diagLogGnssLocation(gnssLocation);
                 }
                 break;
             }
+            case E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID:
+            {
+                LOC_LOGd("<<< message = engine location info\n");
+
+                if ((mApiImpl.mSessionId != LOCATION_CLIENT_SESSION_ID_INVALID) &&
+                        (mApiImpl.mCallbacksMask & E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT)) {
+                    const LocAPIEngineLocationsInfoIndMsg* pEngLocationsInfoIndMsg =
+                        (LocAPIEngineLocationsInfoIndMsg*)(pMsg);
+
+                    if (pEngLocationsInfoIndMsg->getMsgSize() != mMsgData.length()) {
+                        LOC_LOGw("payload size does not match for message with id: %d",
+                        pMsg->msgId);
+                    }
+
+                    std::vector<GnssLocation> engLocationsVector;
+                    for (int i=0; i< pEngLocationsInfoIndMsg->count; i++) {
+                        GnssLocation gnssLocation =
+                            parseLocationInfo(pEngLocationsInfoIndMsg->engineLocationsInfo[i]);
+                        engLocationsVector.push_back(gnssLocation);
+                        mApiImpl.diagLogGnssLocation(gnssLocation);
+                    }
+
+                    if (mApiImpl.mEngLocationsCb) {
+                        mApiImpl.mEngLocationsCb(engLocationsVector);
+                    }
+                }
+                break;
+            }
+
             case E_LOCAPI_SATELLITE_VEHICLE_MSG_ID:
             {
                 LOC_LOGd("<<< message = sv");
@@ -1890,8 +1944,8 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                         gnssSv = parseGnssSv(pSvIndMsg->gnssSvNotification.gnssSvs[i]);
                         gnssSvsVector.push_back(gnssSv);
                     }
-                    if (mApiImpl.mGnssReportCbs.gnssSvCallback) {
-                        mApiImpl.mGnssReportCbs.gnssSvCallback(gnssSvsVector);
+                    if (mApiImpl.mGnssSvCb) {
+                        mApiImpl.mGnssSvCb(gnssSvsVector);
                     }
 #ifndef FEATURE_EXTERNAL_AP
                     if (!mDiagInterface) {
@@ -1921,7 +1975,7 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
             {
                 if ((mApiImpl.mSessionId != LOCATION_CLIENT_SESSION_ID_INVALID) &&
                         (mApiImpl.mCallbacksMask & E_LOC_CB_GNSS_NMEA_BIT) &&
-                            (mApiImpl.mGnssReportCbs.gnssNmeaCallback)) {
+                         mApiImpl.mGnssNmeaCb) {
                     // nmea is variable length, can not be checked
                     const LocAPINmeaIndMsg* pNmeaIndMsg = (LocAPINmeaIndMsg*)(pMsg);
                     uint64_t timestamp = pNmeaIndMsg->gnssNmeaNotification.timestamp;
@@ -1932,7 +1986,7 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                     std::string each;
                     while(std::getline(ss, each, '\n')) {
                         each += '\n';
-                        mApiImpl.mGnssReportCbs.gnssNmeaCallback(timestamp, each);
+                        mApiImpl.mGnssNmeaCb(timestamp, each);
                     }
                 }
                 break;
@@ -1950,8 +2004,8 @@ void IpcListener::onReceive(const char* data, uint32_t length) {
                     const LocAPIDataIndMsg* pDataIndMsg = (LocAPIDataIndMsg*)(pMsg);
                     GnssData gnssData =
                         parseGnssData(pDataIndMsg->gnssDataNotification);
-                    if (mApiImpl.mGnssReportCbs.gnssDataCallback) {
-                        mApiImpl.mGnssReportCbs.gnssDataCallback(gnssData);
+                    if (mApiImpl.mGnssDataCb) {
+                        mApiImpl.mGnssDataCb(gnssData);
                     }
                 }
                 break;
@@ -2056,6 +2110,9 @@ LocationClientApiImpl - Not implemented overrides
 ******************************************************************************/
 
 void LocationClientApiImpl::gnssNiResponse(uint32_t id, GnssNiResponse response) {
+}
+
+void LocationClientApiImpl::updateTrackingOptions(uint32_t id, TrackingOptions& options) {
 }
 
 } // namespace location_client

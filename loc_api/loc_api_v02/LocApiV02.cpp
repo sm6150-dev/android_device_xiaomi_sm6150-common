@@ -3198,6 +3198,11 @@ void LocApiV02 :: reportPosition (
                locationExtended.leapSeconds = location_report_ptr->leapSeconds;
             }
 
+            locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_TYPE;
+            locationExtended.locOutputEngType = LOC_OUTPUT_ENGINE_SPE;
+            locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_MASK;
+            locationExtended.locOutputEngMask = STANDARD_POSITIONING_ENGINE;
+
             LocApiBase::reportPosition(location,
                                        locationExtended,
                                        (location_report_ptr->sessionStatus ==

@@ -21,6 +21,7 @@
 #include <hidl/HidlTransportSupport.h>
 
 #include <misc/drv8846.h>
+#include <thread>
 
 #define CAMERA_ID_FRONT "1"
 #define MOTOR_DEV_PATH "/dev/drv8846_dev"
@@ -37,6 +38,17 @@ CameraMotor::CameraMotor() {
 }
 
 Return<void> CameraMotor::onConnect(const hidl_string& cameraId) {
+    uint8_t state = STILL;
+
+    ioctl(motor_fd_.get(), MOTOR_IOC_GET_STATE, &state);
+
+    if (state != STILL) {
+        uint8_t time_ms = 0;
+        ioctl(motor_fd_.get(), MOTOR_IOC_GET_REMAIN_TIME, &time_ms);
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(time_ms));
+    }
+
     if (cameraId == CAMERA_ID_FRONT && !(is_up)) {
         LOG(INFO) << "Camera is uprising.";
         uint8_t arg = UP;
@@ -48,6 +60,17 @@ Return<void> CameraMotor::onConnect(const hidl_string& cameraId) {
 }
 
 Return<void> CameraMotor::onDisconnect(const hidl_string& cameraId) {
+    uint8_t state = STILL;
+
+    ioctl(motor_fd_.get(), MOTOR_IOC_GET_STATE, &state);
+
+    if (state != STILL) {
+        uint8_t time_ms = 0;
+        ioctl(motor_fd_.get(), MOTOR_IOC_GET_REMAIN_TIME, &time_ms);
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(time_ms));
+    }
+
     if (cameraId == CAMERA_ID_FRONT && is_up) {
         LOG(INFO) << "Camera is descending";
         uint8_t arg = DOWN;

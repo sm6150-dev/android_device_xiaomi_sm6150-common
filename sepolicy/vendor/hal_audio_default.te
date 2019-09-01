@@ -3,3 +3,5 @@ allow hal_audio_default property_socket:sock_file write;
 allow hal_audio_default init:unix_stream_socket { connectto };
 allow hal_audio_default mnt_vendor_file:dir search;
 set_prop(hal_audio_default, vendor_audio_prop)
+
+binder_call(hal_audio_default, hal_perf_default)

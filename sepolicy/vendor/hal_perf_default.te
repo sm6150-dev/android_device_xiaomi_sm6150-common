@@ -3,3 +3,22 @@ allow hal_perf_default {
 init
 kernel
 }:dir { read search open };
+
+allow hal_perf_default {
+init
+kernel
+}:file { getattr open read };
+
+allow hal_perf_default {
+hal_audio_default
+hal_camera_default
+hal_fingerprint_default
+}:dir search;
+
+allow hal_perf_default {
+hal_audio_default
+hal_camera_default
+hal_fingerprint_default
+}:file { open read };
+
+allow hal_perf_default sysfs_thermal:file w_file_perms;

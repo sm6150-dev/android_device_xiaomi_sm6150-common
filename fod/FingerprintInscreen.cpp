@@ -30,7 +30,7 @@
 
 #define Touch_Fod_Enable 10
 
-#define FOD_SENSOR_X 455
+#define FOD_SENSOR_X 445
 #define FOD_SENSOR_Y 1931
 #define FOD_SENSOR_SIZE 190
 

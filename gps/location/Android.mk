@@ -40,5 +40,8 @@ LOCAL_MODULE := liblocation_api_headers
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 include $(BUILD_HEADER_LIBRARY)
 
+include $(CLEAR_VARS)
+include $(call all-makefiles-under,$(LOCAL_PATH))
+
 endif # not BUILD_TINY_ANDROID
 endif # BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE

@@ -22,6 +22,7 @@
 
 #include <misc/drv8846.h>
 #include <thread>
+#include <string>
 
 #define CAMERA_ID_FRONT "1"
 #define MOTOR_DEV_PATH "/dev/drv8846_dev"
@@ -42,10 +43,14 @@ Return<void> CameraMotor::onConnect(const hidl_string& cameraId) {
 
     ioctl(motor_fd_.get(), MOTOR_IOC_GET_STATE, &state);
 
+    LOG(INFO) << "Camera state: " + std::to_string(state);
+
     if (state != STILL) {
         uint8_t time_ms = 0;
         ioctl(motor_fd_.get(), MOTOR_IOC_GET_REMAIN_TIME, &time_ms);
         
+        LOG(INFO) << "Remaining time: " + std::to_string(time_ms);
+
         std::this_thread::sleep_for(std::chrono::milliseconds(time_ms));
     }
 
@@ -64,9 +69,13 @@ Return<void> CameraMotor::onDisconnect(const hidl_string& cameraId) {
 
     ioctl(motor_fd_.get(), MOTOR_IOC_GET_STATE, &state);
 
+    LOG(INFO) << "Camera state: " + std::to_string(state);
+
     if (state != STILL) {
         uint8_t time_ms = 0;
         ioctl(motor_fd_.get(), MOTOR_IOC_GET_REMAIN_TIME, &time_ms);
+
+        LOG(INFO) << "Remaining time: " + std::to_string(time_ms);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(time_ms));
     }

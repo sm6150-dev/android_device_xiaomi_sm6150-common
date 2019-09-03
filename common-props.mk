@@ -29,6 +29,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \
+    persist.bluetooth.bluetooth_audio_hal.disabled=true \
     persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-aptxadaptive \
     vendor.qcom.bluetooth.soc=cherokee
 

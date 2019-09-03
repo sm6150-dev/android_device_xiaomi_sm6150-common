@@ -1,5 +1,1 @@
 dontaudit qti_init_shell self:capability { dac_override dac_read_search };
-
-allow qti_init_shell {
-    vendor_chre_enabled_prop
-}:property_service set;

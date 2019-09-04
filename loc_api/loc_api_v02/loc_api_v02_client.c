@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-
+#include <pthread.h>
 #include <stdbool.h>
 #include <inttypes.h>
 
@@ -101,6 +101,7 @@ typedef struct
   locClientEventMaskType eventMask;
 }locClientEventIndTableStructT;
 
+pthread_mutex_t  loc_shutdown_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static const locClientEventIndTableStructT locClientEventIndTable[]= {
 
@@ -982,6 +983,7 @@ static void locClientErrorCb
 )
 {
   (void)user_handle;
+
   locClientCallbackDataType* pCallbackData =
         (locClientCallbackDataType *)err_cb_data;
   locClientErrorCbType localErrorCallback = NULL;
@@ -1008,11 +1010,13 @@ static void locClientErrorCb
       (NULL != pCallbackData->errorCallback) &&
       (pCallbackData == pCallbackData->pMe)  )
   {
+    pthread_mutex_lock(&loc_shutdown_mutex);
     //invoke the error callback for the corresponding client
     localErrorCallback(
         (locClientHandleType)pCallbackData,
         convertQmiErrorToLocError(error),
         pCallbackData->pClientCookie);
+    pthread_mutex_unlock(&loc_shutdown_mutex);
   }
 }
 
@@ -1040,6 +1044,7 @@ static void locClientIndCb
   locClientIndEnumT indType;
   size_t indSize = 0;
   qmi_client_error_type rc ;
+
   locClientCallbackDataType* pCallbackData =
       (locClientCallbackDataType *)ind_cb_data;
 
@@ -1116,11 +1121,13 @@ static void locClientIndCb
         if((NULL != localEventCallback) &&
            (NULL != pCallbackData->eventCallback))
         {
+          pthread_mutex_lock(&loc_shutdown_mutex);
           localEventCallback(
               (locClientHandleType)pCallbackData,
               msg_id,
               eventIndUnion,
               pCallbackData->pClientCookie);
+          pthread_mutex_unlock(&loc_shutdown_mutex);
         }
       }
       else if(respIndType == indType)
@@ -1145,12 +1152,14 @@ static void locClientIndCb
         if((NULL != localRespCallback) &&
            (NULL != pCallbackData->respCallback))
         {
+          pthread_mutex_lock(&loc_shutdown_mutex);
           localRespCallback(
               (locClientHandleType)pCallbackData,
               msg_id,
               respIndUnion,
               indSize,
               pCallbackData->pClientCookie);
+          pthread_mutex_unlock(&loc_shutdown_mutex);
         }
       }
     }
@@ -2238,7 +2247,9 @@ locClientStatusEnumType locClientClose(
    *  of a race condition occurring between close and the indication
    *  callback
    */
+  pthread_mutex_lock(&loc_shutdown_mutex);
   memset(pCallbackData, 0, sizeof(*pCallbackData));
+  pthread_mutex_unlock(&loc_shutdown_mutex);
 
   // free the memory assigned in locClientOpen
   free(pCallbackData);

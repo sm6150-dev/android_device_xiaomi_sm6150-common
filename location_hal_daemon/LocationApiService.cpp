@@ -40,12 +40,15 @@
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
 #include <location_interface.h>
+#include <loc_misc_utils.h>
 
 using namespace std;
 
 #define MAX_GEOFENCE_COUNT (200)
 
 typedef void* (getLocationInterface)();
+typedef void  (createOSFramework)();
+typedef void  (destroyOSFramework)();
 
 /******************************************************************************
 LocationApiService - static members
@@ -148,6 +151,9 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     }
 #endif
 
+    // Create OSFramework and IzatManager instance
+    createOSFrameworkInstance();
+
     // create a default client if enabled by config
     if (mAutoStartGnss) {
         checkEnableGnss();
@@ -194,6 +200,9 @@ LocationApiService::~LocationApiService() {
         LOC_LOGd(">-- deleted client [%s]", each.first.c_str());
         each.second->cleanup();
     }
+
+    // Destroy OSFramework instance
+    destroyOSFrameworkInstance();
 
     // delete location contorol API handle
     mLocationControlApi->disable(mLocationControlId);
@@ -885,5 +894,29 @@ void LocationApiService::checkEnableGnss() {
         mLocationControlId = mLocationControlApi->enable(LOCATION_TECHNOLOGY_TYPE_GNSS);
         LOC_LOGd("-->enable=%u", mLocationControlId);
         // this is a unique id assigned to this daemon - will be used when disable
+    }
+}
+
+// Create OSFramework instance
+void LocationApiService::createOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    createOSFramework* getter = (createOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "createOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+// Destroy OSFramework instance
+void LocationApiService::destroyOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    destroyOSFramework* getter = (destroyOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "destroyOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
     }
 }

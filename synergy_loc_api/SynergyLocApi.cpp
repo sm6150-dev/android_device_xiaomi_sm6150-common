@@ -43,7 +43,7 @@
 #include <gps_extended.h>
 #include "loc_pla.h"
 #include <loc_cfg.h>
-#include <LocDualContext.h>
+#include <LocContext.h>
 #include <SynergyLocApi.h>
 
 using namespace std;
@@ -182,11 +182,11 @@ void handleSllReportSv(GnssSvNotification& svNotify, void *context) {
    @dependencies
        None.
 */
-void handleSllReportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet, void *context) {
+void handleSllReportSvMeasurement(GnssMeasurements &svMeasurementSet, void *context) {
 
     if (nullptr != context) {
         SynergyLocApi *synergyLocApiInstance = (SynergyLocApi*)context;
-        synergyLocApiInstance->reportSvMeasurement(svMeasurementSet);
+        synergyLocApiInstance->reportGnssMeasurements(svMeasurementSet, 0);
     } else {
         LOC_LOGw ("Context is NULL");
     }
@@ -501,7 +501,7 @@ void handleSllRequestNiNotify(GnssNiNotification &notify, const void* data,
 
     if (nullptr != context) {
         SynergyLocApi *synergyLocApiInstance = (SynergyLocApi*)context;
-        synergyLocApiInstance->requestNiNotify(notify, data);
+        //synergyLocApiInstance->requestNiNotify(notify, data);
     } else {
         LOC_LOGw ("Context is NULL");
     }
@@ -520,12 +520,12 @@ void handleSllRequestNiNotify(GnssNiNotification &notify, const void* data,
    @dependencies
        None.
 */
-void handleSllReportGnssMeasurementData(GnssMeasurementsNotification& measurements,
+void handleSllReportGnssMeasurementData(GnssMeasurements &measurements,
     int msInWeek, void *context) {
 
     if (nullptr != context) {
         SynergyLocApi *synergyLocApiInstance = (SynergyLocApi*)context;
-        synergyLocApiInstance->reportGnssMeasurementData(measurements, msInWeek);
+        synergyLocApiInstance->reportGnssMeasurements(measurements, msInWeek);
     } else {
         LOC_LOGw ("Context is NULL");
     }
@@ -1331,7 +1331,8 @@ SynergyLocApi::open(LOC_API_ADAPTER_EVENT_MASK_T mask) {
         if (((LOC_API_ADAPTER_ERR_SUCCESS == rtv) ||
             (LOC_API_ADAPTER_ERR_UNSUPPORTED == rtv)) &&
             (SL_NO_FEATURE_SUPPORTED != supportedMask)) {
-                LOC_LOGd ("SLL Requested Configuration 0x%x, Supported Configuration 0x%x",
+                LOC_LOGd ("SLL Requested Configuration 0x%" PRIx64 ","
+                        " Supported Configuration 0x%" PRIx64 "",
                         mask, supportedMask);
                 if ((LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT ==
                         (supportedMask & LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT)) ||
@@ -2703,6 +2704,121 @@ SynergyLocApi::resetConstellationControl() {
             if (LOC_API_ADAPTER_ERR_SUCCESS != rtv) {
                LOC_LOGe ("Error: %d", rtv);
             }
+        }
+    }));
+}
+
+
+void
+SynergyLocApi::startTimeBasedTracking(const TrackingOptions& options,
+         LocApiResponse* adapterResponse) {
+
+    sendMsg(new LocApiMsg([this, options, adapterResponse] () {
+        LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+        enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
+        sllPosMode posMode;
+
+        if ((nullptr != sllReqIf) && (nullptr != sllReqIf->sllStartFix)) {
+
+            posMode.mode = LOC_POSITION_MODE_STANDALONE;
+            posMode.recurrence = LOC_GPS_POSITION_RECURRENCE_PERIODIC;
+            posMode.min_interval = options.minInterval;
+            posMode.preferred_accuracy = 100;
+            posMode.preferred_time = 120000;
+            posMode.share_position = true;
+            posMode.powerMode = GNSS_POWER_MODE_M2;
+            posMode.timeBetweenMeasurements = 1000;
+
+            rtv = sllReqIf->sllStartFix(posMode, ((void *)this));
+            if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
+                err = LOCATION_ERROR_SUCCESS;
+            }
+        } else {
+            err = LOCATION_ERROR_NOT_SUPPORTED;
+        }
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(err);
+        }
+    }));
+
+}
+
+void
+SynergyLocApi::stopTimeBasedTracking(LocApiResponse* adapterResponse){
+
+    sendMsg(new LocApiMsg([this, adapterResponse] () {
+        LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+        enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
+
+        if ((nullptr != sllReqIf) && (nullptr != sllReqIf->sllStopFix)) {
+
+            rtv = sllReqIf->sllStopFix((void *)this);
+            if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
+                err = LOCATION_ERROR_SUCCESS;
+            }
+        } else {
+            err = LOCATION_ERROR_NOT_SUPPORTED;
+        }
+
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(err);
+        }
+    }));
+}
+
+void
+SynergyLocApi::startDistanceBasedTracking(uint32_t sessionId,
+        const LocationOptions& options, LocApiResponse* adapterResponse) {
+
+    sendMsg(new LocApiMsg([this, options, adapterResponse] () {
+        LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+        enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
+        sllPosMode posMode;
+
+        if ((nullptr != sllReqIf) && (nullptr != sllReqIf->sllStartFix)) {
+
+            posMode.mode = LOC_POSITION_MODE_STANDALONE;
+            posMode.recurrence = LOC_GPS_POSITION_RECURRENCE_PERIODIC;
+            posMode.min_interval = options.minInterval;
+            posMode.preferred_accuracy = 100;
+            posMode.preferred_time = 120000;
+            posMode.share_position = true;
+            posMode.powerMode = GNSS_POWER_MODE_M2;
+            posMode.timeBetweenMeasurements = 1000;
+
+            rtv = sllReqIf->sllStartFix(posMode, ((void *)this));
+            if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
+                err = LOCATION_ERROR_SUCCESS;
+            }
+        } else {
+            err = LOCATION_ERROR_NOT_SUPPORTED;
+        }
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(err);
+        }
+    }));
+}
+
+void
+SynergyLocApi::stopDistanceBasedTracking(uint32_t sessionId,
+         LocApiResponse* adapterResponse) {
+
+    sendMsg(new LocApiMsg([this, adapterResponse] () {
+        LocationError err = LOCATION_ERROR_GENERAL_FAILURE;
+        enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
+
+        if ((nullptr != sllReqIf) && (nullptr != sllReqIf->sllStopFix)) {
+
+            rtv = sllReqIf->sllStopFix((void *)this);
+            if (LOC_API_ADAPTER_ERR_SUCCESS == rtv) {
+                err = LOCATION_ERROR_SUCCESS;
+            }
+        } else {
+            err = LOCATION_ERROR_NOT_SUPPORTED;
+        }
+
+        if (adapterResponse != NULL) {
+            adapterResponse->returnToSender(err);
         }
     }));
 }

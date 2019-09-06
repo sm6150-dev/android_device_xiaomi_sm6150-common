@@ -72,6 +72,12 @@ int main(int argc, char *argv[])
         {"DELETE_ALL_ON_ENGINE_MASK", &configParamRead.posEngineMask, NULL, 'n'}
     };
 
+#if FEATURE_AUTOMOTIVE
+    // enable auto start by default with 100 ms TBF
+    configParamRead.autoStartGnss = 1;
+    configParamRead.gnssSessionTbfMs = 100;
+#endif
+
     // read configuration file
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, configTable);
 

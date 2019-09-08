@@ -32,7 +32,7 @@ if ! wait_for_file "${WLAN_MAC_DATA_PATH}"; then
     exit
 fi
 
-if [ ! -f "${WLAN_MAC_PERSIST_PATH}" ]; then
+if [[ ! -f "${WLAN_MAC_PERSIST_PATH}" ]] || [[ ! -s "${WLAN_MAC_PERSIST_PATH}" ]]; then
     # Read file contents
     raw_mac_data=$(cat "${WLAN_MAC_DATA_PATH}")
 

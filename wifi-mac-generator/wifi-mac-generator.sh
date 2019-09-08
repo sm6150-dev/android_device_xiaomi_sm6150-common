@@ -60,5 +60,7 @@ if [[ ! -f "${WLAN_MAC_PERSIST_PATH}" ]] || [[ ! -s "${WLAN_MAC_PERSIST_PATH}" ]
     # Write the MACs
     echo "Intf0MacAddress=${first_mac}" > "${WLAN_MAC_PERSIST_PATH}"
     echo "Intf1MacAddress=${second_mac}" >> "${WLAN_MAC_PERSIST_PATH}"
+    echo "Intf2MacAddress=000AF58989FD" >> "${WLAN_MAC_PERSIST_PATH}"
+    echo "Intf3MacAddress=000AF58989FC" >> "${WLAN_MAC_PERSIST_PATH}"
     echo "END" >> "${WLAN_MAC_PERSIST_PATH}"
 fi

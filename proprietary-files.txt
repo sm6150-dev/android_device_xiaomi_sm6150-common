@@ -147,6 +147,16 @@ vendor/lib64/libcvp_common.so
 vendor/lib64/libcvp_stub.so
 vendor/lib64/vendor.qti.hardware.cvp@1.0.so
 
+# Display Postprocessing - from sm6150 PKQ1.190407.001 test-keys
+vendor/bin/hw/vendor.display.color@1.0-service|bd70727d49e0f49d7827bc0a7cc19e13a16e176e
+vendor/etc/init/vendor.display.color@1.0-service.rc|5ad673f879b3685a0e79b5633437e5499cb94f48
+vendor/lib64/libdisp-aba.so|bef081a4a63fca47ffbb06c03c6a28eb29b38880
+vendor/lib64/vendor.display.color@1.0.so|b96199c73148c9f5628afcd44bc60326fdb94365
+vendor/lib64/vendor.display.color@1.1.so|cf12b50dbd2ece6b5acaf583343acab496943c71
+vendor/lib64/vendor.display.color@1.2.so|b223438912e348a8eb911d5dd941fbed14c53dde
+vendor/lib64/vendor.display.color@1.3.so|00314660546961212e5b3bf99414ac68b9eb94ac
+vendor/lib64/vendor.display.postproc@1.0.so|75b425bd7d2ef03e5657d2da27eceebf186803f3
+
 # DPM
 bin/dpmd
 etc/dpm/dpm.conf
@@ -328,77 +338,77 @@ vendor/lib64/vendor.qti.gnss@1.2.so
 vendor/lib64/vendor.qti.gnss@2.0.so
 vendor/lib64/vendor.qti.gnss@2.1.so
 
-# Graphics
-vendor/lib64/egl/eglSubDriverAndroid.so
-vendor/lib64/egl/libEGL_adreno.so
-vendor/lib64/egl/libGLESv1_CM_adreno.so
-vendor/lib64/egl/libGLESv2_adreno.so
-vendor/lib64/egl/libq3dtools_adreno.so
-vendor/lib64/egl/libq3dtools_esx.so
-vendor/lib64/egl/libQTapGLES.so
-vendor/lib64/libadreno_utils.so
-vendor/lib64/libbccQTI.so
-vendor/lib64/libC2D2.so
-vendor/lib64/libc2d30_bltlib.so
-vendor/lib64/libCB.so
-vendor/lib64/libEGL_adreno.so
-vendor/lib64/libgsl.so
-vendor/lib64/libllvm-glnext.so
-vendor/lib64/libllvm-qcom.so
-vendor/lib64/libOpenCL.so
-vendor/lib64/libpvr.so
-vendor/lib64/libq3dtools_adreno.so
-vendor/lib64/librs_adreno_sha1.so
-vendor/lib64/librs_adreno.so
-vendor/lib64/libRSDriver_adreno.so
-vendor/lib/egl/eglSubDriverAndroid.so
-vendor/lib/egl/libEGL_adreno.so
-vendor/lib/egl/libGLESv1_CM_adreno.so
-vendor/lib/egl/libGLESv2_adreno.so
-vendor/lib/egl/libq3dtools_adreno.so
-vendor/lib/egl/libq3dtools_esx.so
-vendor/lib/egl/libQTapGLES.so
-vendor/lib/libadreno_utils.so
-vendor/lib/libbccQTI.so
-vendor/lib/libC2D2.so
-vendor/lib/libc2d30_bltlib.so
-vendor/lib/libCB.so
-vendor/lib/libEGL_adreno.so
-vendor/lib/libgsl.so
-vendor/lib/libllvm-glnext.so
-vendor/lib/libllvm-qcom.so
-vendor/lib/libOpenCL.so
-vendor/lib/libpvr.so
-vendor/lib/libq3dtools_adreno.so
-vendor/lib/librs_adreno_sha1.so
-vendor/lib/librs_adreno.so
-vendor/lib/libRSDriver_adreno.so
+# Graphics - from sm6150 PKQ1.190407.001 test-keys
+vendor/lib/egl/eglSubDriverAndroid.so|3187cab7ed9e9631732d7026ecae6686bb8a60cc
+vendor/lib/egl/libEGL_adreno.so|8cc0fc147c7758a2b70e68c39b7ae564fb59ddd0
+vendor/lib/egl/libGLESv1_CM_adreno.so|36a4efb4cf8f3431d955c0f8eca3e79e97d3c216
+vendor/lib/egl/libGLESv2_adreno.so|874be9dc79e5014d26e9eff3867947514d910d77
+vendor/lib/egl/libQTapGLES.so|97c49216bbf90c393cac41bddaf4935c81df6099
+vendor/lib/egl/libq3dtools_adreno.so|c3c07de0fdb1ff8bd3d6e4c8ca266d6d8c8384ae
+vendor/lib/egl/libq3dtools_esx.so|e4d7e67711d844086b51eb710b94f3d5e0b6c8ae
+vendor/lib/libC2D2.so|43f66533b30d58345e49aa762b061f5c9f222070
+vendor/lib/libCB.so|6d67f4dac6433c7cd6c37a6d7152ac605c7e48f9
+vendor/lib/libEGL_adreno.so|8cc0fc147c7758a2b70e68c39b7ae564fb59ddd0
+vendor/lib/libOpenCL.so|4cd42df87d35c69f4f4173abcde96804cce7845b
+vendor/lib/libRSDriver_adreno.so|8592c8b6b6e15141416d730e94792ec709ff092a
+vendor/lib/libadreno_utils.so|6fadc3c5ea3589b5e33c47c4e104bfc8b33e7028
+vendor/lib/libbccQTI.so|5b5bdcbf51bcd08611e2c2fa768de93acec8ac27
+vendor/lib/libc2d30_bltlib.so|a127283a783facafc65d661a3191b07a971d787d
+vendor/lib/libgsl.so|4f98f8adf2715ef0777e95cf599f7bc7a4b840bc
+vendor/lib/libllvm-glnext.so|5881c467fc488493803c713c2cfd3577157bc752
+vendor/lib/libllvm-qcom.so|4310a6e14ad61355cf20bafd66110f9c2534f9ae
+vendor/lib/libpvr.so|a5b71c6fb739aefba9a28181bb0596723da50bf6
+vendor/lib/libq3dtools_adreno.so|c3c07de0fdb1ff8bd3d6e4c8ca266d6d8c8384ae
+vendor/lib/librs_adreno.so|88a06b209f70e307929af6a415862220a2f9ff30
+vendor/lib/librs_adreno_sha1.so|24658adaca52e7e6c831af8b6d9f79c2b34a95b9
+vendor/lib64/egl/eglSubDriverAndroid.so|a798afaa5b24d353e66691132010536845c91b0a
+vendor/lib64/egl/libEGL_adreno.so|f0d3bdb1a8dbcb26479b3ef4392cc786177fdd83
+vendor/lib64/egl/libGLESv1_CM_adreno.so|3f5f359a6e13e508cd4fc5784f0c5a8f0ead408a
+vendor/lib64/egl/libGLESv2_adreno.so|b8a9d63b4fe371b28a7a9ee23e6a20e904f22cd3
+vendor/lib64/egl/libQTapGLES.so|bd1fa65dcbea29ae1e779244c83884cdb2a27758
+vendor/lib64/egl/libq3dtools_adreno.so|4bd18c19a4d8376311983303b0971a7aa1334897
+vendor/lib64/egl/libq3dtools_esx.so|22847f2f302b07fc53f5f122b10807af8708c7f8
+vendor/lib64/libC2D2.so|2dba3b2b290d70a752ce66c67fa61fa84fcfc829
+vendor/lib64/libCB.so|56f1de94a66283b5cfb3450df63435c90b43e154
+vendor/lib64/libEGL_adreno.so|f0d3bdb1a8dbcb26479b3ef4392cc786177fdd83
+vendor/lib64/libOpenCL.so|1e78c9b98378803703835a3e1cbfabf43318f341
+vendor/lib64/libRSDriver_adreno.so|a32a1ea29be23b9b67002308e40410695746b260
+vendor/lib64/libadreno_utils.so|c690ff34b1b0e0515faa45cf6aae49e121144474
+vendor/lib64/libbccQTI.so|3077833cf44830519e656d20b5bad3edb354a869
+vendor/lib64/libc2d30_bltlib.so|1b514fe1fcd8525bd54c5115d53fa805c41f029d
+vendor/lib64/libgsl.so|ea3f1df03c10a1905225d61f860a36d3156faf13
+vendor/lib64/libllvm-glnext.so|8d0ae4199334b2226cf99bd3d7a572431d86d9e5
+vendor/lib64/libllvm-qcom.so|b4c4f6bc9dd7c68aba22ee20dd3f6067d0583711
+vendor/lib64/libpvr.so|8eb36e82d82a5bf89dd1fa3262286bfcb9bf84d2
+vendor/lib64/libq3dtools_adreno.so|4bd18c19a4d8376311983303b0971a7aa1334897
+vendor/lib64/librs_adreno.so|8db2a14ae94493eeb944b51e79d330cfe6e0b966
+vendor/lib64/librs_adreno_sha1.so|b5c28b057944518bd154ecb7dcdba2103cadce73
 
-# Graphics (DRM)
-vendor/lib/libsdedrm.so
-vendor/lib64/libsdedrm.so
+# Graphics (DRM) - from sm6150 PKQ1.190407.001 test-keys
+vendor/lib/libsdedrm.so|d37f4948d359e195b98076591013c89d3491acfe
+vendor/lib64/libsdedrm.so|6b030dd1724480cdda9581af204f329666114cab
 
-# Graphics (HDR)
-vendor/lib/libhdr_tm.so
-vendor/lib64/libhdr_tm.so
+# Graphics (HDR) - from sm6150 PKQ1.190407.001 test-keys
+vendor/lib/libhdr_tm.so|2c28de3b912cd7a1380f1ae878b649495871c027
+vendor/lib64/libhdr_tm.so|dbc0b979eb88f05bf6cec86608ad1dd00cacd757
 
-# Graphics (SDM)
-vendor/lib/libqseed3.so
-vendor/lib/libsdm-color.so
-vendor/lib/libsdm-diag.so
--vendor/lib/libsdm-disp-vndapis.so
-vendor/lib/libsdmextension.so
-vendor/lib/libtinyxml2_1.so
-vendor/lib64/libqseed3.so
-vendor/lib64/libsdm-color.so
-vendor/lib64/libsdm-diag.so
--vendor/lib64/libsdm-disp-vndapis.so
-vendor/lib64/libsdmextension.so
-vendor/lib64/libtinyxml2_1.so
+# Graphics (SDM) - from sm6150 PKQ1.190407.001 test-keys
+vendor/lib/libqseed3.so|593edb182fe4d8e17e511a00cc015dce25d16fce
+vendor/lib/libsdm-color.so|cec4438851ed01bc78b2b3e1329cfd4a1a332892
+vendor/lib/libsdm-diag.so|000b89e1617042a143e6cf4d6a2c50f8c854701c
+vendor/lib/libsdmextension.so|33900667551b59c75f1454a8e86c70e0be9ef930
+vendor/lib/libtinyxml2_1.so|269dab7a6e3b10f587adaa832cdafdc51eac831d
+vendor/lib64/libqseed3.so|fb17af6d01fbbb8aae45f31ae80cb4492bf19d13
+vendor/lib64/libsdm-color.so|7f42b9634ed0a42603061354e3fe76ec9cc27f37
+vendor/lib64/libsdm-diag.so|9d57ac66e534f6db39a46cc4375f55cdd3e406c7
+vendor/lib64/libsdmextension.so|76c55ded6e6e9472f78684b3361624296da1c170
+vendor/lib64/libtinyxml2_1.so|0019bedf2e12642fe4113093bc5a5590f6f5021b
+-vendor/lib/libsdm-disp-vndapis.so|69041d8c4301418ed9d75cf8d3d8c3f11fb6c9a7
+-vendor/lib64/libsdm-disp-vndapis.so|c3f7a045ec1af76fdd0247bb715de132b5de3f73
 
-# Graphics (Vulkan)
-vendor/lib/hw/vulkan.sm6150.so
-vendor/lib64/hw/vulkan.sm6150.so
+# Graphics (Vulkan) - from sm6150 PKQ1.190407.001 test-keys
+vendor/lib/hw/vulkan.sm6150.so|404fdb9479370ef8e295697a8cf1c36b162f5963
+vendor/lib64/hw/vulkan.sm6150.so|69d54aa4aa95974ff557d922586d514019762954
 
 # IO prefetcher
 vendor/bin/hw/vendor.qti.hardware.iop@2.0-service
@@ -573,16 +583,6 @@ vendor/bin/pm-proxy
 vendor/bin/pm-service
 vendor/lib64/libperipheral_client.so
 vendor/lib/libperipheral_client.so
-
-# Postprocessing
-vendor/bin/hw/vendor.display.color@1.0-service
-vendor/etc/init/vendor.display.color@1.0-service.rc
-vendor/lib64/libdisp-aba.so
-vendor/lib64/vendor.display.color@1.0.so
-vendor/lib64/vendor.display.color@1.1.so
-vendor/lib64/vendor.display.color@1.2.so
-vendor/lib64/vendor.display.color@1.3.so
-vendor/lib64/vendor.display.postproc@1.0.so
 
 # Power-off charging daemon
 -sbin/charger:sbin/chargeonlymode;rootfs

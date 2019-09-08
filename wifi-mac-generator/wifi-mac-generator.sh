@@ -15,7 +15,7 @@ function wait_for_file() {
     max_retries=10
     retries=0
 
-    while [ ! -s "${file}" ]; do
+    while [ ! -f "${file}" ]; do
         retries=$((retries + 1))
 
         if [ "${retries}" -eq "${max_retries}" ]; then

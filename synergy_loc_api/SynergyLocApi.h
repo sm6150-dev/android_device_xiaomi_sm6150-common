@@ -169,9 +169,13 @@ public:
                                size_t length,
                                uint32_t slotBitMask);
 
-    inline virtual void setInSession(bool inSession) override {
-      mInSession = inSession;
-    }
+    virtual void startTimeBasedTracking(const TrackingOptions& options,
+             LocApiResponse* adapterResponse);
+    virtual void stopTimeBasedTracking(LocApiResponse* adapterResponse);
+    virtual void startDistanceBasedTracking(uint32_t sessionId, const LocationOptions& options,
+             LocApiResponse* adapterResponse);
+    virtual void stopDistanceBasedTracking(uint32_t sessionId,
+             LocApiResponse* adapterResponse = nullptr);
 
     virtual GnssConfigSuplVersion convertSuplVersion(const uint32_t suplVersion);
     virtual GnssConfigLppProfile convertLppProfile(const uint32_t lppProfile);

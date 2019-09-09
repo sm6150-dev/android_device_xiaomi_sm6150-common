@@ -298,6 +298,7 @@ GPS_HARDWARE += libgnss
 GPS_HARDWARE += liblocation_api
 GPS_HARDWARE += libbatching
 GPS_HARDWARE += libgeofencing
+GPS_HARDWARE += libsynergy_loc_api
 GPS_HARDWARE += android.hardware.gnss@1.0-impl-qti
 GPS_HARDWARE += android.hardware.gnss@1.0-service-qti
 GPS_HARDWARE += android.hardware.gnss@1.1-impl-qti

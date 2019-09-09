@@ -366,4 +366,12 @@ void populateClientDiagGnssSv(clientDiagGnssSvStructType* diagGnssSvPtr,
         diagGnssSvPtr->gnssSvs[idx] = diagGnssSv;
     }
 }
+
+void populateClientDiagNmea(clientDiagGnssNmeaStructType *diagGnssNmeaPtr,
+        const LocAPINmeaSerializedPayload &nmeaSerializedPayload) {
+    diagGnssNmeaPtr->timestamp = nmeaSerializedPayload.timestamp;
+    diagGnssNmeaPtr->nmeaLength = nmeaSerializedPayload.length;
+    memcpy(&diagGnssNmeaPtr->nmea, nmeaSerializedPayload.nmea, nmeaSerializedPayload.length);
+}
+
 }

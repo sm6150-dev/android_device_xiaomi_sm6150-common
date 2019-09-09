@@ -37,6 +37,7 @@
 #include <dlfcn.h>
 #include <loc_misc_utils.h>
 
+
 static uint32_t gDebug = 0;
 
 static const loc_param_s_type gConfigTable[] =
@@ -2055,6 +2056,29 @@ void IpcListener::onReceive(const char* data, uint32_t length,
                         each += '\n';
                         mApiImpl.mGnssNmeaCb(timestamp, each);
                     }
+
+#ifndef FEATURE_EXTERNAL_AP
+                    if (!mDiagInterface) {
+                        break;
+                    }
+                    size_t diagBufferSize = sizeof(clientDiagGnssNmeaStructType) +
+                            pNmeaIndMsg->gnssNmeaNotification.length - 1;
+                    diagBuffSrc bufferSrc = BUFFER_INVALID;
+                    clientDiagGnssNmeaStructType* diagGnssNmeaPtr = nullptr;
+                    diagGnssNmeaPtr = (clientDiagGnssNmeaStructType*)
+                        mDiagInterface->logAlloc(LOG_GNSS_CLIENT_API_NMEA_REPORT_C,
+                                diagBufferSize, &bufferSrc);
+                    if (diagGnssNmeaPtr == NULL) {
+                        LOC_LOGv("memory alloc failed");
+                        break;
+                    }
+                    populateClientDiagNmea(diagGnssNmeaPtr, pNmeaIndMsg->gnssNmeaNotification);
+                    diagGnssNmeaPtr->version = LOG_CLIENT_NMEA_REPORT_DIAG_MSG_VERSION;
+
+                    mDiagInterface->logCommit(diagGnssNmeaPtr, bufferSrc,
+                            LOG_GNSS_CLIENT_API_NMEA_REPORT_C,
+                            sizeof(clientDiagGnssNmeaStructType));
+#endif // FEATURE_EXTERNAL_AP
                 }
                 break;
             }

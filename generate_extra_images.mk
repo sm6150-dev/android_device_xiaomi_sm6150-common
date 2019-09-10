@@ -27,43 +27,6 @@ recovery_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery.img
 INSTALLED_USBIMAGE_TARGET := $(PRODUCT_OUT)/usbdisk.img
 endif
 
-#A/B builds require us to create the mount points at compile time.
-#Just creating it for all cases since it does not hurt.
-FIRMWARE_MOUNT_POINT := $(TARGET_OUT_VENDOR)/firmware_mnt
-BT_FIRMWARE_MOUNT_POINT := $(TARGET_OUT_VENDOR)/bt_firmware
-DSP_MOUNT_POINT := $(TARGET_OUT_VENDOR)/dsp
-PERSIST_MOUNT_POINT := $(TARGET_ROOT_OUT)/persist
-ALL_DEFAULT_INSTALLED_MODULES += $(FIRMWARE_MOUNT_POINT) \
-				 $(BT_FIRMWARE_MOUNT_POINT) \
-				 $(DSP_MOUNT_POINT) \
-				 $(PERSIST_MOUNT_POINT)
-$(FIRMWARE_MOUNT_POINT):
-	@echo "Creating $(FIRMWARE_MOUNT_POINT)"
-	@mkdir -p $(TARGET_OUT_VENDOR)/firmware_mnt
-ifneq ($(TARGET_MOUNT_POINTS_SYMLINKS),false)
-	@ln -sf /vendor/firmware_mnt $(TARGET_ROOT_OUT)/firmware
-endif
-
-$(BT_FIRMWARE_MOUNT_POINT):
-	@echo "Creating $(BT_FIRMWARE_MOUNT_POINT)"
-	@mkdir -p $(TARGET_OUT_VENDOR)/bt_firmware
-ifneq ($(TARGET_MOUNT_POINTS_SYMLINKS),false)
-	@ln -sf /vendor/bt_firmware $(TARGET_ROOT_OUT)/bt_firmware
-endif
-
-$(DSP_MOUNT_POINT):
-	@echo "Creating $(DSP_MOUNT_POINT)"
-	@mkdir -p $(TARGET_OUT_VENDOR)/dsp
-ifneq ($(TARGET_MOUNT_POINTS_SYMLINKS),false)
-	@ln -sf /vendor/dsp $(TARGET_ROOT_OUT)/dsp
-endif
-
-$(PERSIST_MOUNT_POINT):
-	@echo "Creating $(PERSIST_MOUNT_POINT)"
-ifneq ($(TARGET_MOUNT_POINTS_SYMLINKS),false)
-	@ln -sf /mnt/vendor/persist $(TARGET_ROOT_OUT)/persist
-endif
-
 #----------------------------------------------------------------------
 # Generate secure boot image
 #----------------------------------------------------------------------
@@ -182,8 +145,6 @@ ifeq ($(strip $(BOARD_KERNEL_SEPARATED_DTBO)),true)
 
 MKDTIMG := $(HOST_OUT_EXECUTABLES)/mkdtimg$(HOST_EXECUTABLE_SUFFIX)
 
-BOARD_PREBUILT_DTBOIMAGE := $(PRODUCT_OUT)/prebuilt_dtbo.img
-
 # Most specific paths must come first in possible_dtbo_dirs
 possible_dtbo_dirs = $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts $(KERNEL_OUT)/arch/arm/boot/dts
 $(shell mkdir -p $(possible_dtbo_dirs))
@@ -196,6 +157,9 @@ define build-dtboimage-target
     $(hide) chmod a+r $@
 endef
 
+# Definition of BOARD_PREBUILT_DTBOIMAGE is in AndroidBoardCommon.mk
+# so as to ensure it is defined well in time to set the dependencies on
+# BOARD_PREBUILT_DTBOIMAGE
 $(BOARD_PREBUILT_DTBOIMAGE): $(MKDTIMG) $(INSTALLED_KERNEL_TARGET)
 	$(build-dtboimage-target)
 

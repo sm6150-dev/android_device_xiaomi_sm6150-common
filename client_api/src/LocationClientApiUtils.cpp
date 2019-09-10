@@ -44,6 +44,35 @@ void translateDiagGnssLocationPositionDynamics(clientDiagGnssLocationPositionDyn
     out.pitchUnc = in.pitchUnc;
 }
 
+clientDiagGnss_LocSvSystemEnumType parseDiagGnssConstellation(
+        Gnss_LocSvSystemEnumType gnssConstellation) {
+    clientDiagGnss_LocSvSystemEnumType constellation;
+    switch(gnssConstellation) {
+        case GNSS_LOC_SV_SYSTEM_GPS:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_GPS;
+            break;
+        case GNSS_LOC_SV_SYSTEM_GALILEO:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_GALILEO;
+            break;
+        case GNSS_LOC_SV_SYSTEM_SBAS:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_SBAS;
+            break;
+        case GNSS_LOC_SV_SYSTEM_GLONASS:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_GLONASS;
+            break;
+        case GNSS_LOC_SV_SYSTEM_BDS:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_BDS;
+            break;
+        case GNSS_LOC_SV_SYSTEM_QZSS:
+            constellation = CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_QZSS;
+            break;
+        default:
+            constellation = (clientDiagGnss_LocSvSystemEnumType)~0;
+            break;
+    }
+    return constellation;
+}
+
 clientDiagGnssSystemTimeStructType parseDiagGnssTime(
         const GnssSystemTimeStructType &halGnssTime) {
 
@@ -159,70 +188,66 @@ clientDiagGnssLocationSvUsedInPosition parseDiagLocationSvUsedInPosition(
 }
 
 void translateDiagGnssSignalType(clientDiagGnssSignalTypeMask& out, GnssSignalTypeMask in) {
-    switch (in) {
-        case GNSS_SIGNAL_GPS_L1CA_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L1CA;
-            break;
-        case GNSS_SIGNAL_GPS_L1C_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L1C;
-            break;
-        case GNSS_SIGNAL_GPS_L2_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L2;
-            break;
-        case GNSS_SIGNAL_GPS_L5_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GPS_L5;
-            break;
-        case GNSS_SIGNAL_GLONASS_G1_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G1;
-            break;
-        case GNSS_SIGNAL_GLONASS_G2_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G2;
-            break;
-        case GNSS_SIGNAL_GALILEO_E1_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E1;
-            break;
-        case GNSS_SIGNAL_GALILEO_E5A_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5A;
-            break;
-        case GNSS_SIGNAL_GALILEO_E5B_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5B;
-            break;
-        case GNSS_SIGNAL_BEIDOU_B1I_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1I;
-            break;
-        case GNSS_SIGNAL_BEIDOU_B1C_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1C;
-            break;
-        case GNSS_SIGNAL_BEIDOU_B2I_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2I;
-            break;
-        case GNSS_SIGNAL_BEIDOU_B2AI_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AI;
-            break;
-        case GNSS_SIGNAL_QZSS_L1CA_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1CA;
-            break;
-        case GNSS_SIGNAL_QZSS_L1S_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1S;
-            break;
-        case GNSS_SIGNAL_QZSS_L2_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L2;
-            break;
-        case GNSS_SIGNAL_QZSS_L5_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_QZSS_L5;
-            break;
-        case GNSS_SIGNAL_SBAS_L1_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_SBAS_L1;
-            break;
-        case GNSS_SIGNAL_NAVIC_L5_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_NAVIC_L5;
-            break;
-        case GNSS_SIGNAL_BEIDOU_B2AQ_BIT:
-            out = CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AQ;
-            break;
-        default:
-            out = (clientDiagGnssSignalTypeMask)0xFF;
-            break;
+    out = (clientDiagGnssSignalTypeMask)0;
+    if (in & GNSS_SIGNAL_GPS_L1CA_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GPS_L1CA;
+    }
+    if (in & GNSS_SIGNAL_GPS_L1C_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GPS_L1C;
+    }
+    if (in & GNSS_SIGNAL_GPS_L2_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GPS_L2;
+    }
+    if (in & GNSS_SIGNAL_GPS_L5_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GPS_L5;
+    }
+    if (in & GNSS_SIGNAL_GLONASS_G1_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G1;
+    }
+    if (in & GNSS_SIGNAL_GLONASS_G2_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GLONASS_G2;
+    }
+    if (in & GNSS_SIGNAL_GALILEO_E1_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E1;
+    }
+    if (in & GNSS_SIGNAL_GALILEO_E5A_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5A;
+    }
+    if (in & GNSS_SIGNAL_GALILEO_E5B_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_GALILEO_E5B;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B1I_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1I;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B1C_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1C;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B2I_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2I;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B2AI_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AI;
+    }
+    if (in & GNSS_SIGNAL_QZSS_L1CA_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1CA;
+    }
+    if (in & GNSS_SIGNAL_QZSS_L1S_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_QZSS_L1S;
+    }
+    if (in & GNSS_SIGNAL_QZSS_L2_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_QZSS_L2;
+    }
+    if (in & GNSS_SIGNAL_QZSS_L5_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_QZSS_L5;
+    }
+    if (in & GNSS_SIGNAL_SBAS_L1_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_SBAS_L1;
+    }
+    if (in & GNSS_SIGNAL_NAVIC_L5_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_NAVIC_L5;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B2AQ_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AQ;
     }
 }
 
@@ -232,7 +257,7 @@ void translateDiagGnssMeasUsageInfo(clientDiagGnssMeasUsageInfo& out,
     translateDiagGnssSignalType(diagGnssSignalType, in.gnssSignalType);
     out.gnssSignalType = diagGnssSignalType;
    /** Specifies GNSS Constellation Type */
-    out.gnssConstellation = (clientDiagGnss_LocSvSystemEnumType)in.gnssConstellation;
+    out.gnssConstellation = parseDiagGnssConstellation(in.gnssConstellation);
     /**  GNSS SV ID.
      For GPS:      1 to 32
      For GLONASS:  65 to 96. When slot-number to SV ID mapping is unknown, set as 255.

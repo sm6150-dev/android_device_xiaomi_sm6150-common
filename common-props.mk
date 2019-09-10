@@ -4,6 +4,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     audio.deep_buffer.media=true \
     audio.offload.min.duration.secs=30 \
     audio.offload.video=true \
+    persist.vendor.audio.ras.enabled=false \
+    ro.vendor.audio.voice.volume.boost=manual \
+    tunnel.audio.encode = true \
     vendor.audio.flac.sw.decoder.24bit=true \
     vendor.audio.offload.buffer.size.kb=32 \
     vendor.audio.offload.gapless.enabled=true \
@@ -18,10 +21,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.audio.use.sw.ape.decoder=true \
     vendor.audio_hal.in_period_size=144 \
     vendor.audio_hal.period_multiplier=3 \
-    vendor.audio_hal.period_size=192 \
-    persist.vendor.audio.ras.enabled=false \
-    ro.vendor.audio.voice.volume.boost=manual \
-    tunnel.audio.encode = true
+    vendor.audio_hal.period_size=192
 
 # AudioFlinger client heap size
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -64,6 +64,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Display
  PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.display.sensortype=2 \
+    debug.mdpcomp.logs=0 \
+    persist.sys.sf.color_saturation=1.0 \
+    ro.colorpick_adjust=true \
     vendor.display.comp_mask=0 \
     vendor.display.dataspace_saturation_matrix=1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0 \
     vendor.display.disable_decimation=1 \
@@ -71,9 +74,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.display.disable_excl_rect_partial_fb=1 \
     vendor.display.disable_hw_recovery=1 \
     vendor.display.enable_optimize_refresh=1 \
-    debug.mdpcomp.logs=0 \
-    persist.sys.sf.color_saturation=1.0 \
-    ro.colorpick_adjust=true
 
 # Display post-processing
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -103,8 +103,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # GPS/GNSS
 PRODUCT_PROPERTY_OVERRIDES += \
-    sys.qca1530=detect \
-    persist.backup.ntpServer=0.pool.ntp.org
+    persist.backup.ntpServer=0.pool.ntp.org \
+    sys.qca1530=detect
 
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -169,14 +169,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.perf.gestureflingboost.enable=true \
     vendor.perf.workloadclassifier.enable=true
 
-
 # Qualcomm System Daemon
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.qcomsysd.enabled=1
 
 # Radio/RIL
- PRODUCT_PROPERTY_OVERRIDES += \
-    use.voice.path.for.pcm.voip=true \
+PRODUCT_PROPERTY_OVERRIDES += \
+    DEVICE_PROVISIONED=1 \
+    keyguard.no_require_sim=true \
     persist.data.df.dev_name=rmnet_usb0 \
     persist.radio.atfwd.start=false \
     persist.radio.multisim.config=dsds \
@@ -187,12 +187,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.sib16_support=1 \
     ril.subscription.types=NV,RUIM \
     rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
-    ro.carrier=unknown \
-    ro.com.android.dataroaming=true \
     ro.telephony.default_network=22,22 \
     telephony.lteOnCdmaDevice=1 \
-    keyguard.no_require_sim=true \
-    DEVICE_PROVISIONED=1
+    use.voice.path.for.pcm.voip=true
 
 # Simulate sdcard on /data/media
 PRODUCT_PROPERTY_OVERRIDES += \

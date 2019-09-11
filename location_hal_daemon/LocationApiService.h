@@ -151,6 +151,9 @@ private:
     void checkEnableGnss();
 
     GnssInterface* getGnssInterface();
+    // OSFramework instance
+    void createOSFrameworkInstance();
+    void destroyOSFrameworkInstance();
 
 #ifdef POWERMANAGER_ENABLED
     // power event observer

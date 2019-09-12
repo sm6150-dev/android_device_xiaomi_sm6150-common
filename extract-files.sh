@@ -57,6 +57,9 @@ function blob_fixup() {
         lib/libwfdnative.so | lib64/libwfdnative.so | lib64/liblocationservice_jni.so | lib64/libxt_native.so | lib/libfm-hci.so | lib64/libfm-hci.so | vendor/bin/hw/vendor.display.color@1.0-service | vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.0_vendor.so | vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.0.so )
                 sed -i "s/android.hidl.base@1.0.so/libhidlbase.so\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/" "${2}"
         ;;
+        etc/permissions/qti_libpermissions.xml )
+                sed -i "s|name=\"android.hidl.manager-V1.0-java|name=\"android.hidl.manager@V1.0-java|g" "${2}"
+        ;;
         esac
 }
 

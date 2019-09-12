@@ -268,6 +268,14 @@ config_lito_dcc_ddr()
     echo 0x92c8064 > $DCC_PATH/config
    #End Link list #6
 }
+
+config_lito_dcc_cam()
+{
+    #Cam CC
+    echo 0x0AD0C1C4 > $DCC_PATH/config
+    echo 0xAD0C148 > $DCC_PATH/config
+}
+
 config_lito_dcc_gemnoc()
 {
     #GemNOC for lito start
@@ -1943,31 +1951,31 @@ config_lito_dcc_noc(){
     echo 0x3c426bc > $DCC_PATH/config
 
     #MMSS NOC
-    echo 0x1740000 > $DCC_PATH/config
-    echo 0x1740004 > $DCC_PATH/config
-    echo 0x1740008 > $DCC_PATH/config
-    echo 0x1740010 > $DCC_PATH/config
-    echo 0x1740018 > $DCC_PATH/config
-    echo 0x1740020 > $DCC_PATH/config
-    echo 0x1740024 > $DCC_PATH/config
-    echo 0x1740028 > $DCC_PATH/config
-    echo 0x174002c > $DCC_PATH/config
-    echo 0x1740030 > $DCC_PATH/config
-    echo 0x1740034 > $DCC_PATH/config
-    echo 0x1740038 > $DCC_PATH/config
-    echo 0x174003c > $DCC_PATH/config
-    echo 0x1740240 > $DCC_PATH/config
-    echo 0x1740248 > $DCC_PATH/config
-    echo 0x1740280 > $DCC_PATH/config
-    echo 0x1740288 > $DCC_PATH/config
-    echo 0x1740290 > $DCC_PATH/config
-    echo 0x1740300 > $DCC_PATH/config
-    echo 0x1740304 > $DCC_PATH/config
-    echo 0x1740308 > $DCC_PATH/config
-    echo 0x174030c > $DCC_PATH/config
-    echo 0x1740310 > $DCC_PATH/config
-    echo 0x1740314 > $DCC_PATH/config
-    echo 0x1740318 > $DCC_PATH/config
+    # echo 0x1740000 > $DCC_PATH/config
+    # echo 0x1740004 > $DCC_PATH/config
+    # echo 0x1740008 > $DCC_PATH/config
+    # echo 0x1740010 > $DCC_PATH/config
+    # echo 0x1740018 > $DCC_PATH/config
+    # echo 0x1740020 > $DCC_PATH/config
+    # echo 0x1740024 > $DCC_PATH/config
+    # echo 0x1740028 > $DCC_PATH/config
+    # echo 0x174002c > $DCC_PATH/config
+    # echo 0x1740030 > $DCC_PATH/config
+    # echo 0x1740034 > $DCC_PATH/config
+    # echo 0x1740038 > $DCC_PATH/config
+    # echo 0x174003c > $DCC_PATH/config
+    # echo 0x1740240 > $DCC_PATH/config
+    # echo 0x1740248 > $DCC_PATH/config
+    # echo 0x1740280 > $DCC_PATH/config
+    # echo 0x1740288 > $DCC_PATH/config
+    # echo 0x1740290 > $DCC_PATH/config
+    # echo 0x1740300 > $DCC_PATH/config
+    # echo 0x1740304 > $DCC_PATH/config
+    # echo 0x1740308 > $DCC_PATH/config
+    # echo 0x174030c > $DCC_PATH/config
+    # echo 0x1740310 > $DCC_PATH/config
+    # echo 0x1740314 > $DCC_PATH/config
+    # echo 0x1740318 > $DCC_PATH/config
 
     #GEMNOC
     echo 0x9681010 > $DCC_PATH/config
@@ -2815,6 +2823,7 @@ enable_lito_dcc_config()
     config_lito_dcc_pimem
     config_lito_dcc_ddr
     config_lito_dcc_ddr
+    config_lito_dcc_cam
 
     echo 4 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type

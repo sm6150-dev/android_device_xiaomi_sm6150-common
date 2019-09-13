@@ -159,7 +159,12 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
         pClient->updateSubscription(
                 E_LOC_CB_GNSS_LOCATION_INFO_BIT | E_LOC_CB_GNSS_SV_BIT);
 
-        pClient->startTracking(0, sessiontbfms);
+        LocationOptions locationOption;
+        locationOption.size = sizeof(locationOption);
+        locationOption.minInterval = sessiontbfms;
+        locationOption.minDistance = 0;
+
+        pClient->startTracking(locationOption);
         pClient->mTracking = true;
         pClient->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
     }
@@ -440,7 +445,7 @@ void LocationApiService::startTracking(LocAPIStartTrackingReqMsg *pMsg) {
         return;
     }
 
-    if (!pClient->startTracking(pMsg->distanceInMeters, pMsg->intervalInMs)) {
+    if (!pClient->startTracking(pMsg->locOptions)) {
         LOC_LOGe("Failed to start session");
         return;
     }
@@ -489,7 +494,7 @@ void LocationApiService::updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg
 
     LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
     if (pClient) {
-        pClient->updateTrackingOptions(pMsg->distanceInMeters, pMsg->intervalInMs);
+        pClient->updateTrackingOptions(pMsg->locOptions);
         pClient->mPendingMessages.push(E_LOCAPI_UPDATE_TRACKING_OPTIONS_MSG_ID);
     }
 

@@ -233,6 +233,11 @@ void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr
     clock_gettime(CLOCK_BOOTTIME, &ts);
     diagGnssLocPtr->bootTimestampNs =
             (ts.tv_sec * 1000000000ULL + ts.tv_nsec);
+
+    diagGnssLocPtr->locOutputEngType =
+            (clientDiagLocOutputEngineType) gnssLocation.locOutputEngType;
+    diagGnssLocPtr->locOutputEngMask =
+            (clientDiagPositioningEngineMask) gnssLocation.locOutputEngMask;
 }
 
 void translateDiagGnssSv(clientDiagGnssSv& out, const GnssSv& in) {

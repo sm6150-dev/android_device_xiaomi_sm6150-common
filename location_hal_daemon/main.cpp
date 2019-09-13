@@ -43,14 +43,6 @@
 
 #define HAL_DAEMON_VERSION "1.1.0"
 
-static uint32_t gAutoStartGnss = 0;
-static uint32_t gGnssSessionTbfMs = 100;
-
-static const loc_param_s_type gConfigTable[] =
-{
-    {"AUTO_START_GNSS", &gAutoStartGnss, NULL, 'n'},
-    {"GNSS_SESSION_TBF_MS", &gGnssSessionTbfMs, NULL, 'n'}
-};
 
 // this function will block until the directory specified in
 // dirName has been created
@@ -70,8 +62,18 @@ static inline void waitForDir(const char* dirName) {
 
 int main(int argc, char *argv[])
 {
+    configParamToRead configParamRead = {};
+
+    const loc_param_s_type configTable[] =
+    {
+        {"AUTO_START_GNSS", &configParamRead.autoStartGnss, NULL, 'n'},
+        {"GNSS_SESSION_TBF_MS", &configParamRead.gnssSessionTbfMs, NULL, 'n'},
+        {"DELETE_ALL_BEFORE_AUTO_START", &configParamRead.deleteAllBeforeAutoStart, NULL, 'n'},
+        {"DELETE_ALL_ON_ENGINE_MASK", &configParamRead.posEngineMask, NULL, 'n'}
+    };
+
     // read configuration file
-    UTIL_READ_CONF(LOC_PATH_GPS_CONF, gConfigTable);
+    UTIL_READ_CONF(LOC_PATH_GPS_CONF, configTable);
 
     LOC_LOGi("location hal daemon - ver %s", HAL_DAEMON_VERSION);
 
@@ -151,7 +153,7 @@ int main(int argc, char *argv[])
     chdir("/");
 
     // start listening for client events - will not return
-    if (!LocationApiService::getInstance(gAutoStartGnss, gGnssSessionTbfMs)) {
+    if (!LocationApiService::getInstance(configParamRead)) {
         LOC_LOGd("Failed to start LocationApiService.");
     }
 

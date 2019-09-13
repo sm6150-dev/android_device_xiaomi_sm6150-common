@@ -50,19 +50,29 @@
 
 #define SERVICE_NAME "locapiservice"
 
+typedef struct {
+    uint32_t autoStartGnss;
+    uint32_t gnssSessionTbfMs;
+    uint32_t deleteAllBeforeAutoStart;
+    uint32_t posEngineMask;
+} configParamToRead;
+
+
 /******************************************************************************
 LocationApiService
 ******************************************************************************/
 class LocationApiService
 {
 public:
+
     // singleton instance
     LocationApiService(const LocationApiService&) = delete;
     LocationApiService& operator = (const LocationApiService&) = delete;
 
-    static LocationApiService* getInstance(uint32_t autostart, uint32_t sessiontbfms) {
+    static LocationApiService* getInstance(
+            const configParamToRead & configParamRead) {
         if (nullptr == mInstance) {
-            mInstance = new LocationApiService(autostart, sessiontbfms);
+            mInstance = new LocationApiService(configParamRead);
         }
         return mInstance;
     }
@@ -129,7 +139,7 @@ private:
     void onControlCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
     void onGnssEnergyConsumedCb(uint64_t totalEnergyConsumedSinceFirstBoot);
 
-    LocationApiService(uint32_t autostart, uint32_t sessiontbfms);
+    LocationApiService(const configParamToRead & configParamRead);
     virtual ~LocationApiService();
 
     // private utilities

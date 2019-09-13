@@ -181,6 +181,7 @@ class GnssAdapter : public LocAdapterBase {
     XtraSystemStatusObserver mXtraObserver;
     LocationSystemInfo mLocSystemInfo;
     std::vector<GnssSvIdSource> mBlacklistedSvIds;
+    PowerStateType mPowerState;
 
     /* === Misc ===================================================================== */
     BlockCPIInfo mBlockCPIInfo;
@@ -230,6 +231,8 @@ public:
     void stopClientSessions(LocationAPI* client);
     LocationCallbacks getClientCallbacks(LocationAPI* client);
     LocationCapabilitiesMask getCapabilities();
+    inline PowerStateType getPowerState() { return mPowerState; }
+
     void broadcastCapabilities(LocationCapabilitiesMask);
     void setSuplHostServer(const char* server, int port, LocServerType type);
 
@@ -398,6 +401,7 @@ public:
     void invokeGnssEnergyConsumedCallback(uint64_t energyConsumedSinceFirstBoot);
     void saveGnssEnergyConsumedCallback(GnssEnergyConsumedCallback energyConsumedCb);
     void reportLocationSystemInfo(const LocationSystemInfo & locationSystemInfo);
+    void updatePowerState(PowerStateType powerState);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
@@ -437,6 +441,8 @@ public:
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
     void blockCPICommand(double latitude, double longitude, float accuracy,
                          int blockDurationMsec, double latLonDiffThreshold);
+
+    void updatePowerStateCommand(PowerStateType powerState);
 };
 
 #endif //GNSS_ADAPTER_H

@@ -298,6 +298,7 @@ public:
                                                  uint32_t energyBudget);
     virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
     virtual LocationError getGnssEnergyConsumed();
+    virtual void updatePowerState(PowerStateType powerState);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

@@ -739,4 +739,9 @@ DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 LocationError LocApiBase::
     getGnssEnergyConsumed()
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+void LocApiBase::
+    updatePowerState(PowerStateType /*powerState*/)
+DEFAULT_IMPL()
+
 } // namespace loc_core

@@ -752,7 +752,10 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
      sizeof(qmiLocEnablePositionAssistedClockEstIndMsgT_v02) },
 
    { QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02,
-     sizeof(qmiLocQueryGNSSEnergyConsumedIndMsgT_v02) }
+     sizeof(qmiLocQueryGNSSEnergyConsumedIndMsgT_v02) },
+
+   { QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02,
+     sizeof(qmiLocInjectPlatformPowerStateIndMsgT_v02) }
 };
 
 
@@ -1804,6 +1807,12 @@ bool validateRequest(
     case QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02:
     {
         *pOutLen = sizeof(qmiLocQueryGNSSEnergyConsumedReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocInjectPlatformPowerStateReqMsgT_v02);
         break;
     }
 

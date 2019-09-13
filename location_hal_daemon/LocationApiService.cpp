@@ -842,6 +842,15 @@ void LocationApiService::onShutdown() {
     onSuspend();
     LOC_LOGd("--< onShutdown");
 }
+
+void LocationApiService::injectPowerEvent(PowerStateType powerState) {
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (!gnssInterface) {
+        LOC_LOGe(">-- getGnssEnergyConsumed null GnssInterface");
+        return;
+    }
+    gnssInterface->updateSystemPowerState(powerState);
+}
 #endif
 
 /******************************************************************************
@@ -867,22 +876,9 @@ GnssInterface* LocationApiService::getGnssInterface() {
     static GnssInterface* gnssInterface = nullptr;
 
     if (nullptr == gnssInterface && !getGnssInterfaceFailed) {
-        LOC_LOGd("Loading libgnss.so::getGnssInterface ...");
-        getLocationInterface* getter = NULL;
-        const char *error = NULL;
-        dlerror();
-        void *handle = dlopen("libgnss.so", RTLD_NOW);
-        if (nullptr == handle) {
-            LOC_LOGe("dlopen for libgnss.so failed");
-        } else if (nullptr != (error = dlerror()))  {
-            LOC_LOGe("dlopen for libgnss.so failed, error = %s", error);
-        } else {
-            getter = (getLocationInterface*)dlsym(handle, "getGnssInterface");
-            if ((error = dlerror()) != NULL)  {
-                LOC_LOGe("dlsym for getGnssInterface failed, error = %s", error);
-                getter = NULL;
-            }
-        }
+        void * tempPtr = nullptr;
+        getLocationInterface* getter = (getLocationInterface*)
+                dlGetSymFromLib(tempPtr, "libgnss.so", "getGnssInterface");
 
         if (nullptr == getter) {
             getGnssInterfaceFailed = true;

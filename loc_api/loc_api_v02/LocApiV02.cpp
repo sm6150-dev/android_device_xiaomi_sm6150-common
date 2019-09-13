@@ -6636,6 +6636,55 @@ LocationError LocApiV02::getGnssEnergyConsumed() {
     return err;
 }
 
+void LocApiV02 :: updateSystemPowerState(PowerStateType powerState){
+    sendMsg(new LocApiMsg([this, powerState] () {
+
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    qmiLocInjectPlatformPowerStateReqMsgT_v02 req;
+    qmiLocInjectPlatformPowerStateIndMsgT_v02 ind;
+
+    locClientStatusEnumType status;
+    locClientReqUnionType req_union;
+
+    LOC_LOGd("Enter. power state %d", powerState);
+    qmiLocPlatformPowerStateEnumT_v02 qmiPowerState = eQMI_LOC_POWER_STATE_UNKNOWN_V02;
+    switch (powerState) {
+    case POWER_STATE_SUSPEND:
+        qmiPowerState = eQMI_LOC_POWER_STATE_SUSPENDED_V02;
+        break;
+    case POWER_STATE_RESUME:
+        qmiPowerState = eQMI_LOC_POWER_STATE_RESUME_V02;
+        break;
+    case POWER_STATE_SHUTDOWN:
+        qmiPowerState = eQMI_LOC_POWER_STATE_SHUTDOWN_V02;
+        break;
+    default:
+        break;
+    }
+
+    // unknown power state will not be injected to modem
+    if (eQMI_LOC_POWER_STATE_UNKNOWN_V02 != qmiPowerState) {
+        memset(&req, 0, sizeof(req));
+        memset(&ind, 0, sizeof(ind));
+        req.powerState = qmiPowerState;
+        req_union.pInjectPowerStateReq = &req;
+
+        status = locSyncSendReq(QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ_V02,
+                                req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                                QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02,
+                                &ind);
+        if (status != eLOC_CLIENT_SUCCESS || ind.status != eQMI_LOC_SUCCESS_V02) {
+            LOC_LOGe("failed. status: %s, ind status:%s\n",
+                     loc_get_v02_client_status_name(status),
+                     loc_get_v02_qmi_status_name(ind.status));
+            err = LOCATION_ERROR_GENERAL_FAILURE;
+        }
+    }
+
+    LOC_LOGd("Exit. err: %u", err);
+    }));
+}
+
 bool LocApiV02 :: cacheGnssMeasurementSupport()
 {
     bool gnssMeasurementSupported = false;

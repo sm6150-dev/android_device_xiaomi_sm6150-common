@@ -27,12 +27,39 @@
 #define CAMERA_ID_FRONT "1"
 #define MOTOR_DEV_PATH "/dev/drv8846_dev"
 
+#include <fstream>
+
+#define BLUE_LED        "/sys/class/leds/blue/"
+#define GREEN_LED       "/sys/class/leds/green/"
+#define BRIGHTNESS      "brightness"
+
+#define MAX_LED_BRIGHTNESS    255
+#define MIN_LED_BRIGHTNESS     0
+
 namespace vendor {
 namespace lineage {
 namespace camera {
 namespace motor {
 namespace V1_0 {
 namespace implementation {
+
+/*
+ * Write value to path and close file.
+ */
+static void set(std::string path, std::string value) {
+    std::ofstream file(path);
+        
+    if (!file.is_open()) {
+        ALOGW("failed to write %s to %s", value.c_str(), path.c_str());
+        return;
+    }
+
+    file << value;
+}
+
+static void set(std::string path, int value) {
+    set(path, std::to_string(value));
+}
 
 CameraMotor::CameraMotor() {
     motor_fd_ = android::base::unique_fd(open(MOTOR_DEV_PATH, O_RDWR));
@@ -58,6 +85,8 @@ Return<void> CameraMotor::onConnect(const hidl_string& cameraId) {
         LOG(INFO) << "Camera is uprising.";
         uint8_t arg = UP;
         ioctl(motor_fd_.get(), MOTOR_IOC_SET_AUTORUN, &arg);
+        set(BLUE_LED BRIGHTNESS, MAX_LED_BRIGHTNESS);
+        set(GREEN_LED BRIGHTNESS, MAX_LED_BRIGHTNESS);
         is_up = 1;
     }
 
@@ -84,6 +113,8 @@ Return<void> CameraMotor::onDisconnect(const hidl_string& cameraId) {
         LOG(INFO) << "Camera is descending";
         uint8_t arg = DOWN;
         ioctl(motor_fd_.get(), MOTOR_IOC_SET_AUTORUN, &arg);
+        set(BLUE_LED BRIGHTNESS, MIN_LED_BRIGHTNESS);
+        set(GREEN_LED BRIGHTNESS, MIN_LED_BRIGHTNESS);
         is_up = 0;
     }
 

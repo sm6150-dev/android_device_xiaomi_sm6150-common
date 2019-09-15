@@ -87,6 +87,7 @@ PRODUCT_PACKAGES += \
     android.hardware.soundtrigger@2.1-impl:32 \
     audio.a2dp.default \
     audio.r_submix.default \
+    audio.primary.sm6150 \
     audio.usb.default \
     libaudio-resampler \
     libqcomvisualizer \

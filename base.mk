@@ -33,6 +33,7 @@ QCOM_BOARD_PLATFORMS += apq8098_latv
 QCOM_BOARD_PLATFORMS += sdm660
 QCOM_BOARD_PLATFORMS += sdm845
 QCOM_BOARD_PLATFORMS += msmnile
+QCOM_BOARD_PLATFORMS += sdmshrike
 QCOM_BOARD_PLATFORMS += sdm710
 QCOM_BOARD_PLATFORMS += msmnile_au
 QCOM_BOARD_PLATFORMS += qcs605
@@ -73,10 +74,10 @@ SKIP_BOOT_JARS_CHECK := true
 BOARD_CHARGER_ENABLE_SUSPEND := true
 
 #List of targets that use video hw
-MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm710 qcs605 msmnile $(MSMSTEPPE) kona $(TRINKET)
+MSM_VIDC_TARGET_LIST := msm8974 msm8610 msm8226 apq8084 msm8916 msm8994 msm8909 msm8992 msm8996 msm8952 msm8937 msm8953 msm8998 apq8098_latv sdm660 sdm845 sdm710 qcs605 msmnile sdmshrike $(MSMSTEPPE) kona $(TRINKET)
 
 #List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv sdm710 qcs605 msmnile $(MSMSTEPPE) $(TRINKET) lito kona atoll
+MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660 sdm845 apq8098_latv sdm710 qcs605 msmnile sdmshrike $(MSMSTEPPE) $(TRINKET) lito kona atoll
 
 #List of targets where Vulkan feature level is restricted to 0
 VULKAN_FEATURE_LEVEL_0_TARGETS_LIST := msm8937_32 msm8937_64 sdm660_32 sdm660_64 msm8998 msm8998_32 msm8996 msm8953_64 msm8953_32
@@ -160,6 +161,7 @@ AUDIO_HARDWARE += audio.primary.apq8098_latv
 AUDIO_HARDWARE += audio.primary.sdm710
 AUDIO_HARDWARE += audio.primary.qcs605
 AUDIO_HARDWARE += audio.primary.msmnile
+AUDIO_HARDWARE += audio.primary.sdmshrike
 AUDIO_HARDWARE += audio.primary.$(MSMSTEPPE)
 AUDIO_HARDWARE += audio.primary.kona
 AUDIO_HARDWARE += audio.primary.lito
@@ -524,6 +526,7 @@ LIBGRALLOC += gralloc.msm8937
 LIBGRALLOC += gralloc.msm8953
 LIBGRALLOC += gralloc.msm8998
 LIBGRALLOC += gralloc.msmnile
+LIBGRALLOC += gralloc.sdmshrike
 LIBGRALLOC += gralloc.kona
 LIBGRALLOC += gralloc.sdm845
 LIBGRALLOC += gralloc.apq8098_latv
@@ -551,6 +554,7 @@ LIBMEMTRACK += memtrack.msm8937
 LIBMEMTRACK += memtrack.msm8953
 LIBMEMTRACK += memtrack.msm8998
 LIBMEMTRACK += memtrack.msmnile
+LIBMEMTRACK += memtrack.sdmshrike
 LIBMEMTRACK += memtrack.kona
 LIBMEMTRACK += memtrack.sdm660
 LIBMEMTRACK += memtrack.sdm845
@@ -583,6 +587,7 @@ LIBLIGHTS += lights.msm8937
 LIBLIGHTS += lights.msm8953
 LIBLIGHTS += lights.msm8998
 LIBLIGHTS += lights.msmnile
+LIBLIGHTS += lights.sdmshrike
 LIBLIGHTS += lights.kona
 LIBLIGHTS += lights.sdm660
 LIBLIGHTS += lights.sdm845
@@ -616,6 +621,7 @@ LIBHWCOMPOSER += hwcomposer.msm8937
 LIBHWCOMPOSER += hwcomposer.msm8953
 LIBHWCOMPOSER += hwcomposer.msm8998
 LIBHWCOMPOSER += hwcomposer.msmnile
+LIBHWCOMPOSER += hwcomposer.sdmshrike
 LIBHWCOMPOSER += hwcomposer.kona
 LIBHWCOMPOSER += hwcomposer.sdm660
 LIBHWCOMPOSER += hwcomposer.sdm845

@@ -268,6 +268,14 @@ config_lito_dcc_ddr()
     echo 0x92c8064 > $DCC_PATH/config
    #End Link list #6
 }
+
+config_lito_dcc_cam()
+{
+    #Cam CC
+    echo 0x0AD0C1C4 > $DCC_PATH/config
+    echo 0xAD0C148 > $DCC_PATH/config
+}
+
 config_lito_dcc_gemnoc()
 {
     #GemNOC for lito start
@@ -955,6 +963,10 @@ config_lito_dcc_lpass_rsc(){
     echo 0x3002004 > $DCC_PATH/config
     echo 0x3002028 > $DCC_PATH/config
     echo 0x3090380 32 > $DCC_PATH/config
+
+    #WDOG
+    echo 0x8384004 5 > $DCC_PATH/config
+    echo 0x08300304 > $DCC_PATH/config
 }
 
 config_lito_dcc_mss_rsc(){
@@ -1943,31 +1955,31 @@ config_lito_dcc_noc(){
     echo 0x3c426bc > $DCC_PATH/config
 
     #MMSS NOC
-    echo 0x1740000 > $DCC_PATH/config
-    echo 0x1740004 > $DCC_PATH/config
-    echo 0x1740008 > $DCC_PATH/config
-    echo 0x1740010 > $DCC_PATH/config
-    echo 0x1740018 > $DCC_PATH/config
-    echo 0x1740020 > $DCC_PATH/config
-    echo 0x1740024 > $DCC_PATH/config
-    echo 0x1740028 > $DCC_PATH/config
-    echo 0x174002c > $DCC_PATH/config
-    echo 0x1740030 > $DCC_PATH/config
-    echo 0x1740034 > $DCC_PATH/config
-    echo 0x1740038 > $DCC_PATH/config
-    echo 0x174003c > $DCC_PATH/config
-    echo 0x1740240 > $DCC_PATH/config
-    echo 0x1740248 > $DCC_PATH/config
-    echo 0x1740280 > $DCC_PATH/config
-    echo 0x1740288 > $DCC_PATH/config
-    echo 0x1740290 > $DCC_PATH/config
-    echo 0x1740300 > $DCC_PATH/config
-    echo 0x1740304 > $DCC_PATH/config
-    echo 0x1740308 > $DCC_PATH/config
-    echo 0x174030c > $DCC_PATH/config
-    echo 0x1740310 > $DCC_PATH/config
-    echo 0x1740314 > $DCC_PATH/config
-    echo 0x1740318 > $DCC_PATH/config
+    # echo 0x1740000 > $DCC_PATH/config
+    # echo 0x1740004 > $DCC_PATH/config
+    # echo 0x1740008 > $DCC_PATH/config
+    # echo 0x1740010 > $DCC_PATH/config
+    # echo 0x1740018 > $DCC_PATH/config
+    # echo 0x1740020 > $DCC_PATH/config
+    # echo 0x1740024 > $DCC_PATH/config
+    # echo 0x1740028 > $DCC_PATH/config
+    # echo 0x174002c > $DCC_PATH/config
+    # echo 0x1740030 > $DCC_PATH/config
+    # echo 0x1740034 > $DCC_PATH/config
+    # echo 0x1740038 > $DCC_PATH/config
+    # echo 0x174003c > $DCC_PATH/config
+    # echo 0x1740240 > $DCC_PATH/config
+    # echo 0x1740248 > $DCC_PATH/config
+    # echo 0x1740280 > $DCC_PATH/config
+    # echo 0x1740288 > $DCC_PATH/config
+    # echo 0x1740290 > $DCC_PATH/config
+    # echo 0x1740300 > $DCC_PATH/config
+    # echo 0x1740304 > $DCC_PATH/config
+    # echo 0x1740308 > $DCC_PATH/config
+    # echo 0x174030c > $DCC_PATH/config
+    # echo 0x1740310 > $DCC_PATH/config
+    # echo 0x1740314 > $DCC_PATH/config
+    # echo 0x1740318 > $DCC_PATH/config
 
     #GEMNOC
     echo 0x9681010 > $DCC_PATH/config
@@ -2815,6 +2827,7 @@ enable_lito_dcc_config()
     config_lito_dcc_pimem
     config_lito_dcc_ddr
     config_lito_dcc_ddr
+    config_lito_dcc_cam
 
     echo 4 > $DCC_PATH/curr_list
     echo cap > $DCC_PATH/func_type
@@ -2842,9 +2855,159 @@ enable_lito_dcc_config()
     echo  1 > $DCC_PATH/enable
 }
 
+enable_lito_pcu_pll_hw_events()
+{
+    echo 0x0 0x0 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x0 0x0 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x1 0x1 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x1 0x1 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x2 0x2 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x2 0x2 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x3 0x3 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x3 0x3 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x12 0x12 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x12 0x12 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x13 0x13 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x13 0x13 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x14 0x14 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x14 0x14 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x15 0x15 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x15 0x15 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x1d 0x1d 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x1d 0x1d 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x1e 0x1e 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x1e 0x1e 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x1f 0x1f 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x1f 0x1f 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x20 0x20 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x20 0x20 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x40 0x40 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x40 0x40 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x41 0x41 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x41 0x41 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x42 0x42 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x42 0x42 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x43 0x43 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x43 0x43 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x5d 0x5d 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x5d 0x5d 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x5e 0x5e 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x5e 0x5e 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x5f 0x5f 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x5f 0x5f 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x60 0x60 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x60 0x60 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x80 0x80 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x80 0x80 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x81 0x81 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x81 0x81 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x82 0x82 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x82 0x82 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x83 0x83 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x83 0x83 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x9d 0x9d 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x9d 0x9d 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x9e 0x9e 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x9e 0x9e 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0x9f 0x9f 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0x9f 0x9f 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xa0 0xa0 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xa0 0xa0 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xc0 0xc0 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xc0 0xc0 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xc1 0xc1 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xc1 0xc1 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xc2 0xc2 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xc2 0xc2 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xc3 0xc3 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xc3 0xc3 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xdd 0xdd 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xdd 0xdd 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xde 0xde 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xde 0xde 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xdf 0xdf 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xdf 0xdf 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0xe0 0xe0 0x1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl_mask
+    echo 0xe0 0xe0 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_edge_ctrl
+    echo 0 0x00006666  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 2 0x00666600  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 3 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 4 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 8 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 11 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 12 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 16 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 19 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 20 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 24 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 27 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 28 0x00000000  > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_msr
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_ts
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_type
+    echo 0 > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_trig_ts
+    echo 0 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 1 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 2 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 3 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 4 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 5 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 6 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+    echo 7 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-apss/dsb_patt_mask
+
+    echo 2 > /sys/bus/coresight/devices/coresight-tpdm-apss/enable_datasets
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-apss/enable_source
+}
+
+enable_lito_adsp_hw_events()
+{
+    echo 0x6 0x6 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x6 0x6 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x7 0x7 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x7 0x7 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x11 0x11 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x11 0x11 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x18 0x18 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x18 0x18 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x1a 0x1a 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x1a 0x1a 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x1d 0x1d 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x1d 0x1d 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x30 0x30 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x30 0x30 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x71 0x71 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x71 0x71 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x72 0x72 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x72 0x72 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x74 0x74 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x74 0x74 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0x75 0x75 0x1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl_mask
+    echo 0x75 0x75 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_edge_ctrl
+    echo 0 0x44000000  > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_msr
+    echo 2 0x00000060  > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_msr
+    echo 3 0x00600606  > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_msr
+    echo 6 0x00000007  > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_msr
+    echo 14 0x00770770  > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_msr
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_ts
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_type
+    echo 0 > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_trig_ts
+    echo 0 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 1 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 2 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 3 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 4 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 5 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 6 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+    echo 7 0xFFFFFFFF > /sys/bus/coresight/devices/coresight-tpdm-turing/dsb_patt_mask
+
+    echo 2 > /sys/bus/coresight/devices/coresight-tpdm-turing/enable_datasets
+    echo 1 > /sys/bus/coresight/devices/coresight-tpdm-turing/enable_source
+}
+
 enable_lito_stm_hw_events()
 {
-   #TODO: Add HW events
+   QMI_HELPER=/system/vendor/bin/qdss_qmi_helper
+   enable_lito_pcu_pll_hw_events
+   enable_lito_adsp_hw_events
 }
 
 enable_lito_core_hang_config()

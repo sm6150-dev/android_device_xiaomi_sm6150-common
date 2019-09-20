@@ -35,6 +35,7 @@ source $HERE/init.qti.debug-talos.sh
 source $HERE/init.qti.debug-kona.sh
 source $HERE/init.qti.debug-lito.sh
 source $HERE/init.qti.debug-trinket.sh
+source $HERE/init.qti.debug-atoll.sh
 
 enable_tracing_events()
 {
@@ -2557,6 +2558,11 @@ case "$coresight_config" in
             "trinket")
                 echo "Enabling DCC/STM/Debug events for trinket"
                 enable_trinket_debug
+                setprop ro.dbg.coresight.stm_cfg_done 1
+            ;;
+            "atoll")
+                echo "Enabling DCC/STM/Debug events for atoll"
+                enable_atoll_debug
                 setprop ro.dbg.coresight.stm_cfg_done 1
             ;;
             *)

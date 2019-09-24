@@ -15,4 +15,6 @@ GNSS_CFLAGS := \
     -Wno-error=switch \
     -Wno-error=date-time
 
-LOCAL_SANITIZE := integer_overflow
+# Activate the following two lines for regression testing
+#GNSS_SANITIZE := address cfi alignment bounds null unreachable integer
+#GNSS_SANITIZE_DIAG := address cfi alignment bounds null unreachable integer

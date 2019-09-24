@@ -63,7 +63,8 @@ public:
                 mSubscriptionMask(0),
                 mGeofenceIds(nullptr),
                 mIpcSender(createSender(clientname.c_str())) {
-        updateSubscription(0);
+
+        updateSubscription(E_LOC_CB_GNSS_LOCATION_INFO_BIT);
         mLocationApi = LocationAPI::createInstance(mCallbacks);
     }
 

@@ -86,7 +86,13 @@ bool LocationClientApi::startPositionSession(
     // callback masks
     LocationCallbacks callbacksOption = {0};
     callbacksOption.responseCb = [](::LocationError err, uint32_t id) {};
-    callbacksOption.trackingCb = [](::Location n) {};
+    // only register for trackingCb if distance is not 0
+    if (distanceInMeters != 0) {
+        callbacksOption.trackingCb = [](::Location n) {};
+    } else {
+        // for time based, register gnss location cb
+        callbacksOption.gnssLocationInfoCb = [](::GnssLocationInfoNotification n) {};
+    }
     mApiImpl->updateCallbacks(callbacksOption);
 
     // options

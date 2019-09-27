@@ -64,6 +64,18 @@ AC_ARG_WITH([systemd],
 
 AM_CONDITIONAL(USE_SYSTEMD, test "x${with_systemd}" = "xyes")
 
+AC_ARG_WITH([auto_feature],
+    AC_HELP_STRING([--with-auto_feature=@<:@dir@:>@],
+        [Using Automotive feature]),
+    [],
+    with_auto_feature=no)
+
+if test "x$with_auto_feature" != "xno"; then
+    CPPFLAGS="${CPPFLAGS} -DFEATURE_AUTOMOTIVE"
+fi
+
+AM_CONDITIONAL(USE_FEATURE_AUTOMOTIVE, test "x${with_auto_feature}" = "xyes")
+
 AC_ARG_WITH([glib],
       AC_HELP_STRING([--with-glib],
          [enable glib, building HLOS systems which use glib]))

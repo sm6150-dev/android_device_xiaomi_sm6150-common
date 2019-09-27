@@ -99,8 +99,7 @@ typedef enum
     CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
     /** SBAS satellite. */
     CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
-    /** COMPASS satellite. */
-    CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
+    //Leave 4 blank for backward compatibility.
     /** GLONASS satellite. */
     CLIENT_DIAG_GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
     /** BDS satellite. */

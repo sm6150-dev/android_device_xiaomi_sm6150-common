@@ -40,12 +40,15 @@
 #include <LocHalDaemonClientHandler.h>
 #include <LocationApiService.h>
 #include <location_interface.h>
+#include <loc_misc_utils.h>
 
 using namespace std;
 
 #define MAX_GEOFENCE_COUNT (200)
 
 typedef void* (getLocationInterface)();
+typedef void  (createOSFramework)();
+typedef void  (destroyOSFramework)();
 
 /******************************************************************************
 LocationApiService - static members
@@ -69,7 +72,8 @@ public:
             mClientSockPathnamePrefix(string(mClientSockPath).append(clientSockNamePrefix)) {
     }
     // override from LocIpc
-    inline void onReceive(const char* data, uint32_t length) override {
+    inline void onReceive(const char* data, uint32_t length,
+                          const LocIpcRecver* recver) override {
         mService.processClientMsg(data, length);
     }
     inline void onListenerReady() override {
@@ -117,17 +121,19 @@ public:
 /******************************************************************************
 LocationApiService - constructors
 ******************************************************************************/
-LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms) :
+LocationApiService::LocationApiService(const configParamToRead & configParamRead) :
 
     mLocationControlId(0),
-    mAutoStartGnss(autostart)
+    mAutoStartGnss(configParamRead.autoStartGnss)
 #ifdef POWERMANAGER_ENABLED
     ,mPowerEventObserver(nullptr)
 #endif
     {
 
     LOC_LOGd("AutoStartGnss=%u", mAutoStartGnss);
-    LOC_LOGd("GnssSessionTbfMs=%u", sessiontbfms);
+    LOC_LOGd("GnssSessionTbfMs=%u", configParamRead.gnssSessionTbfMs);
+    LOC_LOGd("DeleteAllBeforeAutoStart=%u", configParamRead.deleteAllBeforeAutoStart);
+    LOC_LOGd("DeleteAllOnEnginesMask=%u", configParamRead.posEngineMask);
 
     // create Location control API
     mControlCallabcks.size = sizeof(mControlCallabcks);
@@ -148,9 +154,20 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
     }
 #endif
 
+    // Create OSFramework and IzatManager instance
+    createOSFrameworkInstance();
+
     // create a default client if enabled by config
     if (mAutoStartGnss) {
         checkEnableGnss();
+        if ((configParamRead.deleteAllBeforeAutoStart) &&
+                (configParamRead.posEngineMask != 0)) {
+            GnssAidingData aidingData = {};
+            aidingData.deleteAll = true;
+            aidingData.posEngineMask = configParamRead.posEngineMask;
+
+            gnssDeleteAidingData(aidingData);
+        }
 
         LOC_LOGd("--> Starting a default client...");
         LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
@@ -161,7 +178,7 @@ LocationApiService::LocationApiService(uint32_t autostart, uint32_t sessiontbfms
 
         LocationOptions locationOption;
         locationOption.size = sizeof(locationOption);
-        locationOption.minInterval = sessiontbfms;
+        locationOption.minInterval = configParamRead.gnssSessionTbfMs;
         locationOption.minDistance = 0;
 
         pClient->startTracking(locationOption);
@@ -194,6 +211,9 @@ LocationApiService::~LocationApiService() {
         LOC_LOGd(">-- deleted client [%s]", each.first.c_str());
         each.second->cleanup();
     }
+
+    // Destroy OSFramework instance
+    destroyOSFrameworkInstance();
 
     // delete location contorol API handle
     mLocationControlApi->disable(mLocationControlId);
@@ -885,5 +905,29 @@ void LocationApiService::checkEnableGnss() {
         mLocationControlId = mLocationControlApi->enable(LOCATION_TECHNOLOGY_TYPE_GNSS);
         LOC_LOGd("-->enable=%u", mLocationControlId);
         // this is a unique id assigned to this daemon - will be used when disable
+    }
+}
+
+// Create OSFramework instance
+void LocationApiService::createOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    createOSFramework* getter = (createOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "createOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+// Destroy OSFramework instance
+void LocationApiService::destroyOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    destroyOSFramework* getter = (destroyOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "destroyOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
     }
 }

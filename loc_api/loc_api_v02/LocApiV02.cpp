@@ -167,21 +167,38 @@ static void globalEventCb(locClientHandleType clientHandle,
                           const locClientEventIndUnionType eventPayload,
                           void*  pClientCookie)
 {
-  MODEM_LOG_CALLFLOW(%s, loc_get_v02_event_name(eventId));
-  LocApiV02 *locApiV02Instance =
-      (LocApiV02 *)pClientCookie;
+    switch (eventId) {
+    case QMI_LOC_EVENT_POSITION_REPORT_IND_V02:
+    case QMI_LOC_EVENT_UNPROPAGATED_POSITION_REPORT_IND_V02:
+    case QMI_LOC_EVENT_NMEA_IND_V02:
+    case QMI_LOC_EVENT_GNSS_SV_INFO_IND_V02:
+    case QMI_LOC_EVENT_GNSS_MEASUREMENT_REPORT_IND_V02:
+    case QMI_LOC_EVENT_SV_POLYNOMIAL_REPORT_IND_V02:
+    case QMI_LOC_EVENT_GPS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_GLONASS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_BDS_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_GALILEO_EPHEMERIS_REPORT_IND_V02:
+    case QMI_LOC_EVENT_QZSS_EPHEMERIS_REPORT_IND_V02:
+        MODEM_LOG_CALLFLOW_DEBUG(%s, loc_get_v02_event_name(eventId));
+        break;
+    default:
+        MODEM_LOG_CALLFLOW(%s, loc_get_v02_event_name(eventId));
+        break;
+    }
 
-  LOC_LOGv ("client = %p, event id = 0x%X, client cookie ptr = %p",
-             clientHandle, eventId, pClientCookie);
+    LocApiV02 *locApiV02Instance = (LocApiV02 *)pClientCookie;
 
-  // return if null is passed
-  if( NULL == locApiV02Instance)
-  {
-    LOC_LOGe ("NULL object passed : client = %p, event id = 0x%X",
-              clientHandle, eventId);
-    return;
-  }
-  locApiV02Instance->eventCb(clientHandle, eventId, eventPayload);
+    LOC_LOGv ("client = %p, event id = 0x%X, client cookie ptr = %p",
+              clientHandle, eventId, pClientCookie);
+
+    // return if null is passed
+    if (NULL == locApiV02Instance)
+    {
+        LOC_LOGe ("NULL object passed : client = %p, event id = 0x%X",
+                  clientHandle, eventId);
+        return;
+    }
+    locApiV02Instance->eventCb(clientHandle, eventId, eventPayload);
 }
 
 /* global response callback, it calls the sync request process

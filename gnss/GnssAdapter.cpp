@@ -45,7 +45,6 @@
 #include <loc_nmea.h>
 #include <Agps.h>
 #include <SystemStatus.h>
-
 #include <vector>
 
 #define RAD2DEG    (180.0 / M_PI)
@@ -69,6 +68,8 @@ GnssAdapter::GnssAdapter() :
                                                    false), true, nullptr),
     mEngHubProxy(new EngineHubProxyBase()),
     mLocPositionMode(),
+    mNHzNeeded(false),
+    mSPEAlreadyRunningAtHighestInterval(false),
     mGnssSvIdUsedInPosition(),
     mGnssSvIdUsedInPosAvail(false),
     mControlCallbacks(),
@@ -160,6 +161,30 @@ GnssAdapter::convertOptions(LocPosMode& out, const TrackingOptions& trackingOpti
     out.powerMode = trackingOptions.powerMode;
     out.timeBetweenMeasurements = trackingOptions.tbm;
 }
+
+bool
+GnssAdapter::checkAndSetSPEToRunforNHz(LocPosMode & out) {
+    // first check if NHz meas is needed at all, if not, just return false
+    // if a NHz capable engine is subscribed for NHz measurement or NHz positions,
+    // always run the SPE only session at 100ms TBF.
+    // If SPE session is already set to highest interval, no need to start it again.
+
+    bool isSPERunningAtHighestInterval = false;
+
+    if (!mNHzNeeded) {
+        LOC_LOGd("No nHz session needed.");
+    } else if (mSPEAlreadyRunningAtHighestInterval) {
+        LOC_LOGd("SPE is already running at highest interval.");
+        isSPERunningAtHighestInterval = true;
+    } else if (out.min_interval > MIN_TRACKING_INTERVAL) {
+        out.min_interval = MIN_TRACKING_INTERVAL;
+        LOC_LOGd("nHz session is needed, starting SPE only session at 100ms TBF.");
+        mSPEAlreadyRunningAtHighestInterval = true;
+    }
+
+    return isSPERunningAtHighestInterval;
+}
+
 
 void
 GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
@@ -2031,16 +2056,20 @@ GnssAdapter::updateClientsEventMask()
     if((1 == ContextBase::mGps_conf.EXTERNAL_DR_ENABLED) ||
        (true == initEngHubProxy())) {
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
-        mask |= LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
         mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
         mask |= LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO;
 
+        // Nhz measurement bit is set based on callback from loc eng hub
+        // for Nhz engines.
+        mask |= checkMask(LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT);
+
         LOC_LOGd("Auto usecase, Enable MEAS/POLY/EPHEMERIS - mask 0x%" PRIx64 "",
                 mask);
     }
+
 
     if (mAgpsCbInfo.statusV4Cb != NULL) {
         mask |= LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST;
@@ -2089,6 +2118,16 @@ GnssAdapter::restartSessions()
     // odcpi session is no longer active after restart
     mOdcpiRequestActive = false;
 
+    // SPE will be restarted now, so set this variable to false.
+    mSPEAlreadyRunningAtHighestInterval = false;
+
+    checkAndRestartSPESession();
+}
+
+void GnssAdapter::checkAndRestartSPESession()
+{
+    LOC_LOGD("%s]: ", __func__);
+
     if (mTrackingSessions.empty()) {
         return;
     }
@@ -2116,7 +2155,11 @@ GnssAdapter::restartSessions()
     LocPosMode locPosMode = {};
     highestPowerTrackingOptions.setLocationOptions(smallestIntervalOptions);
     convertOptions(locPosMode, highestPowerTrackingOptions);
-    mLocApi->startFix(locPosMode, nullptr);
+
+    // want to run SPE session at a fixed min interval in some automotive scenarios
+    if(!checkAndSetSPEToRunforNHz(locPosMode)) {
+        mLocApi->startFix(locPosMode, nullptr);
+    }
 }
 
 void
@@ -2454,6 +2497,7 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
             multiplexedOptions.minInterval = options.minInterval;
             updateOptions = true;
         }
+
         // if session we are starting has smaller powerMode then next smallest
         if (options.powerMode < multiplexedPowerMode) {
             multiplexedOptions.powerMode = options.powerMode;
@@ -2487,15 +2531,20 @@ GnssAdapter::startTracking(LocationAPI* client, uint32_t sessionId,
     mEngHubProxy->gnssSetFixMode(locPosMode);
     mEngHubProxy->gnssStartFix();
 
-    mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
-                      [this, client, sessionId] (LocationError err) {
-            if (LOCATION_ERROR_SUCCESS != err) {
-                eraseTrackingSession(client, sessionId);
-            }
+    if (!checkAndSetSPEToRunforNHz(locPosMode)) {
+        mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
+                          [this, client, sessionId] (LocationError err) {
+                if (LOCATION_ERROR_SUCCESS != err) {
+                    eraseTrackingSession(client, sessionId);
+                }
 
-            reportResponse(client, err, sessionId);
-        }
-    ));
+                reportResponse(client, err, sessionId);
+            }
+        ));
+    } else {
+        reportResponse(client, LOCATION_ERROR_SUCCESS, sessionId);
+    }
+
 }
 
 void
@@ -2509,16 +2558,21 @@ GnssAdapter::updateTracking(LocationAPI* client, uint32_t sessionId,
     mEngHubProxy->gnssSetFixMode(locPosMode);
     mEngHubProxy->gnssStartFix();
 
-    mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
-                      [this, client, sessionId, oldOptions] (LocationError err) {
-            if (LOCATION_ERROR_SUCCESS != err) {
-                // restore the old LocationOptions
-                saveTrackingSession(client, sessionId, oldOptions);
-            }
+    // want to run SPE session at a fixed min interval in some automotive scenarios
+    if(!checkAndSetSPEToRunforNHz(locPosMode)) {
+        mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
+                          [this, client, sessionId, oldOptions] (LocationError err) {
+                if (LOCATION_ERROR_SUCCESS != err) {
+                    // restore the old LocationOptions
+                    saveTrackingSession(client, sessionId, oldOptions);
+                }
 
-            reportResponse(client, err, sessionId);
-        }
-    ));
+                reportResponse(client, err, sessionId);
+            }
+        ));
+    } else {
+        reportResponse(client, LOCATION_ERROR_SUCCESS, sessionId);
+    }
 }
 
 void
@@ -2775,6 +2829,8 @@ GnssAdapter::stopTracking(LocationAPI* client, uint32_t id)
                      [this, client, id] (LocationError err) {
         reportResponse(client, err, id);
     }));
+
+    mSPEAlreadyRunningAtHighestInterval = false;
 }
 
 bool
@@ -4773,11 +4829,30 @@ GnssAdapter::initEngHubProxy() {
             mLocApi->requestForAidingData(svDataMask);
         };
 
+        GnssAdapterUpdateNHzRequirementCb updateNHzRequirementCb =
+            [this] (bool nHzNeeded, bool nHzMeasNeeded) {
+
+            if (nHzMeasNeeded &&
+                    (!checkMask(LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT))) {
+                updateEvtMask(LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT,
+                    LOC_REGISTRATION_MASK_ENABLED);
+            } else if (checkMask(LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT)) {
+                updateEvtMask(LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT,
+                    LOC_REGISTRATION_MASK_DISABLED);
+            }
+
+            if (mNHzNeeded != nHzNeeded) {
+                mNHzNeeded = nHzNeeded;
+                checkAndRestartSPESession();
+            }
+       };
+
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
         if(getter != nullptr) {
             EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, mSystemStatus->getOsObserver(),
                                                       reportPositionEventCb,
-                                                      reportSvEventCb, reqAidingDataCb);
+                                                      reportSvEventCb, reqAidingDataCb,
+                                                      updateNHzRequirementCb);
             if (hubProxy != nullptr) {
                 mEngHubProxy = hubProxy;
                 engHubLoadSuccessful = true;

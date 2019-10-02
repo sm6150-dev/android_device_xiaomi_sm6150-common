@@ -134,6 +134,8 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
     EngineHubProxyBase* mEngHubProxy;
+    bool mNHzNeeded;
+    bool mSPEAlreadyRunningAtHighestInterval;
 
     /* ==== CLIENT ========================================================================= */
     typedef std::map<LocationAPI*, LocationCallbacks> ClientDataMap;
@@ -209,6 +211,7 @@ public:
     virtual void handleEngineUpEvent();
     /* ======== UTILITIES ================================================================== */
     void restartSessions();
+    void checkAndRestartSPESession();
 
     /* ==== CLIENT ========================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -259,6 +262,7 @@ public:
                                  const TrackingOptions& trackingOptions);
     void updateTracking(LocationAPI* client, uint32_t sessionId,
         const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions);
+    bool checkAndSetSPEToRunforNHz(LocPosMode & out);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

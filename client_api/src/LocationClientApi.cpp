@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -143,6 +143,9 @@ bool LocationClientApi::startPositionSession(
     if (gnssReportCallbacks.gnssDataCallback) {
        callbacksOption.gnssDataCb = [] (::GnssDataNotification n) {};
     }
+    if (gnssReportCallbacks.gnssMeasurementsCallback) {
+        callbacksOption.gnssMeasurementsCb = [](::GnssMeasurementsNotification n) {};
+    }
     mApiImpl->updateCallbacks(callbacksOption);
 
     // options
@@ -195,6 +198,9 @@ bool LocationClientApi::startPositionSession(
     }
     if (engReportCallbacks.gnssDataCallback) {
        callbacksOption.gnssDataCb = [] (::GnssDataNotification n) {};
+    }
+    if (engReportCallbacks.gnssMeasurementsCallback) {
+        callbacksOption.gnssMeasurementsCb = [](::GnssMeasurementsNotification n) {};
     }
     mApiImpl->updateCallbacks(callbacksOption);
 

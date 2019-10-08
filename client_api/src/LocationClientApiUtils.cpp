@@ -249,6 +249,12 @@ void translateDiagGnssSignalType(clientDiagGnssSignalTypeMask& out, GnssSignalTy
     if (in & GNSS_SIGNAL_BEIDOU_B2AQ_BIT) {
         out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2AQ;
     }
+    if (in & GNSS_SIGNAL_BEIDOU_B1_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B1;
+    }
+    if (in & GNSS_SIGNAL_BEIDOU_B2_BIT) {
+        out |= CLIENT_DIAG_GNSS_SIGNAL_BEIDOU_B2;
+    }
 }
 
 void translateDiagGnssMeasUsageInfo(clientDiagGnssMeasUsageInfo& out,

@@ -427,6 +427,8 @@ public:
   virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
   virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
   virtual LocationError setEmergencyExtensionWindowSync(const uint32_t emergencyExtensionSeconds);
+  virtual GnssSignalTypeMask convertQmiGnssSignalType(
+        qmiLocGnssSignalTypeMaskT_v02 qmiGnssSignalType);
 
   /* Requests for SV/Constellation Control */
   virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);

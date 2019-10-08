@@ -66,7 +66,8 @@ GnssAdapter::GnssAdapter() :
                    LocDualContext::getLocFgContext(NULL,
                                                    NULL,
                                                    LocDualContext::mLocationHalName,
-                                                   false), true, nullptr),
+                                                   false),
+                   true, nullptr, true),
     mEngHubProxy(new EngineHubProxyBase()),
     mLocPositionMode(),
     mGnssSvIdUsedInPosition(),
@@ -120,6 +121,10 @@ GnssAdapter::GnssAdapter() :
     readConfigCommand();
     initDefaultAgpsCommand();
     initEngHubProxyCommand();
+
+    // at last step, let us inform adapater base that we are done
+    // with initialization, e.g.: ready to process handleEngineUpEvent
+    doneInit();
 }
 
 void

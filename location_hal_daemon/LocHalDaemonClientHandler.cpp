@@ -60,11 +60,11 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         onCollectiveResponseCallback(count, errs, ids);
     };
 
-    // update optional callback - following four callbacks can be controlable
-    // tracking
-    mCallbacks.trackingCb = [this](Location location) {
-        onTrackingCb(location);
-    };
+    if (mSubscriptionMask & E_LOC_CB_DISTANCE_BASED_TRACKING_BIT) {
+        mCallbacks.trackingCb = [this](Location location) {
+            onTrackingCb(location);
+        };
+    }
 
     // batching
     if (mSubscriptionMask & E_LOC_CB_BATCHING_BIT) {
@@ -94,7 +94,7 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
     }
 
     // location info
-    if (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
+    if (mSubscriptionMask & (E_LOC_CB_GNSS_LOCATION_INFO_BIT | E_LOC_CB_SIMPLE_LOCATION_INFO_BIT)) {
         mCallbacks.gnssLocationInfoCb = [this](GnssLocationInfoNotification notification) {
             onGnssLocationInfoCb(notification);
         };
@@ -567,7 +567,8 @@ void LocHalDaemonClientHandler::onTrackingCb(Location location) {
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onTrackingCb");
 
-    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_TRACKING_BIT)) {
+    if ((nullptr != mIpcSender) &&
+            (mSubscriptionMask & E_LOC_CB_DISTANCE_BASED_TRACKING_BIT)) {
         // broadcast
         LocAPILocationIndMsg msg(SERVICE_NAME, location);
         int rc = sendMessage(msg);
@@ -684,10 +685,16 @@ void LocHalDaemonClientHandler::onGnssLocationInfoCb(GnssLocationInfoNotificatio
     std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
     LOC_LOGd("--< onGnssLocationInfoCb");
 
-    if ((nullptr != mIpcSender) &&
-            (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT)) {
-        LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
-        int rc = sendMessage(msg);
+    if ((nullptr != mIpcSender) && (mSubscriptionMask &
+            (E_LOC_CB_GNSS_LOCATION_INFO_BIT | E_LOC_CB_SIMPLE_LOCATION_INFO_BIT))) {
+        int rc = 0;
+        if (mSubscriptionMask & E_LOC_CB_GNSS_LOCATION_INFO_BIT) {
+            LocAPILocationInfoIndMsg msg(SERVICE_NAME, notification);
+            rc = sendMessage(msg);
+        } else {
+            LocAPILocationIndMsg msg(SERVICE_NAME, notification.location);
+            rc = sendMessage(msg);
+        }
         // purge this client if failed
         if (!rc) {
             LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());

@@ -37,6 +37,7 @@
 #include <dlfcn.h>
 #include <loc_misc_utils.h>
 
+
 static uint32_t gDebug = 0;
 
 static const loc_param_s_type gConfigTable[] =
@@ -746,10 +747,11 @@ static GnssSv parseGnssSv(const ::GnssSv &halGnssSv) {
     if (GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT & halGnssSv.gnssSvOptionsMask) {
         gnssSvOptionsMask |= GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT;
     }
-    gnssSv.carrierFrequencyHz = halGnssSv.carrierFrequencyHz;
+    gnssSvOptionsMask |= GNSS_SV_OPTIONS_HAS_GNSS_SIGNAL_TYPE_BIT;
     gnssSv.gnssSvOptionsMask = (GnssSvOptionsMask)gnssSvOptionsMask;
-    gnssSv.gnssSignalTypeMask = parseGnssSignalType(halGnssSv.gnssSignalTypeMask);
 
+    gnssSv.carrierFrequencyHz = halGnssSv.carrierFrequencyHz;
+    gnssSv.gnssSignalTypeMask = parseGnssSignalType(halGnssSv.gnssSignalTypeMask);
     return gnssSv;
 }
 
@@ -1032,10 +1034,14 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             //convert callbacks to callBacksMask
             LocationCallbacksMask callBacksMask = 0;
             if (mCallBacks.trackingCb) {
-                callBacksMask |= E_LOC_CB_TRACKING_BIT;
+                callBacksMask |= E_LOC_CB_DISTANCE_BASED_TRACKING_BIT;
             }
             if (mCallBacks.gnssLocationInfoCb) {
-                callBacksMask |= E_LOC_CB_GNSS_LOCATION_INFO_BIT;
+                if (mApiImpl->mLocationCb) {
+                    callBacksMask |= E_LOC_CB_SIMPLE_LOCATION_INFO_BIT;
+                } else {
+                    callBacksMask |= E_LOC_CB_GNSS_LOCATION_INFO_BIT;
+                }
             }
             if (mCallBacks.engineLocationsInfoCb) {
                 callBacksMask |= E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT;
@@ -1878,8 +1884,10 @@ void IpcListener::onReceive(const char* data, uint32_t length,
                     LOC_LOGw("payload size does not match for message with id: %d",
                              pMsg->msgId);
                 }
+                LocationCallbacksMask tempMask =
+                        (E_LOC_CB_DISTANCE_BASED_TRACKING_BIT | E_LOC_CB_SIMPLE_LOCATION_INFO_BIT);
                 if ((mApiImpl.mSessionId != LOCATION_CLIENT_SESSION_ID_INVALID) &&
-                        (mApiImpl.mCallbacksMask & E_LOC_CB_TRACKING_BIT)) {
+                        (mApiImpl.mCallbacksMask & tempMask)) {
                     const LocAPILocationIndMsg* pLocationIndMsg = (LocAPILocationIndMsg*)(pMsg);
                     Location location = parseLocation(pLocationIndMsg->locationNotification);
                     if (mApiImpl.mLocationCb) {
@@ -2055,6 +2063,29 @@ void IpcListener::onReceive(const char* data, uint32_t length,
                         each += '\n';
                         mApiImpl.mGnssNmeaCb(timestamp, each);
                     }
+
+#ifndef FEATURE_EXTERNAL_AP
+                    if (!mDiagInterface) {
+                        break;
+                    }
+                    size_t diagBufferSize = sizeof(clientDiagGnssNmeaStructType) +
+                            pNmeaIndMsg->gnssNmeaNotification.length - 1;
+                    diagBuffSrc bufferSrc = BUFFER_INVALID;
+                    clientDiagGnssNmeaStructType* diagGnssNmeaPtr = nullptr;
+                    diagGnssNmeaPtr = (clientDiagGnssNmeaStructType*)
+                        mDiagInterface->logAlloc(LOG_GNSS_CLIENT_API_NMEA_REPORT_C,
+                                diagBufferSize, &bufferSrc);
+                    if (diagGnssNmeaPtr == NULL) {
+                        LOC_LOGv("memory alloc failed");
+                        break;
+                    }
+                    populateClientDiagNmea(diagGnssNmeaPtr, pNmeaIndMsg->gnssNmeaNotification);
+                    diagGnssNmeaPtr->version = LOG_CLIENT_NMEA_REPORT_DIAG_MSG_VERSION;
+
+                    mDiagInterface->logCommit(diagGnssNmeaPtr, bufferSrc,
+                            LOG_GNSS_CLIENT_API_NMEA_REPORT_C,
+                            sizeof(clientDiagGnssNmeaStructType));
+#endif // FEATURE_EXTERNAL_AP
                 }
                 break;
             }

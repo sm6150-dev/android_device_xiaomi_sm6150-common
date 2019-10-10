@@ -73,6 +73,8 @@ void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr
 static void translateDiagGnssSv(clientDiagGnssSv& out, const GnssSv& in);
 void populateClientDiagGnssSv(clientDiagGnssSvStructType* diagGnssSvPtr,
         std::vector<GnssSv>& gnssSvs);
+void populateClientDiagNmea(clientDiagGnssNmeaStructType *diagGnssNmeaPtr,
+        const LocAPINmeaSerializedPayload &nmeaSerializedPayload);
 #endif // FEATURE_EXTERNAL_AP
 
 enum ReportCbEnumType {

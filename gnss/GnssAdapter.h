@@ -151,6 +151,7 @@ class GnssAdapter : public LocAdapterBase {
     LocationControlCallbacks mControlCallbacks;
     uint32_t mPowerVoteId;
     uint32_t mNmeaMask;
+    uint64_t mPrevNmeaRptTimeNsec;
     GnssSvIdConfig mGnssSvIdConfig;
     GnssSvTypeConfig mGnssSvTypeConfig;
     GnssSvTypeConfigCallback mGnssSvTypeConfigCb;
@@ -198,6 +199,7 @@ class GnssAdapter : public LocAdapterBase {
     /* ======== UTILITIES ================================================================== */
     inline void initOdcpi(const OdcpiRequestCallback& callback);
     inline void injectOdcpi(const Location& location);
+    inline void setNmeaReportRateConfig();
 
 public:
 
@@ -373,6 +375,8 @@ public:
     /* ======== UTILITIES ================================================================= */
     bool needReport(const UlpLocation& ulpLocation,
             enum loc_sess_status status, LocPosTechMask techMask);
+    bool needToGenerateNmeaReport(const uint32_t &gpsTimeOfWeekMs,
+        const struct timespec32_t &apTimeStamp);
     void reportPosition(const UlpLocation &ulpLocation,
                         const GpsLocationExtended &locationExtended,
                         enum loc_sess_status status,

@@ -2105,6 +2105,13 @@ struct AGnssExtStatusIpV6 {
     uint8_t             ipV6Addr[16];
 };
 
+/* Represents GNSS NMEA Report Rate Configuration */
+typedef enum {
+    GNSS_NMEA_REPORT_RATE_UNKNOWN  = 0,
+    GNSS_NMEA_REPORT_RATE_1HZ  = 1,
+    GNSS_NMEA_REPORT_RATE_NHZ  = 2
+} GnssNMEARptRate;
+
 /* ODCPI Request Info */
 enum OdcpiRequestType {
     ODCPI_REQUEST_TYPE_START,

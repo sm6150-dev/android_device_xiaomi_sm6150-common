@@ -2062,7 +2062,9 @@ GnssAdapter::updateClientsEventMask()
 {
     LOC_API_ADAPTER_EVENT_MASK_T mask = 0;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-        if (it->second.trackingCb != nullptr || it->second.gnssLocationInfoCb != nullptr) {
+        if (it->second.trackingCb != nullptr ||
+            it->second.gnssLocationInfoCb != nullptr ||
+            it->second.engineLocationsInfoCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
         }
         if (it->second.gnssNiCb != nullptr) {
@@ -2339,17 +2341,21 @@ GnssAdapter::eraseClient(LocationAPI* client)
 }
 
 bool
-GnssAdapter::hasTrackingCallback(LocationAPI* client)
+GnssAdapter::hasCallbacksToStartTracking(LocationAPI* client)
 {
+    bool allowed = false;
     auto it = mClientData.find(client);
-    return (it != mClientData.end() && (it->second.trackingCb || it->second.gnssLocationInfoCb));
-}
-
-bool
-GnssAdapter::hasMeasurementsCallback(LocationAPI* client)
-{
-    auto it = mClientData.find(client);
-    return (it != mClientData.end() && it->second.gnssMeasurementsCb);
+    if (it != mClientData.end()) {
+        if (it->second.trackingCb || it->second.gnssLocationInfoCb ||
+            it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb) {
+            allowed = true;
+        } else {
+            LOC_LOGi("missing right callback to start tracking")
+        }
+    } else {
+        LOC_LOGi("client %p not found", client)
+    }
+    return allowed;
 }
 
 bool
@@ -2464,8 +2470,7 @@ GnssAdapter::startTrackingCommand(LocationAPI* client, TrackingOptions& options)
             mTrackingOptions(trackingOptions) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            if (!mAdapter.hasTrackingCallback(mClient) &&
-                !mAdapter.hasMeasurementsCallback(mClient)) {
+            if (!mAdapter.hasCallbacksToStartTracking(mClient)) {
                 err = LOCATION_ERROR_CALLBACK_MISSING;
             } else if (0 == mTrackingOptions.size) {
                 err = LOCATION_ERROR_INVALID_PARAMETER;
@@ -3089,21 +3094,25 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  int msInWeek)
 {
     // this position is from QMI LOC API, then send report to engine hub
-    // if sending is successful, we return as we will wait for final report from engine hub
-    // if the position is called from engine hub, then send it out directly
+    // also, send out SPE fix promptly to the clients that have registered
+    // with SPE report
+    LOC_LOGd("reportPositionEvent, eng type: %d, unpro %d, sess status %d",
+             locationExtended.locOutputEngType, ulpLocation.unpropagatedPosition,
+             status);
 
     if (true == initEngHubProxy()){
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
-        return;
     }
 
+    // unpropagated report: is only for engine hub to consume and no need
+    // to send out to the clients
     if (true == ulpLocation.unpropagatedPosition) {
         return;
     }
 
-    // Fix is from QMI, and it is not an
-    // unpropagated position and engine hub is not loaded, queue the msg
-    // when message is queued, the position can be dispatched to requesting client
+    // Fix is from QMI, and it is not an unpropagated position, queue the message
+    // when message is processed, the position can be dispatched to requesting client
+    // that registers for SPE report
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
         const UlpLocation mUlpLocation;
@@ -3245,6 +3254,10 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
     bool reported = needReport(ulpLocation, status, techMask);
     mGnssSvIdUsedInPosAvail = false;
     mGnssMbSvIdUsedInPosAvail = false;
+
+    LOC_LOGd("needReport %d, status %d, eng type %d", reported, status,
+             locationExtended.locOutputEngType);
+
     if (reported) {
         if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA) {
             mGnssSvIdUsedInPosAvail = true;
@@ -3258,23 +3271,43 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         GnssLocationInfoNotification locationInfo = {};
         convertLocationInfo(locationInfo, locationExtended);
         convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
+        LocOutputEngineType outputEngType = (LocOutputEngineType) LOC_OUTPUT_ENGINE_COUNT;
+        if (locationInfo.flags & GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT) {
+            outputEngType = locationInfo.locOutputEngType;
+        }
 
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-            if (nullptr != it->second.gnssLocationInfoCb) {
-                it->second.gnssLocationInfoCb(locationInfo);
-            } else if ((nullptr != it->second.engineLocationsInfoCb) &&
-                       (false == initEngHubProxy())) {
-                // if engine hub is disabled, this is SPE fix from modem
-                // we need to mark one copy marked as fused and one copy marked as PPE
-                // and dispatch it to the engineLocationsInfoCb
-                GnssLocationInfoNotification engLocationsInfo[2];
-                engLocationsInfo[0] = locationInfo;
-                engLocationsInfo[0].locOutputEngType = LOC_OUTPUT_ENGINE_FUSED;
-                engLocationsInfo[0].flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT;
-                engLocationsInfo[1] = locationInfo;
-                it->second.engineLocationsInfoCb(2, engLocationsInfo);
+            if (nullptr != it->second.engineLocationsInfoCb) {
+                if (LOC_OUTPUT_ENGINE_SPE == outputEngType) {
+                    if (false == initEngHubProxy()) {
+                        // if engine hub is disabled, this is SPE fix from modem
+                        // we need to mark one copy as fused and the other as SPE
+                        // and report both to engineLocationsInfoCb
+                        GnssLocationInfoNotification engLocationsInfo[2];
+                        engLocationsInfo[0] = locationInfo;
+                        engLocationsInfo[0].locOutputEngType = LOC_OUTPUT_ENGINE_FUSED;
+                        engLocationsInfo[0].flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT;
+                        engLocationsInfo[1] = locationInfo;
+                        it->second.engineLocationsInfoCb(2, engLocationsInfo);
+                    } else {
+                        // if engine hub is enabled, send out the SPE report right away,
+                        it->second.engineLocationsInfoCb(1, &locationInfo);
+                    }
+                }
+            }  else  if (nullptr != it->second.gnssLocationInfoCb) {
+                if (((LOC_OUTPUT_ENGINE_FUSED == outputEngType) &&
+                        (true == initEngHubProxy())) ||
+                    ((LOC_OUTPUT_ENGINE_SPE == outputEngType) &&
+                        (false == initEngHubProxy()))) {
+                    it->second.gnssLocationInfoCb(locationInfo);
+                }
             } else if (nullptr != it->second.trackingCb) {
-                it->second.trackingCb(locationInfo.location);
+                if (((LOC_OUTPUT_ENGINE_FUSED == outputEngType) &&
+                        (true == initEngHubProxy())) ||
+                    ((LOC_OUTPUT_ENGINE_SPE == outputEngType) &&
+                        (false == initEngHubProxy()))) {
+                    it->second.trackingCb(locationInfo.location);
+                }
             }
         }
 

@@ -4252,6 +4252,14 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
                 else {
                     mAdapter.requestNiNotify(mNotify, mData, false);
                 }
+            } else if (GNSS_NI_TYPE_SUPL == mNotify.type && !bIsInEmergency &&
+                       !(GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT & mNotify.options) &&
+                       (GNSS_CONFIG_GPS_LOCK_NI & ContextBase::mGps_conf.GPS_LOCK) &&
+                       1 == ContextBase::mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED) {
+                // If 'Q' Lock behavior OR 'P' Lock behavior and GNSS is Locked
+                // If an NI SUPL Request that does not have Privacy Override option comes when
+                // NFW is locked and config item NI_SUPL_DENY_ON_NFW_LOCKED = 1, then deny it
+                mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
             } else {
                 mAdapter.requestNiNotify(mNotify, mData, false);
             }

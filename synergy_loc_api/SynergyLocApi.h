@@ -63,9 +63,6 @@ private:
     bool mMasterRegisterNotSupported;
     GnssSvMeasurementSet*  mSvMeasurementSet;
     LOC_API_ADAPTER_EVENT_MASK_T mSlMask;
-    LocApiResponse *slStartAdapterResponse;
-    LocApiResponse *slStopAdapterResponse;
-    LocApiResponse *slDeleteAidAdapterResponse;
 
     const SllInterfaceReq *sllReqIf;
 

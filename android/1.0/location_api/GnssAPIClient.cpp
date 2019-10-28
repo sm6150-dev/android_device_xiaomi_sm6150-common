@@ -541,7 +541,29 @@ static void convertGnssSvStatus(GnssSvNotification& in, IGnssCallback::GnssSvSta
     }
     for (size_t i = 0; i < out.numSvs; i++) {
         IGnssCallback::GnssSvInfo& info = out.gnssSvList[i];
-        info.svid = in.gnssSvs[i].svId;
+        switch(in.gnssSvs[i].type){
+        case GNSS_SV_TYPE_GPS:
+            info.svid = in.gnssSvs[i].svId;
+            break;
+        case GNSS_SV_TYPE_SBAS:
+            info.svid = in.gnssSvs[i].svId;
+            break;
+        case GNSS_SV_TYPE_GLONASS:
+            info.svid = in.gnssSvs[i].svId - GLO_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_QZSS:
+            info.svid = in.gnssSvs[i].svId;
+            break;
+        case GNSS_SV_TYPE_BEIDOU:
+            info.svid = in.gnssSvs[i].svId - BDS_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_GALILEO:
+            info.svid = in.gnssSvs[i].svId - GAL_SV_PRN_MIN + 1;
+            break;
+        default:
+            info.svid = in.gnssSvs[i].svId;
+            break;
+        }
         convertGnssConstellationType(in.gnssSvs[i].type, info.constellation);
         info.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         info.elevationDegrees = in.gnssSvs[i].elevation;

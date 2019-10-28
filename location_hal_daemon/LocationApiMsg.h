@@ -53,6 +53,11 @@ Constants
 #define LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID   (1)
 #define LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID       (5002)
 
+enum ClientType {
+    LOCATION_CLIENT_API = 1,
+    LOCATION_INTEGRATION_API = 2,
+};
+
 #define sLOCAL SOCKET_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
 #define sEAP EAP_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
 
@@ -314,8 +319,11 @@ IPC message structure - client registration
 // defintion for message with msg id of E_LOCAPI_CLIENT_REGISTER_MSG_ID
 struct LocAPIClientRegisterReqMsg: LocAPIMsgHeader
 {
-    inline LocAPIClientRegisterReqMsg(const char* name) :
-        LocAPIMsgHeader(name, E_LOCAPI_CLIENT_REGISTER_MSG_ID) { }
+    ClientType mClientType;
+
+    inline LocAPIClientRegisterReqMsg(const char* name, ClientType clientType) :
+        LocAPIMsgHeader(name, E_LOCAPI_CLIENT_REGISTER_MSG_ID),
+        mClientType(clientType) { }
 };
 
 // defintion for message with msg id of E_LOCAPI_CLIENT_DEREGISTER_MSG_ID

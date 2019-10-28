@@ -731,13 +731,15 @@ void LocHalDaemonClientHandler::onEngLocationsInfoCb(
             }
         }
 
-        LocAPIEngineLocationsInfoIndMsg msg(SERVICE_NAME, reportCount,
-                                            engineLocationInfoNotification);
-        int rc = sendMessage((const uint8_t*)&msg, msg.getMsgSize());
-        // purge this client if failed
-        if (!rc) {
-            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-            mService->deleteClientbyName(mName);
+        if (reportCount > 0 ) {
+            LocAPIEngineLocationsInfoIndMsg msg(SERVICE_NAME, reportCount,
+                                                engineLocationInfoNotification);
+            int rc = sendMessage((const uint8_t*)&msg, msg.getMsgSize());
+            // purge this client if failed
+            if (!rc) {
+                LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+                mService->deleteClientbyName(mName);
+            }
         }
     }
 }

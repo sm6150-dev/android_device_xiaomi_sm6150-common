@@ -94,7 +94,8 @@ GnssAdapter::GnssAdapter() :
     mBlockCPIInfo{},
     mLocSystemInfo{},
     mGnssMbSvIdUsedInPosition{},
-    mGnssMbSvIdUsedInPosAvail(false)
+    mGnssMbSvIdUsedInPosAvail(false),
+    mPowerState(POWER_STATE_UNKNOWN)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -1958,6 +1959,35 @@ GnssAdapter::blockCPICommand(double latitude, double longitude,
 }
 
 void
+GnssAdapter::updatePowerState(PowerStateType powerState) {
+    if (POWER_STATE_UNKNOWN != powerState) {
+        mPowerState = powerState;
+        mLocApi->updatePowerState(mPowerState);
+    }
+}
+
+void
+GnssAdapter::updatePowerStateCommand(PowerStateType powerState) {
+    LOC_LOGd("power event %d", powerState);
+
+    struct MsgUpdatePowerState : public LocMsg {
+        GnssAdapter& mAdapter;
+        PowerStateType mPowerState;
+
+        inline MsgUpdatePowerState(GnssAdapter& adapter,
+                                   PowerStateType powerState) :
+            LocMsg(),
+            mAdapter(adapter),
+            mPowerState(powerState) {}
+        inline virtual void proc() const {
+            mAdapter.updatePowerState(mPowerState);
+        }
+    };
+
+    sendMsg(new MsgUpdatePowerState(*this, powerState));
+}
+
+void
 GnssAdapter::addClientCommand(LocationAPI* client, const LocationCallbacks& callbacks)
 {
     LOC_LOGD("%s]: client %p", __func__, client);
@@ -2105,10 +2135,12 @@ GnssAdapter::handleEngineUpEvent()
             mAdapter(adapter) {}
         virtual void proc() const {
             mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
-            // restart sessions
-            mAdapter.restartSessions();
             mAdapter.gnssSvIdConfigUpdate();
             mAdapter.gnssSvTypeConfigUpdate();
+            mAdapter.updatePowerState(mAdapter.getPowerState());
+
+            // restart sessions
+            mAdapter.restartSessions();
         }
     };
 

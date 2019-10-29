@@ -84,6 +84,7 @@ struct GnssInterface {
     void (*getGnssEnergyConsumed)(GnssEnergyConsumedCallback energyConsumedCb);
     void (*injectLocationExt)(const GnssLocationInfoNotification &locationInfo);
     void (*updateBatteryStatus)(bool charging);
+    void (*updatePowerState)(PowerStateType powerState);
 };
 
 struct FlpInterface {

@@ -3,7 +3,6 @@ AM_CFLAGS = \
     -I src/ \
     -I inc/ \
     $(GPSUTILS_CFLAGS) \
-    $(LOCHALDAEMON_CFLAGS) \
     -std=c++11
 
 ACLOCAL_AMFLAGS = -I m4

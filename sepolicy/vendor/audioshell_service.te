@@ -1,0 +1,8 @@
+type audioshell_service, domain;
+type audioshell_service_exec, exec_type, vendor_file_type, file_type;
+
+init_daemon_domain(audioshell_service)
+
+unix_socket_connect(audioshell_service, audio, hal_audio_default);
+
+allow audioshell_service sound_device:chr_file rw_file_perms;

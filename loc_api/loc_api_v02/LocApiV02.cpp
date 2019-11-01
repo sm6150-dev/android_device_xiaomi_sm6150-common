@@ -2951,6 +2951,8 @@ void LocApiV02 :: reportPosition (
                                 location_report_ptr->gnssSvUsedSignalTypeList[idx];
                         GnssSignalTypeMask gnssSignalTypeMask =
                                 convertQmiGnssSignalType(qmiGnssSignalType);
+                        LOC_LOGd("sv id %d, qmi signal type: 0x%" PRIx64 ", hal signal type: 0x%x",
+                                 gnssSvIdUsed, qmiGnssSignalType, gnssSignalTypeMask);
 
                         if (gnssSvIdUsed <= GPS_SV_PRN_MAX)
                         {
@@ -3488,9 +3490,12 @@ void  LocApiV02 :: reportSv (
                                         gnss_report_ptr->gnssSignalTypeList[SvNotify.count],
                                         gloFrequency);
                             mask |= GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT;
-
                             gnssSv_ref.gnssSignalTypeMask = convertQmiGnssSignalType(
                                     gnss_report_ptr->gnssSignalTypeList[SvNotify.count]);
+                            LOC_LOGd("sv id %d, qmi signal type: 0x%" PRIx64 ", "
+                                     "hal signal type: 0x%x", gnssSv_ref.svId,
+                                     gnss_report_ptr->gnssSignalTypeList[SvNotify.count],
+                                     gnssSv_ref.gnssSignalTypeMask);
                         }
                     }
                 } else {
@@ -9125,64 +9130,64 @@ GnssSignalTypeMask LocApiV02::convertQmiGnssSignalType(
 
     switch (qmiGnssSignalType) {
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1CA_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GPS_L1CA;
+        gnssSignalType = GNSS_SIGNAL_GPS_L1CA;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L1C_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GPS_L1C;
+        gnssSignalType = GNSS_SIGNAL_GPS_L1C;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L2C_L_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GPS_L2C_L;
+        gnssSignalType = GNSS_SIGNAL_GPS_L2;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GPS_L5_Q_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GPS_L5_Q;
+        gnssSignalType = GNSS_SIGNAL_GPS_L5;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G1_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GLONASS_G1;
+        gnssSignalType = GNSS_SIGNAL_GLONASS_G1;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GLONASS_G2_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GLONASS_G2;
+        gnssSignalType = GNSS_SIGNAL_GLONASS_G2;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E1_C_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C;
+        gnssSignalType = GNSS_SIGNAL_GALILEO_E1;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5A_Q_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GALILEO_E5A_Q;
+        gnssSignalType = GNSS_SIGNAL_GALILEO_E5A;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_GALILEO_E5B_Q_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_GALILEO_E5B_Q;
+        gnssSignalType = GNSS_SIGNAL_GALILEO_E5B;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1_I_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I;
+        gnssSignalType = GNSS_SIGNAL_BEIDOU_B1I;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B1C_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1C;
+        gnssSignalType = GNSS_SIGNAL_BEIDOU_B1C;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2_I_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_BEIDOU_B2_I;
+        gnssSignalType = GNSS_SIGNAL_BEIDOU_B2I;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_I_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_BEIDOU_B2A_I;
+        gnssSignalType = GNSS_SIGNAL_BEIDOU_B2AI;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1CA_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA;
+        gnssSignalType = GNSS_SIGNAL_QZSS_L1CA;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L1S_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_QZSS_L1S;
+        gnssSignalType =  GNSS_SIGNAL_QZSS_L1S;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L2C_L_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_QZSS_L2C_L;
+        gnssSignalType = GNSS_SIGNAL_QZSS_L2;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_QZSS_L5_Q_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_QZSS_L5_Q;
+        gnssSignalType = GNSS_SIGNAL_QZSS_L5;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_SBAS_L1_CA_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA;
+        gnssSignalType = GNSS_SIGNAL_SBAS_L1;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_NAVIC_L5_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_NAVIC_L5;
+        gnssSignalType = GNSS_SIGNAL_NAVIC_L5;
         break;
     case QMI_LOC_MASK_GNSS_SIGNAL_TYPE_BEIDOU_B2A_Q_V02:
-        gnssSignalType = GNSS_LOC_SIGNAL_TYPE_BEIDOU_B2A_Q;
+        gnssSignalType = GNSS_SIGNAL_BEIDOU_B2AQ;
         break;
     default:
         break;

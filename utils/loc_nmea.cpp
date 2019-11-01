@@ -1937,7 +1937,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.gps_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.gps_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if (GNSS_SIGNAL_GPS_L5 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask) {
                 sv_cache_info.gps_l5_count++;
@@ -1955,7 +1955,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.glo_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.glo_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if (GNSS_SIGNAL_GLONASS_G2 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.glo_g2_count++;
@@ -1973,7 +1973,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.gal_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.gal_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if(GNSS_SIGNAL_GALILEO_E5A == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.gal_e5_count++;
@@ -1991,7 +1991,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.qzss_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.qzss_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if (GNSS_SIGNAL_QZSS_L5 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask) {
                 sv_cache_info.qzss_l5_count++;
@@ -2009,7 +2009,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.bds_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.bds_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if(GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.bds_b2_count++;

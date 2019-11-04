@@ -203,13 +203,10 @@ void LocHalDaemonClientHandler::updateTrackingOptions(LocationOptions & locOptio
              locOptions.minDistance, locOptions.minInterval,
              locOptions.locReqEngTypeMask);
 
-        if ((mOptions.minDistance != locOptions.minDistance) ||
-            (mOptions.minInterval != locOptions.minInterval)) {
+        TrackingOptions trackingOption;
+        trackingOption.setLocationOptions(locOptions);
+        mLocationApi->updateTrackingOptions(mSessionId, trackingOption);
 
-            TrackingOptions trackingOption;
-            trackingOption.setLocationOptions(locOptions);
-            mLocationApi->updateTrackingOptions(mSessionId, trackingOption);
-        }
         // save other info: eng req type that will be used in filtering
         mOptions = locOptions;
     }

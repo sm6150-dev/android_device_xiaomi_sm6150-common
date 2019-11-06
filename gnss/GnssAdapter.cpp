@@ -3101,7 +3101,18 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
              status);
 
     if (true == initEngHubProxy()){
+        // send the SPE fix to engine hub
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
+        // check whether we need to report out this SPE fix
+        if ((false == ulpLocation.unpropagatedPosition) &&
+            (LocApiBase::needReport(ulpLocation, status, techMask))) {
+            EngineLocationInfo engLocationInfo = {};
+            engLocationInfo.location = ulpLocation;
+            engLocationInfo.locationExtended = locationExtended;
+            engLocationInfo.sessionStatus = status;
+            reportEnginePositionsEvent(1, &engLocationInfo);
+        }
+        return;
     }
 
     // unpropagated report: is only for engine hub to consume and no need
@@ -3110,9 +3121,9 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
         return;
     }
 
-    // Fix is from QMI, and it is not an unpropagated position, queue the message
-    // when message is processed, the position can be dispatched to requesting client
-    // that registers for SPE report
+    // Fix is from QMI, and it is not an unpropagated position and engine hub
+    // is not loaded, queue the message when message is processed, the position
+    // can be dispatched to requesting client that registers for SPE report
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
         const UlpLocation mUlpLocation;
@@ -3245,6 +3256,8 @@ bool GnssAdapter::needToGenerateNmeaReport(const uint32_t &gpsTimeOfWeekMs,
     return retVal;
 }
 
+// only fused report (when engine hub is enabled) or
+// SPE report (when engine hub is disabled) will reach this function
 void
 GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                             const GpsLocationExtended& locationExtended,
@@ -3255,8 +3268,8 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
     mGnssSvIdUsedInPosAvail = false;
     mGnssMbSvIdUsedInPosAvail = false;
 
-    LOC_LOGd("needReport %d, status %d, eng type %d", reported, status,
-             locationExtended.locOutputEngType);
+    LOC_LOGd("needReport %d, status %d, eng type %d, eng hub inited %d", reported, status,
+             locationExtended.locOutputEngType, initEngHubProxy());
 
     if (reported) {
         if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA) {
@@ -3271,43 +3284,24 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         GnssLocationInfoNotification locationInfo = {};
         convertLocationInfo(locationInfo, locationExtended);
         convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
-        LocOutputEngineType outputEngType = (LocOutputEngineType) LOC_OUTPUT_ENGINE_COUNT;
-        if (locationInfo.flags & GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT) {
-            outputEngType = locationInfo.locOutputEngType;
-        }
 
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-            if (nullptr != it->second.engineLocationsInfoCb) {
-                if (LOC_OUTPUT_ENGINE_SPE == outputEngType) {
-                    if (false == initEngHubProxy()) {
-                        // if engine hub is disabled, this is SPE fix from modem
-                        // we need to mark one copy as fused and the other as SPE
-                        // and report both to engineLocationsInfoCb
-                        GnssLocationInfoNotification engLocationsInfo[2];
-                        engLocationsInfo[0] = locationInfo;
-                        engLocationsInfo[0].locOutputEngType = LOC_OUTPUT_ENGINE_FUSED;
-                        engLocationsInfo[0].flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT;
-                        engLocationsInfo[1] = locationInfo;
-                        it->second.engineLocationsInfoCb(2, engLocationsInfo);
-                    } else {
-                        // if engine hub is enabled, send out the SPE report right away,
-                        it->second.engineLocationsInfoCb(1, &locationInfo);
-                    }
-                }
-            }  else  if (nullptr != it->second.gnssLocationInfoCb) {
-                if (((LOC_OUTPUT_ENGINE_FUSED == outputEngType) &&
-                        (true == initEngHubProxy())) ||
-                    ((LOC_OUTPUT_ENGINE_SPE == outputEngType) &&
-                        (false == initEngHubProxy()))) {
-                    it->second.gnssLocationInfoCb(locationInfo);
-                }
+            if ((nullptr != it->second.engineLocationsInfoCb) &&
+                (false == initEngHubProxy())) {
+                // if engine hub is disabled, this is SPE fix from modem
+                // we need to have one copy marked as fused and leave the other copy
+                // unmodified (which is marked as SPE fix in LocAPIV02.cpp) and 
+                // dispatch both copies to the engineLocationsInfoCb
+                GnssLocationInfoNotification engLocationsInfo[2];
+                engLocationsInfo[0] = locationInfo;
+                engLocationsInfo[0].locOutputEngType = LOC_OUTPUT_ENGINE_FUSED;
+                engLocationsInfo[0].flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT;
+                engLocationsInfo[1] = locationInfo;
+                it->second.engineLocationsInfoCb(2, engLocationsInfo);
+            }else if (nullptr != it->second.gnssLocationInfoCb) {
+                it->second.gnssLocationInfoCb(locationInfo);
             } else if (nullptr != it->second.trackingCb) {
-                if (((LOC_OUTPUT_ENGINE_FUSED == outputEngType) &&
-                        (true == initEngHubProxy())) ||
-                    ((LOC_OUTPUT_ENGINE_SPE == outputEngType) &&
-                        (false == initEngHubProxy()))) {
-                    it->second.trackingCb(locationInfo.location);
-                }
+                it->second.trackingCb(locationInfo.location);
             }
         }
 

@@ -3103,9 +3103,8 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
     if (true == initEngHubProxy()){
         // send the SPE fix to engine hub
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
-        // check whether we need to report out this SPE fix
-        if ((false == ulpLocation.unpropagatedPosition) &&
-            (LocApiBase::needReport(ulpLocation, status, techMask))) {
+        // report out all SPE fix if it is not propagated, even for failed fix
+        if (false == ulpLocation.unpropagatedPosition) {
             EngineLocationInfo engLocationInfo = {};
             engLocationInfo.location = ulpLocation;
             engLocationInfo.locationExtended = locationExtended;

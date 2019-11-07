@@ -163,7 +163,29 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_CARRIER_PHASE_UNCERTAINTY;
     if (in.flags & GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT)
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_AUTOMATIC_GAIN_CONTROL;
-    out.svid = in.svId;
+    switch(in.svType){
+    case GNSS_SV_TYPE_GPS:
+        out.svid = in.svId;
+        break;
+    case GNSS_SV_TYPE_SBAS:
+        out.svid = in.svId;
+        break;
+    case GNSS_SV_TYPE_GLONASS:
+        out.svid = in.svId - GLO_SV_PRN_MIN + 1;
+        break;
+    case GNSS_SV_TYPE_QZSS:
+        out.svid = in.svId;
+        break;
+    case GNSS_SV_TYPE_BEIDOU:
+        out.svid = in.svId - BDS_SV_PRN_MIN + 1;
+        break;
+    case GNSS_SV_TYPE_GALILEO:
+        out.svid = in.svId - GAL_SV_PRN_MIN + 1;
+        break;
+    default:
+        out.svid = in.svId;
+        break;
+    }
     convertGnssConstellationType(in.svType, out.constellation);
     out.timeOffsetNs = in.timeOffsetNs;
     if (in.stateMask & GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT)

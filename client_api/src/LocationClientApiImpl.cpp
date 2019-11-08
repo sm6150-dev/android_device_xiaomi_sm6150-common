@@ -228,6 +228,12 @@ static GnssSignalTypeMask parseGnssSignalType(const ::GnssSignalTypeMask &halGns
     if (halGnssSignalTypeMask & GNSS_SIGNAL_BEIDOU_B2AQ) {
         gnssSignalTypeMask |= GNSS_SIGNAL_BEIDOU_B2AQ_BIT;
     }
+    if (halGnssSignalTypeMask & GNSS_SIGNAL_BEIDOU_B1) {
+        gnssSignalTypeMask |= GNSS_SIGNAL_BEIDOU_B1;
+    }
+    if (halGnssSignalTypeMask & GNSS_SIGNAL_BEIDOU_B2) {
+        gnssSignalTypeMask |= GNSS_SIGNAL_BEIDOU_B2;
+    }
     return (GnssSignalTypeMask)gnssSignalTypeMask;
 }
 

@@ -178,6 +178,10 @@ enum ELocMsgID {
     E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID = 17,
 
     E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID = 18,
+
+    // engine position report
+    E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID = 19,
+
     // batching session
     E_LOCAPI_START_BATCHING_MSG_ID = 20,
     E_LOCAPI_STOP_BATCHING_MSG_ID = 21,
@@ -195,9 +199,6 @@ enum ELocMsgID {
 
     //geofence breach
     E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
-
-    // engine position report
-    E_LOCAPI_ENGINE_LOCATIONS_INFO_MSG_ID = 30,
 
     // ping
     E_LOCAPI_PINGTEST_MSG_ID = 99

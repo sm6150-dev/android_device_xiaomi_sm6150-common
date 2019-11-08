@@ -58,11 +58,6 @@
 #define LOC_LOGV(...) printf(__VA_ARGS__)
 #endif //__LOC_API_V02_LOG_SILENT__
 
-#define loc_get_v02_event_name(X) #X
-#define loc_get_v02_client_status_name(X) #X
-
-#define loc_get_v02_qmi_status_name(X)  #X
-
 //specific to OFF TARGET
 #ifdef LOC_UTIL_TARGET_OFF_TARGET
 

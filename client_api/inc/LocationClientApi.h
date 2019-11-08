@@ -667,6 +667,12 @@ struct GnssSv {
     float carrierFrequencyHz;
     /** Specifies GNSS signal type */
     GnssSignalTypeMask gnssSignalTypeMask;
+
+    inline GnssSv() :
+        svId(0), type(GNSS_SV_TYPE_UNKNOWN), cN0Dbhz(0.0f),
+        elevation(0.0f), azimuth(0.0f), gnssSvOptionsMask(GnssSvOptionsMask(0)),
+        carrierFrequencyHz(0), gnssSignalTypeMask((GnssSignalTypeMask)0) {
+    }
 };
 
 enum GnssSignalTypes {

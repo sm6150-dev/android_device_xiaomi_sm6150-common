@@ -54,7 +54,7 @@ function blob_fixup() {
         vendor/bin/mlipayd@1.1 | vendor/lib64/libmlipay.so | vendor/lib64/libmlipay@1.1.so )
                 patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         ;;
-        lib/libwfdnative.so | lib64/libwfdnative.so | lib64/liblocationservice_jni.so | lib64/libxt_native.so | lib/libfm-hci.so | lib64/libfm-hci.so | vendor/bin/hw/vendor.display.color@1.0-service | vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.0_vendor.so | vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.0.so )
+        lib/libwfdnative.so | lib64/libwfdnative.so | lib/libfm-hci.so | lib64/libfm-hci.so | vendor/bin/hw/vendor.display.color@1.0-service )
                 sed -i "s/android.hidl.base@1.0.so/libhidlbase.so\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/" "${2}"
         ;;
         etc/permissions/qti_libpermissions.xml )

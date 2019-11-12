@@ -56,13 +56,15 @@ static uint32_t numGnssLocationCb = 0;
 static uint32_t numGnssSvCb = 0;
 static uint32_t numGnssNmeaCb = 0;
 static sem_t sem_pingcbreceived;
-#define DISABLE_TUNC "disableTunc"
-#define ENABLE_TUNC  "enableTunc"
-#define DISABLE_PACE "disablePACE"
-#define ENABLE_PACE  "enablePACE"
-#define CONFIG_SV    "configSV"
-#define DELETE_ALL   "deleteAll"
-#define CONFIG_LEVER_ARM    "configLeverArm"
+#define DISABLE_TUNC       "disableTunc"
+#define ENABLE_TUNC        "enableTunc"
+#define DISABLE_PACE       "disablePACE"
+#define ENABLE_PACE        "enablePACE"
+#define RESET_SV_CONFIG    "resetSVConfig"
+#define CONFIG_SV          "configSV"
+#define MULTI_CONFIG_SV    "multiConfigSV"
+#define DELETE_ALL         "deleteAll"
+#define CONFIG_LEVER_ARM   "configLeverArm"
 
 // debug utility
 static uint64_t getTimestamp() {
@@ -189,7 +191,9 @@ static void printHelp() {
     printf("%s: disable tunc\n", DISABLE_TUNC);
     printf("%s: enable PACE\n", ENABLE_PACE);
     printf("%s: disable PACE\n", DISABLE_PACE);
+    printf("%s: reset sv config to default\n", RESET_SV_CONFIG);
     printf("%s: configure sv \n", CONFIG_SV);
+    printf("%s: mulitple config SV \n", MULTI_CONFIG_SV);
     printf("%s: delete all aiding data\n", DELETE_ALL);
     printf("%s: config lever arm\n", CONFIG_LEVER_ARM);
 }
@@ -302,7 +306,7 @@ void parseLeverArm (char* buf, LeverArmParamsMap &leverArmMap) {
         }
         leverArm.upOffsetMeters = atof(token);
 
-        printf("type %s, %f %f %f\n", type, leverArm.forwardOffsetMeters,
+        printf("type %d, %f %f %f\n", type, leverArm.forwardOffsetMeters,
                leverArm.sidewaysOffsetMeters, leverArm.upOffsetMeters);
 
         leverArmMap.emplace(type, leverArm);
@@ -346,12 +350,75 @@ int main(int argc, char *argv[]) {
 
     // main loop
     while (1) {
-
-        printf("Command:\n");
         char buf[100];
+        memset (buf, 0, sizeof(buf));
         fgets(buf, sizeof(buf), stdin);
-        int command = buf[0];//getchar();
-        switch(command) {
+
+        printf("execute command %s\n", buf);
+        if (!pIntClient) {
+            pIntClient =
+                    new LocationIntegrationApi(priorityMap, intCbs);
+            if (nullptr == pIntClient) {
+                printf("failed to create integration client\n");
+                break;
+            }
+        }
+
+        if (strncmp(buf, DISABLE_TUNC, strlen(DISABLE_TUNC)) == 0) {
+            pIntClient->configConstrainedTimeUncertainty(false);
+        } else if (strncmp(buf, ENABLE_TUNC, strlen(ENABLE_TUNC)) == 0) {
+            // get tuncThreshold and energyBudget from the command line
+            static char *save = nullptr;
+            float tuncThreshold = 0.0;
+            int   energyBudget = 0;
+            char* token = strtok_r(buf, " ", &save); // skip first one
+            token = strtok_r(NULL, " ", &save);
+            if (token != NULL) {
+                tuncThreshold = atof(token);
+                token = strtok_r(NULL, " ", &save);
+                if (token != NULL) {
+                    energyBudget = atoi(token);
+                }
+            }
+            printf("tuncThreshold %f, energyBudget %d\n", tuncThreshold, energyBudget);
+            pIntClient->configConstrainedTimeUncertainty(
+                    true, tuncThreshold, energyBudget);
+        } else if (strncmp(buf, DISABLE_PACE, strlen(DISABLE_TUNC)) == 0) {
+            pIntClient->configPositionAssistedClockEstimator(false);
+        } else if (strncmp(buf, ENABLE_PACE, strlen(ENABLE_TUNC)) == 0) {
+            pIntClient->configPositionAssistedClockEstimator(true);
+        } else if (strncmp(buf, DELETE_ALL, strlen(DELETE_ALL)) == 0) {
+            pIntClient->deleteAllAidingData();
+        } else if (strncmp(buf, RESET_SV_CONFIG, strlen(RESET_SV_CONFIG)) == 0) {
+            pIntClient->configConstellations(nullptr);
+        } else if (strncmp(buf, CONFIG_SV, strlen(CONFIG_SV)) == 0) {
+            LocConfigBlacklistedSvIdList svList;
+            parseSVConfig(buf, svList);
+            pIntClient->configConstellations(&svList);
+        } else if (strncmp(buf, MULTI_CONFIG_SV, strlen(MULTI_CONFIG_SV)) == 0) {
+            // reset
+            pIntClient->configConstellations(nullptr);
+            // disable GAL
+            LocConfigBlacklistedSvIdList galSvList;
+            GnssSvIdInfo svIdInfo = {};
+            svIdInfo.constellation = GNSS_CONSTELLATION_TYPE_GALILEO;
+            svIdInfo.svId = 0;
+            galSvList.push_back(svIdInfo);
+            pIntClient->configConstellations(&galSvList);
+
+            // disable SBAS
+            LocConfigBlacklistedSvIdList sbasSvList;
+            svIdInfo.constellation = GNSS_CONSTELLATION_TYPE_SBAS;
+            svIdInfo.svId = 0;
+            sbasSvList.push_back(svIdInfo);
+            pIntClient->configConstellations(&sbasSvList);
+        } else if (strncmp(buf, CONFIG_LEVER_ARM, strlen(CONFIG_LEVER_ARM)) == 0) {
+            LeverArmParamsMap configInfo;
+            parseLeverArm(buf, configInfo);
+            pIntClient->configLeverArm(configInfo);
+        } else {
+            int command = buf[0];
+            switch(command) {
             case 'g':
                 if (!pClient) {
                     pClient = new LocationClientApi(onCapabilitiesCb);
@@ -410,62 +477,9 @@ int main(int argc, char *argv[]) {
                 goto EXIT;
                 break;
             default:
-                if (!pIntClient) {
-                    pIntClient =
-                        new LocationIntegrationApi(priorityMap, intCbs);
-                    if (nullptr == pIntClient) {
-                         printf("failed to create integration client\n");
-                         break;
-                    }
-                }
-                printf("execute command %s\n", buf);
-                if (strncmp(buf, DISABLE_TUNC, strlen(DISABLE_TUNC)) == 0) {
-                    pIntClient->configConstrainedTimeUncertainty(false);
-                }
-                else if (strncmp(buf, ENABLE_TUNC, strlen(ENABLE_TUNC)) == 0) {
-                    // get tuncThreshold and energyBudget from the command line
-                    static char *save = nullptr;
-                    float tuncThreshold = 0.0;
-                    int   energyBudget = 0;
-                    char* token = strtok_r(buf, " ", &save); // skip first one
-                    token = strtok_r(NULL, " ", &save);
-                    if (token != NULL) {
-                        tuncThreshold = atof(token);
-                        token = strtok_r(NULL, " ", &save);
-                        if (token != NULL) {
-                            energyBudget = atoi(token);
-                        }
-                    }
-                    printf("tuncThreshold %f, energyBudget %d\n",
-                           tuncThreshold, energyBudget);
-                    pIntClient->configConstrainedTimeUncertainty(
-                            true, tuncThreshold, energyBudget);
-
-                } else if (strncmp(buf, DISABLE_PACE, strlen(DISABLE_TUNC)) == 0) {
-                    pIntClient->configPositionAssistedClockEstimator(false);
-
-                    pIntClient->configPositionAssistedClockEstimator(true);
-                } else if (strncmp(buf, ENABLE_PACE, strlen(ENABLE_TUNC)) == 0) {
-                    pIntClient->configPositionAssistedClockEstimator(true);
-                } else if (strncmp(buf, DELETE_ALL, strlen(DELETE_ALL)) == 0) {
-                    pIntClient->deleteAllAidingData();
-                } else if (strncmp(buf, CONFIG_SV, strlen(CONFIG_SV)) == 0) {
-                    LocConfigBlacklistedSvIdList svList;
-                    parseSVConfig(buf, svList);
-                    if (svList.size() == 0) {
-                        pIntClient->configConstellations(nullptr);
-                    } else {
-                        pIntClient->configConstellations(&svList);
-                    }
-                }
-                else if (strncmp(buf, CONFIG_LEVER_ARM, strlen(CONFIG_LEVER_ARM)) == 0) {
-                    LeverArmParamsMap configInfo;
-                    parseLeverArm(buf, configInfo);
-                    pIntClient->configLeverArm(configInfo);
-                } else {
-                    printf("unknown command\n");
-                }
+                printf("unknown command %s\n", buf);
                 break;
+            }
         }
     }//while(1)
 

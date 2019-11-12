@@ -7304,15 +7304,22 @@ LocApiV02::setBlacklistSvSync(const GnssSvIdConfig& config)
     setBlacklistSvMsg.gal_clear_persist_blacklist_sv_valid = true;
     setBlacklistSvMsg.gal_clear_persist_blacklist_sv = ~config.galBlacklistSvMask;
 
+    setBlacklistSvMsg.sbas_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.sbas_persist_blacklist_sv = config.sbasBlacklistSvMask,
+    setBlacklistSvMsg.sbas_clear_persist_blacklist_sv_valid = true;
+    setBlacklistSvMsg.sbas_clear_persist_blacklist_sv = ~config.sbasBlacklistSvMask;
+
     LOC_LOGd(">>> configConstellations, "
              "glo blacklist mask =0x%" PRIx64 ", "
              "qzss blacklist mask =0x%" PRIx64 ",\n"
              "bds blacklist mask =0x%" PRIx64 ", "
-             "gal blacklist mask =0x%" PRIx64 ",\n",
+             "gal blacklist mask =0x%" PRIx64 ",\n"
+             "sbas blacklist mask =0x%" PRIx64 ", ",
              setBlacklistSvMsg.glo_persist_blacklist_sv,
              setBlacklistSvMsg.qzss_persist_blacklist_sv,
              setBlacklistSvMsg.bds_persist_blacklist_sv,
-             setBlacklistSvMsg.gal_persist_blacklist_sv);
+             setBlacklistSvMsg.gal_persist_blacklist_sv,
+             setBlacklistSvMsg.sbas_persist_blacklist_sv);
 
     // Update in request union
     req_union.pSetBlacklistSvReq = &setBlacklistSvMsg;
@@ -7366,6 +7373,15 @@ void
 LocApiV02::setConstellationControl(const GnssSvTypeConfig& config,
                                    LocApiResponse *adapterResponse)
 {
+    // QMI will return INVALID parameter if enabledSvTypesMask is 0,
+    // so we just return back to the caller as this is no-op
+    if (0 == config.enabledSvTypesMask) {
+        if (NULL != adapterResponse) {
+            adapterResponse->returnToSender(LOCATION_ERROR_SUCCESS);
+        }
+        return;
+    }
+
     sendMsg(new LocApiMsg([this, config, adapterResponse] () {
 
     locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
@@ -7381,10 +7397,8 @@ LocApiV02::setConstellationControl(const GnssSvTypeConfig& config,
     // Fill in the request details
     setConstellationConfigMsg.resetConstellations = false;
 
-    if (config.enabledSvTypesMask != 0) {
-        setConstellationConfigMsg.enableMask_valid = true;
-        setConstellationConfigMsg.enableMask = config.enabledSvTypesMask;
-    }
+    setConstellationConfigMsg.enableMask_valid = true;
+    setConstellationConfigMsg.enableMask = config.enabledSvTypesMask;
 
     // disableMask is not supported in modem
     // if we set disableMask, QMI call will return error

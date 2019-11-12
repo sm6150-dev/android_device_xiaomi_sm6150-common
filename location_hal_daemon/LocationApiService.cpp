@@ -170,7 +170,8 @@ LocationApiService::LocationApiService(const configParamToRead & configParamRead
         }
 
         LOC_LOGd("--> Starting a default client...");
-        LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(this, "default");
+        LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(
+                this, "default", LOCATION_CLIENT_API);
         mClients.emplace("default", pClient);
 
         pClient->updateSubscription(
@@ -422,7 +423,8 @@ void LocationApiService::newClient(LocAPIClientRegisterReqMsg *pMsg) {
     }
 
     // store it in client property database
-    LocHalDaemonClientHandler *pClient = new LocHalDaemonClientHandler(this, clientname);
+    LocHalDaemonClientHandler *pClient =
+            new LocHalDaemonClientHandler(this, clientname, pMsg->mClientType);
     if (!pClient) {
         LOC_LOGe("failed to register client=%s", clientname.c_str());
         return;

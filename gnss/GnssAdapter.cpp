@@ -81,6 +81,7 @@ GnssAdapter::GnssAdapter() :
     mGnssSvIdConfig(),
     mGnssSvTypeConfig(),
     mGnssSvTypeConfigCb(nullptr),
+    mLocConfigInfo{},
     mNiData(),
     mAgpsManager(),
     mAgpsCbInfo(),
@@ -794,12 +795,32 @@ GnssAdapter::setConfigCommand()
 
                 adapter.mLocApi->setXtraVersionCheckSync(gpsConf.XTRA_VERSION_CHECK);
 
+                // load tunc configuration from config file on first boot-up,
+                // e.g.: adapter.mLocConfigInfo.tuncConfigInfo.isValid is false
+                if (adapter.mLocConfigInfo.tuncConfigInfo.isValid == false) {
+                    adapter.mLocConfigInfo.tuncConfigInfo.isValid = true;
+                    adapter.mLocConfigInfo.tuncConfigInfo.enable =
+                        (gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED == 1);
+                    adapter.mLocConfigInfo.tuncConfigInfo.tuncThresholdMs =
+                        (float)gpsConf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD;
+                    adapter.mLocConfigInfo.tuncConfigInfo.energyBudget =
+                        gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET;
+                }
+
                 adapter.mLocApi->setConstrainedTuncMode(
-                        gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED == 1,
-                        (float)gpsConf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD,
-                        gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET);
+                        adapter.mLocConfigInfo.tuncConfigInfo.enable,
+                        adapter.mLocConfigInfo.tuncConfigInfo.tuncThresholdMs,
+                        adapter.mLocConfigInfo.tuncConfigInfo.energyBudget);
+
+                // load pace configuration from config file on first boot-up,
+                // e.g.: adapter.mLocConfigInfo.paceConfigInfo.isValid is false
+                if (adapter.mLocConfigInfo.paceConfigInfo.isValid == false) {
+                    adapter.mLocConfigInfo.paceConfigInfo.isValid = true;
+                    adapter.mLocConfigInfo.paceConfigInfo.enable =
+                        (gpsConf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED==1);
+                }
                 adapter.mLocApi->setPositionAssistedClockEstimatorMode(
-                        gpsConf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED == 1);
+                        adapter.mLocConfigInfo.paceConfigInfo.enable);
 
                 if (sapConf.GYRO_BIAS_RANDOM_WALK_VALID ||
                     sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
@@ -3304,9 +3325,10 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
             }
         }
 
-        // if engine hub is running and the fix is from sensor, e.g.: DRE,
-        // inject DRE fix to modem
-        if ((1 == ContextBase::mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED) &&
+        // if PACE is enabled and engine hub is running and the fix is from sensor,
+        // e.g.: DRE, inject DRE fix to modem
+        if ((true == mLocConfigInfo.paceConfigInfo.isValid &&
+             true == mLocConfigInfo.paceConfigInfo.enable) &&
                 (true == initEngHubProxy()) && (LOC_POS_TECH_MASK_SENSORS & techMask)) {
             mLocApi->injectPosition(locationInfo, false);
         }
@@ -4839,6 +4861,263 @@ GnssAdapter::getGnssEnergyConsumedCommand(GnssEnergyConsumedCallback energyConsu
     };
 
     sendMsg(new MsgGetGnssEnergyConsumed(*this, *mLocApi, energyConsumedCb));
+}
+
+// Set tunc constrained mode, use 0 session id to indicate
+// that no callback is needed. Session id 0 is used for calls that
+// are not invoked from the integration api, e.g.: initial configuration
+// from the configure file
+void
+GnssAdapter::setConstrainedTunc(bool enable, float tuncConstraint,
+                                uint32_t energyBudget, uint32_t sessionId) {
+
+    mLocConfigInfo.tuncConfigInfo.isValid = true;
+    mLocConfigInfo.tuncConfigInfo.enable = enable;
+    mLocConfigInfo.tuncConfigInfo.tuncThresholdMs = tuncConstraint;
+    mLocConfigInfo.tuncConfigInfo.energyBudget = energyBudget;
+
+    LocApiResponse* locApiResponse = nullptr;
+    if (sessionId != 0) {
+        locApiResponse =
+                new LocApiResponse(*getContext(),
+                                   [this, sessionId] (LocationError err) {
+                                    reportResponse(err, sessionId);});
+        if (!locApiResponse) {
+            LOC_LOGe("memory alloc failed");
+        }
+    }
+    mLocApi->setConstrainedTuncMode(
+            enable, tuncConstraint, energyBudget, locApiResponse);
+}
+
+uint32_t
+GnssAdapter::setConstrainedTuncCommand (bool enable, float tuncConstraint,
+                                        uint32_t energyBudget) {
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgEnableTUNC : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t mSessionId;
+        bool mEnable;
+        float mTuncConstraint;
+        uint32_t mEnergyBudget;
+
+        inline MsgEnableTUNC(GnssAdapter& adapter,
+                             uint32_t sessionId,
+                             bool enable,
+                             float tuncConstraint,
+                             uint32_t energyBudget) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mEnable(enable),
+            mTuncConstraint(tuncConstraint),
+            mEnergyBudget(energyBudget) {}
+        inline virtual void proc() const {
+            mAdapter.setConstrainedTunc(mEnable, mTuncConstraint,
+                                        mEnergyBudget, mSessionId);
+        }
+    };
+
+    sendMsg(new MsgEnableTUNC(*this, sessionId, enable,
+                              tuncConstraint, energyBudget));
+
+    return sessionId;
+}
+
+// Set position assisted clock estimator, use 0 session id to indicate
+// that no callback is needed. Session id 0 is used for calls that are
+// not invoked from the integration api, e.g.: initial configuration
+// from the configure file.
+void
+GnssAdapter::setPositionAssistedClockEstimator(bool enable,
+                                               uint32_t sessionId) {
+
+    mLocConfigInfo.paceConfigInfo.isValid = true;
+    mLocConfigInfo.paceConfigInfo.enable = enable;
+    LocApiResponse* locApiResponse = nullptr;
+    if (sessionId != 0) {
+        locApiResponse =
+                new LocApiResponse(*getContext(),
+                                   [this, sessionId] (LocationError err) {
+                                   reportResponse(err, sessionId);});
+        if (!locApiResponse) {
+            LOC_LOGe("memory alloc failed");
+        }
+    }
+    mLocApi->setPositionAssistedClockEstimatorMode(enable, locApiResponse);
+}
+
+uint32_t
+GnssAdapter::setPositionAssistedClockEstimatorCommand(bool enable) {
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgEnablePACE : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t mSessionId;
+        bool mEnable;
+        inline MsgEnablePACE(GnssAdapter& adapter,
+                             uint32_t sessionId, bool enable) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mEnable(enable){}
+        inline virtual void proc() const {
+            mAdapter.setPositionAssistedClockEstimator(mEnable, mSessionId);
+        }
+    };
+
+    sendMsg(new MsgEnablePACE(*this, sessionId, enable));
+    return sessionId;
+}
+
+void
+GnssAdapter::updateSvConfig(uint32_t         sessionId,
+                            const GnssSvTypeConfig& svTypeConfig,
+                            const GnssSvIdConfig&   svIdConfig) {
+
+    // check whether if any constellation is removed from the new config
+    GnssSvTypesMask enabledRemoved = mGnssSvTypeConfig.enabledSvTypesMask &
+            (mGnssSvTypeConfig.enabledSvTypesMask ^ svTypeConfig.enabledSvTypesMask);
+    // Send reset if any constellation is removed from the enabled list
+    if (enabledRemoved != 0) {
+        mLocApi->resetConstellationControl();
+    }
+
+    mGnssSvTypeConfig = svTypeConfig;
+    mGnssSvIdConfig   = svIdConfig;
+
+    // Send blacklist info
+    mLocApi->setBlacklistSv(mGnssSvIdConfig);
+
+    // Send only enabled constellation config
+    GnssSvTypeConfig svTypeConfigCopy = {sizeof(GnssSvTypeConfig), 0, 0};
+    svTypeConfigCopy.enabledSvTypesMask = mGnssSvTypeConfig.enabledSvTypesMask;
+    LocApiResponse* locApiResponse = new LocApiResponse(*getContext(),
+            [this, sessionId] (LocationError err) {
+            reportResponse(err, sessionId);});
+    if (!locApiResponse) {
+        LOC_LOGe("memory alloc failed");
+    }
+    mLocApi->setConstellationControl(svTypeConfigCopy, locApiResponse);
+}
+
+uint32_t GnssAdapter::gnssUpdateSvConfigCommand(
+        const GnssSvTypeConfig& svTypeConfig,
+        const GnssSvIdConfig& svIdConfig) {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgUpdateSvConfig : public LocMsg {
+        GnssAdapter&     mAdapter;
+        uint32_t         mSessionId;
+        GnssSvTypeConfig mSvTypeConfig;
+        GnssSvIdConfig   mSvIdConfig;
+
+        inline MsgUpdateSvConfig(GnssAdapter& adapter,
+                                 uint32_t sessionId,
+                                 const GnssSvTypeConfig& svTypeConfig,
+                                 const GnssSvIdConfig& svIdConfig) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mSvTypeConfig(svTypeConfig),
+            mSvIdConfig(svIdConfig) {}
+        inline virtual void proc() const {
+            mAdapter.updateSvConfig(mSessionId, mSvTypeConfig, mSvIdConfig);
+        }
+    };
+
+    if (sessionId != 0) {
+        sendMsg(new MsgUpdateSvConfig(*this, sessionId,
+                                       svTypeConfig, svIdConfig));
+    }
+    return sessionId;
+}
+
+void
+GnssAdapter::resetSvConfig(uint32_t sessionId) {
+
+    LocApiResponse* locApiResponse = nullptr;
+    if (sessionId != 0) {
+        locApiResponse =
+                new LocApiResponse(*getContext(),
+                                   [this, sessionId] (LocationError err) {
+                                   reportResponse(err, sessionId);});
+        if (!locApiResponse) {
+            LOC_LOGe("memory alloc failed");
+        }
+    }
+    mLocApi->resetConstellationControl(locApiResponse);
+}
+
+uint32_t GnssAdapter::gnssResetSvConfigCommand() {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgResetSvConfig : public LocMsg {
+        GnssAdapter&     mAdapter;
+        uint32_t         mSessionId;
+
+        inline MsgResetSvConfig(GnssAdapter& adapter,
+                                uint32_t sessionId) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId) {}
+        inline virtual void proc() const {
+            mAdapter.resetSvConfig(mSessionId);
+        }
+    };
+
+    sendMsg(new MsgResetSvConfig(*this, sessionId));
+    return sessionId;
+}
+
+void
+GnssAdapter::configLeverArm(uint32_t sessionId,
+                            const LeverArmConfigInfo& configInfo) {
+
+    LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
+    if (true == mEngHubProxy->configLeverArm(configInfo)) {
+        err = LOCATION_ERROR_SUCCESS;
+    }
+    reportResponse(err, sessionId);
+}
+
+uint32_t
+GnssAdapter::configLeverArmCommand(const LeverArmConfigInfo& configInfo) {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgConfigLeverArm : public LocMsg {
+        GnssAdapter&       mAdapter;
+        uint32_t           mSessionId;
+        LeverArmConfigInfo mConfigInfo;
+
+        inline MsgConfigLeverArm(GnssAdapter& adapter,
+                                 uint32_t sessionId,
+                                 const LeverArmConfigInfo& configInfo) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mConfigInfo(configInfo) {}
+        inline virtual void proc() const {
+            mAdapter.configLeverArm(mSessionId, mConfigInfo);
+        }
+    };
+
+    sendMsg(new MsgConfigLeverArm(*this, sessionId, configInfo));
+    return sessionId;
 }
 
 /* ==== Eng Hub Proxy ================================================================= */

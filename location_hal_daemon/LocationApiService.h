@@ -95,6 +95,7 @@ public:
     void onSuspend();
     void onResume();
     void onShutdown();
+    void injectPowerEvent(PowerStateType powerState);
 #endif
 
     // other APIs

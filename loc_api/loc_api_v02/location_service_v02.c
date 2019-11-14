@@ -25,13 +25,13 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- /*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
  *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
- /* This file was generated with Tool version 6.14.7
- It was generated on: Mon May 13 2019 (Spin 0)
- From IDL File: location_service_v02.idl */
+/* This file was generated with Tool version 6.14.7
+   It was generated on: Tue Oct 22 2019 (Spin 0)
+   From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
 #include "qmi_idl_lib_internal.h"
@@ -7517,6 +7517,18 @@ static const uint8_t qmiLocLocationRequestNotificationIndMsgT_data_v02[] = {
   QMI_LOC_MAX_CLIENT_ID_STRING_LENGTH_V02
 };
 
+static const uint8_t qmiLocInjectPlatformPowerStateReqMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectPlatformPowerStateReqMsgT_v02, powerState)
+};
+
+static const uint8_t qmiLocInjectPlatformPowerStateIndMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
+   QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectPlatformPowerStateIndMsgT_v02, status)
+};
+
 /* Type Table */
 static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocApplicationIdStructT_v02), qmiLocApplicationIdStructT_data_v02},
@@ -7906,7 +7918,9 @@ static const qmi_idl_message_table_entry loc_message_table_v02[] = {
   {sizeof(qmiLocQueryGNSSEnergyConsumedIndMsgT_v02), qmiLocQueryGNSSEnergyConsumedIndMsgT_data_v02},
   {sizeof(qmiLocEventReportIndMsgT_v02), qmiLocEventReportIndMsgT_data_v02},
   {sizeof(qmiLocGetBandMeasurementMetricsIndMsgT_v02), qmiLocGetBandMeasurementMetricsIndMsgT_data_v02},
-  {sizeof(qmiLocLocationRequestNotificationIndMsgT_v02), qmiLocLocationRequestNotificationIndMsgT_data_v02}
+  {sizeof(qmiLocLocationRequestNotificationIndMsgT_v02), qmiLocLocationRequestNotificationIndMsgT_data_v02},
+  {sizeof(qmiLocInjectPlatformPowerStateReqMsgT_v02), qmiLocInjectPlatformPowerStateReqMsgT_data_v02},
+  {sizeof(qmiLocInjectPlatformPowerStateIndMsgT_v02), qmiLocInjectPlatformPowerStateIndMsgT_data_v02}
 };
 
 /* Range Table */
@@ -8057,7 +8071,8 @@ static const qmi_idl_service_message_table_entry loc_service_command_messages_v0
   {QMI_LOC_GET_BS_OBS_DATA_REQ_V02, QMI_IDL_TYPE16(0, 275), 16},
   {QMI_LOC_SET_CONSTRAINED_TUNC_MODE_REQ_V02, QMI_IDL_TYPE16(0, 282), 18},
   {QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_REQ_V02, QMI_IDL_TYPE16(0, 284), 4},
-  {QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02, QMI_IDL_TYPE16(0, 286), 0}
+  {QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02, QMI_IDL_TYPE16(0, 286), 0},
+  {QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ_V02, QMI_IDL_TYPE16(0, 291), 7}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_response_messages_v02[] = {
@@ -8186,7 +8201,8 @@ static const qmi_idl_service_message_table_entry loc_service_response_messages_v
   {QMI_LOC_GET_BS_OBS_DATA_RESP_V02, QMI_IDL_TYPE16(0, 1), 7},
   {QMI_LOC_SET_CONSTRAINED_TUNC_MODE_RESP_V02, QMI_IDL_TYPE16(0, 1), 7},
   {QMI_LOC_ENABLE_POSITION_ASSISTED_CLOCK_EST_RESP_V02, QMI_IDL_TYPE16(0, 1), 7},
-  {QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02, QMI_IDL_TYPE16(0, 1), 7}
+  {QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_RESP_V02, QMI_IDL_TYPE16(0, 1), 7},
+  {QMI_LOC_INJECT_PLATFORM_POWER_STATE_RESP_V02, QMI_IDL_TYPE16(0, 1), 7}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_indication_messages_v02[] = {
@@ -8358,7 +8374,8 @@ static const qmi_idl_service_message_table_entry loc_service_indication_messages
   {QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02, QMI_IDL_TYPE16(0, 287), 22},
   {QMI_LOC_EVENT_REPORT_IND_V02, QMI_IDL_TYPE16(0, 288), 86},
   {QMI_LOC_GET_BAND_MEASUREMENT_METRICS_IND_V02, QMI_IDL_TYPE16(0, 289), 124},
-  {QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02, QMI_IDL_TYPE16(0, 290), 66}
+  {QMI_LOC_LOCATION_REQUEST_NOTIFICATION_IND_V02, QMI_IDL_TYPE16(0, 290), 66},
+  {QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02, QMI_IDL_TYPE16(0, 292), 7}
 };
 
 /*Service Object*/
@@ -8372,7 +8389,7 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x71,
+  0x72,
   NULL
 };
 

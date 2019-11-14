@@ -192,7 +192,7 @@ vendor/lib/libbase64.so
 vendor/lib/libcpion.so
 vendor/lib/libcppf.so
 vendor/lib/libhdcpsrm.so
-vendor/lib/liboemcrypto.so|d16a99f71e39bc2fafb70cc9813864959fcb380f
+vendor/lib/liboemcrypto.so
 vendor/lib/librmp.so
 vendor/lib/libwvhidl.so
 vendor/lib64/mediadrm/libwvdrmengine.so
@@ -200,7 +200,7 @@ vendor/lib64/libbase64.so
 vendor/lib64/libcpion.so
 vendor/lib64/libcppf.so
 vendor/lib64/libhdcpsrm.so
-vendor/lib64/liboemcrypto.so|91d23fb1e042ebe2d3cb85738fae93dd7a0f715e
+vendor/lib64/liboemcrypto.so
 vendor/lib64/librmp.so
 
 # ESE-Powermanager

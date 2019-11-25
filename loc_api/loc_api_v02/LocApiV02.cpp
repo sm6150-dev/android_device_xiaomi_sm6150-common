@@ -2011,11 +2011,14 @@ LocApiV02::setSUPLVersionSync(GnssConfigSuplVersion version)
   supl_config_req.suplVersion_valid = 1;
 
   switch (version) {
-    case GNSS_CONFIG_SUPL_VERSION_2_0_0:
-      supl_config_req.suplVersion = eQMI_LOC_SUPL_VERSION_2_0_V02;
+    case GNSS_CONFIG_SUPL_VERSION_2_0_4:
+      supl_config_req.suplVersion = eQMI_LOC_SUPL_VERSION_2_0_4_V02;
       break;
     case GNSS_CONFIG_SUPL_VERSION_2_0_2:
       supl_config_req.suplVersion = eQMI_LOC_SUPL_VERSION_2_0_2_V02;
+      break;
+    case GNSS_CONFIG_SUPL_VERSION_2_0_0:
+      supl_config_req.suplVersion = eQMI_LOC_SUPL_VERSION_2_0_V02;
       break;
     case GNSS_CONFIG_SUPL_VERSION_1_0_0:
     default:
@@ -7051,10 +7054,12 @@ GnssConfigSuplVersion
 LocApiV02::convertSuplVersion(const uint32_t suplVersion)
 {
     switch (suplVersion) {
-        case 0x00020000:
-            return GNSS_CONFIG_SUPL_VERSION_2_0_0;
+        case 0x00020004:
+            return GNSS_CONFIG_SUPL_VERSION_2_0_4;
         case 0x00020002:
             return GNSS_CONFIG_SUPL_VERSION_2_0_2;
+        case 0x00020000:
+            return GNSS_CONFIG_SUPL_VERSION_2_0_0;
         case 0x00010000:
         default:
             return GNSS_CONFIG_SUPL_VERSION_1_0_0;

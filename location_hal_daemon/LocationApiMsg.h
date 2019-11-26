@@ -53,12 +53,8 @@ Constants
 #define LOCATION_CLIENT_API_QSOCKET_HALDAEMON_INSTANCE_ID   (1)
 #define LOCATION_CLIENT_API_QSOCKET_CLIENT_SERVICE_ID       (5002)
 
-enum ClientType {
-    LOCATION_CLIENT_API = 1,
-    LOCATION_INTEGRATION_API = 2,
-};
-
-#define sLOCAL SOCKET_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
+#define s_CLIENTAPI_LOCAL SOCKET_LOC_CLIENT_DIR  LOC_CLIENT_NAME_PREFIX
+#define s_INTAPI_LOCAL    SOCKET_LOC_CLIENT_DIR  LOC_INTAPI_NAME_PREFIX
 #define sEAP EAP_LOC_CLIENT_DIR LOC_CLIENT_NAME_PREFIX
 
 using namespace std;
@@ -113,9 +109,10 @@ public:
     }
     inline Type getNodeType() const {
         Type type = OTHER;
-        if (mNodePathnamePrefix.compare(0, string::npos, sLOCAL, sizeof(sLOCAL)-1) == 0) {
+        if (mNodePathnamePrefix.compare(0, sizeof(SOCKET_LOC_CLIENT_DIR)-1,
+                                        SOCKET_LOC_CLIENT_DIR) == 0) {
             type = LOCAL;
-        } else if (mNodePathnamePrefix.compare(0, string::npos, sEAP, sizeof(sEAP)-1) == 0) {
+        } else if (mNodePathnamePrefix.compare(0, sizeof(sEAP)-1, sEAP) == 0) {
             type = EAP;
         }
         return type;
@@ -139,14 +136,21 @@ public:
     }
 };
 
+enum ClientType {
+    LOCATION_CLIENT_API = 1,
+    LOCATION_INTEGRATION_API = 2,
+};
+
 class SockNodeLocal : public SockNode {
 public:
-    SockNodeLocal(int32_t pid, int32_t tid) : SockNode(pid, tid, sLOCAL) {}
+    SockNodeLocal(ClientType type, int32_t pid, int32_t tid) :
+        SockNode(pid, tid, (LOCATION_CLIENT_API == type) ? s_CLIENTAPI_LOCAL : s_INTAPI_LOCAL) {}
 };
 
 class SockNodeEap : public SockNode {
 public:
-    SockNodeEap(int32_t service, int32_t instance) : SockNode(service, instance, sEAP) {}
+    SockNodeEap(int32_t service, int32_t instance) :
+        SockNode(service, instance, sEAP) {}
 };
 
 /******************************************************************************
@@ -206,7 +210,14 @@ enum ELocMsgID {
     E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
 
     // ping
-    E_LOCAPI_PINGTEST_MSG_ID = 99
+    E_LOCAPI_PINGTEST_MSG_ID = 99,
+
+    // integration API config request
+    E_INTAPI_CONFIG_CONSTRAINTED_TUNC_MSG_ID = 200,
+    E_INTAPI_CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR_MSG_ID = 201,
+    E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID  = 202,
+    E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID  = 203,
+    E_INTAPI_CONFIG_LEVER_ARM_MSG_ID  = 204,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -544,6 +555,69 @@ struct LocAPIGetGnssEnergyConsumedReqMsg: LocAPIMsgHeader
     inline LocAPIGetGnssEnergyConsumedReqMsg(const char* name) :
         LocAPIMsgHeader(name, E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID) { }
 };
+
+struct LocConfigConstrainedTuncReqMsg: LocAPIMsgHeader
+{
+    bool     mEnable;
+    float    mTuncConstraint;
+    uint32_t mEnergyBudget;
+
+    inline LocConfigConstrainedTuncReqMsg(const char* name,
+                                          bool enable,
+                                          float tuncConstraint,
+                                          uint32_t energyBudget) :
+            LocAPIMsgHeader(name, E_INTAPI_CONFIG_CONSTRAINTED_TUNC_MSG_ID),
+            mEnable(enable),
+            mTuncConstraint(tuncConstraint),
+            mEnergyBudget(energyBudget) { }
+};
+
+struct LocConfigPositionAssistedClockEstimatorReqMsg: LocAPIMsgHeader
+{
+    bool     mEnable;
+    inline LocConfigPositionAssistedClockEstimatorReqMsg(const char* name,
+                                                         bool enable) :
+            LocAPIMsgHeader(name,
+                            E_INTAPI_CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR_MSG_ID),
+            mEnable(enable) { }
+};
+
+struct LocConfigSvConstellationReqMsg: LocAPIMsgHeader
+{
+    bool mResetToDefault;
+    GnssSvTypeConfig mSvTypeConfig;
+    GnssSvIdConfig   mSvIdConfig;
+
+    inline LocConfigSvConstellationReqMsg(const char* name,
+                                          bool resetToDefault,
+                                          const GnssSvTypeConfig& svTypeConfig,
+                                          const GnssSvIdConfig& svIdConfig) :
+            LocAPIMsgHeader(name, E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID),
+            mResetToDefault(resetToDefault),
+            mSvTypeConfig(svTypeConfig),
+            mSvIdConfig(svIdConfig){ }
+};
+
+// defintion for message with msg id of E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID
+struct LocConfigAidingDataDeletionReqMsg: LocAPIMsgHeader
+{
+    GnssAidingData mAidingData;
+
+    inline LocConfigAidingDataDeletionReqMsg(const char* name, GnssAidingData& aidingData) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID),
+        mAidingData(aidingData) { }
+};
+
+struct LocConfigLeverArmReqMsg: LocAPIMsgHeader
+{
+    LeverArmConfigInfo mLeverArmConfigInfo;
+
+    inline LocConfigLeverArmReqMsg(const char* name, const
+                                   LeverArmConfigInfo & configInfo) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_LEVER_ARM_MSG_ID),
+        mLeverArmConfigInfo(configInfo) { }
+};
+
 
 /******************************************************************************
 IPC message structure - indications

@@ -124,7 +124,8 @@ LocationApiService - constructors
 LocationApiService::LocationApiService(const configParamToRead & configParamRead) :
 
     mLocationControlId(0),
-    mAutoStartGnss(configParamRead.autoStartGnss)
+    mAutoStartGnss(configParamRead.autoStartGnss),
+    mPowerState(POWER_STATE_UNKNOWN)
 #ifdef POWERMANAGER_ENABLED
     ,mPowerEventObserver(nullptr)
 #endif
@@ -170,8 +171,8 @@ LocationApiService::LocationApiService(const configParamToRead & configParamRead
         }
 
         LOC_LOGd("--> Starting a default client...");
-        LocHalDaemonClientHandler* pClient = new LocHalDaemonClientHandler(
-                this, "default", LOCATION_CLIENT_API);
+        LocHalDaemonClientHandler* pClient =
+                new LocHalDaemonClientHandler(this, "default", LOCATION_CLIENT_API);
         mClients.emplace("default", pClient);
 
         pClient->updateSubscription(
@@ -399,6 +400,55 @@ void LocationApiService::processClientMsg(const char* data, uint32_t length) {
             pingTest(reinterpret_cast<LocAPIPingTestReqMsg*>(pMsg));
             break;
         }
+
+        // location configuration API
+        case E_INTAPI_CONFIG_CONSTRAINTED_TUNC_MSG_ID: {
+            if (sizeof(LocConfigConstrainedTuncReqMsg) != length) {
+                LOC_LOGe("invalid LocConfigConstrainedTuncReqMsg");
+                break;
+            }
+            configConstrainedTunc(reinterpret_cast<LocConfigConstrainedTuncReqMsg*>(pMsg));
+            break;
+        }
+
+        case E_INTAPI_CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR_MSG_ID: {
+            if (sizeof(LocConfigPositionAssistedClockEstimatorReqMsg) != length) {
+                LOC_LOGe("invalid LocConfigPositionAssistedClockEstimatorReqMsg");
+                break;
+            }
+            configPositionAssistedClockEstimator(reinterpret_cast
+                    <LocConfigPositionAssistedClockEstimatorReqMsg*>(pMsg));
+            break;
+        }
+
+        case E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID: {
+            if (sizeof(LocConfigSvConstellationReqMsg) != length) {
+                LOC_LOGe("invalid LocConfigSvConstellationReqMsg");
+                break;
+            }
+            configConstellations(reinterpret_cast
+                    <LocConfigSvConstellationReqMsg*>(pMsg));
+            break;
+        }
+
+        case E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID: {
+            if (sizeof(LocConfigAidingDataDeletionReqMsg) != length) {
+                LOC_LOGe("invalid message");
+                break;
+            }
+            configAidingDataDeletion(reinterpret_cast<LocConfigAidingDataDeletionReqMsg*>(pMsg));
+            break;
+        }
+
+        case E_INTAPI_CONFIG_LEVER_ARM_MSG_ID: {
+            if (sizeof(LocConfigLeverArmReqMsg) != length) {
+                LOC_LOGe("invalid message");
+                break;
+            }
+            configLeverArm(reinterpret_cast<LocConfigLeverArmReqMsg*>(pMsg));
+            break;
+        }
+
         default: {
             LOC_LOGe("Unknown message");
             break;
@@ -493,6 +543,36 @@ void LocationApiService::stopTracking(LocAPIStopTrackingReqMsg *pMsg) {
     pClient->stopTracking();
     pClient->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
     LOC_LOGi(">-- stopping session");
+}
+
+// no need to hold the lock as lock has been held on calling functions
+void LocationApiService::suspendAllTrackingSessions() {
+    for (auto client : mClients) {
+        // stop session if running
+        if (client.second && client.second->mTracking) {
+            client.second->stopTracking();
+            client.second->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
+            LOC_LOGi("--> suspended");
+        }
+    }
+}
+
+// no need to hold the lock as lock has been held on calling functions
+void LocationApiService::resumeAllTrackingSessions() {
+    for (auto client : mClients) {
+        // start session if not running
+        if (client.second && client.second->mTracking) {
+
+            // resume session with preserved options
+            if (!client.second->startTracking()) {
+                LOC_LOGe("Failed to start session");
+                return;
+            }
+            // success
+            client.second->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
+            LOC_LOGi("--> resumed");
+        }
+    }
 }
 
 void LocationApiService::updateSubscription(LocAPIUpdateCallbacksReqMsg *pMsg) {
@@ -786,12 +866,141 @@ void LocationApiService::pingTest(LocAPIPingTestReqMsg* pMsg) {
     LOC_LOGd(">-- pingTest");
 }
 
+void LocationApiService::configConstrainedTunc(
+        const LocConfigConstrainedTuncReqMsg* pMsg){
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg || !mLocationControlApi) {
+        return;
+    }
+
+    uint32_t sessionId = mLocationControlApi->configConstrainedTimeUncertainty(
+            pMsg->mEnable, pMsg->mTuncConstraint, pMsg->mEnergyBudget);
+    LOC_LOGd(">-- enable: %d, tunc constraint %f, energy budget %d, session ID = %d",
+             pMsg->mEnable, pMsg->mTuncConstraint, pMsg->mEnergyBudget,
+             sessionId);
+    addConfigRequestToMap(sessionId, pMsg);
+}
+
+void LocationApiService::configPositionAssistedClockEstimator(
+        const LocConfigPositionAssistedClockEstimatorReqMsg* pMsg)
+{
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg || !mLocationControlApi) {
+        return;
+    }
+
+    uint32_t sessionId = mLocationControlApi->
+            configPositionAssistedClockEstimator(pMsg->mEnable);
+    LOC_LOGd(">-- enable: %d, session ID = %d", pMsg->mEnable,  sessionId);
+
+    addConfigRequestToMap(sessionId, pMsg);
+}
+
+void LocationApiService::configConstellations(
+        const LocConfigSvConstellationReqMsg* pMsg){
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg) {
+        return;
+    }
+
+    uint32_t sessionId = 0;
+    if (pMsg->mResetToDefault) {
+        sessionId = mLocationControlApi->resetConstellationConfig();
+    } else {
+        sessionId = mLocationControlApi->configConstellations(
+            pMsg->mSvTypeConfig, pMsg->mSvIdConfig);
+    }
+
+    LOC_LOGd(">-- reset: %d, enable constellations: 0x%" PRIx64 ", "
+             "blacklisted consteallations: 0x%" PRIx64 ", ",
+             pMsg->mResetToDefault,
+             pMsg->mSvTypeConfig.enabledSvTypesMask,
+             pMsg->mSvTypeConfig.blacklistedSvTypesMask);
+    addConfigRequestToMap(sessionId, pMsg);
+}
+
+void LocationApiService::configAidingDataDeletion(
+        LocConfigAidingDataDeletionReqMsg* pMsg) {
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg) {
+        return;
+    }
+
+    LOC_LOGd(">-- client %s, deleteAll %d",
+             pMsg->mSocketName, pMsg->mAidingData.deleteAll);
+
+    // suspend all sessions before calling delete
+    suspendAllTrackingSessions();
+
+    uint32_t sessionId = mLocationControlApi->gnssDeleteAidingData(pMsg->mAidingData);
+    addConfigRequestToMap(sessionId, pMsg);
+
+#ifdef POWERMANAGER_ENABLED
+    // We do not need to resume the session if device is suspend/shutdown state
+    // as sessions will resumed when power state changes to resume
+    if ((POWER_STATE_SUSPEND == mPowerState) ||
+        (POWER_STATE_SHUTDOWN == mPowerState)) {
+        return;
+    }
+#endif
+
+    // resume all sessions after calling aiding data deletion
+    resumeAllTrackingSessions();
+}
+
+
+void LocationApiService::configLeverArm(const LocConfigLeverArmReqMsg* pMsg){
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg) {
+        return;
+    }
+    uint32_t sessionId = mLocationControlApi->configLeverArm(pMsg->mLeverArmConfigInfo);
+    addConfigRequestToMap(sessionId, pMsg);
+}
+
+
+void LocationApiService::addConfigRequestToMap(
+        uint32_t sessionId, const LocAPIMsgHeader* pMsg){
+    // for config request that is invoked from location integration API
+    // if session id is valid, we need to add it to the map so when response
+    // comes back, we can deliver the response to the integration api client
+    if (sessionId != 0) {
+        ConfigReqClientData configClientData;
+        configClientData.configMsgId = pMsg->msgId;
+        configClientData.clientName  = pMsg->mSocketName;
+        mConfigReqs.emplace(sessionId, configClientData);
+    } else {
+        // if session id is 0, we need to deliver failed response back to the
+        // client
+        LocHalDaemonClientHandler* pClient = getClient(pMsg->mSocketName);
+        if (pClient) {
+            pClient->onControlResponseCb(LOCATION_ERROR_GENERAL_FAILURE, pMsg->msgId);
+        }
+    }
+}
+
 /******************************************************************************
 LocationApiService - Location Control API callback functions
 ******************************************************************************/
-void LocationApiService::onControlResponseCallback(LocationError err, uint32_t id) {
+void LocationApiService::onControlResponseCallback(LocationError err, uint32_t sessionId) {
     std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onControlResponseCallback err=%u id=%u", err, id);
+    LOC_LOGd("--< onControlResponseCallback err=%u id=%u", err, sessionId);
+
+    auto configReqData = mConfigReqs.find(sessionId);
+    if (configReqData != std::end(mConfigReqs)) {
+        LocHalDaemonClientHandler* pClient = getClient(configReqData->second.clientName);
+        if (pClient) {
+            pClient->onControlResponseCb(err, configReqData->second.configMsgId);
+        }
+        mConfigReqs.erase(configReqData);
+        LOC_LOGd("--< map size %d", mConfigReqs.size());
+    } else {
+        LOC_LOGe("--< client not found for session id %d", sessionId);
+    }
 }
 
 void LocationApiService::onControlCollectiveResponseCallback(
@@ -800,52 +1009,22 @@ void LocationApiService::onControlCollectiveResponseCallback(
     LOC_LOGd("--< onControlCollectiveResponseCallback");
 }
 
-#ifdef POWERMANAGER_ENABLED
 /******************************************************************************
 LocationApiService - power event handlers
 ******************************************************************************/
-void LocationApiService::onSuspend() {
-
+#ifdef POWERMANAGER_ENABLED
+void LocationApiService::onPowerEvent(PowerStateType powerState) {
     std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onSuspend");
+    LOC_LOGd("--< onPowerEvent %d", powerState);
 
-    for (auto client : mClients) {
-        // stop session if running
-        if (client.second && client.second->mTracking) {
-            client.second->stopTracking();
-            client.second->mPendingMessages.push(E_LOCAPI_STOP_TRACKING_MSG_ID);
-            LOC_LOGi("--> suspended");
-        }
+    mPowerState = powerState;
+    if ((POWER_STATE_SUSPEND == powerState) ||
+            (POWER_STATE_SHUTDOWN == powerState)) {
+        suspendAllTrackingSessions();
+    } else if (POWER_STATE_RESUME == powerState) {
+        resumeAllTrackingSessions();
     }
-}
 
-void LocationApiService::onResume() {
-
-    std::lock_guard<std::mutex> lock(mMutex);
-    LOC_LOGd("--< onResume");
-
-    for (auto client : mClients) {
-        // start session if not running
-        if (client.second && client.second->mTracking) {
-
-            // resume session with preserved options
-            if (!client.second->startTracking()) {
-                LOC_LOGe("Failed to start session");
-                return;
-            }
-            // success
-            client.second->mPendingMessages.push(E_LOCAPI_START_TRACKING_MSG_ID);
-            LOC_LOGi("--> resumed");
-        }
-    }
-}
-
-void LocationApiService::onShutdown() {
-    onSuspend();
-    LOC_LOGd("--< onShutdown");
-}
-
-void LocationApiService::injectPowerEvent(PowerStateType powerState) {
     GnssInterface* gnssInterface = getGnssInterface();
     if (!gnssInterface) {
         LOC_LOGe(">-- getGnssEnergyConsumed null GnssInterface");

@@ -60,14 +60,19 @@ public:
                 mBatchingId(0),
                 mBatchingMode(BATCHING_MODE_NO_AUTO_REPORT),
                 mLocationApi(nullptr),
+                mCallbacks{},
                 mPendingMessages(),
                 mGfPendingMessages(),
                 mSubscriptionMask(0),
+                mEngineInfoRequestMask(0),
                 mGeofenceIds(nullptr),
                 mIpcSender(createSender(clientname.c_str())) {
 
-        updateSubscription(E_LOC_CB_GNSS_LOCATION_INFO_BIT);
-        mLocationApi = LocationAPI::createInstance(mCallbacks);
+
+        if (mClientType == LOCATION_CLIENT_API) {
+            updateSubscription(E_LOC_CB_GNSS_LOCATION_INFO_BIT);
+            mLocationApi = LocationAPI::createInstance(mCallbacks);
+        }
     }
 
     static shared_ptr<LocIpcSender> createSender(const string socket);
@@ -83,6 +88,7 @@ public:
     void stopTracking();
     void updateTrackingOptions(LocationOptions & locOptions);
     void onGnssEnergyConsumedInfoAvailable(LocAPIGnssEnergyConsumedIndMsg &msg);
+    void onControlResponseCb(LocationError err, ELocMsgID msgId);
     bool hasPendingEngineInfoRequest(uint32_t mask);
     void addEngineInfoRequst(uint32_t mask);
 

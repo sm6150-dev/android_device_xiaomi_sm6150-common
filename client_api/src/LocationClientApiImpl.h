@@ -152,6 +152,14 @@ public:
     // other
     virtual uint32_t* gnssUpdateConfig(GnssConfig config) override;
     virtual uint32_t gnssDeleteAidingData(GnssAidingData& data) override;
+    // config API
+    virtual uint32_t resetConstellationConfig() override;
+    virtual uint32_t configConstellations(const GnssSvTypeConfig& svTypeConfig,
+                                          const GnssSvIdConfig&   svIdConfig) override;
+    virtual uint32_t configConstrainedTimeUncertainty(
+            bool enable, float tuncThreshold, uint32_t energyBudget) override;
+    virtual uint32_t configPositionAssistedClockEstimator(bool enable) override;
+    virtual uint32_t configLeverArm(const LeverArmConfigInfo& configInfo) override;
 
     // other interface
     void updateNetworkAvailability(bool available);

@@ -61,6 +61,14 @@ typedef struct {
 /******************************************************************************
 LocationApiService
 ******************************************************************************/
+
+typedef struct {
+    // this stores the client name and the command type that client requests
+    // the info will be used to send back command response
+    std::string clientName;
+    ELocMsgID   configMsgId;
+} ConfigReqClientData;
+
 class LocationApiService
 {
 public:
@@ -91,11 +99,7 @@ public:
     void onListenerReady(bool externalApIpc);
 
 #ifdef POWERMANAGER_ENABLED
-    // power event handler
-    void onSuspend();
-    void onResume();
-    void onShutdown();
-    void injectPowerEvent(PowerStateType powerState);
+    void onPowerEvent(PowerStateType powerState);
 #endif
 
     // other APIs
@@ -110,6 +114,10 @@ private:
 
     void startTracking(LocAPIStartTrackingReqMsg*);
     void stopTracking(LocAPIStopTrackingReqMsg*);
+
+    void suspendAllTrackingSessions();
+    void resumeAllTrackingSessions();
+
     void updateSubscription(LocAPIUpdateCallbacksReqMsg*);
     void updateTrackingOptions(LocAPIUpdateTrackingOptionsReqMsg*);
     void updateNetworkAvailability(bool availability);
@@ -139,6 +147,19 @@ private:
     void onControlResponseCallback(LocationError err, uint32_t id);
     void onControlCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
     void onGnssEnergyConsumedCb(uint64_t totalEnergyConsumedSinceFirstBoot);
+
+    // Location configuration API requests
+    void configConstrainedTunc(
+            const LocConfigConstrainedTuncReqMsg* pMsg);
+    void configPositionAssistedClockEstimator(
+            const LocConfigPositionAssistedClockEstimatorReqMsg* pMsg);
+    void configConstellations(
+            const LocConfigSvConstellationReqMsg* pMsg);
+    void configAidingDataDeletion(
+            LocConfigAidingDataDeletionReqMsg* pMsg);
+    void configLeverArm(const LocConfigLeverArmReqMsg* pMsg);
+    void addConfigRequestToMap(uint32_t sessionId,
+                               const LocAPIMsgHeader* pMsg);
 
     LocationApiService(const configParamToRead & configParamRead);
     virtual ~LocationApiService();
@@ -180,6 +201,7 @@ private:
 
     // Client propery database
     std::unordered_map<std::string, LocHalDaemonClientHandler*> mClients;
+    std::unordered_map<uint32_t, ConfigReqClientData> mConfigReqs;
 
     // Location Control API interface
     uint32_t mLocationControlId;
@@ -188,6 +210,7 @@ private:
 
     // Configration
     const uint32_t mAutoStartGnss;
+    PowerStateType  mPowerState;
 };
 
 #endif //LOCATIONAPISERVICE_H

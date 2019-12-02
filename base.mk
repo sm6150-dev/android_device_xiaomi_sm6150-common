@@ -833,7 +833,9 @@ RCS += rcs_service_api
 RCS += rcs_service_api.xml
 
 #IMS SETTINGS
+ifeq ($(TARGET_FWK_SUPPORTS_FULL_VALUEADDS), true)
 IMS_SETTINGS := imssettings
+endif
 
 #IMS Extension module for Android Telephony
 IMS_EXT := ims-ext-common
@@ -859,7 +861,11 @@ FSTMAN += fstman.ini
 #FD_LEAK
 FD_LEAK := libc_leak_detector
 
+ifneq ($(TARGET_HAS_LOW_RAM),true)
+ifneq ($(TARGET_SUPPORTS_ANDROID_WEAR),true)
 TELEPHONY_DBG := NrNetworkSettingApp
+endif
+endif
 
 PRODUCT_PACKAGES := \
     AccountAndSyncSettings \

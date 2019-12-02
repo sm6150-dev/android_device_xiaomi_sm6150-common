@@ -1,6 +1,6 @@
 #!/vendor/bin/sh
 
-#Copyright (c) 2018, The Linux Foundation. All rights reserved.
+#Copyright (c) 2018, 2020, The Linux Foundation. All rights reserved.
 #
 #Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
@@ -745,6 +745,29 @@ config_kona_dcc_gemnoc()
     echo 1 > $DCC_PATH/loop
     #GemNOC for KONA end
 }
+
+config_kona_dcc_gpu()
+{
+    #GCC
+    echo 0x171004 > $DCC_PATH/config
+    echo 0x171154 > $DCC_PATH/config
+    echo 0x17100C > $DCC_PATH/config
+    echo 0x171018 > $DCC_PATH/config
+
+    #GPUCC
+    echo 0x3D9106C > $DCC_PATH/config
+    echo 0x3D9100C > $DCC_PATH/config
+    echo 0x3D91010 > $DCC_PATH/config
+    echo 0x3D91014 > $DCC_PATH/config
+    echo 0x3D91070 > $DCC_PATH/config
+    echo 0x3D91074 > $DCC_PATH/config
+    echo 0x3D91098 > $DCC_PATH/config
+    echo 0x3D91004 > $DCC_PATH/config
+    echo 0x3D9109C > $DCC_PATH/config
+    echo 0x3D91078 > $DCC_PATH/config
+    echo 0x3D91054 > $DCC_PATH/config
+}
+
 config_kona_dcc_lpm_pcu()
 {
     #PCU -DCC for LPM path
@@ -1295,6 +1318,7 @@ enable_kona_dcc_config()
     config_kona_dcc_core
     config_kona_dcc_gemnoc
     config_kona_dcc_sys_agnoc
+    config_kona_dcc_gpu
     config_kona_dcc_edu
     config_kona_dcc_lpm_pcu
     config_kona_dcc_ddr

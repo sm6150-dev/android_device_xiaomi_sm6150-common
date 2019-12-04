@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2012-2013, 2016-2019, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013, 2016-2020, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -3387,6 +3387,7 @@ case "$target" in
     echo 0 > /proc/sys/kernel/sched_coloc_busy_hyst_max_ms
 
     # disable unfiltering
+    echo 20000000 > /proc/sys/kernel/sched_task_unfilter_period
     echo 1 > /proc/sys/kernel/sched_task_unfilter_nr_windows
 
     # configure governor settings for silver cluster

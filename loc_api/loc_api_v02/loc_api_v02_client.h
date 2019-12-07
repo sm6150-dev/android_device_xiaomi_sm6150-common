@@ -795,6 +795,10 @@ typedef union
             *pQueryGNSSEnergyConsumedReq;
     /*QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_REQ_V02*/
 
+    const qmiLocInjectPlatformPowerStateReqMsgT_v02
+            *pInjectPowerStateReq;
+    /*QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ*/
+
 }locClientReqUnionType;
 
 
@@ -1606,6 +1610,10 @@ typedef union
 
     const qmiLocQueryGNSSEnergyConsumedIndMsgT_v02 *pQueryGNSSEnergyConsumedInd;
     /* QMI_LOC_QUERY_GNSS_ENERGY_CONSUMED_IND_V02*/
+
+    const qmiLocInjectPlatformPowerStateIndMsgT_v02 *pInjectPlatformPowerStateInd;
+    /* QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02 */
+
 }locClientRespIndUnionType;
 
 /** @} */ /* end_addtogroup data_types */

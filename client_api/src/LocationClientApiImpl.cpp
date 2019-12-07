@@ -937,7 +937,7 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mClientId = ++mClientIdGenerator;
     }
 
-    SockNodeLocal sock(pid, mClientId);
+    SockNodeLocal sock(LOCATION_CLIENT_API, pid, mClientId);
     strlcpy(mSocketName, sock.getNodePathname().c_str(), sizeof(mSocketName));
     unique_ptr<LocIpcRecver> recver = LocIpc::getLocIpcLocalRecver(
             make_shared<IpcListener>(*this, *mMsgTask), mSocketName);
@@ -1717,7 +1717,10 @@ void LocationClientApiImpl::capabilitesCallback(ELocMsgID msgId, const void* msg
     }
 
     LOC_LOGe(">>> session id %d, cap mask 0x%x", mSessionId, mCapsMask);
-    if (0 != mLocationOptions.minInterval) {
+    if (mSessionId != LOCATION_CLIENT_SESSION_ID_INVALID)  {
+        // force mSessionId to invalid so startTracking will start the sesssion
+        // if hal deamon crashes and restarts in the middle of a session
+        mSessionId = LOCATION_CLIENT_SESSION_ID_INVALID;
         TrackingOptions trackOption;
         trackOption.setLocationOptions(mLocationOptions);
         (void)startTracking(trackOption);
@@ -1772,7 +1775,7 @@ void IpcListener::onListenerReady() {
     struct ClientRegisterReq : public LocMsg {
         ClientRegisterReq(LocationClientApiImpl& apiImpl) : mApiImpl(apiImpl) {}
         void proc() const {
-            LocAPIClientRegisterReqMsg msg(mApiImpl.mSocketName);
+            LocAPIClientRegisterReqMsg msg(mApiImpl.mSocketName, LOCATION_CLIENT_API);
             bool rc = mApiImpl.sendMessage(reinterpret_cast<uint8_t *>(&msg), sizeof(msg));
             LOC_LOGd(">>> onListenerReady::ClientRegisterReqMsg rc=%d", rc);
         }
@@ -2217,6 +2220,29 @@ void LocationClientApiImpl::gnssNiResponse(uint32_t id, GnssNiResponse response)
 }
 
 void LocationClientApiImpl::updateTrackingOptions(uint32_t id, TrackingOptions& options) {
+}
+
+uint32_t LocationClientApiImpl::resetConstellationConfig() {
+    return 0;
+}
+
+uint32_t LocationClientApiImpl::configConstellations(
+        const GnssSvTypeConfig& svTypeConfig,
+        const GnssSvIdConfig&   svIdConfig) {
+    return 0;
+}
+
+uint32_t LocationClientApiImpl::configConstrainedTimeUncertainty(
+            bool enable, float tuncThreshold, uint32_t energyBudget) {
+    return 0;
+}
+
+uint32_t LocationClientApiImpl::configPositionAssistedClockEstimator(bool enable) {
+    return 0;
+}
+
+uint32_t LocationClientApiImpl::configLeverArm(const LeverArmConfigInfo& configInfo) {
+    return 0;
 }
 
 } // namespace location_client

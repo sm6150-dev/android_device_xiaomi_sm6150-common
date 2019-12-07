@@ -61,6 +61,16 @@ PKG_CHECK_MODULES([DATAITEMS], [data-items])
 AC_SUBST([DATAITEMS_CFLAGS])
 AC_SUBST([DATAITEMS_LIBS])
 
+# check if it has support for mobileap register indication.
+AC_ARG_ENABLE(mobileap-indications,
+    [AS_HELP_STRING([--enable-mobileap-indications=MOBILEAP_INDICATION_ENABLED],
+        [If it has support for mobileap register indication.])],
+    [MOBILEAP_INDICATION_ENABLED=$enableval],
+    [MOBILEAP_INDICATION_ENABLED=no]
+)
+
+AM_CONDITIONAL(USE_MOBILEAP_INDICATION, test "x$MOBILEAP_INDICATION_ENABLED" == "xyes")
+
 AC_ARG_WITH([core_includes],
       AC_HELP_STRING([--with-core-includes=@<:@dir@:>@],
          [Specify the location of the core headers]),

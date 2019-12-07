@@ -36,6 +36,7 @@
 #include <loc_cfg.h>
 #include "loc_api_v02_client.h"
 #include "loc_api_sync_req.h"
+#include "loc_api_v02_log.h"
 #include <loc_pla.h>
 
 /* Logging */

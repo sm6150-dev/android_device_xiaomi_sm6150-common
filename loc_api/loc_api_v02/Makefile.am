@@ -10,9 +10,9 @@ AM_CFLAGS = \
 
 libloc_api_v02_la_SOURCES = \
     LocApiV02.cpp \
-    loc_api_v02_log.c \
-    loc_api_v02_client.c \
-    loc_api_sync_req.c \
+    loc_api_v02_log.cpp \
+    loc_api_v02_client.cpp \
+    loc_api_sync_req.cpp \
     location_service_v02.c
 
 if USE_GLIB

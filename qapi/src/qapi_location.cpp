@@ -210,7 +210,7 @@ static void location_collective_response_callback(
 static void location_tracking_callback(
     Location location)
 {
-    qapi_Location_t qLocation;
+    qapi_Location_t qLocation = {};
     bool bIsSingleShot = false;
 
     // first check if location is valid

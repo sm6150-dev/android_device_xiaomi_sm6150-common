@@ -2217,7 +2217,10 @@ enum PowerStateType {
 #define EAP_LOC_CLIENT_DIR             "/data/vendor/location/extap_locclient/"
 
 #define LOC_CLIENT_NAME_PREFIX         "toclient"
-#define LOC_INTAPI_NAME_PREFIX         "toIntapiClient"
+// Please note that the socket name for all location hal daemon client need
+// to start with LOC_CLIENT_NAME_PREFIX so that upon hal daemon restarts,
+// every client can get the notification that hal daemon has restarted.
+#define LOC_INTAPI_NAME_PREFIX         LOC_CLIENT_NAME_PREFIX "_intapi"
 
 #ifdef __cplusplus
 }

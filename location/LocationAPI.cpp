@@ -133,7 +133,6 @@ void LocationAPI::onRemoveClientCompleteCb (LocationAdapterTypeMask adapterType)
     if ((true == invokeCallback) && (nullptr != destroyCompleteCb)) {
         LOC_LOGd("invoke client destroy cb");
         (destroyCompleteCb) ();
-        LOC_LOGd("finish invoke client destroy cb");
 
         delete this;
     }
@@ -246,14 +245,11 @@ LocationAPI::destroy(locationApiDestroyCompleteCallback destroyCompleteCb)
     pthread_mutex_lock(&gDataMutex);
     auto it = gData.clientData.find(this);
     if (it != gData.clientData.end()) {
-        bool removeFromGnssInf =
-                (isGnssClient(it->second) && NULL != gData.gnssInterface);
-        bool removeFromFlpInf =
-                (isFlpClient(it->second) && NULL != gData.flpInterface);
-        bool removeFromGeofenceInf =
-                (isGeofenceClient(it->second) && NULL != gData.geofenceInterface);
+        bool removeFromGnssInf     = (NULL != gData.gnssInterface);
+        bool removeFromFlpInf      = (NULL != gData.flpInterface);
+        bool removeFromGeofenceInf = (NULL != gData.geofenceInterface);
         bool needToWait = (removeFromGnssInf || removeFromFlpInf || removeFromGeofenceInf);
-        LOC_LOGe("removeFromGnssInf: %d, removeFromFlpInf: %d, removeFromGeofenceInf: %d, need %d",
+        LOC_LOGi("removeFromGnssInf: %d, removeFromFlpInf: %d, removeFromGeofenceInf: %d, need %d",
                  removeFromGnssInf, removeFromFlpInf, removeFromGeofenceInf, needToWait);
 
         if ((NULL != destroyCompleteCb) && (true == needToWait)) {
@@ -269,7 +265,7 @@ LocationAPI::destroy(locationApiDestroyCompleteCallback destroyCompleteCb)
             destroyCbData.waitAdapterMask |=
                     (removeFromGeofenceInf ? LOCATION_ADAPTER_GEOFENCE_TYPE_BIT : 0);
             gData.destroyClientData[this] = destroyCbData;
-            LOC_LOGe("destroy data stored in the map: 0x%x", destroyCbData.waitAdapterMask);
+            LOC_LOGi("destroy data stored in the map: 0x%x", destroyCbData.waitAdapterMask);
         }
 
         if (removeFromGnssInf) {

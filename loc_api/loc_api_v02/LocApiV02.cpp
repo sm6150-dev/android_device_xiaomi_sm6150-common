@@ -5459,9 +5459,43 @@ bool LocApiV02 :: convertGnssMeasurements(
     svMeas.svTimeSpeed.dopplerShift = gnss_measurement_info.svTimeSpeed.dopplerShift;
     svMeas.svTimeSpeed.dopplerShiftUnc = gnss_measurement_info.svTimeSpeed.dopplerShiftUnc;
 
-    svMeas.measurementStatus = (uint32_t)gnss_measurement_info.measurementStatus;
     svMeas.validMeasStatusMask = gnss_measurement_info.validMeasStatusMask;
-
+    qmiLocSvMeasStatusMaskT_v02 measStatus = gnss_measurement_info.measurementStatus;
+    svMeas.measurementStatus = GNSS_LOC_MEAS_STATUS_NULL;
+    // Convert qmiSvMeas.measurementStatus to svMeas.measurementStatus
+    if (QMI_LOC_MASK_MEAS_STATUS_SM_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_SM_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_SB_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_SB_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_MS_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_MS_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_BE_CONFIRM_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_BE_CONFIRM;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_VELOCITY_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_VELOCITY_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_VELOCITY_FINE_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_VELOCITY_FINE;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_LP_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_LP_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_LP_POS_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_LP_POS_VALID;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_FROM_RNG_DIFF_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_FROM_RNG_DIFF;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_FROM_VE_DIFF_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_FROM_VE_DIFF;
+    }
+    if (QMI_LOC_MASK_MEAS_STATUS_GNSS_FRESH_MEAS_VALID_V02 & measStatus) {
+        svMeas.measurementStatus |= GNSS_LOC_MEAS_STATUS_GNSS_FRESH_MEAS;
+    }
     if (gnss_measurement_info.validMask & QMI_LOC_SV_MULTIPATH_EST_VALID_V02) {
         svMeas.multipathEstValid = 1;
         svMeas.multipathEstimate = gnss_measurement_info.multipathEstimate;

@@ -212,6 +212,10 @@ enum ELocMsgID {
     // Measurement reports
     E_LOCAPI_MEAS_MSG_ID = 30,
 
+    // SV poly reports
+    E_LOCAPI_SV_POLY_MSG_ID = 31,
+
+
     // ping
     E_LOCAPI_PINGTEST_MSG_ID = 99,
 
@@ -237,6 +241,7 @@ enum ELocationCallbacksOption {
     E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT  = (1<<9), /**< Register for multiple engine reports */
     E_LOC_CB_SIMPLE_LOCATION_INFO_BIT   = (1<<10), /**< Register for simple location */
     E_LOC_CB_GNSS_MEAS_BIT              = (1<<11), /**< Register for GNSS Measurements */
+    E_LOC_CB_GNSS_SV_POLY_BIT           = (1<<12), /**< Register for GNSS SV poly reports */
 };
 
 // Mask related to all info that are tied with a position session and need to be unsubscribed
@@ -246,7 +251,8 @@ enum ELocationCallbacksOption {
                                        E_LOC_CB_GNSS_SV_BIT|E_LOC_CB_GNSS_NMEA_BIT|\
                                        E_LOC_CB_GNSS_DATA_BIT|E_LOC_CB_GNSS_MEAS_BIT|\
                                        E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT|\
-                                       E_LOC_CB_SIMPLE_LOCATION_INFO_BIT)
+                                       E_LOC_CB_SIMPLE_LOCATION_INFO_BIT|\
+                                       E_LOC_CB_GNSS_SV_POLY_BIT)
 
 typedef uint32_t EngineInfoCallbacksMask;
 enum EEngineInfoCallbacksMask {
@@ -738,6 +744,17 @@ struct LocAPIMeasIndMsg : LocAPIMsgHeader
         GnssMeasurementsNotification& measurementsNotification) :
         LocAPIMsgHeader(name, E_LOCAPI_MEAS_MSG_ID),
         gnssMeasurementsNotification(measurementsNotification) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_SV_POLY_MSG_ID
+struct LocAPIGnssSvPolyIndMsg : LocAPIMsgHeader
+{
+    GnssSvPolynomial gnssSvPolynomial;
+
+    inline LocAPIGnssSvPolyIndMsg(const char* name,
+            GnssSvPolynomial& gnssSvPolynomialNotification) :
+            LocAPIMsgHeader(name, E_LOCAPI_SV_POLY_MSG_ID),
+            gnssSvPolynomial(gnssSvPolynomialNotification) { }
 };
 
 // defintion for message with msg id of E_LOCAPI_GET_TOTAL_ENGERY_CONSUMED_BY_GPS_ENGINE_MSG_ID

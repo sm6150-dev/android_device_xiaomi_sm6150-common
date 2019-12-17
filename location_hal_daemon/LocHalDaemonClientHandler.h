@@ -136,6 +136,7 @@ private:
     void onGnssNmeaCb(GnssNmeaNotification);
     void onGnssDataCb(GnssDataNotification gnssDataNotification);
     void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification);
+    void onGnssSvPolynomialCb(GnssSvPolynomial gnssSvPolynomialNotification);
     void onLocationSystemInfoCb(LocationSystemInfo);
     void onLocationApiDestroyCompleteCb();
 

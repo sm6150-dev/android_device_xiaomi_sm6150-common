@@ -77,6 +77,7 @@ public:
     bool isNonMeteredBackHaulTypeConnected();
     /* API to check wwan roaming status */
     bool isWwanRoaming();
+    qcmap_msgr_wwan_call_type_v01 getWwanCallType();
 
     recursive_mutex& getMutex(){ return mMutex; }
 

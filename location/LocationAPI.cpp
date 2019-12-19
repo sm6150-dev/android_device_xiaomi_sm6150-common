@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -97,7 +97,8 @@ static bool isGnssClient(LocationCallbacks& locationCallbacks)
             locationCallbacks.trackingCb != nullptr ||
             locationCallbacks.gnssLocationInfoCb != nullptr ||
             locationCallbacks.engineLocationsInfoCb != nullptr ||
-            locationCallbacks.gnssMeasurementsCb != nullptr);
+            locationCallbacks.gnssMeasurementsCb != nullptr ||
+            locationCallbacks.gnssSvPolynomialCb != nullptr);
 }
 
 static bool isFlpClient(LocationCallbacks& locationCallbacks)

@@ -170,6 +170,11 @@ uint32_t LocHalDaemonClientHandler::startTracking() {
     return mSessionId;
 }
 
+// Round input TBF to 100ms, 200ms, 500ms, and integer senconds
+// input tbf < 200 msec, round to 100 msec, else
+// input tbf < 500 msec, round to 200 msec, else
+// input tbf < 1000 msec, round to 500 msec, else
+// round up input tbf to the closet integer seconds
 uint32_t LocHalDaemonClientHandler::startTracking(LocationOptions & locOptions) {
     LOC_LOGd("distance %d, internal %d, req mask %x",
           locOptions.minDistance, locOptions.minInterval,
@@ -177,8 +182,11 @@ uint32_t LocHalDaemonClientHandler::startTracking(LocationOptions & locOptions) 
     if (mSessionId == 0 && mLocationApi) {
         // update option
         mOptions = locOptions;
+        // set interval to engine supported interval
+        mOptions.minInterval = getSupportedTbf(mOptions.minInterval);
         mSessionId = mLocationApi->startTracking(mOptions);
     }
+
     return mSessionId;
 }
 
@@ -205,6 +213,8 @@ void LocHalDaemonClientHandler::updateTrackingOptions(LocationOptions & locOptio
 
         TrackingOptions trackingOption;
         trackingOption.setLocationOptions(locOptions);
+        // set tbf to device supported tbf
+        trackingOption.minInterval = getSupportedTbf(trackingOption.minInterval);
         mLocationApi->updateTrackingOptions(mSessionId, trackingOption);
 
         // save other info: eng req type that will be used in filtering
@@ -920,3 +930,28 @@ void LocHalDaemonClientHandler::addEngineInfoRequst(uint32_t mask) {
     mEngineInfoRequestMask |= E_ENGINE_INFO_CB_GNSS_ENERGY_CONSUMED_BIT;
 }
 
+// Round input TBF to 100ms, 200ms, 500ms, and integer senconds that engine supports
+// input tbf < 200 msec, round to 100 msec, else
+// input tbf < 500 msec, round to 200 msec, else
+// input tbf < 1000 msec, round to 500 msec, else
+// round up input tbf to the closet integer seconds
+uint32_t LocHalDaemonClientHandler::getSupportedTbf(uint32_t tbfMsec) {
+    uint32_t supportedTbfMsec = 0;
+
+    if (tbfMsec < 200) {
+        supportedTbfMsec = 100;
+    } else if (tbfMsec < 500) {
+        supportedTbfMsec = 200;
+    } else if (tbfMsec < 1000) {
+        supportedTbfMsec = 500;
+    } else {
+        if (tbfMsec > (UINT32_MAX - 999)) {
+            supportedTbfMsec = UINT32_MAX / 1000 * 1000;
+        } else {
+            // round up to the next integer second
+            supportedTbfMsec = (tbfMsec+999) / 1000 * 1000;
+        }
+    }
+
+    return supportedTbfMsec;
+}

@@ -18,8 +18,8 @@ $(call inherit-product, frameworks/native/build/phone-xhdpi-6144-dalvik-heap.mk)
 # Get non-open-source specific aspects
 $(call inherit-product-if-exists, vendor/xiaomi/sm6150-common/sm6150-common-vendor.mk)
 
-# MindTheGapps
-$(call inherit-product-if-exists, vendor/gapps/arm64/arm64-vendor.mk)
+# Gapps
+$(call inherit-product-if-exists, vendor/gapps/common/common-vendor.mk)
 
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += \

@@ -921,7 +921,6 @@ PRODUCT_PACKAGES := \
     SnapdragonLauncher \
     a4wpservice \
     wipowerservice \
-    Mms \
     QtiDialer
 
 ifneq ($(BOARD_HAVE_BLUETOOTH),false)

@@ -5972,6 +5972,16 @@ int LocApiV02 :: convertGnssClock (GnssMeasurementsClock& clock,
                 flags |= (GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT |
                           GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT |
                           GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT);
+
+                if (mGnssMeasurements->gnssSvMeasurementSet.svMeasSetHeader.flags &
+                    GNSS_SV_MEAS_HEADER_HAS_LEAP_SECOND) {
+                    clock.leapSecond = mGnssMeasurements->
+                            gnssSvMeasurementSet.svMeasSetHeader.leapSec.leapSec;
+                    flags |= GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT;
+                    LOC_LOGV("clock.leapSecond: %d", clock.leapSecond);
+                } else {
+                    LOC_LOGV("GNSS_SV_MEAS_HEADER_HAS_LEAP_SECOND is not set");
+                }
             }
         }
     }

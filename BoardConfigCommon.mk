@@ -185,4 +185,6 @@ WPA_SUPPLICANT_VERSION := VER_0_8_X
 
 # Inherit from the proprietary version
 -include vendor/xiaomi/sm6150-common/BoardConfigVendor.mk
+ifdef WITH_GAPPS
 -include vendor/gapps/common/BoardConfigVendor.mk
+endif

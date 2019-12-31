@@ -6,7 +6,6 @@
 /vendor/bin/audioshell_service  u:object_r:audioshell_service_exec:s0
 
 # Camera
-/dev/akm09970                   u:object_r:hall_device:s0
 /dev/drv8846_dev                u:object_r:motor_device:s0
 /mnt/vendor/persist/camera(/.*)? u:object_r:camera_persist_file:s0
 /vendor/bin/remosaic_daemon     u:object_r:remosaic_daemon_exec:s0

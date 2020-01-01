@@ -1,34 +1,34 @@
-# ADSP	
-vendor/bin/adsprpcd	
-vendor/etc/init/vendor.qti.adsprpc-sscrpc-service.rc
-vendor/lib/libadsp_default_listener.so	
-vendor/lib/libadsprpc.so	
-vendor/lib/libmdsprpc.so	
-vendor/lib/libsdsprpc.so	
-vendor/lib64/libadsp_default_listener.so	
-vendor/lib64/libadsprpc.so	
-vendor/lib64/libmdsprpc.so	
-vendor/lib64/libsdsprpc.so	
+# ADSP - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/adsprpcd|0cdd541ee0a365c5dccd0613e495611f4d0f6607
+vendor/etc/init/vendor.qti.adsprpc-sscrpc-service.rc|13d8a911642844bde32d533948a35730e17d41ad
+vendor/lib/libadsp_default_listener.so|7da1a1cfef2f04e3577d0e1cda81ce12204598fa
+vendor/lib/libadsprpc.so|28a1d664aba2bda20e62d04c09c117eea136d3c7
+vendor/lib/libmdsprpc.so|07e492c35dc205391d8d7e2d4684801ed870d329
+vendor/lib/libsdsprpc.so|f4d860f07a9e44a04eb9578771f079528c770109
+vendor/lib64/libadsp_default_listener.so|abace257c0ae59ddc693f1e42d16670312673873
+vendor/lib64/libadsprpc.so|aea62273ca4355ceb76dfeec2cd11d39614a854e
+vendor/lib64/libmdsprpc.so|df135d5ca3e0ac4ccc670a4133f781d77315f089
+vendor/lib64/libsdsprpc.so|65f23710d4895b738c9eb827b513b1d9d9480aad
 
-# ADSP Modules
-vendor/lib/rfsa/adsp/capi_v2_aptX_Classic.so
-vendor/lib/rfsa/adsp/capi_v2_aptX_HD.so
-vendor/lib/rfsa/adsp/dirac_resource.dar
-vendor/lib/rfsa/adsp/libVC1Dec.so
-vendor/lib/rfsa/adsp/libVC1DecDsp_skel.so
-vendor/lib/rfsa/adsp/libapps_mem_heap.so
-vendor/lib/rfsa/adsp/libcamera_nn_skel.so
-vendor/lib/rfsa/adsp/libcvpdsp_skel.so
-vendor/lib/rfsa/adsp/libdirac-capiv2.so
-vendor/lib/rfsa/adsp/libdspCV_skel.so
-vendor/lib/rfsa/adsp/libdsp_streamer_add_constant.so
-vendor/lib/rfsa/adsp/libdsp_streamer_binning.so
-vendor/lib/rfsa/adsp/libdsp_streamer_skel.so
-vendor/lib/rfsa/adsp/libfastcvadsp.so
-vendor/lib/rfsa/adsp/libfastcvdsp_skel.so
-vendor/lib/rfsa/adsp/libhexagon_nn_skel.so
-vendor/lib/rfsa/adsp/libsns_device_mode_skel.so
-vendor/lib/rfsa/adsp/libsns_low_lat_stream_skel.so
+# ADSP Modules - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/lib/rfsa/adsp/capi_v2_aptX_Classic.so|59cbdf5d84ba2ff64014941f3ad9e6c2c35e2c06
+vendor/lib/rfsa/adsp/capi_v2_aptX_HD.so|e25f1087edc95d2ff76c1e37787ca37aae2cf175
+vendor/lib/rfsa/adsp/dirac_resource.dar|8697ff9e77a872b849cd2ce95afa45dac97cb01e
+vendor/lib/rfsa/adsp/libVC1Dec.so|79a8425bc640ed3401a784ca5f4f04865a3e38e3
+vendor/lib/rfsa/adsp/libVC1DecDsp_skel.so|e108bf1175b6ebaead5b9eec3b9279c8edbb52e3
+vendor/lib/rfsa/adsp/libapps_mem_heap.so|de5ea1c639d93d1a66f43d3d3e8f4e1602c0a83e
+vendor/lib/rfsa/adsp/libcamera_nn_skel.so|29d949909c9f115491b781ff93604be238e0f965
+vendor/lib/rfsa/adsp/libcvpdsp_skel.so|58cbb97212073cf7e4780c6d77a7628c3ee845bd
+vendor/lib/rfsa/adsp/libdirac-capiv2.so|c1432e70a935bc34b3787a4973fce4bab1faf4e2
+vendor/lib/rfsa/adsp/libdspCV_skel.so|c1ab1b81cd2f2c584aa51e722244c436a0f24f6b
+vendor/lib/rfsa/adsp/libdsp_streamer_add_constant.so|481cdec174e77e5cb555d715057170568892a18f
+vendor/lib/rfsa/adsp/libdsp_streamer_binning.so|00eb6acc7c864371b932f95ff98e98351c6508d8
+vendor/lib/rfsa/adsp/libdsp_streamer_skel.so|aee67209556f075cabdb55ddc70d7a76ffc74b3b
+vendor/lib/rfsa/adsp/libfastcvadsp.so|5c86de2533d60534ce5b07e6be13bcf988e4b03b
+vendor/lib/rfsa/adsp/libfastcvdsp_skel.so|50ac955393bfae796e5fcaccad0bd8c90bd5d16a
+vendor/lib/rfsa/adsp/libhexagon_nn_skel.so|1dc2f84efcb8ac9a72f98de014b7f763ad61847b
+vendor/lib/rfsa/adsp/libsns_device_mode_skel.so|733a5b8861bb6eb1285bb8982992531c94800997
+vendor/lib/rfsa/adsp/libsns_low_lat_stream_skel.so|c30bb30eecf968e02f72c055d3cc13a7f769644f
 
 # Alarm - from LA.UM.8.9.r1-05500-SM6xx.0
 -product/app/PowerOffAlarm/PowerOffAlarm.apk|2399da8803ff7229476611f371fc435f48138881
@@ -50,37 +50,37 @@ vendor/lib/hw/com.qualcomm.qti.ant@1.0-impl.so|2c2769964955a031cd34056c4c7c39402
 vendor/lib64/com.qualcomm.qti.ant@1.0.so|5ef111c6ecb35b94233ae694d80161e9f61b7cd6
 vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|203528c568c1c5ce33b35dcb9ee9eb7ecb1de206
 
-# ACDB
-vendor/etc/acdbdata/adsp_avs_config.acdb
+# ACDB - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/etc/acdbdata/adsp_avs_config.acdb|d1138e8fb3ebbee65bd09891352eebb8bbc3d6fe
 
 # AptX - from bonito-user-10-QPP6.190730.005-5773495-release-keys
 product/lib64/libaptXHD_encoder.so|e13fa70c97caaa24d061678bdee608eb8850a69e
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
 
-# Bluetooth
-vendor/lib64/libbtnv.so
-vendor/lib64/libbt-hidlclient.so
+# Bluetooth - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/lib64/libbtnv.so|d60324de151d0a839237062615437e0b16a1b30f
+vendor/lib64/libbt-hidlclient.so|75143c662d2920cef7e8b391fb64a8261cf59c52
 
-# Bluetooth Audio
-vendor/lib64/hw/audio.bluetooth_qti.default.so
-vendor/lib64/hw/vendor.qti.hardware.bluetooth_audio@2.0-impl.so
-vendor/lib64/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so
-vendor/lib64/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so
-vendor/lib64/libbluetooth_audio_session_qti.so
-vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so
-vendor/lib/hw/audio.bluetooth_qti.default.so
-vendor/lib/hw/vendor.qti.hardware.bluetooth_audio@2.0-impl.so
-vendor/lib/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so
-vendor/lib/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so
-vendor/lib/libbluetooth_audio_session_qti.so
-vendor/lib/vendor.qti.hardware.bluetooth_sar@1.0.so
+# Bluetooth Audio - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/lib64/hw/audio.bluetooth_qti.default.so|7bad29b5cfb02fb18c5e6d94162da67cb7317545
+vendor/lib64/hw/vendor.qti.hardware.bluetooth_audio@2.0-impl.so|dacf9a625cc9f8829dd2ab8256d769291f33e98a
+vendor/lib64/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so|71ad8980142e7d8d754607accc0cffd8f5e68dbd
+vendor/lib64/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so|96b44484392abf88f8473100279e9f68b05f1f50
+vendor/lib64/libbluetooth_audio_session_qti.so|6082cb917f7c92bca70cb3bb1fa40d7a641ea8a3
+vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so|9346946b110086a6b473c8226e072e9a0cdbb87e
+vendor/lib/hw/audio.bluetooth_qti.default.so|103b5cd94770c4710ce0a42df4c9663fbc14a73c
+vendor/lib/hw/vendor.qti.hardware.bluetooth_audio@2.0-impl.so|9454237c54e1fdc2bed31e2c8dd07c14bdb208e1
+vendor/lib/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so|6f9f0f1a9bbd14682caf825844cf652adb7b8f4b
+vendor/lib/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so|d04ce5677ea683330ea26dfebe40759e7e533d6d
+vendor/lib/libbluetooth_audio_session_qti.so|40a53a30bd5fb263e82e20ada890953518855ba1
+vendor/lib/vendor.qti.hardware.bluetooth_sar@1.0.so|37bc226f0aa9793a6beca1cabdde40030a7637f9
 
-# CDSP
-vendor/bin/cdsprpcd
-vendor/lib/libcdsp_default_listener.so
-vendor/lib/libcdsprpc.so
-vendor/lib64/libcdsp_default_listener.so
-vendor/lib64/libcdsprpc.so
+# CDSP - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/cdsprpcd|c9fc5873c205e1ebb844d18bc10f89dd428a01ee
+vendor/lib/libcdsp_default_listener.so|40ace1e3eb14fc8aa5aa04b0870b752980c70400
+vendor/lib/libcdsprpc.so|0e14f3b527c6ab9b13b350ae32cc368480b73f21
+vendor/lib64/libcdsp_default_listener.so|ebde03266606d634172d41bbc97ba9ebc5606423
+vendor/lib64/libcdsprpc.so|ee74a437bd96c0e1d4acf139099eb00689db9f42
 
 # Charger - from LA.UM.8.9.r1-05500-SM6xx.0
 vendor/bin/hvdcp_opti|d50dae2ddbfe305c22a05abfb1ef10fae85f0779
@@ -232,39 +232,39 @@ vendor/lib/librmp.so|5a78255271ec2d83bd906b12e5168b653514b4c9
 vendor/lib/libwvhidl.so|c6250a2107597ec978cec3a91e74a12d042e4f32
 vendor/lib/mediadrm/libwvdrmengine.so|990102c67939cb5fd5a183feb7a9aa4acd5c3aa1
 
-# Firmware
-vendor/firmware/a225p5_pm4.fw
-vendor/firmware/a225_pfp.fw
-vendor/firmware/a225_pm4.fw
-vendor/firmware/a300_pfp.fw
-vendor/firmware/a300_pm4.fw
-vendor/firmware/a330_pfp.fw
-vendor/firmware/a330_pm4.fw
-vendor/firmware/a420_pfp.fw
-vendor/firmware/a420_pm4.fw
-vendor/firmware/a530_gpmu.fw2
-vendor/firmware/a530_pfp.fw
-vendor/firmware/a530_pm4.fw
-vendor/firmware/a530v1_pfp.fw
-vendor/firmware/a530v1_pm4.fw
-vendor/firmware/a530v2_seq.fw2
-vendor/firmware/a530v3_gpmu.fw2
-vendor/firmware/a530v3_seq.fw2
-vendor/firmware/a540_gpmu.fw2
-vendor/firmware/a612_rgmu.bin
-vendor/firmware/a612_zap.b00
-vendor/firmware/a612_zap.b01
-vendor/firmware/a612_zap.b02
-vendor/firmware/a612_zap.elf
-vendor/firmware/a612_zap.mdt
-vendor/firmware/a615_zap.b00
-vendor/firmware/a615_zap.b01
-vendor/firmware/a615_zap.b02
-vendor/firmware/a615_zap.elf
-vendor/firmware/a615_zap.mdt
-vendor/firmware/a630_gmu.bin
-vendor/firmware/a630_sqe.fw
-vendor/firmware/a640_gmu.bin
+# Firmware - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/firmware/a225p5_pm4.fw|02e5fb26c121d388104bc6a0f31811dfa91f1828
+vendor/firmware/a225_pfp.fw|7ba4003796285d36c125fabe453b45d5e21850cc
+vendor/firmware/a225_pm4.fw|87d6f27ca08b521cc3361f63f0631a1fef2403ac
+vendor/firmware/a300_pfp.fw|899dbfad4812084971cfc1ff30f06a4b45c2d34c
+vendor/firmware/a300_pm4.fw|94529206b45b6e9f6ed30dadabe4244a88a60975
+vendor/firmware/a330_pfp.fw|3e2fcee7276ded819cf2d95864fdd6788a484ee1
+vendor/firmware/a330_pm4.fw|ae739ea812f9e4462d7bba8b9ead5782d4496618
+vendor/firmware/a420_pfp.fw|ceb61d9f1385b3f2956d72f33e0bd43cb12f72f0
+vendor/firmware/a420_pm4.fw|96addc1f5cb6dd3a57fc40ef0a6ba8721d5b601f
+vendor/firmware/a530_gpmu.fw2|706da8d5ee565dcf456341f805ee75a40773f65a
+vendor/firmware/a530_pfp.fw|d027c70fde64241ec13160d09ee1b6c272974a4b
+vendor/firmware/a530_pm4.fw|b1cf625b5552b99839687f479c124ac5daca2ca2
+vendor/firmware/a530v1_pfp.fw|0864291b99bed712edfcffa94be7b4595d3af306
+vendor/firmware/a530v1_pm4.fw|6a82a4fb4035fa2a933c1a26b5535d7ec7c0ac4c
+vendor/firmware/a530v2_seq.fw2|63b6d25594a5c1f4217d996a2b636e17a29fc840
+vendor/firmware/a530v3_gpmu.fw2|0a2f6f450231673d75ba39e5d28776db3becf810
+vendor/firmware/a530v3_seq.fw2|8963a53acc689725dee4b22881a4dd4b80e5def8
+vendor/firmware/a540_gpmu.fw2|3530f10b4825a3b08c79e0bcfaf6471ec8422f24
+vendor/firmware/a612_rgmu.bin|cb8705d5bc417e53863ed16ab0bed2fc1489646f
+vendor/firmware/a612_zap.b00|1b3d61c7fcc70440a7fa3dd022fd0d2962a5a738
+vendor/firmware/a612_zap.b01|96c3f4e8445fc33fb0cb11266652be6713f64597
+vendor/firmware/a612_zap.b02|64f072cfbeca18d407d69a6bab8780174986b013
+vendor/firmware/a612_zap.elf|4d849db681566c47d8d5e51ce81128a2ca8e7ea0
+vendor/firmware/a612_zap.mdt|d7edfc2b92a79c2d8acc03a71a46e5d3f556c2a1
+vendor/firmware/a615_zap.b00|7afc31984d7eeacdd0fc78118ad8fa46c9b3e4ee
+vendor/firmware/a615_zap.b01|e3bd16f5cfb649e2b570c0791044971a44b25332
+vendor/firmware/a615_zap.b02|1724cd8c233e4887cec8b9b18f02c9cd5083238b
+vendor/firmware/a615_zap.elf|6fb2edc755536899bc12b2bbb98689a66d3f7ebf
+vendor/firmware/a615_zap.mdt|29154f63ad3844bce9d3a5dbafd4d0aa9975e386
+vendor/firmware/a630_gmu.bin|32bb4acc7767c47ddb487ed7cb998d465ee462f2
+vendor/firmware/a630_sqe.fw|a7a91327db8043a3c9ad85f11356984bbc401026
+vendor/firmware/a640_gmu.bin|fb1eab0dd5f313abf31441e2209c9398da7df98b
 
 # FM - from LA.UM.8.9.r1-05500-SM6xx.0
 lib/fm_helium.so|26655292c0522a502e1608b0467e3eea2b0d6549
@@ -279,11 +279,11 @@ vendor/lib/vendor.qti.hardware.fm@1.0.so|4be49b5cc5573c59ea28c10f9986deab0a023fa
 vendor/lib64/hw/vendor.qti.hardware.fm@1.0-impl.so|942c4a88be55eb62fab614a08b64676972de2d89
 vendor/lib64/vendor.qti.hardware.fm@1.0.so|9c1b952043c7722fd27bfd971ecebb2584671862
 
-# Gatekeeper
-vendor/bin/hw/android.hardware.gatekeeper@1.0-service-qti
-vendor/etc/init/android.hardware.gatekeeper@1.0-service-qti.rc
-vendor/lib/hw/android.hardware.gatekeeper@1.0-impl-qti.so
-vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl-qti.so
+# Gatekeeper - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/hw/android.hardware.gatekeeper@1.0-service-qti|a189a50515831e6ac9a7e88a165ac979ae6ac077
+vendor/etc/init/android.hardware.gatekeeper@1.0-service-qti.rc|1b8d5f58fe0a57906acf72b862c16a2521daa97b
+vendor/lib/hw/android.hardware.gatekeeper@1.0-impl-qti.so|c55e5c78d0e5e6268cc03cb4232005e3ccc5a223
+vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl-qti.so|80a74259090a718fee2da944aecb914fd9460544
 
 # GPS - from LA.UM.8.9.r1-05500-SM6xx.0
 vendor/bin/garden_app|0d86fed7714cde2a80c39ccc8107a73c09c9d562
@@ -405,44 +405,42 @@ vendor/lib64/libtinyxml2_1.so|92adc9b612766cda6fa50f4c36d046b1a6da0816
 vendor/lib/hw/vulkan.sm6150.so|e3c3f3f78abf2accedef1305beff50cb170c370b
 vendor/lib64/hw/vulkan.sm6150.so|06437430b150c1a512fc97de23713d0d83ca0a29
 
-# IPA-Firmware
-vendor/firmware/ipa_fws.b00
-vendor/firmware/ipa_fws.b01
-vendor/firmware/ipa_fws.b02
-vendor/firmware/ipa_fws.b03
-vendor/firmware/ipa_fws.b04
-vendor/firmware/ipa_fws.elf
-vendor/firmware/ipa_fws.mdt
+# IPA - Firmware - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/firmware/ipa_fws.b00|bc93bd0d1ed662f475579a5d7e706b1ad970eb7c
+vendor/firmware/ipa_fws.b01|12212877498ab26158e111955eed09596d46481e
+vendor/firmware/ipa_fws.b02|a4f15a2345382514ef64d40f58dbaa3f1e35c4e7
+vendor/firmware/ipa_fws.b03|c07cfef57f8f694b4cee41e78700614efbedf2bc
+vendor/firmware/ipa_fws.b04|e3552692a635dceca369cab6d9349091b669c80a
+vendor/firmware/ipa_fws.elf|64e47dec5dfcda376040cb8c58201c69789f19fb
+vendor/firmware/ipa_fws.mdt|17233fd94c7c2685d33960b373e5a785c8939563
 
-# Keystore
-vendor/bin/hw/android.hardware.keymaster@4.0-service-qti
-vendor/etc/init/android.hardware.keymaster@4.0-service-qti.rc
-vendor/lib/libkeymasterdeviceutils.so
-vendor/lib/libkeymasterprovision.so
-vendor/lib/libkeymasterutils.so
-vendor/lib/libqtikeymaster4.so
-vendor/lib64/libkeymasterdeviceutils.so
-vendor/lib64/libkeymasterprovision.so
-vendor/lib64/libkeymasterutils.so
-vendor/lib64/libqtikeymaster4.so
+# Keystore - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/hw/android.hardware.keymaster@4.0-service-qti|312e4ff5d9f7e3548a0f1404b0c33c1a56b3b0f6
+vendor/etc/init/android.hardware.keymaster@4.0-service-qti.rc|c8999fb1bccbef81e6b362059e9a6ebd023de98f
+vendor/lib/libkeymasterdeviceutils.so|fdef44a1d20019ed0aa4de1216135b72a4070507
+vendor/lib/libkeymasterprovision.so|452a790d727910a024dc95aafa95668bf7c3336b
+vendor/lib/libkeymasterutils.so|a7f8525879222e88b74e474141ab14d5139c795c
+vendor/lib/libqtikeymaster4.so|b1e9cec081b502fc6febbfddefb9091ef96348d2
+vendor/lib64/libkeymasterdeviceutils.so|763a02841eb133e698180e0cacf309450a4ce0e0
+vendor/lib64/libkeymasterprovision.so|09a61b1a36e28b9d5c485dfa7a290b3923abfb04
+vendor/lib64/libkeymasterutils.so|679491d7b415f45469990380e4fd61e4bfbc445e
+vendor/lib64/libqtikeymaster4.so|08e3341250f7cec2c0cd9b203bacd3bccf79e8f5
 
-# Listen
-vendor/lib/hw/sound_trigger.primary.sm6150.so
-vendor/lib/libadpcmdec.so
-vendor/lib/libgcs-calwrapper.so
-vendor/lib/libgcs-ipc.so
-vendor/lib/libgcs-osal.so
-vendor/lib/libgcs.so
-vendor/lib/liblistensoundmodel2.so
-vendor/lib/librice.so
-vendor/lib/libsmwrapper.so
-vendor/lib64/hw/sound_trigger.primary.sm6150.so
-vendor/lib64/libgcs-calwrapper.so
-vendor/lib64/libgcs-ipc.so
-vendor/lib64/libgcs-osal.so
-vendor/lib64/libgcs.so
-vendor/lib64/liblistensoundmodel2.so
-vendor/lib64/librice.so
+# Listen - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/lib/hw/sound_trigger.primary.sm6150.so|7256c9bee063228d849765b8974339c66b850316
+vendor/lib/libadpcmdec.so|8dc9036e15aa62a85becfda6eb4865de4308ce33
+vendor/lib/libgcs-calwrapper.so|157f92a3e0a205fbf23e8d24bc34bbc7ade03935
+vendor/lib/libgcs-ipc.so|a7bed7c62000367c165a7c5fe93656832868c206
+vendor/lib/libgcs-osal.so|8d3a12a99a1da67cf0897a2ee6e6859e482c122c
+vendor/lib/libgcs.so|a8e89a75f4d88fb0cdef9c53f81c5e22bc6ce5bd
+vendor/lib/liblistensoundmodel2.so|04c2e792b63cc6074dc62c2c7baf5d85fbfc05c5
+vendor/lib/libsmwrapper.so|f9cb362def354cc0a8853aecaebc4394789f5a37
+vendor/lib64/hw/sound_trigger.primary.sm6150.so|1a551491a98b1c551874ca57c937e51f2f96248f
+vendor/lib64/libgcs-calwrapper.so|d7b4503943769fe6ad27e295414eaf0d760c6249
+vendor/lib64/libgcs-ipc.so|17730b735db330dc74df3148ee3cd185a9798cc8
+vendor/lib64/libgcs-osal.so|5eca0a8d8ea32505d5b8d69b3e13bf640b34976a
+vendor/lib64/libgcs.so|311c0ec6d75bd5c403548ce7c17e186802f83ca4
+vendor/lib64/liblistensoundmodel2.so|8aaa1875266d9c1798d3f78544599978e534d354
 
 # Media - from LA.UM.8.9.r1-05500-SM6xx.0
 vendor/etc/configstore/vpp.configstore.xml|d5095f33c326017a21fff186d19a2ce146b85d94
@@ -510,13 +508,13 @@ vendor/lib/vendor.qti.hardware.vpp@1.1.so|d2f4700f7264b308eef3da11b43b0ad7b4be98
 vendor/lib/vendor.qti.hardware.vpp@1.2.so|8708ccdf9bca04aab38dddcaa626d6c321391a51
 vendor/lib/vendor.qti.hardware.vpp@1.3.so|1a7a68ab43017b23e0746937b093365a85d3edb6
 
-# Mlipay
-vendor/bin/mlipayd@1.1
-vendor/etc/init/vendor.xiaomi.hardware.mlipay@1.1-service.rc
-vendor/lib64/libmlipay@1.1.so
-vendor/lib64/libmlipay.so
-vendor/lib64/vendor.xiaomi.hardware.mlipay@1.0.so
-vendor/lib64/vendor.xiaomi.hardware.mlipay@1.1.so
+# Mlipay - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/mlipayd@1.1|caff3f800ba16c251d0f7ace8e031fe86dd47a2e
+vendor/etc/init/vendor.xiaomi.hardware.mlipay@1.1-service.rc|b5ab5bcd031fe4d9781b5911c0595eaeac8b80ea
+vendor/lib64/libmlipay@1.1.so|c0672ce767493db8cf3895be28925781b07ee7d3
+vendor/lib64/libmlipay.so|86665e06e2291959223a910f3367d627174694f2
+vendor/lib64/vendor.xiaomi.hardware.mlipay@1.0.so|43cae59576c8570a37bbf9d4a059b5e9c207360d
+vendor/lib64/vendor.xiaomi.hardware.mlipay@1.1.so|521357ee808c1a248db9e76269880b1f9d0a0617
 
 # Perf - from LA.UM.8.9.r1-05500-SM6xx.0
 vendor/lib64/libqti-perfd-client.so|0c2b82b5e5df6e0efb03ace4a259eb63487dd2b6
@@ -792,16 +790,16 @@ vendor/lib64/libssc_default_listener.so
 vendor/lib64/libssccalapi.so
 vendor/lib64/sensors.ssc.so
 
-# Soter
--vendor/app/SoterService/SoterService.apk
-vendor/bin/hw/vendor.qti.hardware.soter@1.0-service
-vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc
-vendor/lib64/vendor.qti.hardware.soter@1.0.so
-vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so
+# Soter - from davinci-user-10-QKQ1.190825.002-V11.0.2.0.QFJCNXM-release-keys
+-vendor/app/SoterService/SoterService.apk|05a33f07ddabd56f8027762ce142016632936498
+vendor/bin/hw/vendor.qti.hardware.soter@1.0-service|4f7e3c8a6cde9efefd8b9bf440fb1ed442e21fd3
+vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc|76447a61ad5529949365eeb7e8ca000e48bd28ae
+vendor/lib64/vendor.qti.hardware.soter@1.0.so|5815859dc07d3181901596d06612b379e86fe6fd
+vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so|208a00cb9c154c53e6c0f28eb24fbc4d7f6f15cf
 
-# Thermal
--vendor/lib64/libthermalclient.so
--vendor/lib/libthermalclient.so
+# Thermal - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+-vendor/lib64/libthermalclient.so|84072e150722cc668320f07a75cb8695ce1a79b0
+-vendor/lib/libthermalclient.so|900a957e542c2dfeee572418eff24f32dfdce818
 
 # Time - from LA.UM.8.9.r1-05500-SM6xx.0
 -vendor/app/TimeService/TimeService.apk;PRESIGNED|4a37afd1395758d946580af184a738e3c657b1e2
@@ -814,12 +812,9 @@ vendor/bin/hw/vendor.qti.hardware.tui_comm@1.0-service-qti|d4d025e0a12af87f65104
 vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc|2cfc563d7e1579374f001c94588fae7835a12ffc
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|1ac676dca4c81094b254b62f1b608e471b385847
 
-# VNDK
-vendor/lib/vndk/libxlog.so
-
-# WiFi
-vendor/bin/cnss-daemon
-vendor/bin/nv_mac
+# WiFi - from phoenix-user-10-QKQ1.190825.002-V11.0.5.0.QGHCNXM-release-keys
+vendor/bin/cnss-daemon|cc8551f16c468c06329c6c232e702fbe9a9b11d8
+vendor/bin/nv_mac|a1e4c9d0032732e9d5a2fa38f1dfb9d0005451a8
 
 # WiFi Display - from LA.UM.8.9.r1-05500-SM6xx.0
 bin/wfdservice|796065af8c62bf53bab826597b05c5db40b2de5e

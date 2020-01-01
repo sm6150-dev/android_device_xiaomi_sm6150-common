@@ -57,6 +57,8 @@ function blob_fixup() {
 	lib64/libwfdnative.so | lib64/libfm-hci.so | lib/libfm-hci.so )
 		patchelf --remove-needed "android.hidl.base@1.0.so" "${2}"
         ;;
+	vendor/etc/init/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sm7150.rc )
+		sed -i "s|android.hardware.biometrics.fingerprint@2.1-service|android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sm7150|g" "${2}"
         esac
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -363,15 +363,13 @@ void LocHalDaemonClientHandler::cleanup() {
     // already holds the lock
 
     // check whether this is client from external AP,
-    // mName for client on external ap is of format "serviceid.instanceid"
+    // mName for client on external ap is fully-qualified path name ending with
+    // "serviceid.instanceid"
     if (strncmp(mName.c_str(), EAP_LOC_CLIENT_DIR,
                 sizeof(EAP_LOC_CLIENT_DIR)-1) == 0 ) {
-        char fileName[MAX_SOCKET_PATHNAME_LENGTH];
-        snprintf (fileName, sizeof(fileName), "%s%s%s",
-                  EAP_LOC_CLIENT_DIR, LOC_CLIENT_NAME_PREFIX, mName.c_str());
-        LOC_LOGv("removed file name %s", fileName);
-        if (0 != remove(fileName)) {
-            LOC_LOGe("<-- failed to remove file %s", fileName);
+        LOC_LOGv("removed file %s", mName.c_str());
+        if (0 != remove(mName.c_str())) {
+            LOC_LOGe("<-- failed to remove file %s", mName.c_str());
         }
     }
 

@@ -909,7 +909,7 @@ void LocApiV02 ::
 
   inject_time_msg.timeUtc = time;
 
-  inject_time_msg.timeUtc += (int64_t)(uptimeMillis() - timeReference);
+  inject_time_msg.timeUtc += (int64_t)(elapsedRealtime() - timeReference);
 
   inject_time_msg.timeUnc = uncertainty;
 

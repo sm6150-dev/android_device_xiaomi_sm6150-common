@@ -150,6 +150,8 @@ private:
         return LocIpc::send(*mIpcSender, pmsg, msglen);
     }
 
+    uint32_t getSupportedTbf (uint32_t tbfMsec);
+
     // pointer to parent service
     LocationApiService* mService;
 

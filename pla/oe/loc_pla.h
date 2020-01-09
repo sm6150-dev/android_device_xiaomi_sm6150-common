@@ -82,6 +82,8 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/etc/quipc.conf"
+#define LOC_PATH_SLIM_CONF_STR     "/etc/slim.conf"
+#define LOC_PATH_VPE_CONF_STR      "/etc/vpeglue.conf"
 
 #ifdef FEATURE_EXTERNAL_AP
 #define PROPERTY_VALUE_MAX 92

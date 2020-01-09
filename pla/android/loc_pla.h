@@ -58,6 +58,8 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/vendor/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/vendor/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/vendor/etc/quipc.conf"
+#define LOC_PATH_SLIM_CONF_STR     "/vendor/etc/slim.conf"
+#define LOC_PATH_VPE_CONF_STR      "/vendor/etc/vpeglue.conf"
 
 #ifdef __cplusplus
 }

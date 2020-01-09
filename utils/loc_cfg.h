@@ -129,6 +129,8 @@ extern const char LOC_PATH_SAP_CONF[];
 extern const char LOC_PATH_APDR_CONF[];
 extern const char LOC_PATH_XTWIFI_CONF[];
 extern const char LOC_PATH_QUIPC_CONF[];
+extern const char LOC_PATH_SLIM_CONF[];
+extern const char LOC_PATH_VPE_CONF[];
 
 int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_ptr,
                           loc_process_info_s_type** process_info_table_ptr);

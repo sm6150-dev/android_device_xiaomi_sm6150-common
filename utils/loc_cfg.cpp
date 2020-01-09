@@ -86,6 +86,8 @@ const char LOC_PATH_SAP_CONF[] = LOC_PATH_SAP_CONF_STR;
 const char LOC_PATH_APDR_CONF[] = LOC_PATH_APDR_CONF_STR;
 const char LOC_PATH_XTWIFI_CONF[] = LOC_PATH_XTWIFI_CONF_STR;
 const char LOC_PATH_QUIPC_CONF[] = LOC_PATH_QUIPC_CONF_STR;
+const char LOC_PATH_SLIM_CONF[] = LOC_PATH_SLIM_CONF_STR;
+const char LOC_PATH_VPE_CONF[] = LOC_PATH_VPE_CONF_STR;
 
 /*===========================================================================
 FUNCTION loc_get_datum_type

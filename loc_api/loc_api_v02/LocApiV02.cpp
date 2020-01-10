@@ -5429,8 +5429,12 @@ bool LocApiV02 :: convertGnssMeasurements(
     uint32_t count = mGnssMeasurements->gnssMeasNotification.count;
 
     LOC_LOGv("entering extMeas %d, qmi sv index %d, current sv count %d", isExt, index, count);
+    if (isExt) {
+        gnss_measurement_info = gnss_measurement_report_ptr.extSvMeasurement[index];
+    } else {
+        gnss_measurement_info = gnss_measurement_report_ptr.svMeasurement[index];
+    }
 
-    gnss_measurement_info = gnss_measurement_report_ptr.svMeasurement[index];
     GnssMeasurementsData& measurementData =
         mGnssMeasurements->gnssMeasNotification.measurements[count];
 
@@ -5516,17 +5520,24 @@ bool LocApiV02 :: convertGnssMeasurements(
                 dgnss_sv_meas_ptr->prrCorrMetersPerSec;
     }
 
-    uint32_t svMeasurement_len = gnss_measurement_report_ptr.svMeasurement_len;
-    uint32_t svCarrierPhase_len = gnss_measurement_report_ptr.svCarrierPhaseUncertainty_len;
-    bool validCarrierPhaseUnc = false;
-    if ((1 == gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) &&
-        (svMeasurement_len == svCarrierPhase_len)) {
-        validCarrierPhaseUnc = true;
-    }
-    if (validCarrierPhaseUnc) {
-        svMeas.carrierPhaseUncValid = 1;
-        svMeas.carrierPhaseUnc =
-            gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
+    if (!isExt) {
+        uint32_t svMeas_len = gnss_measurement_report_ptr.svMeasurement_len;
+        uint32_t svCarPhUnc_len = gnss_measurement_report_ptr.svCarrierPhaseUncertainty_len;
+        if ((1 == gnss_measurement_report_ptr.svCarrierPhaseUncertainty_valid) &&
+            (svMeas_len == svCarPhUnc_len)) {
+            svMeas.carrierPhaseUncValid = 1;
+            svMeas.carrierPhaseUnc =
+                    gnss_measurement_report_ptr.svCarrierPhaseUncertainty[index];
+        }
+    } else {
+        uint32_t extSvMeas_len = gnss_measurement_report_ptr.extSvMeasurement_len;
+        uint32_t extSvCarPhUnc_len = gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty_len;
+        if ((1 == gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty_valid) &&
+            (extSvMeas_len == extSvCarPhUnc_len)) {
+            svMeas.carrierPhaseUncValid = 1;
+            svMeas.carrierPhaseUnc =
+                    gnss_measurement_report_ptr.extSvCarrierPhaseUncertainty[index];
+        }
     }
 
     // size

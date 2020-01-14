@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2018, 2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -396,6 +396,9 @@ typedef uint64_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_DGNSS_REF_STATION_ID         0x40000000000
 /** GpsLocationExtended has dgnss data age */
 #define GPS_LOCATION_EXTENDED_HAS_DGNSS_DATA_AGE               0x80000000000
+ /** GpsLocationExtended has the probabilityOfGoodFix computed
+  *  from robust location feature. */
+#define GPS_LOCATION_EXTENDED_HAS_PROBABILITY_OF_GOOD_FIX      0x100000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -794,6 +797,11 @@ typedef struct {
 
     /**  If DGNSS is used, DGNSS data age in milli-seconds  */
     uint32_t dgnssDataAgeMsec;
+
+    /* When robust location is enabled, this field
+     * will indicate proability of good fix if valid.
+     * The range is of [0.0, 1.0] */
+    float probabilityOfGoodFix;
 } GpsLocationExtended;
 
 enum loc_sess_status {

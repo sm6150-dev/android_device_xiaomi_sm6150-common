@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -302,6 +302,8 @@ public:
                                                        LocApiResponse* adapterResponse=nullptr);
     virtual LocationError getGnssEnergyConsumed();
     virtual void updatePowerState(PowerStateType powerState);
+    virtual void configRobustLocation(bool enable, bool enableForE911,
+                                      LocApiResponse* adapterResponse=nullptr);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

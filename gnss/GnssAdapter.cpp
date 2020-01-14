@@ -523,6 +523,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT;
         out.locOutputEngMask = locationExtended.locOutputEngMask;
     }
+
+    if (GPS_LOCATION_EXTENDED_HAS_PROBABILITY_OF_GOOD_FIX & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_PROBABILITY_OF_GOOD_FIX_BIT;
+        out.probabilityOfGoodFix = locationExtended.probabilityOfGoodFix;
+    }
 }
 
 
@@ -821,6 +826,13 @@ GnssAdapter::setConfigCommand()
                 }
                 adapter.mLocApi->setPositionAssistedClockEstimatorMode(
                         adapter.mLocConfigInfo.paceConfigInfo.enable);
+
+                // we do not support control robust location from gps.conf
+                if (adapter.mLocConfigInfo.robustLocationConfigInfo.isValid == true) {
+                    adapter.mLocApi->configRobustLocation(
+                            adapter.mLocConfigInfo.robustLocationConfigInfo.enable,
+                            adapter.mLocConfigInfo.robustLocationConfigInfo.enableFor911);
+                }
 
                 if (sapConf.GYRO_BIAS_RANDOM_WALK_VALID ||
                     sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
@@ -2227,7 +2239,7 @@ GnssAdapter::handleEngineUpEvent()
             mAdapter.updatePowerState(mAdapter.getPowerState());
 
             // restart sessions
-            mAdapter.restartSessions();
+            mAdapter.restartSessions(true);
         }
     };
 
@@ -2237,17 +2249,33 @@ GnssAdapter::handleEngineUpEvent()
 }
 
 void
-GnssAdapter::restartSessions()
+GnssAdapter::restartSessions(bool modemSSR)
 {
-    LOC_LOGD("%s]: ", __func__);
+    LOC_LOGi(":enter");
 
-    // odcpi session is no longer active after restart
-    mOdcpiRequestActive = false;
+    if (modemSSR) {
+        // odcpi session is no longer active after restart
+        mOdcpiRequestActive = false;
+    }
 
     // SPE will be restarted now, so set this variable to false.
     mSPEAlreadyRunningAtHighestInterval = false;
 
     checkAndRestartSPESession();
+}
+
+// suspend all on-going sessions
+void
+GnssAdapter::suspendSessions()
+{
+    LOC_LOGi(":enter");
+
+    if (0 != mTrackingSessions.size()) {
+        // inform engine hub that GNSS session has stopped
+        mEngHubProxy->gnssStopFix();
+        mLocApi->stopFix(nullptr);
+        mSPEAlreadyRunningAtHighestInterval = false;
+    }
 }
 
 void GnssAdapter::checkAndRestartSPESession()
@@ -5237,6 +5265,75 @@ GnssAdapter::configLeverArmCommand(const LeverArmConfigInfo& configInfo) {
     };
 
     sendMsg(new MsgConfigLeverArm(*this, sessionId, configInfo));
+    return sessionId;
+}
+
+
+void
+GnssAdapter::configRobustLocation(uint32_t sessionId,
+                                  bool enable, bool enableForE911) {
+
+
+    if ((mLocConfigInfo.robustLocationConfigInfo.isValid == true) &&
+            (mLocConfigInfo.robustLocationConfigInfo.enable == enable) &&
+            (mLocConfigInfo.robustLocationConfigInfo.enableFor911 == enableForE911)) {
+        // no change in configuration, inform client of response and simply return
+        reportResponse(LOCATION_ERROR_SUCCESS, sessionId);
+        return;
+    }
+
+
+    mLocConfigInfo.robustLocationConfigInfo.isValid = true;
+    mLocConfigInfo.robustLocationConfigInfo.enable = enable;
+    mLocConfigInfo.robustLocationConfigInfo.enableFor911 = enableForE911;
+
+    // suspend all tracking sessions so modem can take the E911 configure
+    suspendSessions();
+
+    LocApiResponse* locApiResponse = nullptr;
+    if (sessionId != 0) {
+        locApiResponse =
+                new LocApiResponse(*getContext(),
+                                   [this, sessionId] (LocationError err) {
+                                   reportResponse(err, sessionId);});
+        if (!locApiResponse) {
+            LOC_LOGe("memory alloc failed");
+        }
+    }
+    mLocApi->configRobustLocation(enable, enableForE911, locApiResponse);
+
+    // resume all tracking sessions after the E911 configure
+    restartSessions(false);
+}
+
+uint32_t GnssAdapter::configRobustLocationCommand(
+        bool enable, bool enableForE911) {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgConfigRobustLocation : public LocMsg {
+        GnssAdapter&     mAdapter;
+        uint32_t         mSessionId;
+        bool             mEnable;
+        bool             mEnableForE911;
+
+        inline MsgConfigRobustLocation(GnssAdapter& adapter,
+                                uint32_t sessionId,
+                                bool     enable,
+                                bool     enableForE911) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mEnable(enable),
+            mEnableForE911(enableForE911) {}
+        inline virtual void proc() const {
+            mAdapter.configRobustLocation(mSessionId, mEnable, mEnableForE911);
+        }
+    };
+
+    sendMsg(new MsgConfigRobustLocation(*this, sessionId, enable, enableForE911));
     return sessionId;
 }
 

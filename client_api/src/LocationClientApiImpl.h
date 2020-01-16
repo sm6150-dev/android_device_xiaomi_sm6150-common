@@ -90,6 +90,17 @@ enum ReportCbEnumType {
     REPORT_CB_ENGINE_INFO = 2,
 };
 
+struct ClientCallbacks {
+    CapabilitiesCb capabilitycb;
+    ResponseCb responsecb;
+    CollectiveResponseCb collectivecb;
+    LocationCb locationcb;
+    BatchingCb batchingcb;
+    GeofenceBreachCb gfbreachcb;
+    GnssReportCbs gnssreportcbs;
+    EngineReportCbs engreportcbs;
+};
+
 typedef std::function<void(
     uint32_t response
 )> PingTestCb;

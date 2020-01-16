@@ -767,7 +767,8 @@ static GnssData parseGnssData(const ::GnssDataNotification &halGnssData) {
 
     for (int sig = GNSS_LOC_SIGNAL_TYPE_GPS_L1CA;
          sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
-        gnssData.gnssDataMask[sig] = halGnssData.gnssDataMask[sig];
+        gnssData.gnssDataMask[sig] =
+                (location_client::GnssDataMask) halGnssData.gnssDataMask[sig];
         gnssData.jammerInd[sig] = halGnssData.jammerInd[sig];
         gnssData.agc[sig] = halGnssData.agc[sig];
         if (0 != gnssData.gnssDataMask[sig]) {
@@ -786,12 +787,14 @@ static GnssMeasurements parseGnssMeasurements(const ::GnssMeasurementsNotificati
     for (int meas = 0; meas < halGnssMeasurements.count; meas++) {
         GnssMeasurementsData measurement;
 
-        measurement.flags = halGnssMeasurements.measurements[meas].flags;
+        measurement.flags = (GnssMeasurementsDataFlagsMask)
+                halGnssMeasurements.measurements[meas].flags;
         measurement.svId = halGnssMeasurements.measurements[meas].svId;
         measurement.svType =
                 (location_client::GnssSvType)halGnssMeasurements.measurements[meas].svType;
         measurement.timeOffsetNs = halGnssMeasurements.measurements[meas].timeOffsetNs;
-        measurement.stateMask = halGnssMeasurements.measurements[meas].stateMask;
+        measurement.stateMask = (GnssMeasurementsStateMask)
+                halGnssMeasurements.measurements[meas].stateMask;
         measurement.receivedSvTimeNs = halGnssMeasurements.measurements[meas].receivedSvTimeNs;
         measurement.receivedSvTimeUncertaintyNs =
                 halGnssMeasurements.measurements[meas].receivedSvTimeUncertaintyNs;
@@ -801,7 +804,8 @@ static GnssMeasurements parseGnssMeasurements(const ::GnssMeasurementsNotificati
                 halGnssMeasurements.measurements[meas].pseudorangeRateMps;
         measurement.pseudorangeRateUncertaintyMps =
                 halGnssMeasurements.measurements[meas].pseudorangeRateUncertaintyMps;
-        measurement.adrStateMask = halGnssMeasurements.measurements[meas].adrStateMask;
+        measurement.adrStateMask = (GnssMeasurementsAdrStateMask)
+                halGnssMeasurements.measurements[meas].adrStateMask;
         measurement.adrMeters = halGnssMeasurements.measurements[meas].adrMeters;
         measurement.adrUncertaintyMeters =
                 halGnssMeasurements.measurements[meas].adrUncertaintyMeters;
@@ -819,7 +823,8 @@ static GnssMeasurements parseGnssMeasurements(const ::GnssMeasurementsNotificati
 
         gnssMeasurements.measurements.push_back(measurement);
     }
-    gnssMeasurements.clock.flags = halGnssMeasurements.clock.flags;
+    gnssMeasurements.clock.flags =
+            (GnssMeasurementsClockFlagsMask) halGnssMeasurements.clock.flags;
     gnssMeasurements.clock.leapSecond = halGnssMeasurements.clock.leapSecond;
     gnssMeasurements.clock.timeNs = halGnssMeasurements.clock.timeNs;
     gnssMeasurements.clock.timeUncertaintyNs = halGnssMeasurements.clock.timeUncertaintyNs;
@@ -854,16 +859,16 @@ static LocationResponse parseLocationError(::LocationError error) {
 
 static LocationSystemInfo parseLocationSystemInfo(
         const::LocationSystemInfo &halSystemInfo) {
-    LocationSystemInfo systemInfo = {0};
+    LocationSystemInfo systemInfo = {};
 
+    systemInfo.systemInfoMask = (location_client::LocationSystemInfoMask)
+            halSystemInfo.systemInfoMask;
     if (halSystemInfo.systemInfoMask & LOCATION_SYS_INFO_LEAP_SECOND) {
-        systemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
+        systemInfo.leapSecondSysInfo.leapSecondInfoMask = (location_client::LeapSecondSysInfoMask)
+                halSystemInfo.leapSecondSysInfo.leapSecondInfoMask;
 
         if (halSystemInfo.leapSecondSysInfo.leapSecondInfoMask &
                 LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT) {
-            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
-                    LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT;
-
             LeapSecondChangeInfo &clientInfo =
                     systemInfo.leapSecondSysInfo.leapSecondChangeInfo;
             const::LeapSecondChangeInfo &halInfo =
@@ -876,11 +881,8 @@ static LocationSystemInfo parseLocationSystemInfo(
 
         if (halSystemInfo.leapSecondSysInfo.leapSecondInfoMask &
             LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT) {
-            systemInfo.leapSecondSysInfo.leapSecondInfoMask |=
-                    LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;
             systemInfo.leapSecondSysInfo.leapSecondCurrent =
                     halSystemInfo.leapSecondSysInfo.leapSecondCurrent;
-
         }
     }
 

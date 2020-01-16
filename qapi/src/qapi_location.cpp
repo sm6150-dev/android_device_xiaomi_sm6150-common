@@ -300,6 +300,13 @@ static void loc_passive_response_callback(
     LOC_LOGv("loc_passive_response_callback!");
 }
 
+struct ClientCallbacks {
+    CapabilitiesCb capabilitycb;
+    ResponseCb responsecb;
+    CollectiveResponseCb collectivecb;
+    LocationCb locationcb;
+};
+
 static ClientCallbacks gLocationCallbacks = {
     location_capabilities_callback,
     location_response_callback,

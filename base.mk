@@ -46,10 +46,6 @@ QCOM_BOARD_PLATFORMS += $(TRINKET)
 QSD8K_BOARD_PLATFORMS := qsd8k
 
 TARGET_USE_VENDOR_CAMERA_EXT := true
-TARGET_USE_QTI_BT_STACK := true
-
-BOARD_HAVE_QCOM_FM ?= true
-
 
 # Boot additions
 ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
@@ -221,19 +217,6 @@ BRTCL += libbridge
 #BSON
 BSON := libbson
 
-#BT
-BT := javax.btobex
-BT += libattrib_static
-BT += libbt-vendor
-BT += libbthost_if
-BT += libbt-logClient
-BT += bt_logger
-ifeq ($(TARGET_USE_QTI_BT_STACK), true)
-BT += libbluetooth_qti
-endif
-BT += libbt-hidlclient
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/qcom/common
-
 #C2DColorConvert
 C2DCC := libc2dcolorconvert
 
@@ -284,13 +267,6 @@ EBTABLES += libebtc
 
 #FASTPOWERON
 FASTPOWERON := FastBoot
-
-#FM
-FM := qcom.fmradio
-FM += libqcomfm_jni
-FM += fm_helium
-FM += ftm_fm_lib
-FM += libfm-hci
 
 #GPS
 GPS_HARDWARE := gps.conf
@@ -370,7 +346,6 @@ INIT += init.qcom.sensors.sh
 INIT += init.qcom.crashdata.sh
 INIT += init.qcom.vendor.rc
 INIT += init.target.vendor.rc
-INIT += init.qti.fm.sh
 INIT += init.qti.can.sh
 
 #IPROUTE2
@@ -914,22 +889,11 @@ PRODUCT_PACKAGES := \
     SoundRecorder \
     IM \
     VoiceDialer \
-    FM2 \
     SnapdragonGallery \
     SnapdragonMusic \
     VideoEditor \
     SnapdragonLauncher \
-    a4wpservice \
-    wipowerservice \
-    Mms \
     QtiDialer
-
-ifneq ($(BOARD_HAVE_BLUETOOTH),false)
-PRODUCT_PACKAGES += \
-    Bluetooth \
-    BluetoothExt \
-    BATestApp
-endif
 
 ifeq ($(TARGET_HAS_LOW_RAM),true)
     DELAUN := Launcher3Go
@@ -957,9 +921,6 @@ PRODUCT_PACKAGES += $(AMPLOADER)
 PRODUCT_PACKAGES += $(APPS)
 PRODUCT_PACKAGES += $(BRCTL)
 PRODUCT_PACKAGES += $(BSON)
-ifneq ($(BOARD_HAVE_BLUETOOTH),false)
-PRODUCT_PACKAGES += $(BT)
-endif
 PRODUCT_PACKAGES += $(C2DCC)
 PRODUCT_PACKAGES += $(CHROMIUM)
 PRODUCT_PACKAGES += $(CIMAX)
@@ -975,7 +936,6 @@ PRODUCT_PACKAGES += $(E2FSPROGS)
 PRODUCT_PACKAGES += $(EBTABLES)
 PRODUCT_PACKAGES += $(EXTENDEDMEDIA_EXT)
 PRODUCT_PACKAGES += $(FASTPOWERON)
-PRODUCT_PACKAGES += $(FM)
 PRODUCT_PACKAGES += $(GPS_HARDWARE)
 PRODUCT_PACKAGES += $(HDMID)
 PRODUCT_PACKAGES += $(HOSTAPD)
@@ -1015,11 +975,6 @@ PRODUCT_PACKAGES += $(MM_VIDEO)
 ifeq ($(strip $(TARGET_USES_NQ_NFC)),true)
 PRODUCT_PACKAGES += $(NQ_NFC)
 endif
-ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
-# system prop for fm
-PRODUCT_PROPERTY_OVERRIDES += \
-    vendor.hw.fm.init=0
-endif #BOARD_HAVE_QCOM_FM
 PRODUCT_PACKAGES += $(OPENCORE)
 PRODUCT_PACKAGES += $(PPP)
 PRODUCT_PACKAGES += $(PROTOBUF)
@@ -1117,8 +1072,6 @@ PRODUCT_COPY_FILES := \
     frameworks/native/data/etc/android.hardware.sensor.light.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.light.xml \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.accessory.xml \
     frameworks/native/data/etc/android.hardware.usb.host.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.host.xml \
-    frameworks/native/data/etc/android.hardware.bluetooth.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.bluetooth.xml \
-    frameworks/native/data/etc/android.hardware.bluetooth_le.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.bluetooth_le.xml \
     frameworks/native/data/etc/android.software.device_id_attestation.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.device_id_attestation.xml \
     frameworks/native/data/etc/android.software.verified_boot.xml:system/etc/permissions/android.software.verified_boot.xml
 
@@ -1127,20 +1080,6 @@ ifeq ($(ENABLE_KM_4_0), true)
     PRODUCT_PROPERTY_OVERRIDES += \
         ro.hardware.keystore_desede=true
 endif
-
-# Bluetooth configuration files
-#PRODUCT_COPY_FILES += \
-    system/bluetooth/data/audio.conf:system/etc/bluetooth/audio.conf \
-    system/bluetooth/data/auto_pairing.conf:system/etc/bluetooth/auto_pairing.conf \
-    system/bluetooth/data/blacklist.conf:system/etc/bluetooth/blacklist.conf \
-    system/bluetooth/data/input.conf:system/etc/bluetooth/input.conf \
-    system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
-
-
-#ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ),true)
-#PRODUCT_COPY_FILES += \
-    system/bluetooth/data/stack.conf:system/etc/bluetooth/stack.conf
-#endif # BOARD_HAVE_BLUETOOTH_BLUEZ
 
 # gps/location secuity configuration file
 PRODUCT_COPY_FILES += \

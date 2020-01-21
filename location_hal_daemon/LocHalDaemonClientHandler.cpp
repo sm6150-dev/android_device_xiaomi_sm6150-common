@@ -370,6 +370,10 @@ void LocHalDaemonClientHandler::cleanup() {
     // please do not attempt to hold the lock, as the caller of this function
     // already holds the lock
 
+    // set the ptr to null to prevent further sending out message to the
+    // remote client that is no longer reachable
+    mIpcSender = nullptr;
+
     // check whether this is client from external AP,
     // mName for client on external ap is of format "serviceid.instanceid"
     if (strncmp(mName.c_str(), EAP_LOC_CLIENT_DIR,
@@ -386,6 +390,11 @@ void LocHalDaemonClientHandler::cleanup() {
     if (mLocationApi) {
         mLocationApi->destroy([this]() {onLocationApiDestroyCompleteCb();});
         mLocationApi = nullptr;
+    } else {
+        // For location integration api client handler, it does not
+        // instantiate LocationApi interface and can be freed right away
+        LOC_LOGe("delete LocHalDaemonClientHandler");
+        delete this;
     }
 }
 

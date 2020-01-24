@@ -5,7 +5,6 @@ AM_CFLAGS = \
     $(LOCUTILS_CFLAGS) \
     $(LOCCLIENTAPI_CFLAGS) \
     $(LOCINTEGRATIONAPI_CFLAGS) \
-    $(LOCHALDAEMON_CFLAGS) \
     -std=c++11
 # HALDAEMON is requird only for msg.h
 

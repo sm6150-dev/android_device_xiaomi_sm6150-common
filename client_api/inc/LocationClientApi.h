@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -717,6 +717,218 @@ struct GnssData {
     double        agc[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
 };
 
+/** Bitwise OR of GnssMeasurementsDataFlagsBits */
+typedef uint32_t GnssMeasurementsDataFlagsMask;
+/** Flags to mark which params are valid in GnssMeasurementsData */
+enum GnssMeasurementsDataFlagsBits {
+    /** valid svId                                                  */
+    GNSS_MEASUREMENTS_DATA_SV_ID_BIT                        = (1<<0),
+    /** valid svType                                                */
+    GNSS_MEASUREMENTS_DATA_SV_TYPE_BIT                      = (1<<1),
+    /** valid stateMask                                             */
+    GNSS_MEASUREMENTS_DATA_STATE_BIT                        = (1<<2),
+    /** valid receivedSvTimeNs                                      */
+    GNSS_MEASUREMENTS_DATA_RECEIVED_SV_TIME_BIT             = (1<<3),
+    /** valid receivedSvTimeUncertaintyNs                           */
+    GNSS_MEASUREMENTS_DATA_RECEIVED_SV_TIME_UNCERTAINTY_BIT = (1<<4),
+    /** valid carrierToNoiseDbHz                                    */
+    GNSS_MEASUREMENTS_DATA_CARRIER_TO_NOISE_BIT             = (1<<5),
+    /** valid pseudorangeRateMps                                    */
+    GNSS_MEASUREMENTS_DATA_PSEUDORANGE_RATE_BIT             = (1<<6),
+    /** valid pseudorangeRateUncertaintyMps                         */
+    GNSS_MEASUREMENTS_DATA_PSEUDORANGE_RATE_UNCERTAINTY_BIT = (1<<7),
+    /** valid adrStateMask                                          */
+    GNSS_MEASUREMENTS_DATA_ADR_STATE_BIT                    = (1<<8),
+    /** valid adrMeters                                             */
+    GNSS_MEASUREMENTS_DATA_ADR_BIT                          = (1<<9),
+    /** valid adrUncertaintyMeters                                  */
+    GNSS_MEASUREMENTS_DATA_ADR_UNCERTAINTY_BIT              = (1<<10),
+    /** valid carrierFrequencyHz                                    */
+    GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT            = (1<<11),
+    /** valid carrierCycles                                         */
+    GNSS_MEASUREMENTS_DATA_CARRIER_CYCLES_BIT               = (1<<12),
+    /** valid carrierPhase                                          */
+    GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_BIT                = (1<<13),
+    /** valid carrierPhaseUncertainty                               */
+    GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_UNCERTAINTY_BIT    = (1<<14),
+    /** valid multipathIndicator                                    */
+    GNSS_MEASUREMENTS_DATA_MULTIPATH_INDICATOR_BIT          = (1<<15),
+    /** valid signalToNoiseRatioDb                                  */
+    GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT        = (1<<16),
+    /** valid agcLevelDb                                            */
+    GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT       = (1<<17),
+};
+
+/** Bitwise OR of GnssMeasurementsStateBits */
+typedef uint32_t GnssMeasurementsStateMask;
+/** Flags to indicate GNSS measurement state */
+enum GnssMeasurementsStateBits {
+    /** GNSS measurement state is unknown                           */
+    GNSS_MEASUREMENTS_STATE_UNKNOWN_BIT                 = 0,
+    /** GNSS measurement state is "code lock"                       */
+    GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT               = (1<<0),
+    /** GNSS measurement state is "bit sync"                        */
+    GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT                = (1<<1),
+    /** GNSS measurement state is "subframe sync"                   */
+    GNSS_MEASUREMENTS_STATE_SUBFRAME_SYNC_BIT           = (1<<2),
+    /** GNSS measurement state is "tow decoded"                     */
+    GNSS_MEASUREMENTS_STATE_TOW_DECODED_BIT             = (1<<3),
+    /** GNSS measurement state is "msec ambiguous"                  */
+    GNSS_MEASUREMENTS_STATE_MSEC_AMBIGUOUS_BIT          = (1<<4),
+    /** GNSS measurement state is "symbol sync"                     */
+    GNSS_MEASUREMENTS_STATE_SYMBOL_SYNC_BIT             = (1<<5),
+    /** GNSS measurement state is "GLONASS string sync"             */
+    GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT         = (1<<6),
+    /** GNSS measurement state is "GLONASS TOD decoded"             */
+    GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT         = (1<<7),
+    /** GNSS measurement state is "BDS D2 bit sync"                 */
+    GNSS_MEASUREMENTS_STATE_BDS_D2_BIT_SYNC_BIT         = (1<<8),
+    /** GNSS measurement state is "BDS D2 subframe sync"            */
+    GNSS_MEASUREMENTS_STATE_BDS_D2_SUBFRAME_SYNC_BIT    = (1<<9),
+    /** GNSS measurement state is "Galileo E1BC code lock"          */
+    GNSS_MEASUREMENTS_STATE_GAL_E1BC_CODE_LOCK_BIT      = (1<<10),
+    /** GNSS measurement state is "Galileo E1C second code lock"    */
+    GNSS_MEASUREMENTS_STATE_GAL_E1C_2ND_CODE_LOCK_BIT   = (1<<11),
+    /** GNSS measurement state is "Galileo E1B page sync"           */
+    GNSS_MEASUREMENTS_STATE_GAL_E1B_PAGE_SYNC_BIT       = (1<<12),
+    /** GNSS measurement state is "SBAS sync"                       */
+    GNSS_MEASUREMENTS_STATE_SBAS_SYNC_BIT               = (1<<13),
+};
+
+/** Bitwise OR of GnssMeasurementsAdrStateBits */
+typedef uint16_t GnssMeasurementsAdrStateMask;
+/** Flags to indicate accumulated delta range state */
+enum GnssMeasurementsAdrStateBits {
+    /** accumulated delta range state is unknown                            */
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_UNKNOWN         = 0,
+    /** accumulated delta range state is valid                              */
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT       = (1<<0),
+    /** accumulated delta range state is "reset"                            */
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT       = (1<<1),
+    /** accumulated delta range state is "cycle slip"                       */
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT  = (1<<2),
+};
+
+/** multipath indicator */
+enum GnssMeasurementsMultipathIndicator {
+    /** multipath indicator is unknown              */
+    GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_UNKNOWN = 0,
+    /** multipath indicator is present              */
+    GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_PRESENT,
+    /** multipath indicator is not present          */
+    GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_NOT_PRESENT,
+};
+
+/** Bitwise OR of GnssMeasurementsClockFlagsMask */
+typedef uint32_t GnssMeasurementsClockFlagsMask;
+/** Flags to mark which params are valid in GnssMeasurementsData */
+enum GnssMeasurementsClockFlagsBits {
+    /** valid leap second                                                   */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT                   = (1<<0),
+    /** valid time                                                          */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_BIT                          = (1<<1),
+    /** valid timeuncertainty                                               */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_UNCERTAINTY_BIT              = (1<<2),
+    /** valid full bias                                                     */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT                     = (1<<3),
+    /** valid bias                                                          */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT                          = (1<<4),
+    /** valid bias uncertainty                                              */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT              = (1<<5),
+    /** valid drift                                                         */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_BIT                         = (1<<6),
+    /** valid drift uncertainty                                             */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_UNCERTAINTY_BIT             = (1<<7),
+    /** valid HW clock discontinuity count                                  */
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_HW_CLOCK_DISCONTINUITY_COUNT_BIT  = (1<<8),
+};
+
+/** Structure containing GNSS measurements data */
+struct GnssMeasurementsData {
+    /** Bitwise OR of GnssMeasurementsDataFlagsBits             */
+    GnssMeasurementsDataFlagsMask flags;
+    /** Unique Identifier                                           */
+    int16_t svId;
+    /** type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO)      */
+    GnssSvType svType;
+    /** Time offset in nanoseconds when the measurement was taken.  */
+    double timeOffsetNs;
+    /** Bitwise OR of GnssMeasurementsStateBits                     */
+    GnssMeasurementsStateMask stateMask;
+    /** Received GNSS time of the week in nanoseconds when the
+        measurement was taken.                                      */
+    int64_t receivedSvTimeNs;
+    /** Uncertainty (one sigmna) of the received GNSS time of the
+        week in nanoseconds when the measurement was taken.         */
+    int64_t receivedSvTimeUncertaintyNs;
+    /** signal strength, carrier to noise ratio in dB-Hz            */
+    double carrierToNoiseDbHz;
+    /** uncorrected pseudorange rate in m/s                         */
+    double pseudorangeRateMps;
+    /** uncorrected pseudorange rate uncertainty in m/s             */
+    double pseudorangeRateUncertaintyMps;
+    /** Bitwise OR of GnssMeasurementsAdrStateBits */
+    GnssMeasurementsAdrStateMask adrStateMask;
+    /** accumulated delta range in meters                           */
+    double adrMeters;
+    /** accumulated delta range uncertainty in meters               */
+    double adrUncertaintyMeters;
+    /** carrier frequency of the tracked signal in Hertz            */
+    float carrierFrequencyHz;
+    /** the number of full carrier cycles between the receiver and
+        the satellite                                               */
+    int64_t carrierCycles;
+    /** the RF carrier phase that the receiver has detected         */
+    double carrierPhase;
+    /** the RF carrier phase uncertainty                            */
+    double carrierPhaseUncertainty;
+    /** multipath indicator, could be unknown, present or
+        not present                                                 */
+    GnssMeasurementsMultipathIndicator multipathIndicator;
+    /** signal to noise ratio in dB                                 */
+    double signalToNoiseRatioDb;
+    /** automatic gain control level in dB                          */
+    double agcLevelDb;
+};
+
+/** Structure containing GNSS measurements clock                            */
+/** Here is the main equation describing the relationship between various
+    components:
+    utcTimeNs = timeNs - (fullBiasNs + biasNs) - leapSecond * 1,000,000,000 */
+struct GnssMeasurementsClock {
+    /** Bitwise OR of GnssMeasurementsClockFlagsBits    */
+    GnssMeasurementsClockFlagsMask flags;
+    /** leap second                                     */
+    int16_t leapSecond;
+    /** time in nanoseconds, monotonically increasing as
+        long as the power is on                         */
+    int64_t timeNs;
+    /** time uncertainty (one sigma) in nanoseconds     */
+    double timeUncertaintyNs;
+    /** full bias in nanoseconds                        */
+    int64_t fullBiasNs;
+    /** sub-nanoseconds bias                            */
+    double biasNs;
+    /** bias uncertainty (one sigma) in nanoseconds     */
+    double biasUncertaintyNs;
+    /** clock drift in nanoseconds/second               */
+    double driftNsps;
+    /** clock drift uncertainty (one sigma)
+        in nanoseconds/second                           */
+    double driftUncertaintyNsps;
+    /** HW clock discontinuity count - incremented
+        for each discontinuity in HW clock              */
+    uint32_t hwClockDiscontinuityCount;
+};
+
+/** Structure containing GNSS measurements (clock and data) */
+struct GnssMeasurements {
+    /** GNSS measurements clock */
+    GnssMeasurementsClock clock;
+    /** GNSS measurements data */
+    std::vector<GnssMeasurementsData> measurements;
+};
+
 typedef uint32_t LeapSecondSysInfoMask;
 enum LeapSecondSysInfoDataBits{
     /** Current leap second info is available. This info will only
@@ -892,6 +1104,15 @@ typedef std::function<void(
 
 /** @fn
     @brief
+    GnssMeasurementsCb is for receiving GnssMeasurements information
+    @param gnssMeasurements: the GnssMeasurements info in a session
+*/
+typedef std::function<void(
+    const GnssMeasurements& gnssMeasurements
+)> GnssMeasurementsCb;
+
+/** @fn
+    @brief
     LocationSystemInfoCb is for receiving rare occuring location
     system information update
     @param locationSystemInfo: rare location system event, e.g.:
@@ -935,6 +1156,7 @@ struct GnssReportCbs {
     GnssSvCb gnssSvCallback;
     GnssNmeaCb gnssNmeaCallback;
     GnssDataCb gnssDataCallback;
+    GnssMeasurementsCb gnssMeasurementsCallback;
 };
 
 struct EngineReportCbs {
@@ -942,6 +1164,7 @@ struct EngineReportCbs {
     GnssSvCb gnssSvCallback;
     GnssNmeaCb gnssNmeaCallback;
     GnssDataCb gnssDataCallback;
+    GnssMeasurementsCb gnssMeasurementsCallback;
 };
 
 enum GnssEnergyConsumedInfoMask {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -779,6 +779,61 @@ static GnssData parseGnssData(const ::GnssDataNotification &halGnssData) {
     return gnssData;
 }
 
+static GnssMeasurements parseGnssMeasurements(const ::GnssMeasurementsNotification
+            &halGnssMeasurements) {
+    GnssMeasurements gnssMeasurements = {};
+
+    for (int meas = 0; meas < halGnssMeasurements.count; meas++) {
+        GnssMeasurementsData measurement;
+
+        measurement.flags = halGnssMeasurements.measurements[meas].flags;
+        measurement.svId = halGnssMeasurements.measurements[meas].svId;
+        measurement.svType =
+                (location_client::GnssSvType)halGnssMeasurements.measurements[meas].svType;
+        measurement.timeOffsetNs = halGnssMeasurements.measurements[meas].timeOffsetNs;
+        measurement.stateMask = halGnssMeasurements.measurements[meas].stateMask;
+        measurement.receivedSvTimeNs = halGnssMeasurements.measurements[meas].receivedSvTimeNs;
+        measurement.receivedSvTimeUncertaintyNs =
+                halGnssMeasurements.measurements[meas].receivedSvTimeUncertaintyNs;
+        measurement.carrierToNoiseDbHz =
+                halGnssMeasurements.measurements[meas].carrierToNoiseDbHz;
+        measurement.pseudorangeRateMps =
+                halGnssMeasurements.measurements[meas].pseudorangeRateMps;
+        measurement.pseudorangeRateUncertaintyMps =
+                halGnssMeasurements.measurements[meas].pseudorangeRateUncertaintyMps;
+        measurement.adrStateMask = halGnssMeasurements.measurements[meas].adrStateMask;
+        measurement.adrMeters = halGnssMeasurements.measurements[meas].adrMeters;
+        measurement.adrUncertaintyMeters =
+                halGnssMeasurements.measurements[meas].adrUncertaintyMeters;
+        measurement.carrierFrequencyHz =
+                halGnssMeasurements.measurements[meas].carrierFrequencyHz;
+        measurement.carrierCycles = halGnssMeasurements.measurements[meas].carrierCycles;
+        measurement.carrierPhase = halGnssMeasurements.measurements[meas].carrierPhase;
+        measurement.carrierPhaseUncertainty =
+                halGnssMeasurements.measurements[meas].carrierPhaseUncertainty;
+        measurement.multipathIndicator = (location_client::GnssMeasurementsMultipathIndicator)
+                halGnssMeasurements.measurements[meas].multipathIndicator;
+        measurement.signalToNoiseRatioDb =
+                halGnssMeasurements.measurements[meas].signalToNoiseRatioDb;
+        measurement.agcLevelDb = halGnssMeasurements.measurements[meas].agcLevelDb;
+
+        gnssMeasurements.measurements.push_back(measurement);
+    }
+    gnssMeasurements.clock.flags = halGnssMeasurements.clock.flags;
+    gnssMeasurements.clock.leapSecond = halGnssMeasurements.clock.leapSecond;
+    gnssMeasurements.clock.timeNs = halGnssMeasurements.clock.timeNs;
+    gnssMeasurements.clock.timeUncertaintyNs = halGnssMeasurements.clock.timeUncertaintyNs;
+    gnssMeasurements.clock.fullBiasNs = halGnssMeasurements.clock.fullBiasNs;
+    gnssMeasurements.clock.biasNs = halGnssMeasurements.clock.biasNs;
+    gnssMeasurements.clock.biasUncertaintyNs = halGnssMeasurements.clock.biasUncertaintyNs;
+    gnssMeasurements.clock.driftNsps = halGnssMeasurements.clock.driftNsps;
+    gnssMeasurements.clock.driftUncertaintyNsps = halGnssMeasurements.clock.driftUncertaintyNsps;
+    gnssMeasurements.clock.hwClockDiscontinuityCount =
+            halGnssMeasurements.clock.hwClockDiscontinuityCount;
+
+    return gnssMeasurements;
+}
+
 static LocationResponse parseLocationError(::LocationError error) {
     LocationResponse response;
 
@@ -872,6 +927,7 @@ LocationClientApiImpl::LocationClientApiImpl(CapabilitiesCb capabitiescb) :
         mGnssSvCb(nullptr),
         mGnssNmeaCb(nullptr),
         mGnssDataCb(nullptr),
+        mGnssMeasurementsCb(nullptr),
         mGnssEnergyConsumedInfoCb(nullptr),
         mGnssEnergyConsumedResponseCb(nullptr),
         mLocationSysInfoCb(nullptr),
@@ -1011,15 +1067,17 @@ void LocationClientApiImpl::updateCallbackFunctions(const ClientCallbacks& cbs,
             mApiImpl->mGfBreachCb = mCbs.gfbreachcb;
 
             if (REPORT_CB_GNSS_INFO == mReportCbType) {
-                mApiImpl->mGnssLocationCb = mCbs.gnssreportcbs.gnssLocationCallback;
-                mApiImpl->mGnssSvCb       = mCbs.gnssreportcbs.gnssSvCallback;
-                mApiImpl->mGnssNmeaCb     = mCbs.gnssreportcbs.gnssNmeaCallback;
-                mApiImpl->mGnssDataCb     = mCbs.gnssreportcbs.gnssDataCallback;
+                mApiImpl->mGnssLocationCb     = mCbs.gnssreportcbs.gnssLocationCallback;
+                mApiImpl->mGnssSvCb           = mCbs.gnssreportcbs.gnssSvCallback;
+                mApiImpl->mGnssNmeaCb         = mCbs.gnssreportcbs.gnssNmeaCallback;
+                mApiImpl->mGnssDataCb         = mCbs.gnssreportcbs.gnssDataCallback;
+                mApiImpl->mGnssMeasurementsCb = mCbs.gnssreportcbs.gnssMeasurementsCallback;
             } else if (REPORT_CB_ENGINE_INFO == mReportCbType) {
-                mApiImpl->mEngLocationsCb = mCbs.engreportcbs.engLocationsCallback;
-                mApiImpl->mGnssSvCb       = mCbs.engreportcbs.gnssSvCallback;
-                mApiImpl->mGnssNmeaCb     = mCbs.engreportcbs.gnssNmeaCallback;
-                mApiImpl->mGnssDataCb     = mCbs.engreportcbs.gnssDataCallback;
+                mApiImpl->mEngLocationsCb     = mCbs.engreportcbs.engLocationsCallback;
+                mApiImpl->mGnssSvCb           = mCbs.engreportcbs.gnssSvCallback;
+                mApiImpl->mGnssNmeaCb         = mCbs.engreportcbs.gnssNmeaCallback;
+                mApiImpl->mGnssDataCb         = mCbs.engreportcbs.gnssDataCallback;
+                mApiImpl->mGnssMeasurementsCb = mCbs.engreportcbs.gnssMeasurementsCallback;
             }
         }
         LocationClientApiImpl* mApiImpl;
@@ -1060,6 +1118,9 @@ void LocationClientApiImpl::updateCallbacks(LocationCallbacks& callbacks) {
             }
             if (mCallBacks.gnssDataCb) {
                 callBacksMask |= E_LOC_CB_GNSS_DATA_BIT;
+            }
+            if (mCallBacks.gnssMeasurementsCb) {
+                callBacksMask |= E_LOC_CB_GNSS_MEAS_BIT;
             }
             // handle callbacks that are not related to a fix session
             if (mApiImpl->mLocationSysInfoCb) {
@@ -2114,6 +2175,47 @@ void IpcListener::onReceive(const char* data, uint32_t length,
                     if (mApiImpl.mGnssDataCb) {
                         mApiImpl.mGnssDataCb(gnssData);
                     }
+                }
+                break;
+            }
+
+            case E_LOCAPI_MEAS_MSG_ID:
+            {
+                LOC_LOGd("<<< message = measurements");
+                if (sizeof(LocAPIMeasIndMsg) != mMsgData.length()) {
+                    LOC_LOGw("payload size does not match for message with id: %d",
+                        pMsg->msgId);
+                }
+                if ((mApiImpl.mSessionId != LOCATION_CLIENT_SESSION_ID_INVALID) &&
+                    (mApiImpl.mCallbacksMask & E_LOC_CB_GNSS_MEAS_BIT)) {
+                    const LocAPIMeasIndMsg* pMeasIndMsg = (LocAPIMeasIndMsg*)(pMsg);
+                    GnssMeasurements gnssMeasurements =
+                        parseGnssMeasurements(pMeasIndMsg->gnssMeasurementsNotification);
+                    if (mApiImpl.mGnssMeasurementsCb) {
+                        mApiImpl.mGnssMeasurementsCb(gnssMeasurements);
+                    }
+#ifndef FEATURE_EXTERNAL_AP
+                    if (!mDiagInterface) {
+                        break;
+                    }
+                    diagBuffSrc bufferSrc = BUFFER_INVALID;
+                    clientDiagGnssMeasurementsStructType* diagGnssMeasPtr = nullptr;
+                    diagGnssMeasPtr =
+                            (clientDiagGnssMeasurementsStructType*)mDiagInterface->logAlloc(
+                                    LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C,
+                                    sizeof(clientDiagGnssMeasurementsStructType),
+                                    &bufferSrc);
+                    if (NULL == diagGnssMeasPtr) {
+                        LOC_LOGv("memory alloc failed");
+                        break;
+                    }
+                    populateClientDiagMeasurements(diagGnssMeasPtr, gnssMeasurements);
+                    diagGnssMeasPtr->version = LOG_CLIENT_MEASUREMENTS_DIAG_MSG_VERSION;
+
+                    mDiagInterface->logCommit(diagGnssMeasPtr, bufferSrc,
+                            LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C,
+                            sizeof(clientDiagGnssMeasurementsStructType));
+#endif // FEATURE_EXTERNAL_AP
                 }
                 break;
             }

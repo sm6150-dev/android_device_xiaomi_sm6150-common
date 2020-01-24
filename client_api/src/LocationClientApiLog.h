@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,15 +38,20 @@
 #include "LocationClientApi.h"
 
 #define CLIENT_DIAG_GNSS_SV_MAX            (176)
+#define CLIENT_DIAG_GNSS_MEASUREMENTS_MAX  (128)
 #define LOG_CLIENT_LOCATION_DIAG_MSG_VERSION        (1)
 #define LOG_CLIENT_SV_REPORT_DIAG_MSG_VERSION       (2)
 #define LOG_CLIENT_NMEA_REPORT_DIAG_MSG_VERSION     (1)
+#define LOG_CLIENT_MEASUREMENTS_DIAG_MSG_VERSION    (1)
 
 
 #ifndef LOG_GNSS_CLIENT_API_NMEA_REPORT_C
 #define LOG_GNSS_CLIENT_API_NMEA_REPORT_C (0x1CB2)
 #endif
 
+#ifndef LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C
+#define LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C (0x1CB7)
+#endif
 
 namespace location_client
 {
@@ -622,6 +627,122 @@ typedef PACKED struct PACKED_POST {
         indicates the set of engines contribute to the fix. */
     clientDiagPositioningEngineMask locOutputEngMask;
 } clientDiagGnssLocationStructType;
+
+typedef uint32_t clientDiagGnssMeasurementsDataFlagsMask;
+typedef enum {
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_SV_ID_BIT = (1 << 0),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_SV_TYPE_BIT = (1 << 1),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_STATE_BIT = (1 << 2),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_RECEIVED_SV_TIME_BIT = (1 << 3),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_RECEIVED_SV_TIME_UNCERTAINTY_BIT = (1 << 4),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_CARRIER_TO_NOISE_BIT = (1 << 5),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_PSEUDORANGE_RATE_BIT = (1 << 6),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_PSEUDORANGE_RATE_UNCERTAINTY_BIT = (1 << 7),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_ADR_STATE_BIT = (1 << 8),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_ADR_BIT = (1 << 9),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_ADR_UNCERTAINTY_BIT = (1 << 10),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT = (1 << 11),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_CARRIER_CYCLES_BIT = (1 << 12),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_BIT = (1 << 13),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_UNCERTAINTY_BIT = (1 << 14),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_MULTIPATH_INDICATOR_BIT = (1 << 15),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT = (1 << 16),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT = (1 << 17),
+} clientDiagGnssMeasurementsDataFlagsBits;
+
+typedef uint32_t clientDiagGnssMeasurementsStateMask;
+typedef enum {
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_UNKNOWN_BIT = 0,
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT = (1 << 0),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT = (1 << 1),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_SUBFRAME_SYNC_BIT = (1 << 2),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_TOW_DECODED_BIT = (1 << 3),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_MSEC_AMBIGUOUS_BIT = (1 << 4),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_SYMBOL_SYNC_BIT = (1 << 5),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_GLO_STRING_SYNC_BIT = (1 << 6),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_GLO_TOD_DECODED_BIT = (1 << 7),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_BDS_D2_BIT_SYNC_BIT = (1 << 8),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_BDS_D2_SUBFRAME_SYNC_BIT = (1 << 9),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_GAL_E1BC_CODE_LOCK_BIT = (1 << 10),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_GAL_E1C_2ND_CODE_LOCK_BIT = (1 << 11),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_GAL_E1B_PAGE_SYNC_BIT = (1 << 12),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_STATE_SBAS_SYNC_BIT = (1 << 13),
+} clientDiagGnssMeasurementsStateBits;
+
+typedef uint16_t clientDiagGnssMeasurementsAdrStateMask;
+typedef enum {
+    CLIENT_DIAG_GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_UNKNOWN = 0,
+    CLIENT_DIAG_GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT = (1 << 0),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT = (1 << 1),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT = (1 << 2),
+} clientDiagGnssMeasurementsAdrStateBits;
+
+typedef enum {
+    CLIENT_DIAG_GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_UNKNOWN = 0,
+    CLIENT_DIAG_GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_PRESENT,
+    CLIENT_DIAG_GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_NOT_PRESENT,
+} clientDiagGnssMeasurementsMultipathIndicator;
+
+typedef uint32_t clientDiagGnssMeasurementsClockFlagsMask;
+typedef enum {
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT = (1 << 0),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_BIT = (1 << 1),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_UNCERTAINTY_BIT = (1 << 2),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT = (1 << 3),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT = (1 << 4),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT = (1 << 5),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_BIT = (1 << 6),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_UNCERTAINTY_BIT = (1 << 7),
+    CLIENT_DIAG_GNSS_MEASUREMENTS_CLOCK_FLAGS_HW_CLOCK_DISCONTINUITY_COUNT_BIT = (1 << 8),
+} clientDiagGnssMeasurementsClockFlagsBits;
+
+typedef PACKED struct PACKED_POST {
+    clientDiagGnssMeasurementsDataFlagsMask flags;  // bitwise OR of GnssMeasurementsDataFlagsBits
+    int16_t svId;
+    clientDiagGnssSvType svType;
+    double timeOffsetNs;
+    clientDiagGnssMeasurementsStateMask stateMask;  // bitwise OR of GnssMeasurementsStateBits
+    int64_t receivedSvTimeNs;
+    int64_t receivedSvTimeUncertaintyNs;
+    double carrierToNoiseDbHz;
+    double pseudorangeRateMps;
+    double pseudorangeRateUncertaintyMps;
+    clientDiagGnssMeasurementsAdrStateMask adrStateMask;
+    double adrMeters;
+    double adrUncertaintyMeters;
+    float carrierFrequencyHz;
+    int64_t carrierCycles;
+    double carrierPhase;
+    double carrierPhaseUncertainty;
+    clientDiagGnssMeasurementsMultipathIndicator multipathIndicator;
+    double signalToNoiseRatioDb;
+    double agcLevelDb;
+} clientDiagGnssMeasurementsData;
+
+typedef PACKED struct PACKED_POST {
+    clientDiagGnssMeasurementsClockFlagsMask flags;// bitwise OR of GnssMeasurementsClockFlagsBits
+    int16_t leapSecond;
+    int64_t timeNs;
+    double timeUncertaintyNs;
+    int64_t fullBiasNs;
+    double biasNs;
+    double biasUncertaintyNs;
+    double driftNsps;
+    double driftUncertaintyNsps;
+    uint32_t hwClockDiscontinuityCount;
+} clientDiagGnssMeasurementsClock;
+
+typedef PACKED struct PACKED_POST {
+    /** Used by Logging Module
+    *  Mandatory field */
+    log_hdr_type logHeader;
+    /** clientDiag Message Version
+    *  Mandatory field */
+    uint8 version;
+    uint32_t count;        // number of items in GnssMeasurementsData array
+    clientDiagGnssMeasurementsClock clock; // clock
+    clientDiagGnssMeasurementsData measurements[CLIENT_DIAG_GNSS_MEASUREMENTS_MAX];
+} clientDiagGnssMeasurementsStructType;
 
 typedef PACKED struct PACKED_POST {
     /** Used by Logging Module

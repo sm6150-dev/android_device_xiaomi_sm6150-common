@@ -229,7 +229,7 @@ void LocationApiService::processClientMsg(const char* data, uint32_t length) {
 
     // parse received message
     LocAPIMsgHeader* pMsg = (LocAPIMsgHeader*)data;
-    LOC_LOGd(">-- onReceive len=%u remote=%s msgId=%u",
+    LOC_LOGi(">-- onReceive len=%u remote=%s msgId=%u",
             length, pMsg->mSocketName, pMsg->msgId);
 
     switch (pMsg->msgId) {
@@ -876,7 +876,7 @@ void LocationApiService::configConstrainedTunc(
 
     uint32_t sessionId = mLocationControlApi->configConstrainedTimeUncertainty(
             pMsg->mEnable, pMsg->mTuncConstraint, pMsg->mEnergyBudget);
-    LOC_LOGd(">-- enable: %d, tunc constraint %f, energy budget %d, session ID = %d",
+    LOC_LOGi(">-- enable: %d, tunc constraint %f, energy budget %d, session ID = %d",
              pMsg->mEnable, pMsg->mTuncConstraint, pMsg->mEnergyBudget,
              sessionId);
     addConfigRequestToMap(sessionId, pMsg);
@@ -892,7 +892,7 @@ void LocationApiService::configPositionAssistedClockEstimator(
 
     uint32_t sessionId = mLocationControlApi->
             configPositionAssistedClockEstimator(pMsg->mEnable);
-    LOC_LOGd(">-- enable: %d, session ID = %d", pMsg->mEnable,  sessionId);
+    LOC_LOGi(">-- enable: %d, session ID = %d", pMsg->mEnable,  sessionId);
 
     addConfigRequestToMap(sessionId, pMsg);
 }
@@ -913,7 +913,7 @@ void LocationApiService::configConstellations(
             pMsg->mSvTypeConfig, pMsg->mSvIdConfig);
     }
 
-    LOC_LOGd(">-- reset: %d, enable constellations: 0x%" PRIx64 ", "
+    LOC_LOGi(">-- reset: %d, enable constellations: 0x%" PRIx64 ", "
              "blacklisted consteallations: 0x%" PRIx64 ", ",
              pMsg->mResetToDefault,
              pMsg->mSvTypeConfig.enabledSvTypesMask,
@@ -929,7 +929,7 @@ void LocationApiService::configAidingDataDeletion(
         return;
     }
 
-    LOC_LOGd(">-- client %s, deleteAll %d",
+    LOC_LOGi(">-- client %s, deleteAll %d",
              pMsg->mSocketName, pMsg->mAidingData.deleteAll);
 
     // suspend all sessions before calling delete

@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -209,6 +209,9 @@ enum ELocMsgID {
     //geofence breach
     E_LOCAPI_GEOFENCE_BREACH_MSG_ID = 29,
 
+    // Measurement reports
+    E_LOCAPI_MEAS_MSG_ID = 30,
+
     // ping
     E_LOCAPI_PINGTEST_MSG_ID = 99,
 
@@ -233,6 +236,7 @@ enum ELocationCallbacksOption {
     E_LOC_CB_GEOFENCE_BREACH_BIT        = (1<<8), /**< Register for Geofence Breach */
     E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT  = (1<<9), /**< Register for multiple engine reports */
     E_LOC_CB_SIMPLE_LOCATION_INFO_BIT   = (1<<10), /**< Register for simple location */
+    E_LOC_CB_GNSS_MEAS_BIT              = (1<<11), /**< Register for GNSS Measurements */
 };
 
 // Mask related to all info that are tied with a position session and need to be unsubscribed
@@ -240,7 +244,8 @@ enum ELocationCallbacksOption {
 #define LOCATION_SESSON_ALL_INFO_MASK (E_LOC_CB_DISTANCE_BASED_TRACKING_BIT|\
                                        E_LOC_CB_GNSS_LOCATION_INFO_BIT|\
                                        E_LOC_CB_GNSS_SV_BIT|E_LOC_CB_GNSS_NMEA_BIT|\
-                                       E_LOC_CB_GNSS_DATA_BIT|E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT|\
+                                       E_LOC_CB_GNSS_DATA_BIT|E_LOC_CB_GNSS_MEAS_BIT|\
+                                       E_LOC_CB_ENGINE_LOCATIONS_INFO_BIT|\
                                        E_LOC_CB_SIMPLE_LOCATION_INFO_BIT)
 
 typedef uint32_t EngineInfoCallbacksMask;
@@ -722,6 +727,17 @@ struct LocAPIDataIndMsg : LocAPIMsgHeader
         GnssDataNotification& dataNotification) :
         LocAPIMsgHeader(name, E_LOCAPI_DATA_MSG_ID),
         gnssDataNotification(dataNotification) { }
+};
+
+// defintion for message with msg id of E_LOCAPI_MEAS_MSG_ID
+struct LocAPIMeasIndMsg : LocAPIMsgHeader
+{
+    GnssMeasurementsNotification gnssMeasurementsNotification;
+
+    inline LocAPIMeasIndMsg(const char* name,
+        GnssMeasurementsNotification& measurementsNotification) :
+        LocAPIMsgHeader(name, E_LOCAPI_MEAS_MSG_ID),
+        gnssMeasurementsNotification(measurementsNotification) { }
 };
 
 // defintion for message with msg id of E_LOCAPI_GET_TOTAL_ENGERY_CONSUMED_BY_GPS_ENGINE_MSG_ID

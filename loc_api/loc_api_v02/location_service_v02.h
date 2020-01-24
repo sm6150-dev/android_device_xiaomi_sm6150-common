@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2020, The Linux Foundation. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Oct 22 2019 (Spin 0)
+   It was generated on: Tue Dec  3 2019 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x72
+#define LOC_V02_IDL_MINOR_VERS 0x74
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -276,6 +276,9 @@ extern "C" {
 
 /**  Maximum length of 'Other Code Type Name' string, when the code used for the measurement is 'other'  */
 #define QMI_LOC_SV_MEAS_OTHER_CODE_TYPE_NAME_MAX_LEN_V02 8
+
+/**  Maximum number of satellites for which DGNSS corrections are provided  */
+#define QMI_LOC_DGNSS_SV_MEAS_LIST_MAX_SIZE_V02 24
 #define QMI_LOC_SV_POLY_VELOCITY_COEF_SIZE_V02 12
 #define QMI_LOC_SV_POLY_XYZ_0_TH_ORDER_COEFF_SIZE_V02 3
 #define QMI_LOC_SV_POLY_XYZ_N_TH_ORDER_COEFF_SIZE_V02 9
@@ -1380,6 +1383,27 @@ typedef struct {
     @}
   */
 
+typedef uint64_t qmiLocGNSSConstellEnumT_v02;
+#define eQMI_SYSTEM_GPS_V02 ((qmiLocGNSSConstellEnumT_v02)0x01ull) /**<  Enable GPS \n  */
+#define eQMI_SYSTEM_GLO_V02 ((qmiLocGNSSConstellEnumT_v02)0x02ull) /**<  Enable GLONASS \n  */
+#define eQMI_SYSTEM_BDS_V02 ((qmiLocGNSSConstellEnumT_v02)0x04ull) /**<  Enable BDS \n  */
+#define eQMI_SYSTEM_GAL_V02 ((qmiLocGNSSConstellEnumT_v02)0x08ull) /**<  Enable Galileo  */
+#define eQMI_SYSTEM_QZSS_V02 ((qmiLocGNSSConstellEnumT_v02)0x10ull) /**<  Enable QZSS  */
+#define eQMI_SYSTEM_NAVIC_V02 ((qmiLocGNSSConstellEnumT_v02)0x20ull) /**<  Enable NAVIC  */
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCDGNSSCORRECTIONSOURCETYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_INVALID_V02 = 0, /**<  Invalid DGNSS correction source type \n */
+  eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_RTCM_V02 = 1, /**<  DGNSS correction source type RTCM \n */
+  eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_3GPP_V02 = 2, /**<  DGNSS correction source type 3GPP \n */
+  QMILOCDGNSSCORRECTIONSOURCETYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocDgnssCorrectionSourceTypeEnumT_v02;
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -1835,6 +1859,47 @@ typedef struct {
   uint32_t jammerIndicatorList_len;  /**< Must be set to # of elements in jammerIndicatorList */
   qmiLocJammerIndicatorStructT_v02 jammerIndicatorList[QMI_LOC_MAX_GNSS_SIGNAL_TYPE_V02];
   /**<   Indicates the jammer indicator of each signal.
+  */
+
+  /* Optional */
+  /*  DGNSS Correction Source  */
+  uint8_t dgnssCorrectionSource_valid;  /**< Must be set to true if dgnssCorrectionSource is being passed */
+  qmiLocDgnssCorrectionSourceTypeEnumT_v02 dgnssCorrectionSource;
+  /**<   If DGNSS is used, the DGNSS correction source for position report.
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_INVALID (0) --  Invalid DGNSS correction source type \n
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_RTCM (1) --  DGNSS correction source type RTCM \n
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_3GPP (2) --  DGNSS correction source type 3GPP \n
+ */
+
+  /* Optional */
+  /*  DGNSS Correction Source ID */
+  uint8_t dgnssCorrectionSourceID_valid;  /**< Must be set to true if dgnssCorrectionSourceID is being passed */
+  uint32_t dgnssCorrectionSourceID;
+  /**<   If DGNSS is used, the SourceID is a 32bit number identifying the DGNSS source ID for position report.
+  */
+
+  /* Optional */
+  /*  DGNSS Constellation usage */
+  uint8_t dgnssConstellationUsage_valid;  /**< Must be set to true if dgnssConstellationUsage is being passed */
+  qmiLocGNSSConstellEnumT_v02 dgnssConstellationUsage;
+  /**<   If DGNSS is used, constellation mask providing which constellations were used
+       along with DGNSS to produce the position report.
+  */
+
+  /* Optional */
+  /*  DGNSS Reference station ID */
+  uint8_t dgnssRefStationId_valid;  /**< Must be set to true if dgnssRefStationId is being passed */
+  uint16_t dgnssRefStationId;
+  /**<   If DGNSS is used, reference Station ID used to produce the position report
+      Range: \n
+      - 0 - 4095 \n
+  */
+
+  /* Optional */
+  /*  DGNSS data age  */
+  uint8_t dgnssDataAgeMsec_valid;  /**< Must be set to true if dgnssDataAgeMsec is being passed */
+  uint32_t dgnssDataAgeMsec;
+  /**<   If DGNSS is used, age of differential data in msec with reference to the fix time
   */
 }qmiLocEventPositionReportIndMsgT_v02;  /* Message */
 /**
@@ -3397,6 +3462,20 @@ typedef enum {
     @}
   */
 
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCSYSMODEMASIDTYPEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_SYS_MODEM_AS_ID_1_V02 = 0, /**<  Subscription ID 1 \n */
+  eQMI_LOC_SYS_MODEM_AS_ID_2_V02 = 1, /**<  Subscription ID 2 \n */
+  eQMI_LOC_SYS_MODEM_AS_ID_3_V02 = 2, /**<  Subscription ID 3  */
+  QMILOCSYSMODEMASIDTYPEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocSysModemAsIdTypeEnumT_v02;
+/**
+    @}
+  */
+
 typedef uint64_t qmiLocApnTypeMaskT_v02;
 #define QMI_LOC_APN_TYPE_MASK_DEFAULT_V02 ((qmiLocApnTypeMaskT_v02)0x0000000000000001ull) /**<  Denotes APN type for default/Internet traffic\n */
 #define QMI_LOC_APN_TYPE_MASK_IMS_V02 ((qmiLocApnTypeMaskT_v02)0x0000000000000002ull) /**<  Denotes APN type for IP Multimedia Subsystem \n  */
@@ -3481,6 +3560,16 @@ typedef struct {
       - QMI_LOC_APN_TYPE_MASK_CBS (0x0000000000000080) --  Denotes APN type for Carrier Branded Services \n
       - QMI_LOC_APN_TYPE_MASK_IA (0x0000000000000100) --  Denotes APN type for initial attach \n
       - QMI_LOC_APN_TYPE_MASK_EMERGENCY (0x0000000000000200) --  Denotes APN type for emergency
+ */
+
+  /* Optional */
+  /*  Subscription ID */
+  uint8_t subId_valid;  /**< Must be set to true if subId is being passed */
+  qmiLocSysModemAsIdTypeEnumT_v02 subId;
+  /**<   Subscription ID on which to bring up the connection. Valid values: \n
+      - eQMI_LOC_SYS_MODEM_AS_ID_1 (0) --  Subscription ID 1 \n
+      - eQMI_LOC_SYS_MODEM_AS_ID_2 (1) --  Subscription ID 2 \n
+      - eQMI_LOC_SYS_MODEM_AS_ID_3 (2) --  Subscription ID 3
  */
 }qmiLocEventLocationServerConnectionReqIndMsgT_v02;  /* Message */
 /**
@@ -14010,12 +14099,6 @@ typedef struct {
     @}
   */
 
-typedef uint64_t qmiLocGNSSConstellEnumT_v02;
-#define eQMI_SYSTEM_GPS_V02 ((qmiLocGNSSConstellEnumT_v02)0x01ull) /**<  Enable GPS \n  */
-#define eQMI_SYSTEM_GLO_V02 ((qmiLocGNSSConstellEnumT_v02)0x02ull) /**<  Enable GLONASS \n  */
-#define eQMI_SYSTEM_BDS_V02 ((qmiLocGNSSConstellEnumT_v02)0x04ull) /**<  Enable BDS \n  */
-#define eQMI_SYSTEM_GAL_V02 ((qmiLocGNSSConstellEnumT_v02)0x08ull) /**<  Enable Galileo \n  */
-#define eQMI_SYSTEM_QZSS_V02 ((qmiLocGNSSConstellEnumT_v02)0x10ull) /**<  Enable QZSS  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -14031,8 +14114,9 @@ typedef struct {
       - eQMI_SYSTEM_GPS (0x01) --  Enable GPS \n
       - eQMI_SYSTEM_GLO (0x02) --  Enable GLONASS \n
       - eQMI_SYSTEM_BDS (0x04) --  Enable BDS \n
-      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo \n
+      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo
       - eQMI_SYSTEM_QZSS (0x10) --  Enable QZSS
+      - eQMI_SYSTEM_NAVIC (0x20) --  Enable NAVIC
  */
 
   /* Optional */
@@ -14044,8 +14128,9 @@ typedef struct {
       - eQMI_SYSTEM_GPS (0x01) --  Enable GPS \n
       - eQMI_SYSTEM_GLO (0x02) --  Enable GLONASS \n
       - eQMI_SYSTEM_BDS (0x04) --  Enable BDS \n
-      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo \n
+      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo
       - eQMI_SYSTEM_QZSS (0x10) --  Enable QZSS
+      - eQMI_SYSTEM_NAVIC (0x20) --  Enable NAVIC
  */
 
   /* Optional */
@@ -14614,6 +14699,40 @@ typedef struct {
     @}
   */
 
+typedef uint64_t qmiLocSvDgnssMeasStatusMaskT_v02;
+#define QMI_LOC_MASK_DGNSS_EPOCH_TIME_VALID_V02 ((qmiLocSvDgnssMeasStatusMaskT_v02)0x00000001ull) /**<  DGNSS Epoch time is valid  */
+#define QMI_LOC_MASK_DGNSS_MEAS_STATUS_PR_VALID_V02 ((qmiLocSvDgnssMeasStatusMaskT_v02)0x00000002ull) /**<  Pseudo Range correction is valid  */
+#define QMI_LOC_MASK_DGNSS_MEAS_STATUS_PRR_VALID_V02 ((qmiLocSvDgnssMeasStatusMaskT_v02)0x00000004ull) /**<  Pseudo Range rate correction is valid  */
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocSvDgnssMeasStatusMaskT_v02 dgnssMeasStatus;
+  /**<   Bitmask indicating the DGNSS SV measurement status.
+
+ Valid bitmasks: \n
+      - QMI_LOC_MASK_DGNSS_EPOCH_TIME_VALID (0x00000001) --  DGNSS Epoch time is valid
+      - QMI_LOC_MASK_DGNSS_MEAS_STATUS_PR_VALID (0x00000002) --  Pseudo Range correction is valid
+      - QMI_LOC_MASK_DGNSS_MEAS_STATUS_PRR_VALID (0x00000004) --  Pseudo Range rate correction is valid
+ */
+
+  uint32_t diffDataEpochTimeMsec;
+  /**<   Age of differential data in Milli Seconds with respect to the Measurement time.
+    */
+
+  float prCorrMeters;
+  /**<   Pseudo Range correction in meters.
+    */
+
+  float prrCorrMetersPerSec;
+  /**<   Pseudo Range rate correction in meters per second.
+    */
+}qmiLocDgnssSVMeasurementStructT_v02;  /* Type */
+/**
+    @}
+  */
+
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -14936,6 +15055,41 @@ typedef struct {
   uint8_t refCountTicks_valid;  /**< Must be set to true if refCountTicks is being passed */
   uint64_t refCountTicks;
   /**<   Receiver frame counter value in ticks. */
+
+  /* Optional */
+  /*  DGNSS corrections source type */
+  uint8_t dgnssCorrectionSourceT_valid;  /**< Must be set to true if dgnssCorrectionSourceT is being passed */
+  qmiLocDgnssCorrectionSourceTypeEnumT_v02 dgnssCorrectionSourceT;
+  /**<   If DGNSS is used, the DGNSS correction source.
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_INVALID (0) --  Invalid DGNSS correction source type \n
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_RTCM (1) --  DGNSS correction source type RTCM \n
+      - eQMI_LOC_DGNSS_CORR_SOURCE_TYPE_3GPP (2) --  DGNSS correction source type 3GPP \n
+ */
+
+  /* Optional */
+  /*  DGNSS SourceID */
+  uint8_t dgnssCorrectionSourceID_valid;  /**< Must be set to true if dgnssCorrectionSourceID is being passed */
+  uint32_t dgnssCorrectionSourceID;
+  /**<   If DGNSS is used, the SourceID is a 32bit number identifying the DGNSS source ID. */
+
+  /* Optional */
+  /*  DGNSS Ref station ID */
+  uint8_t dgnssRefStationId_valid;  /**< Must be set to true if dgnssRefStationId is being passed */
+  uint16_t dgnssRefStationId;
+  /**<   If DGNSS is used, reference Station ID 0-4095 used to produce the pos report */
+
+  /* Optional */
+  /*  DGNSS Measurements Report for SVs */
+  uint8_t dgnssSvMeasurement_valid;  /**< Must be set to true if dgnssSvMeasurement is being passed */
+  uint32_t dgnssSvMeasurement_len;  /**< Must be set to # of elements in dgnssSvMeasurement */
+  qmiLocDgnssSVMeasurementStructT_v02 dgnssSvMeasurement[QMI_LOC_DGNSS_SV_MEAS_LIST_MAX_SIZE_V02];
+  /**<   If DGNSS is used, the per SV measurement correction data.
+       The elements 0 - (QMI_LOC_SV_MEAS_LIST_MAX_SIZE - 1) of this array correspond
+       to the SV measurements in the TLV svMeasurement.
+
+       The elements QMI_LOC_SV_MEAS_LIST_MAX_SIZE - (QMI_LOC_DGNSS_SV_MEAS_LIST_MAX_SIZE - 1) of
+       this array correspond to the SV measurements in the TLV extSvMeasurement.
+      */
 }qmiLocEventGnssSvMeasInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -17815,8 +17969,9 @@ typedef struct {
       - eQMI_SYSTEM_GPS (0x01) --  Enable GPS \n
       - eQMI_SYSTEM_GLO (0x02) --  Enable GLONASS \n
       - eQMI_SYSTEM_BDS (0x04) --  Enable BDS \n
-      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo \n
-      - eQMI_SYSTEM_QZSS (0x10) --  Enable QZSS  */
+      - eQMI_SYSTEM_GAL (0x08) --  Enable Galileo
+      - eQMI_SYSTEM_QZSS (0x10) --  Enable QZSS
+      - eQMI_SYSTEM_NAVIC (0x20) --  Enable NAVIC  */
 }qmiLocInjectXtraDataIndMsgT_v02;  /* Message */
 /**
     @}
@@ -19428,6 +19583,22 @@ typedef struct {
   uint64_t gal_clear_persist_blacklist_sv;
   /**<   Specifies the Galileo SV mask to remove from persistent blacklist.
        SV ID mapping: SV 301 maps to bit 0 */
+
+  /* Optional */
+  /*  SBAS SV IDs to Blacklist */
+  uint8_t sbas_persist_blacklist_sv_valid;  /**< Must be set to true if sbas_persist_blacklist_sv is being passed */
+  uint64_t sbas_persist_blacklist_sv;
+  /**<   Specifies the SBAS SV mask to disable/blacklist. SV ID mapping: \n
+       - SV IDs 120-158 map to bits 0-38
+       - SV IDs 183-191 map to bits 39-47 */
+
+  /* Optional */
+  /*  SBAS SV IDs to Remove from Blacklist */
+  uint8_t sbas_clear_persist_blacklist_sv_valid;  /**< Must be set to true if sbas_clear_persist_blacklist_sv is being passed */
+  uint64_t sbas_clear_persist_blacklist_sv;
+  /**<   Specifies the SBAS SV mask to remove from persistent blacklist. SV ID mapping: \n
+       - SV IDs 120-158 map to bits 0-38
+       - SV IDs 183-191 map to bits 39-47 */
 }qmiLocSetBlacklistSvReqMsgT_v02;  /* Message */
 /**
     @}
@@ -19464,28 +19635,36 @@ typedef struct {
   uint8_t glo_persist_blacklist_sv_valid;  /**< Must be set to true if glo_persist_blacklist_sv is being passed */
   uint64_t glo_persist_blacklist_sv;
   /**<   Specifies the Blacklisted GLONASS SV mask.
-       SV ID Mapping: SV 65 maps to bit 0 */
+       SV ID mapping: SV 65 maps to bit 0 */
 
   /* Optional */
   /*  BDS SV IDs Blacklisted */
   uint8_t bds_persist_blacklist_sv_valid;  /**< Must be set to true if bds_persist_blacklist_sv is being passed */
   uint64_t bds_persist_blacklist_sv;
   /**<   Specifies the Blacklisted BDS SV mask.
-       SV ID Mapping: SV 201 maps to bit 0 */
+       SV ID mapping: SV 201 maps to bit 0 */
 
   /* Optional */
   /*  QZSS SV IDs Blacklisted */
   uint8_t qzss_persist_blacklist_sv_valid;  /**< Must be set to true if qzss_persist_blacklist_sv is being passed */
   uint64_t qzss_persist_blacklist_sv;
   /**<   Specifies the Blacklisted QZSS SV mask.
-       SV ID Mapping: SV 193 maps to bit 0 */
+       SV ID mapping: SV 193 maps to bit 0 */
 
   /* Optional */
   /*  GAL SV IDs Blacklisted */
   uint8_t gal_persist_blacklist_sv_valid;  /**< Must be set to true if gal_persist_blacklist_sv is being passed */
   uint64_t gal_persist_blacklist_sv;
   /**<   Specifies the Blacklisted Galileo SV mask.
-       SV ID Mapping: SV 301 maps to bit 0 */
+       SV ID mapping: SV 301 maps to bit 0 */
+
+  /* Optional */
+  /*  SBAS SV IDs Blacklisted */
+  uint8_t sbas_persist_blacklist_sv_valid;  /**< Must be set to true if sbas_persist_blacklist_sv is being passed */
+  uint64_t sbas_persist_blacklist_sv;
+  /**<   Specifies the Blacklisted SBAS SV mask. SV ID mapping: \n
+       - SV IDs 120-158 map to bits 0-38
+       - SV IDs 183-191 map to bits 39-47 */
 }qmiLocGetBlacklistSvIndMsgT_v02;  /* Message */
 /**
     @}

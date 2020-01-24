@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -128,7 +128,7 @@ private:
   /*convert GnssMeasurement type from QMI LOC to loc eng format*/
   bool convertGnssMeasurements (
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_report_ptr,
-      int index, bool isExt);
+      int index, bool isExt, bool validDgnssSvMeas);
 
   /* Convert APN Type mask */
   static qmiLocApnTypeMaskT_v02 convertLocApnTypeMask(LocApnTypeMask mask);
@@ -148,6 +148,11 @@ private:
   /*convert LocGnssClock type from QMI LOC to loc eng format*/
   int convertGnssClock (GnssMeasurementsClock& clock,
       const qmiLocEventGnssSvMeasInfoIndMsgT_v02& gnss_measurement_info);
+
+  /* convert dgnss constellation mask from QMI loc to loc eng format */
+  static void convertGnssConestellationMask (
+            qmiLocGNSSConstellEnumT_v02 qmiConstellationEnum,
+            GnssConstellationTypeMask& constellationMask);
 
   /* If Confidence value is less than 68%, then scale the accuracy value to 68%
      confidence.*/

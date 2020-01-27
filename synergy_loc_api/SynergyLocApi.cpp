@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1246,7 +1246,10 @@ SynergyLocApi::SynergyLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask,
             }
         }
     } else {
-        LOC_LOGe("dlopen for %s failed, handle %p error: %s", libName, handle, dlerror())
+        char *errorDll = dlerror();
+
+        LOC_LOGe("dlopen for %s failed, handle %p error: %s", libName, handle,
+             ((nullptr != errorDll) ? errorDll : "No Error"))
     }
 
     sllReqIf = &sllDefultReq;

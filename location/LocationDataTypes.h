@@ -41,12 +41,13 @@
 #define GNSS_MEASUREMENTS_MAX  (64)
 #define GNSS_UTC_TIME_OFFSET   (3657)
 
-#define GNSS_BUGREPORT_GPS_MIN  (1)
-#define GNSS_BUGREPORT_SBAS_MIN (120)
-#define GNSS_BUGREPORT_GLO_MIN  (1)
-#define GNSS_BUGREPORT_QZSS_MIN (193)
-#define GNSS_BUGREPORT_BDS_MIN  (1)
-#define GNSS_BUGREPORT_GAL_MIN  (1)
+#define GNSS_BUGREPORT_GPS_MIN    (1)
+#define GNSS_BUGREPORT_SBAS_MIN   (120)
+#define GNSS_BUGREPORT_GLO_MIN    (1)
+#define GNSS_BUGREPORT_QZSS_MIN   (193)
+#define GNSS_BUGREPORT_BDS_MIN    (1)
+#define GNSS_BUGREPORT_GAL_MIN    (1)
+#define GNSS_BUGREPORT_NAVIC_MIN  (1)
 
 typedef enum {
     LOCATION_ERROR_SUCCESS = 0,
@@ -350,6 +351,7 @@ typedef enum {
     GNSS_SV_TYPE_QZSS,
     GNSS_SV_TYPE_BEIDOU,
     GNSS_SV_TYPE_GALILEO,
+    GNSS_SV_TYPE_NAVIC,
 } GnssSvType;
 
 typedef enum {
@@ -496,6 +498,7 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT     = (1<<2),
     GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT   = (1<<3),
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
+    GNSS_AIDING_DATA_SV_TYPE_NAVIC_BIT    = (1<<5),
 } GnssAidingDataSvTypeBits;
 
 /* Gnss constellation type mask */
@@ -507,13 +510,14 @@ typedef enum {
     GNSS_CONSTELLATION_TYPE_BEIDOU_BIT   = (1<<3),
     GNSS_CONSTELLATION_TYPE_GALILEO_BIT  = (1<<4),
     GNSS_CONSTELLATION_TYPE_SBAS_BIT     = (1<<5),
-    GNSS_CONSTELLATION_TYPE_NAVIC_BIT    = (1<<6),
+    GNSS_CONSTELLATION_TYPE_NAVIC_BIT    = (1<<6)
 } GnssConstellationTypeBits;
 
 #define GNSS_CONSTELLATION_TYPE_MASK_ALL\
         (GNSS_CONSTELLATION_TYPE_GPS_BIT     | GNSS_CONSTELLATION_TYPE_GLONASS_BIT |\
          GNSS_CONSTELLATION_TYPE_QZSS_BIT    | GNSS_CONSTELLATION_TYPE_BEIDOU_BIT  |\
-         GNSS_CONSTELLATION_TYPE_GALILEO_BIT | GNSS_CONSTELLATION_TYPE_SBAS_BIT)
+         GNSS_CONSTELLATION_TYPE_GALILEO_BIT | GNSS_CONSTELLATION_TYPE_SBAS_BIT    |\
+         GNSS_CONSTELLATION_TYPE_NAVIC_BIT)
 
 /** GNSS Signal Type and RF Band */
 typedef uint32_t GnssSignalTypeMask;
@@ -843,6 +847,7 @@ typedef struct {
     uint64_t galSvUsedIdsMask;
     uint64_t bdsSvUsedIdsMask;
     uint64_t qzssSvUsedIdsMask;
+    uint64_t navicSvUsedIdsMask;
 } GnssLocationSvUsedInPosition;
 
 typedef struct {
@@ -947,7 +952,8 @@ typedef union {
     GnssSystemTimeStructType galSystemTime;
     GnssSystemTimeStructType bdsSystemTime;
     GnssSystemTimeStructType qzssSystemTime;
-    GnssGloTimeStructType gloSystemTime;
+    GnssGloTimeStructType    gloSystemTime;
+    GnssSystemTimeStructType navicSystemTime;
 } SystemTimeStructUnion;
     /** Time applicability of PVT report */
 typedef struct {
@@ -1047,6 +1053,7 @@ typedef struct {
 #define QZSS_L2C_L_CARRIER_FREQUENCY    (1227600000.0)
 #define QZSS_L5_Q_CARRIER_FREQUENCY     (1176450000.0)
 #define SBAS_L1_CA_CARRIER_FREQUENCY    (1575420000.0)
+#define NAVIC_L5_CARRIER_FREQUENCY      (1176450000.0)
 
 typedef struct {
     uint32_t size;       // set to sizeof(GnssSv)
@@ -1058,7 +1065,7 @@ typedef struct {
     //    - For QZSS:    193 to 197
     //    - For BDS:     201 to 237
     //    - For GAL:     301 to 336
-    //    - For NAVIC:   401 to 41
+    //    - For NAVIC:   401 to 414
     uint16_t svId;
     GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO)
     float cN0Dbhz;     // signal strength
@@ -1406,7 +1413,8 @@ typedef enum {
     GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
     GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
     GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
-    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3)
+    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
 } GnssSvTypesMaskBits;
 
 /* This SV Type config is injected directly to GNSS Adapter

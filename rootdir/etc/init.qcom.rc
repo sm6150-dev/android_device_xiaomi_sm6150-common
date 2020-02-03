@@ -30,11 +30,9 @@ import /vendor/etc/init/hw/init.msm.usb.configfs.rc
 import /vendor/etc/init/hw/init.qcom.test.rc
 import /vendor/etc/init/hw/init.target.rc
 import /vendor/etc/init/hw/init.qcom.factory.rc
+import /vendor/etc/init/hw/init.qti.kernel.rc
 
 on early-init
-    mount debugfs debugfs /sys/kernel/debug
-    chmod 0755 /sys/kernel/debug
-
   # create symlink for vendor mount points
     symlink /vendor/firmware_mnt /firmware
     symlink /vendor/bt_firmware /bt_firmware
@@ -50,8 +48,6 @@ on early-init
     chown system graphics /sys/kernel/debug/sync/sw_sync
     chmod 0666 /sys/kernel/debug/sync/sw_sync
 
-    chown root system /dev/kmsg
-    chmod 0620 /dev/kmsg
     # Load WIGIG platform driver
     exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules msm_11ad_proxy
 
@@ -60,16 +56,6 @@ on init
     # Support legacy paths
     symlink /sdcard /mnt/sdcard
     symlink /sdcard /storage/sdcard0
-
-    # Create cgroup mount point for memory
-    mkdir /sys/fs/cgroup/memory/bg 0750 root system
-    write /sys/fs/cgroup/memory/bg/memory.swappiness 140
-    write /sys/fs/cgroup/memory/bg/memory.move_charge_at_immigrate 1
-    chown root system /sys/fs/cgroup/memory/bg/tasks
-    chmod 0660 /sys/fs/cgroup/memory/bg/tasks
-
-on post-fs
-    chmod 0755 /sys/kernel/debug/tracing
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -159,25 +145,12 @@ on boot
     # an ack packet comes out of order
     write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
 
-    # Set the console loglevel to < KERN_INFO
-    # Set the default message loglevel to KERN_INFO
-    write /proc/sys/kernel/printk "6 6 1 7"
 
     # Allow access for CCID command/response timeout configuration
     chown system system /sys/module/ccid_bridge/parameters/bulk_msg_timeout
 
     # bond0 used by FST Manager
     chown wifi wifi /sys/class/net/bond0/bonding/queue_id
-
-    # Allow access to emmc rawdump block partition and dload sysfs node
-    chown root system /dev/block/bootdevice/by-name/rawdump
-    chmod 0660 /dev/block/bootdevice/by-name/rawdump
-    chown root system /sys/kernel/dload/emmc_dload
-    chmod 0660 /sys/kernel/dload/emmc_dload
-    chown root system /dev/block/bootdevice/by-name/ramdump
-    chmod 0660 /dev/block/bootdevice/by-name/ramdump
-    chown root system /sys/kernel/dload/dload_mode
-    chmod 0660 /sys/kernel/dload/dload_mode
 
     chown system system /sys/class/backlight/panel0-backlight/brightness
     chown system system /sys/class/backlight/panel0-backlight/max_brightness
@@ -356,12 +329,6 @@ on post-fs-data
     #Create SWAP related dirs
     mkdir /data/vendor/swap 0770 root system
     chmod 2770 /data/vendor/swap
-
-    # set aggressive read ahead for dm-0 and dm-1 during boot up
-    write /sys/block/dm-0/queue/read_ahead_kb 2048
-    write /sys/block/dm-1/queue/read_ahead_kb 2048
-    write /sys/block/dm-2/queue/read_ahead_kb 2048
-
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
 
@@ -418,40 +385,14 @@ on property:ro.vendor.iocgrp.config=1
     write /dev/blkio/blkio.weight 1000
     write /dev/blkio/bg/blkio.weight 100
 
-on property:persist.sys.ssr.enable_debug=*
-    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
-
-on property:persist.sys.mba_boot_timeout=*
-    write /sys/module/pil_msa/parameters/pbl_mba_boot_timeout_ms ${persist.sys.mba_boot_timeout}
-
-on property:persist.sys.modem_auth_timeout=*
-    write /sys/module/pil_msa/parameters/modem_auth_timeout_ms ${persist.sys.modem_auth_timeout}
-
-on property:persist.sys.pil_proxy_timeout=*
-    write /sys/module/peripheral_loader/parameters/proxy_timeout_ms ${persist.sys.pil_proxy_timeout}
-
 on property:persist.vendor.ssr.restart_level=*
     start vendor.ssr_setup
 
 on property:persist.vendor.ssr.enable_ramdumps=1
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 1
     mkdir /data/vendor/ramdump_ssr 770 system system
     start vendor.ss_ramdump
 
-on property:persist.vendor.ssr.enable_ramdumps=0
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 0
-
-on property:persist.vendor.sys.rawdump_copy=1
-    write /sys/kernel/dload/emmc_dload 1
-
-on property:persist.vendor.sys.rawdump_copy=0
-    write /sys/kernel/dload/emmc_dload 0
-
 on property:sys.boot_completed=1
-    write /dev/kmsg "Boot completed "
-    #Reset read ahead for dm-0 and dm-1 to 512kb
-    write /sys/block/dm-0/queue/read_ahead_kb 512
-    write /sys/block/dm-1/queue/read_ahead_kb 512
     #WDSP FW boot sysfs node used by STHAL
     chown media audio /sys/kernel/wdsp0/boot
     chown media audio /sys/kernel/wcd_cpe0/fw_name
@@ -873,12 +814,6 @@ on property:persist.sys.qlogd=0
     stop qlogd
 
 service vm_bms /vendor/bin/vm_bms
-    user root
-    group root
-    disabled
-
-service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /system/vendor/etc/msm_irqbalance.conf
-    class core
     user root
     group root
     disabled

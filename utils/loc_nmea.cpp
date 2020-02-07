@@ -2237,7 +2237,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
 
     loc_nmea_generate_GSV(svNotify, sentence, sizeof(sentence),
             loc_nmea_sv_meta_init(sv_meta, sv_cache_info, GNSS_SV_TYPE_BEIDOU,
-            GNSS_SIGNAL_BEIDOU_B1I,false), nmeaArraystr);
+            GNSS_SIGNAL_BEIDOU_B1I, false), nmeaArraystr);
 
     // -----------------------------
     // ------$PQGSV (BEIDOU:B2AI)---
@@ -2245,7 +2245,15 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
 
     loc_nmea_generate_GSV(svNotify, sentence, sizeof(sentence),
             loc_nmea_sv_meta_init(sv_meta, sv_cache_info, GNSS_SV_TYPE_BEIDOU,
-            GNSS_SIGNAL_BEIDOU_B2AI,false), nmeaArraystr);
+            GNSS_SIGNAL_BEIDOU_B2AI, false), nmeaArraystr);
+
+    // -----------------------------
+    // ------$GIGSV (NAVIC:L5)------
+    // -----------------------------
+
+    loc_nmea_generate_GSV(svNotify, sentence, sizeof(sentence),
+            loc_nmea_sv_meta_init(sv_meta, sv_cache_info, GNSS_SV_TYPE_NAVIC,
+            GNSS_SIGNAL_NAVIC_L5, false), nmeaArraystr);
 
     EXIT_LOG(%d, 0);
 }

@@ -407,7 +407,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
 
     // print the SV info before delivering
     LOC_LOGV("num sv: %u\n"
-        "      sv: constellation svid         cN0"
+        "      sv: constellation svid         cN0  basebandCN0"
         "    elevation    azimuth    flags",
         svNotify.count);
     for (size_t i = 0; i < svNotify.count && i < GNSS_SV_MAX; i++) {
@@ -419,12 +419,13 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
         uint16_t displaySvId = GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[i].type ?
                                svNotify.gnssSvs[i].svId + QZSS_SV_PRN_MIN - 1 :
                                svNotify.gnssSvs[i].svId;
-        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    0x%02X",
+        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    %f    0x%02X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
             displaySvId,
             svNotify.gnssSvs[i].cN0Dbhz,
+            svNotify.gnssSvs[i].basebandCarrierToNoiseDbHz,
             svNotify.gnssSvs[i].elevation,
             svNotify.gnssSvs[i].azimuth,
             svNotify.gnssSvs[i].carrierFrequencyHz,
@@ -721,6 +722,10 @@ DEFAULT_IMPL(0)
 
 LocationError LocApiBase::setEmergencyExtensionWindowSync(
         const uint32_t /*emergencyExtensionSeconds*/)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+LocationError LocApiBase::setMeasurementCorrections(
+        const GnssMeasurementCorrections /*gnssMeasurementCorrections*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 void LocApiBase::

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -101,7 +101,8 @@ GnssAdapter::GnssAdapter() :
     mGnssMbSvIdUsedInPosition{},
     mGnssMbSvIdUsedInPosAvail(false),
     mSupportNfwControl(true),
-    mSystemPowerState(POWER_STATE_UNKNOWN)
+    mSystemPowerState(POWER_STATE_UNKNOWN),
+    mIsMeasCorrInterfaceOpen(false)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -898,7 +899,10 @@ GnssAdapter::setConfig()
                 sapConf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
                 sapConf.SENSOR_ALGORITHM_CONFIG_MASK);
     } ));
-
+    // deal with Measurement Corrections
+    if (true == mIsMeasCorrInterfaceOpen) {
+        initMeasCorr(true);
+    }
 }
 
 std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldMoServerUrl,
@@ -5512,7 +5516,6 @@ GnssAdapter::configLeverArmCommand(const LeverArmConfigInfo& configInfo) {
     return sessionId;
 }
 
-
 void
 GnssAdapter::configRobustLocation(uint32_t sessionId,
                                   bool enable, bool enableForE911) {
@@ -5551,7 +5554,7 @@ GnssAdapter::configRobustLocation(uint32_t sessionId,
 }
 
 uint32_t GnssAdapter::configRobustLocationCommand(
-        bool enable, bool enableForE911) {
+    bool enable, bool enableForE911) {
 
     // generated session id will be none-zero
     uint32_t sessionId = generateSessionId();
@@ -5564,9 +5567,9 @@ uint32_t GnssAdapter::configRobustLocationCommand(
         bool             mEnableForE911;
 
         inline MsgConfigRobustLocation(GnssAdapter& adapter,
-                                uint32_t sessionId,
-                                bool     enable,
-                                bool     enableForE911) :
+            uint32_t sessionId,
+            bool     enable,
+            bool     enableForE911) :
             LocMsg(),
             mAdapter(adapter),
             mSessionId(sessionId),
@@ -5579,6 +5582,88 @@ uint32_t GnssAdapter::configRobustLocationCommand(
 
     sendMsg(new MsgConfigRobustLocation(*this, sessionId, enable, enableForE911));
     return sessionId;
+}
+
+bool GnssAdapter::initMeasCorr(bool bSendCbWhenNotSupported) {
+    LOC_LOGv("GnssAdapter::initMeasCorr");
+    /* Message to initialize Measurement Corrections */
+    struct MsgInitMeasCorr : public LocMsg {
+        GnssAdapter& mAdapter;
+        GnssMeasurementCorrectionsCapabilitiesMask mCapMask;
+
+        inline MsgInitMeasCorr(GnssAdapter& adapter,
+                GnssMeasurementCorrectionsCapabilitiesMask capMask) :
+            LocMsg(), mAdapter(adapter), mCapMask(capMask) {
+            LOC_LOGv("MsgInitMeasCorr");
+        }
+
+        inline virtual void proc() const {
+            LOC_LOGv("MsgInitMeasCorr::proc()");
+
+            mAdapter.mMeasCorrSetCapabilitiesCb(mCapMask);
+        }
+    };
+    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
+        sendMsg(new MsgInitMeasCorr(*this, GNSS_MEAS_CORR_LOS_SATS |
+                GNSS_MEAS_CORR_EXCESS_PATH_LENGTH | GNSS_MEAS_CORR_REFLECTING_PLANE));
+        return true;
+    } else {
+        LOC_LOGv("MEASUREMENTS_CORRECTION feature is not supported in the modem");
+        if (bSendCbWhenNotSupported) {
+            sendMsg(new MsgInitMeasCorr(*this, 0));
+        }
+        return false;
+    }
+}
+
+bool GnssAdapter::openMeasCorrCommand(const measCorrSetCapabilitiesCb setCapabilitiesCb) {
+    LOC_LOGi("GnssAdapter::openMeasCorrCommand");
+
+    /* Send message to initialize Measurement Corrections */
+        mMeasCorrSetCapabilitiesCb = setCapabilitiesCb;
+        mIsMeasCorrInterfaceOpen = true;
+        if (isEngineCapabilitiesKnown()) {
+        LOC_LOGv("Capabilities are known, proceed with measurement corrections init");
+            return initMeasCorr(false);
+        } else {
+        LOC_LOGv("Capabilities are not known, wait for open");
+            return true;
+        }
+}
+
+bool GnssAdapter::measCorrSetCorrectionsCommand(const GnssMeasurementCorrections gnssMeasCorr) {
+    LOC_LOGi("GnssAdapter::measCorrSetCorrectionsCommand");
+
+    /* Message to set Measurement Corrections */
+    struct MsgSetCorrectionsMeasCorr : public LocMsg {
+        const GnssMeasurementCorrections mGnssMeasCorr;
+        GnssAdapter& mAdapter;
+        LocApiBase& mApi;
+
+        inline MsgSetCorrectionsMeasCorr(
+                const GnssMeasurementCorrections gnssMeasCorr,
+                GnssAdapter& adapter,
+                LocApiBase& api) :
+            LocMsg(),
+            mGnssMeasCorr(gnssMeasCorr),
+            mAdapter(adapter),
+            mApi(api) {
+            LOC_LOGv("MsgSetCorrectionsMeasCorr");
+        }
+
+        inline virtual void proc() const {
+            LOC_LOGv("MsgSetCorrectionsMeasCorr::proc()");
+            mApi.setMeasurementCorrections(mGnssMeasCorr);
+        }
+    };
+
+    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
+        sendMsg(new MsgSetCorrectionsMeasCorr(gnssMeasCorr, *this, *mLocApi));
+        return true;
+    } else {
+        LOC_LOGw("Measurement Corrections are not supported!");
+        return false;
+    }
 }
 
 /* ==== Eng Hub Proxy ================================================================= */

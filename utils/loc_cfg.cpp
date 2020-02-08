@@ -648,7 +648,8 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     }
 
     //Set service mask for SAP
-    if(strcmp(conf.feature_sap, "PREMIUM") == 0) {
+    if(strcmp(conf.feature_sap, "PREMIUM") == 0 ||
+       strcmp(conf.feature_sap, "PREMIUM_ENV_AIDING") == 0) {
         LOC_LOGD("%s:%d]: Setting SAP to mode: PREMIUM", __func__, __LINE__);
         loc_service_mask |= LOC_FEATURE_MASK_SAP_PREMIUM;
     }

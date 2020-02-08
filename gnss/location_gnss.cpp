@@ -89,6 +89,10 @@ static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
 
+static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb);
+static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr);
+static void measCorrClose();
+
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
     initialize,
@@ -134,6 +138,9 @@ static const GnssInterface gGnssInterface = {
     gnssResetSvConfig,
     configLeverArm,
     configRobustLocation,
+    measCorrInit,
+    measCorrSetCorrections,
+    measCorrClose
 };
 
 #ifndef DEBUG_X86
@@ -388,6 +395,7 @@ static void nfwInit(const NfwCbInfo& cbInfo) {
         gGnssAdapter->initNfwCommand(cbInfo);
     }
 }
+
 static void getPowerStateChanges(void* powerStateCb)
 {
     if (NULL != gGnssAdapter) {
@@ -457,10 +465,32 @@ static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo){
     }
 }
 
-static uint32_t configRobustLocation(bool enable, bool enableForE911){
+static uint32_t configRobustLocation(bool enable, bool enableForE911) {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->configRobustLocationCommand(enable, enableForE911);
     } else {
         return 0;
+    }
+}
+
+static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->openMeasCorrCommand(setCapabilitiesCb);
+    } else {
+        return false;
+    }
+}
+
+static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->measCorrSetCorrectionsCommand(gnssMeasCorr);
+    } else {
+        return false;
+    }
+}
+
+static void measCorrClose() {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->closeMeasCorrCommand();
     }
 }

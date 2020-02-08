@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014,2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014,2016-2017,2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -326,6 +326,31 @@ void ContextBase::setEngineCapabilities(uint64_t supportedMsgMask,
                     (void *)featureList, sizeof(ContextBase::sFeaturesSupported));
         }
 
+        /* */
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
+            static uint8_t isSapModeKnown = 0;
+
+            if (!isSapModeKnown) {
+                /* Check if SAP is PREMIUM_ENV_AIDING in sap.conf */
+                char conf_feature_sap[LOC_MAX_PARAM_STRING];
+                loc_param_s_type izat_conf_feature_table[] =
+                {
+                    { "SAP",           &conf_feature_sap,           &isSapModeKnown, 's' }
+                };
+                UTIL_READ_CONF(LOC_PATH_IZAT_CONF, izat_conf_feature_table);
+
+                /* Disable this feature if SAP is not PREMIUM_ENV_AIDING in izat.conf */
+                if (strcmp(conf_feature_sap, "PREMIUM_ENV_AIDING") != 0) {
+                    uint8_t arrayIndex = LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION >> 3;
+                    uint8_t bitPos = LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION & 7;
+
+                    if (arrayIndex < MAX_FEATURE_LENGTH) {
+                        ContextBase::sFeaturesSupported[arrayIndex] &=
+                            ~(ContextBase::sFeaturesSupported[arrayIndex] >> bitPos);
+                    }
+                }
+            }
+        }
         ContextBase::sIsEngineCapabilitiesKnown = true;
     }
 }

@@ -200,6 +200,11 @@ class GnssAdapter : public LocAdapterBase {
         mIsE911Session = (IsInEmergencySession)cbInfo.isInEmergencySession;
     }
 
+    /* ==== Measurement Corrections========================================================= */
+    bool mIsMeasCorrInterfaceOpen;
+    measCorrSetCapabilitiesCb mMeasCorrSetCapabilitiesCb;
+    bool initMeasCorr(bool bSendCbWhenNotSupported);
+
     /* ==== ODCPI ========================================================================== */
     OdcpiRequestCallback mOdcpiRequestCb;
     bool mOdcpiRequestActive;
@@ -372,6 +377,9 @@ public:
     uint32_t gnssResetSvConfigCommand();
     uint32_t configLeverArmCommand(const LeverArmConfigInfo& configInfo);
     uint32_t configRobustLocationCommand(bool enable, bool enableForE911);
+    bool openMeasCorrCommand(const measCorrSetCapabilitiesCb setCapabilitiesCb);
+    bool measCorrSetCorrectionsCommand(const GnssMeasurementCorrections gnssMeasCorr);
+    inline void closeMeasCorrCommand() { mIsMeasCorrInterfaceOpen = false; }
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

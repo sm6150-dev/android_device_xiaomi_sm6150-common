@@ -132,7 +132,9 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_AGPM_V02, /**< Support AGPM feature */
     LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY, /**< Support XTRA integrity */
     LOC_SUPPORTED_FEATURE_FDCL_2, /**< Support FDCL V2 */
-    LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY /**< Support location privacy */
+    LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY, /**< Support location privacy */
+    LOC_SUPPORTED_FEATURE_NAVIC, /**< Support NAVIC constellation */
+    LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION /**< Support measurements correction */
 } loc_supported_feature_enum;
 
 typedef struct {
@@ -2168,6 +2170,13 @@ typedef struct {
     bool                    isCachedLocation;
 } GnssNfwNotification;
 
+typedef uint16_t GnssMeasurementCorrectionsCapabilitiesMask;
+typedef enum {
+    GNSS_MEAS_CORR_LOS_SATS            = 1 << 0,
+    GNSS_MEAS_CORR_EXCESS_PATH_LENGTH  = 1 << 1,
+    GNSS_MEAS_CORR_REFLECTING_PLANE    = 1 << 2,
+} GnssMeasurementCorrectionsCapabilities;
+
 /* ODCPI Request Info */
 enum OdcpiRequestType {
     ODCPI_REQUEST_TYPE_START,
@@ -2194,6 +2203,11 @@ typedef void (*AgnssStatusIpV4Cb)(AGnssExtStatusIpV4 status);
 */
 typedef void(*NfwStatusCb)(GnssNfwNotification notification);
 typedef bool(*IsInEmergencySession)(void);
+
+/*
+* Callback with Measurement corrections information.
+*/
+typedef void(*measCorrSetCapabilitiesCb)(GnssMeasurementCorrectionsCapabilitiesMask capabilities);
 
 /*
  * Callback with AGNSS(IpV6) status information.

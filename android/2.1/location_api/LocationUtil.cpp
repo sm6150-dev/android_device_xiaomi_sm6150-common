@@ -41,6 +41,7 @@ using ::android::hardware::gnss::V2_0::GnssLocation;
 using ::android::hardware::gnss::V2_0::ElapsedRealtimeFlags;
 using ::android::hardware::gnss::V2_0::GnssConstellationType;
 using ::android::hardware::gnss::V1_0::GnssLocationFlags;
+using ::android::hardware::gnss::measurement_corrections::V1_0::GnssSingleSatCorrectionFlags;
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out)
 {
@@ -306,6 +307,76 @@ void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEph
         default:
             out = GnssDebug::SatelliteEphemerisHealth::UNKNOWN;
             break;
+    }
+}
+
+void convertSingleSatCorrections(const SingleSatCorrection& in, GnssSingleSatCorrection& out)
+{
+    out.flags = GNSS_MEAS_CORR_UNKNOWN_BIT;
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_SAT_IS_LOS_PROBABILITY)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_SAT_IS_LOS_PROBABILITY_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_EXCESS_PATH_LENGTH)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_EXCESS_PATH_LENGTH_UNC)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_UNC_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_REFLECTING_PLANE)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_REFLECTING_PLANE_BIT;
+    }
+    switch (in.constellation) {
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GPS):
+        out.svType = GNSS_SV_TYPE_GPS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::SBAS):
+        out.svType = GNSS_SV_TYPE_SBAS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GLONASS):
+        out.svType = GNSS_SV_TYPE_GLONASS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::QZSS):
+        out.svType = GNSS_SV_TYPE_QZSS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::BEIDOU):
+        out.svType = GNSS_SV_TYPE_BEIDOU;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GALILEO):
+        out.svType = GNSS_SV_TYPE_GALILEO;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::UNKNOWN):
+    default:
+        out.svType = GNSS_SV_TYPE_UNKNOWN;
+        break;
+    }
+    out.svId = in.svid;
+    out.carrierFrequencyHz = in.carrierFrequencyHz;
+    out.probSatIsLos = in.probSatIsLos;
+    out.excessPathLengthMeters = in.excessPathLengthMeters;
+    out.excessPathLengthUncertaintyMeters = in.excessPathLengthUncertaintyMeters;
+
+    out.reflectingPlane.latitudeDegrees = in.reflectingPlane.latitudeDegrees;
+    out.reflectingPlane.longitudeDegrees = in.reflectingPlane.longitudeDegrees;
+    out.reflectingPlane.altitudeMeters = in.reflectingPlane.altitudeMeters;
+    out.reflectingPlane.azimuthDegrees = in.reflectingPlane.azimuthDegrees;
+}
+
+void convertMeasurementCorrections(const MeasurementCorrectionsV1_0& in,
+                                   GnssMeasurementCorrections& out)
+{
+    memset(&out, 0, sizeof(GnssMeasurementCorrections));
+    out.latitudeDegrees = in.latitudeDegrees;
+    out.longitudeDegrees = in.longitudeDegrees;
+    out.altitudeMeters = in.altitudeMeters;
+    out.horizontalPositionUncertaintyMeters = in.horizontalPositionUncertaintyMeters;
+    out.verticalPositionUncertaintyMeters = in.verticalPositionUncertaintyMeters;
+    out.toaGpsNanosecondsOfWeek = in.toaGpsNanosecondsOfWeek;
+
+    for (int i = 0; i < in.satCorrections.size(); i++) {
+        GnssSingleSatCorrection gnssSingleSatCorrection;
+
+        convertSingleSatCorrections(in.satCorrections[i], gnssSingleSatCorrection);
+        out.satCorrections.push_back(gnssSingleSatCorrection);
     }
 }
 

@@ -96,6 +96,9 @@ struct GnssInterface {
     uint32_t (*gnssResetSvConfig)();
     uint32_t (*configLeverArm)(const LeverArmConfigInfo& configInfo);
     uint32_t (*configRobustLocation)(bool enable, bool enableForE911);
+    bool (*measCorrInit)(const measCorrSetCapabilitiesCb setCapabilitiesCb);
+    bool (*measCorrSetCorrections)(const GnssMeasurementCorrections gnssMeasCorr);
+    void (*measCorrClose)();
 };
 
 struct BatchingInterface {

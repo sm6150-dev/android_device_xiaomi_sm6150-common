@@ -31,6 +31,7 @@
 #define LOCATION_UTIL_H
 
 #include <android/hardware/gnss/2.0/types.h>
+#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrections.h>
 #include <LocationAPI.h>
 #include <GnssDebug.h>
 
@@ -39,6 +40,10 @@ namespace hardware {
 namespace gnss {
 namespace V2_1 {
 namespace implementation {
+
+using MeasurementCorrectionsV1_0 =
+        ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections;
+using ::android::hardware::gnss::measurement_corrections::V1_0::SingleSatCorrection;
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out);
 void convertGnssLocation(Location& in, V2_0::GnssLocation& out);
@@ -50,6 +55,9 @@ void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemer
 void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
 void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
 bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
+void convertSingleSatCorrections(const SingleSatCorrection& in, GnssSingleSatCorrection& out);
+void convertMeasurementCorrections(const MeasurementCorrectionsV1_0& in,
+                                   GnssMeasurementCorrections& out);
 
 }  // namespace implementation
 }  // namespace V2_1

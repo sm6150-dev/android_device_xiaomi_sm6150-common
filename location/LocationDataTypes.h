@@ -493,11 +493,11 @@ typedef enum {
 
 typedef uint16_t GnssSingleSatCorrectionMask;
 typedef enum {
-    GNSS_MC_UNKNOWN_BIT                     = 0,
-    GNSS_MC_HAS_SAT_IS_LOS_PROBABILITY_BIT  = (1 << 0),
-    GNSS_MC_HAS_EXCESS_PATH_LENGTH_BIT      = (1 << 1),
-    GNSS_MC_HAS_EXCESS_PATH_LENGTH_UNC_BIT  = (1 << 2),
-    GNSS_MC_HAS_REFLECTING_PLANE_BIT        = (1 << 3),
+    GNSS_MEAS_CORR_UNKNOWN_BIT                     = 0,
+    GNSS_MEAS_CORR_HAS_SAT_IS_LOS_PROBABILITY_BIT  = (1 << 0),
+    GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_BIT      = (1 << 1),
+    GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_UNC_BIT  = (1 << 2),
+    GNSS_MEAS_CORR_HAS_REFLECTING_PLANE_BIT        = (1 << 3),
 } GnssSingleSatCorrectionBits;
 
 typedef enum {

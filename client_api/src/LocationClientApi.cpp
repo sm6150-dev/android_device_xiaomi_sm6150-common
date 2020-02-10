@@ -202,6 +202,9 @@ bool LocationClientApi::startPositionSession(
     if (engReportCallbacks.gnssMeasurementsCallback) {
         callbacksOption.gnssMeasurementsCb = [](::GnssMeasurementsNotification n) {};
     }
+    if (engReportCallbacks.gnssSvPolyCallback) {
+        callbacksOption.gnssSvPolynomialCb = [](::GnssSvPolynomial n) {};
+    }
     mApiImpl->updateCallbacks(callbacksOption);
 
     // options

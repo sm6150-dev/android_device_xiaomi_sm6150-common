@@ -1400,6 +1400,301 @@ struct LocationSystemInfo {
     LeapSecondSystemInfo   leapSecondSysInfo;
 };
 
+/** Specify the valid fields in GnssSvPoly. <br/> */
+enum GnssSvPolyValidityMask {
+    /** GnssSvPoly has valid GnssSvPoly::svId. <br/>
+     *  This flag should always be set. <br/> */
+    GNSS_SV_POLY_HAS_SV_ID              = 0x0000000001,
+    /** GnssSvPoly has valid GnssSvPoly::svConstellation. <br/>
+     *  This flag should always be set. <br/> */
+    GNSS_SV_POLY_HAS_SV_CONSTELLATION   = 0x0000000002,
+    /** GnssSvPoly has valid GnssSvPoly::gloFrequency. <br/>
+     *  This flag should be set only if this is Glonass SV. <br/> */
+    GNSS_SV_POLY_HAS_GLO_FREQUENCY      = 0x0000000004,
+    /** GnssSvPoly has valid GnssSvPoly::actionType. <br/>
+     *  This flag should always be set. <br/> */
+    GNSS_SV_POLY_HAS_ACTION_TYPE        = 0x0000000008,
+    /** GnssSvPoly has valid GnssSvPoly::statusMask. <br/> */
+    GNSS_SV_POLY_HAS_STATUS_MASK        = 0x0000000010,
+    /** GnssSvPoly has valid GnssSvPoly::T0. <br/> */
+    GNSS_SV_POLY_HAS_T0                 = 0x0000000020,
+    /** GnssSvPoly has valid GnssSvPoly::polyCofXYZ0. <br/> */
+    GNSS_SV_POLY_HAS_POLY_COF_XYZ0      = 0x0000000040,
+    /** GnssSvPoly has valid GnssSvPoly::polyCofXYZN. <br/> */
+    GNSS_SV_POLY_HAS_POLY_COF_XYZN      = 0x0000000080,
+    /** GnssSvPoly has valid GnssSvPoly::polyCofClockBias. <br/> */
+    GNSS_SV_POLY_HAS_POLY_COF_CLK_BIAS  = 0x0000000100,
+    /** GnssSvPoly has valid GnssSvPoly::iode. <br/> */
+    GNSS_SV_POLY_HAS_IODE               = 0x0000000200,
+    /** GnssSvPoly has valid GnssSvPoly::enhancedIOD. <br/> */
+    GNSS_SV_POLY_HAS_ENHANCED_IOD       = 0x0000000400,
+    /** GnssSvPoly has valid GnssSvPoly::svPosUnc. <br/> */
+    GNSS_SV_POLY_HAS_SV_POS_UNC         = 0x0000000800,
+    /** GnssSvPoly has valid GnssSvPoly::ionoDelay. <br/> */
+    GNSS_SV_POLY_HAS_IONO_DELAY         = 0x0000001000,
+    /** GnssSvPoly has valid GnssSvPoly::ionoDot.  <br/> */
+    GNSS_SV_POLY_HAS_IONO_DOT           = 0x0000002000,
+    /** GnssSvPoly has valid GnssSvPoly::sbasIonoDelay. <br/> */
+    GNSS_SV_POLY_HAS_SBAS_IONO_DELAY    = 0x0000004000,
+    /** GnssSvPoly has valid GnssSvPoly::sbasIonoDot. <br/> */
+    GNSS_SV_POLY_HAS_SBAS_IONO_DOT      = 0x0000008000,
+    /** GnssSvPoly has valid GnssSvPoly::tropoDelay. <br/> */
+    GNSS_SV_POLY_HAS_TROPO_DELAY        = 0x0000010000,
+    /** GnssSvPoly has valid GnssSvPoly::elevation. <br/> */
+    GNSS_SV_POLY_HAS_ELEVATION          = 0x0000020000,
+    /** GnssSvPoly has valid GnssSvPoly::elevationDot. <br/> */
+    GNSS_SV_POLY_HAS_ELEVATION_DOT      = 0x0000040000,
+    /** GnssSvPoly has valid GnssSvPoly::elevationUnc. <br/> */
+    GNSS_SV_POLY_HAS_ELEVATION_UNC      = 0x0000080000,
+    /** GnssSvPoly has valid GnssSvPoly::velCof. <br/> */
+    GNSS_SV_POLY_HAS_VEL_COF            = 0x0000100000,
+    /** GnssSvPoly has valid GnssSvPoly::gpsIscL1ca. <br/> */
+    GNSS_SV_POLY_HAS_GPS_ISC_L1CA       = 0x0000200000,
+    /** GnssSvPoly has valid GnssSvPoly::gpsIscL2c. <br/> */
+    GNSS_SV_POLY_HAS_GPS_ISC_L2C        = 0x0000400000,
+    /** GnssSvPoly has valid GnssSvPoly::gpsIscL5I5. <br/> */
+    GNSS_SV_POLY_HAS_GPS_ISC_L5I5       = 0x0000800000,
+    /** GnssSvPoly has valid GnssSvPoly::gpsIscL5Q5. <br/> */
+    GNSS_SV_POLY_HAS_GPS_ISC_L5Q5       = 0x0001000000,
+    /** GnssSvPoly has valid GnssSvPoly::gpsTgd.  <br/> */
+    GNSS_SV_POLY_HAS_GPS_TGD            = 0x0002000000,
+    /** GnssSvPoly has valid GnssSvPoly::gloTgdG1G2. <br/> */
+    GNSS_SV_POLY_HAS_GLO_TGD_G1G2       = 0x0004000000,
+    /** GnssSvPoly has valid GnssSvPoly::bdsTgdB1. <br/> */
+    GNSS_SV_POLY_HAS_BDS_TGD_B1         = 0x00080000000,
+    /** GnssSvPoly has valid GnssSvPoly::bdsTgdB2. <br/> */
+    GNSS_SV_POLY_HAS_BDS_TGD_B2         = 0x00100000000,
+    /** GnssSvPoly has valid GnssSvPoly::bdsTgdB2a. <br/> */
+    GNSS_SV_POLY_HAS_BDS_TGD_B2A        = 0x00200000000,
+    /** GnssSvPoly has valid GnssSvPoly::bdsIscB2a. <br/> */
+    GNSS_SV_POLY_HAS_BDS_ISC_B2A        = 0x00400000000,
+    /** GnssSvPoly has valid GnssSvPoly::galBgdE1E5a. <br/> */
+    GNSS_SV_POLY_HAS_GAL_BGD_E1E5A      = 0x00800000000,
+    /** GnssSvPoly has valid GnssSvPoly::galBgdE1E5b. <br/> */
+    GNSS_SV_POLY_HAS_GAL_BGD_E1E5B      = 0x01000000000,
+    /** GnssSvPoly has valid GnssSvPoly::navicTgdL5. <br/> */
+    GNSS_SV_POLY_HAS_NAVIC_TDG_L5       = 0x02000000000,
+};
+
+/** Specify the SV polynomial report status. <br/> */
+enum GnssSvPolyStatusMask {
+    /** Polynomials based on XTRA. <br/> */
+    GNSS_SV_POLY_STATUS_SRC_ALM_CORR = 0x01,
+    /** GLONASS string 4 has been received. <br/> */
+    GNSS_SV_POLY_STATUS_GLO_STR4 = 0x2,
+    /** GALILEO polynomial computed from I/Nav navigation
+     *  message. <br/> */
+    GNSS_SV_POLY_STATUS_GAL_FNAV = 0x04,
+    /** GALILEO polynomial computed from F/Nav navigation message.
+     *  <br/> */
+    GNSS_SV_POLY_STATUS_GAL_INAV = 0x08,
+};
+
+/** Action to be performed for the received polynomial for this
+ *  satellite. <br/> */
+enum GnssSvPolyActionType {
+    /** Update Polynomial for this satellite. <br/> */
+    GNSS_SV_POLY_ACTION_UPDATE = 1,
+    /** Invalidate any previously received polynomial. <br/> */
+    GNSS_SV_POLY_ACTION_INVALIDATE = 2,
+};
+
+/** Const define for the array size of
+ *  GnssSvPoly::polyCofXYZ0. <br/>  */
+#define GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE  3
+/** Const define for the array size of
+ *  GnssSvPoly::polyCofXYZN. <br/>  */
+#define GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE  9
+/** Const define for the array size of
+ *  GnssSvPoly::polyCofClockBias. <br/>  */
+#define GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE      4
+/** Const define for the array size of GnssSvPoly::velCoef.
+ *  <br/>  */
+#define GNSS_SV_POLY_VELOCITY_COF_SIZE       12
+
+struct GnssSvPoly {
+    /** Bitwise OR of GnssSvPolyValidityMask to specify the
+     *  valid fields in GnssSvPoly. <br/> */
+    GnssSvPolyValidityMask validityMask;
+
+    /** Specify satellite vehicle ID number. <br/>
+     *  For SV id range of each supported constellations, refer to
+     *  documentation in GnssSv::svId. <br/>
+     */
+    uint16_t svId;
+
+    /** Specify GNSS Constellation Type for the SV. */
+    Gnss_LocSvSystemEnumType svConstellation;
+
+    /**  GLONASS frequency number + 8. This field will only be
+     *   marked as valid via validityMask for GLONASS SVs. <br/>
+     *   Range: 1 to 14 <br/>   */
+    uint8_t gloFrequency;
+
+    /** SV polynomial action type, update or invalidate. <br/> */
+    GnssSvPolyActionType actionType;
+
+    /**  SV polynomial report status. <br/> */
+    GnssSvPolyStatusMask statusMask;
+
+    /**  Reference time for polynomial calculations. <br/>
+     * - GPS, QZSS: Seconds in the week <br/>
+     * - GLONASS: Full seconds since Jan. 1, 1996 <br/>
+     * - BDS: Full seconds since Jan. 1, 2006 <br/>
+     * - Galileo: Calculated from 00:00 UT on Sunday, August 22,
+     *     1999 (midnight between August 21 and August 22) <br/>
+     */
+    double T0;
+
+    /** Polynomial Coefficient's 0th Term for X, Y, and Z
+     *  Coordinates (C0X, C0Y, C0Z). <br/>
+     *  If this field is indicated as valid via validityMask, then
+     *  every element in the array is valid. <br/> */
+    double polyCofXYZ0[GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE];
+
+    /** Polynomial coefficient's 1st, 2nd, and 3rd terms for X, Y
+     *  and Z coordinates (C1X, C2X,... C2Z, C3Z). <br/>
+     *  If this field is indicated as valid via validityMask, then
+     *  every element in the array is valid. <br/>
+     *  Units are specified as below: <br/>
+     *       - 1st term -- Meters/second <br/>
+     *       - 2nd term -- Meters/second^2 <br/>
+     *       - 3rd term -- Meters/seconds^3 <br/> */
+    double polyCofXYZN[GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE];
+
+    /** Polynomial coefficients for satellite clock bias
+     *  correction (C0T, C1T, C2T, C3T). <br/>
+     *  If this field is indicated as valid via validityMask, then
+     *  every element in the array is valid. <br/>
+     *  Units are specified below <br/>
+     *        - 0th term -- Milliseconds/second <br/>
+     *        - 1st term -- Milliseconds/second^2 <br/>
+     *        - 2nd term -- Milliseconds/second^3 <br/>
+     *        - 3rd term -- Milliseconds/second^4 <br/> */
+    float polyCofClockBias[GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE];
+
+    /**  Ephemeris reference time. <br/>
+     *       - GPS -- Issue of data ephemeris used (unitless) <br/>
+     *       - GLONASS -- Tb 7-bit <br/>
+     *       - Galileo -- 10-bit <br/>  */
+    uint16_t iode;
+
+    /** Enhanced Reference Time, for BDS ephemeris, this is TOE.
+     *  <br/> */
+    uint32_t enhancedIOD;
+
+    /** SV Position Uncertainty, in unit of meters. <br/> */
+    float svPosUnc;
+
+    /** Ionospheric delay at T0, in unit of meters. <br/> */
+    float ionoDelay;
+
+    /** Ionospheric delay rate, in unit of Meters/second. <br/>
+     */
+    float ionoDot;
+
+    /** SBAS ionospheric delay at T0, in unit of  Meters. <br/>
+    */
+    float sbasIonoDelay;
+
+    /** SBAS ionospheric delay rate, in unit of Meters/second. <br/>
+    */
+    float sbasIonoDot;
+
+    /** Tropospheric delay, in unit of Meters. <br/>
+    */
+    float tropoDelay;
+
+    /** Satellite elevation at T0, in unit of Radians. <br/>
+    */
+    float elevation;
+
+    /** Satellite elevation rate, in unit of Radians/second. <br/>
+    */
+    float elevationDot;
+
+    /** SV elevation uncertainty, in unit of Radians. <br/>
+    */
+    float elevationUnc;
+
+    /** Polynomial coefficients for SV velocity (C0X, C1X, C2X,
+     *  C3X,... C2Z, C3Z). <br/>
+     *  If this field is indicated as valid via validityMask, then
+     *    every element in the array is valid. <br/>
+     *    Units: <br/>
+     *    - 0th term -- Meters/second <br/>
+     *    - 1st term -- Meters/second^2 <br/>
+     *    - 2nd term -- Meters/second^3 <br/>
+     *   - 3rd term -- Meters/second^4 <br/> */
+    double velCof[GNSS_SV_POLY_VELOCITY_COF_SIZE];
+
+    /** Inter-signal correction - GPS/QZSS L1C/A, in unit of
+     *  milliseconds. <br/>
+     */
+    float gpsIscL1ca;
+
+    /** Inter-signal correction - GPS/QZSS L2C, in unit of
+     *  milliseconds. <br/>
+     */
+    float gpsIscL2c;
+
+    /** Inter-signal correction - GPS/QZSS L5I5, in unit of
+     *  milliseconds. <br/>
+     */
+    float gpsIscL5I5;
+
+    /** Inter-signal correction - GPS/QZSS L5Q5, in unit of
+     *  milliseconds. <br/>
+     */
+    float gpsIscL5Q5;
+
+    /** Time of group delay - GPS/QZSS, 13 bits from CNAV, 8 bits
+     *  from LNAV, in unit of  milliseconds. <br/>
+     */
+    float gpsTgd;
+
+    /** Time of group delay - GLONASS G1-G2, in unit of
+     *  milliseconds. <br/>
+     */
+    float gloTgdG1G2;
+
+    /** Time of group delay - BDS B1, in unit of
+     *  milliseconds. <br/>
+     */
+    float bdsTgdB1;
+
+    /** Time of group delay - BDS B2, in unit of
+     *  milliseconds. <br/>
+     */
+    float bdsTgdB2;
+
+    /** Time of group delay - BDS B2A, in unit of milliseconds.
+     *  <br/>
+     */
+    float bdsTgdB2a;
+
+    /** Inter-signal correction - BDS B2A, in unit of milliseconds.
+     *  <br/>
+     */
+    float bdsIscB2a;
+
+    /** Broadcast group delay - Galileo E1-E5a, in unit of
+     *  milliseconds. <br/>
+     */
+    float galBgdE1E5a;
+
+    /** Broadcast group delay - Galileo E1-E5b, in unit of
+     *  milliseconds. <br/>
+     */
+    float galBgdE1E5b;
+
+    /** Time of group delay - NavIC L5, in unit of
+     *  milliseconds. <br/>
+     */
+    float navicTgdL5;
+};
+
+
 enum BatchingStatus {
     BATCHING_STATUS_INACTIVE    = 0,
     BATCHING_STATUS_ACTIVE      = 1,
@@ -1529,6 +1824,16 @@ typedef std::function<void(
 )> GnssMeasurementsCb;
 
 /** @brief
+    GnssSvPolyCb is for receiving SV polynomial information
+    when LocationClientApi is in a positioning session. <br/>
+
+    @param gnssSvPoly: SV polynomial info in a session
+*/
+typedef std::function<void(
+    const GnssSvPoly& gnssSvPoly
+)> GnssSvPolyCb;
+
+/** @brief
     LocationSystemInfoCb is for receiving rare occuring location
     system information update as defined in
     LocationSystemInfo. <br/>
@@ -1627,6 +1932,9 @@ struct EngineReportCbs {
     /** Callback to receive GnssMeasurements from modem GNSS engine.
      *  <br/> */
     GnssMeasurementsCb gnssMeasurementsCallback;
+    /** Callback to receive GnssSvPoly from modem GNSS engine.
+     *  <br/> */
+    GnssSvPolyCb gnssSvPolyCallback;
 };
 
 /**

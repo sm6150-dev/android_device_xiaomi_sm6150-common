@@ -30,9 +30,8 @@
 #define LOCATIONCLIENTAPIIMPL_H
 
 #include <mutex>
-#include <unordered_set>
-#include <unordered_map>
 
+#include <loc_pla.h>
 #include <LocIpc.h>
 #include <LocationDataTypes.h>
 #include <ILocationAPI.h>
@@ -42,6 +41,14 @@
 #ifndef FEATURE_EXTERNAL_AP
 #include <LocDiagIface.h>
 #include <LocationClientApiLog.h>
+#endif
+
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <set>
+    #include <map>
+#else
+    #include <unordered_set>
+    #include <unordered_map>
 #endif
 
 using namespace std;

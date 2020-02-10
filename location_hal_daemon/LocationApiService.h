@@ -29,7 +29,6 @@
 #ifndef LOCATIONAPISERVICE_H
 #define LOCATIONAPISERVICE_H
 
-#include <unordered_map>
 #include <string>
 #include <mutex>
 
@@ -44,6 +43,12 @@
 #include <LocationApiMsg.h>
 
 #include <LocHalDaemonClientHandler.h>
+
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <map>
+#else
+    #include <unordered_map>
+#endif
 
 #undef LOG_TAG
 #define LOG_TAG "LocSvc_HalDaemon"

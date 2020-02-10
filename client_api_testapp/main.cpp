@@ -39,7 +39,11 @@
 #include <semaphore.h>
 #include <loc_pla.h>
 #include <loc_cfg.h>
-#include <unordered_map>
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <map>
+#else
+    #include <unordered_map>
+#endif
 
 #include <LocationClientApi.h>
 #include <LocationIntegrationApi.h>

@@ -30,7 +30,6 @@
 #define LOCATION_INTEGRATION_API_IMPL_H
 
 #include <mutex>
-#include <unordered_map>
 
 #include <LocIpc.h>
 #include <LocationDataTypes.h>
@@ -38,6 +37,12 @@
 #include <LocationIntegrationApi.h>
 #include <MsgTask.h>
 #include <LocationApiMsg.h>
+
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <map>
+#else
+    #include <unordered_map>
+#endif
 
 using namespace std;
 using namespace loc_util;

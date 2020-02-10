@@ -28,7 +28,14 @@
 
 #ifndef LOCATION_INTEGRATION_API_H
 #define LOCATION_INTEGRATION_API_H
-#include <unordered_map>
+
+#include <loc_pla.h>
+
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <map>
+#else
+    #include <unordered_map>
+#endif
 
 namespace location_integration
 {

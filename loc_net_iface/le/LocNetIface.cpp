@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -263,6 +263,7 @@ void LocNetIface::qcmapClientCallback(
         break;
     }
 
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
     case QMI_QCMAP_MSGR_BACKHAUL_STATUS_IND_V01:
     {
         qcmap_msgr_backhaul_status_ind_msg_v01 backhaulStatusData;
@@ -302,6 +303,7 @@ void LocNetIface::qcmapClientCallback(
         LocNetIface::sLocNetIfaceInstance->handleQcmapCallback(roamingStatusData);
         break;
     }
+#endif
 
     default:
         LOC_LOGE("Ignoring QCMAP indication: %d", msg_id);
@@ -330,6 +332,8 @@ void LocNetIface::handleQcmapCallback(
         LOC_LOGE("Invalid wlan status %d", wlanStatusIndData.wlan_status);
     }
 }
+
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
 void LocNetIface::handleQcmapCallback(
             qcmap_msgr_backhaul_status_ind_msg_v01 &backhaulStatusIndData){
     ENTRY_LOG();
@@ -350,6 +354,7 @@ void LocNetIface::handleQcmapCallback(
         mLocNetBackHaulType = LOC_NET_CONN_TYPE_INVALID;
     }
 }
+#endif
 
 void LocNetIface::handleQcmapCallback (
         qcmap_msgr_bring_up_wwan_ind_msg_v01 &bringUpWwanIndData) {
@@ -430,6 +435,7 @@ void LocNetIface::handleQcmapCallback(
     }
 }
 
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
 void LocNetIface::handleQcmapCallback(
         qcmap_msgr_wwan_roaming_status_ind_msg_v01 &roamingStatusIndData) {
 
@@ -439,6 +445,7 @@ void LocNetIface::handleQcmapCallback(
     LOC_LOGD("Roaming status(OFF:0x00, ON:0x01-0x0C): %x, Roaming: %d",
                 roamingStatusIndData.wwan_roaming_status, mIsRoaming);
 }
+#endif
 
 void LocNetIface::notifyCurrentNetworkInfo(bool queryQcmap, LocNetConnType connType) {
 
@@ -851,11 +858,13 @@ bool LocNetIface::isWwanRoaming() {
 
     /* fetch roaming status */
     uint8_t roamStatus = 0;
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
     qmi_error_type_v01 qmi_err_num = QMI_ERROR_TYPE_MIN_ENUM_VAL_V01;
     if (!mQcmapClientPtr->GetWWANRoamStatus(&roamStatus, &qmi_err_num)) {
         LOC_LOGE("Failed to fetch roaming status, err %d", qmi_err_num);
         return false;
     }
+#endif
     // update internal roaming variable
     LOC_LOGD("Roaming status(OFF:0x00, ON:0x01-0x0C): %x", roamStatus);
     return (roamStatus != 0);
@@ -877,6 +886,7 @@ bool LocNetIface::isAnyBackHaulConnected() {
         return false;
     }
 
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
     /* Fetch backhaul status */
     qcmap_backhaul_status_info_type backhaulStatus =
             {false, false, QCMAP_MSGR_BACKHAUL_TYPE_ENUM_MIN_ENUM_VAL_V01};
@@ -889,9 +899,11 @@ bool LocNetIface::isAnyBackHaulConnected() {
     setCurrentBackHaulStatus(backhaulStatus.backhaul_type,
                 backhaulStatus.backhaul_v4_available,
                 backhaulStatus.backhaul_v6_available);
+#endif
     return (LOC_NET_CONN_STATE_CONNECTED == mLocNetBackHaulState);
 }
 
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
 void LocNetIface::setCurrentBackHaulStatus(
                 qcmap_msgr_backhaul_type_enum_v01 backhaulType,
                 boolean backhaulIPv4Available,
@@ -932,6 +944,7 @@ void LocNetIface::setCurrentBackHaulStatus(
         mLocNetBackHaulState = LOC_NET_CONN_STATE_CONNECTED;
     }
 }
+#endif
 
 /* isWwanConnected is used mainly from external clients (eg:XtraClient) */
 bool LocNetIface::isWwanConnected() {
@@ -950,6 +963,7 @@ bool LocNetIface::isWwanConnected() {
         return false;
     }
 
+#ifdef FEATURE_ROAMING_BACKHAUL_STATUS_INDICATION
     /* Fetch backhaul status */
     qcmap_backhaul_status_info_type backhaulStatus =
             {false, false, QCMAP_MSGR_BACKHAUL_TYPE_ENUM_MIN_ENUM_VAL_V01};
@@ -969,6 +983,7 @@ bool LocNetIface::isWwanConnected() {
         LOC_LOGV("WWAN is disconnected.");
         return false;
     }
+#endif
 
     return false;
 }

@@ -617,8 +617,11 @@ void LocationApiService::updateNetworkAvailability(bool availability) {
     LOC_LOGi(">-- updateNetworkAvailability=%u", availability);
     GnssInterface* gnssInterface = getGnssInterface();
     if (gnssInterface) {
+        // Map the network connectivity to MOBILE for now.
+        // In next phase, when we support third party connectivity manager,
+        // we plan to deplicate this API.
         gnssInterface->updateConnectionStatus(
-                availability, loc_core::TYPE_UNKNOWN,
+                availability, loc_core::TYPE_MOBILE,
                 false, NETWORK_HANDLE_UNKNOWN);
     }
 }

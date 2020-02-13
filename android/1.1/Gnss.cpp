@@ -97,6 +97,8 @@ void location_on_battery_status_changed(bool charging) {
 Gnss::Gnss() {
     ENTRY_LOG_CALLFLOW();
     sGnss = this;
+    // initilize gnss interface at first in case needing notify battery status
+    sGnss->getGnssInterface()->initialize();
     // register health client to listen on battery change
     loc_extn_battery_properties_listener_init(location_on_battery_status_changed);
     // clear pending GnssConfig
@@ -303,14 +305,7 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
 
 Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
                               int32_t uncertaintyMs) {
-    ENTRY_LOG_CALLFLOW();
-    const GnssInterface* gnssInterface = getGnssInterface();
-    if (nullptr != gnssInterface) {
-        gnssInterface->injectTime(timeMs, timeReferenceMs, uncertaintyMs);
-        return true;
-    } else {
-        return false;
-    }
+    return false;
 }
 
 Return<void> Gnss::deleteAidingData(V1_0::IGnss::GnssAidingData aidingDataFlags)  {

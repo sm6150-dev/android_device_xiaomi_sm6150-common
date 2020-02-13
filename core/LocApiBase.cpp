@@ -393,7 +393,7 @@ void LocApiBase::reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additi
 void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
     const char* constellationString[] = { "Unknown", "GPS", "SBAS", "GLONASS",
-        "QZSS", "BEIDOU", "GALILEO" };
+        "QZSS", "BEIDOU", "GALILEO", "NAVIC" };
 
     // print the SV info before delivering
     LOC_LOGV("num sv: %zu\n"

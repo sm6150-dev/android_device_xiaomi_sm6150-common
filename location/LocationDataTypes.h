@@ -175,7 +175,7 @@ typedef enum {
     GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT           = (1<<26), // valid sensor cal status
     GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<27), // valid output engine type
     GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28), // valid output engine mask
-    GNSS_LOCATION_INFO_PROBABILITY_OF_GOOD_FIX_BIT      = (1<<29), // valid probability of good fix
+    GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29), // valid conformity index
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -1015,9 +1015,10 @@ typedef struct {
     // indicates the set of engines contribute to the fix.
     PositioningEngineMask locOutputEngMask;
     /* When robust location is enabled, this field
-     * will indicate proability of good fix if valid.
-     * The range is of [0.0, 1.0] */
-    float probabilityOfGoodFix;
+     * will how well the various input data considered for
+     * navigation solution conform to expectations.
+     * Range: 0 (least conforming) to 1 (most conforming) */
+    float conformityIndex;
 } GnssLocationInfoNotification;
 
 typedef struct {

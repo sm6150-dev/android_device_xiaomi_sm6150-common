@@ -524,9 +524,9 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.locOutputEngMask = locationExtended.locOutputEngMask;
     }
 
-    if (GPS_LOCATION_EXTENDED_HAS_PROBABILITY_OF_GOOD_FIX & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_PROBABILITY_OF_GOOD_FIX_BIT;
-        out.probabilityOfGoodFix = locationExtended.probabilityOfGoodFix;
+    if (GPS_LOCATION_EXTENDED_HAS_CONFORMITY_INDEX & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT;
+        out.conformityIndex = locationExtended.conformityIndex;
     }
 }
 
@@ -5301,7 +5301,9 @@ GnssAdapter::configRobustLocation(uint32_t sessionId,
 
     if ((mLocConfigInfo.robustLocationConfigInfo.isValid == true) &&
             (mLocConfigInfo.robustLocationConfigInfo.enable == enable) &&
-            (mLocConfigInfo.robustLocationConfigInfo.enableFor911 == enableForE911)) {
+            ((mLocConfigInfo.robustLocationConfigInfo.enable == false) ||
+             (mLocConfigInfo.robustLocationConfigInfo.enable == true &&
+              mLocConfigInfo.robustLocationConfigInfo.enableFor911 == enableForE911))) {
         // no change in configuration, inform client of response and simply return
         reportResponse(LOCATION_ERROR_SUCCESS, sessionId);
         return;

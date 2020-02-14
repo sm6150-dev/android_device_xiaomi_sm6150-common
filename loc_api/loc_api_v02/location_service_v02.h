@@ -62,8 +62,8 @@
  *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
-/* This file was generated with Tool version 6.14.7
-   It was generated on: Tue Dec  3 2019 (Spin 0)
+/* This file was generated with Tool version 6.14.9
+   It was generated on: Wed Feb  5 2020 (Spin 0)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,11 +89,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x74
+#define LOC_V02_IDL_MINOR_VERS 0x76
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x00D0
+#define LOC_V02_MAX_MESSAGE_ID 0x00D2
 /**
     @}
   */
@@ -1900,6 +1900,14 @@ typedef struct {
   uint8_t dgnssDataAgeMsec_valid;  /**< Must be set to true if dgnssDataAgeMsec is being passed */
   uint32_t dgnssDataAgeMsec;
   /**<   If DGNSS is used, age of differential data in msec with reference to the fix time
+  */
+
+  /* Optional */
+  /*  Probability of Good Fix  */
+  uint8_t probabilityOfGoodFix_valid;  /**< Must be set to true if probabilityOfGoodFix is being passed */
+  float probabilityOfGoodFix;
+  /**<   Probability of fix being good
+       - Range: 0 to 1;
   */
 }qmiLocEventPositionReportIndMsgT_v02;  /* Message */
 /**
@@ -15090,6 +15098,12 @@ typedef struct {
        The elements QMI_LOC_SV_MEAS_LIST_MAX_SIZE - (QMI_LOC_DGNSS_SV_MEAS_LIST_MAX_SIZE - 1) of
        this array correspond to the SV measurements in the TLV extSvMeasurement.
       */
+
+  /* Optional */
+  /*  Uncertainty for Receiver Tick at Frame Count */
+  uint8_t refCountTicksUnc_valid;  /**< Must be set to true if refCountTicksUnc is being passed */
+  float refCountTicksUnc;
+  /**<   Uncertainty for Receiver frame counter value in ticks. */
 }qmiLocEventGnssSvMeasInfoIndMsgT_v02;  /* Message */
 /**
     @}
@@ -18661,6 +18675,7 @@ typedef struct {
 
 typedef uint32_t qmiLocXtraConfigMaskT_v02;
 #define QMI_LOC_XTRA_CONFIG_DISABLE_AUTO_DOWNLOAD_TIMER_V02 ((qmiLocXtraConfigMaskT_v02)0x00000001) /**<  Ask the engine to disable the XTRA auto download timer  */
+#define QMI_LOC_XTRA_CONFIG_NAVIC_EPH_ASSIST_V02 ((qmiLocXtraConfigMaskT_v02)0x00000002) /**<  Inform the engine of NAVIC eph assist support  */
 typedef uint32_t qmiLocXtraInfoMaskT_v02;
 #define QMI_LOC_XTRA_INFO_MASK_ABS_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000001) /**<  Number of hours for which the current XTRA information is valid  */
 #define QMI_LOC_XTRA_INFO_MASK_REL_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000002) /**<  Last XTRA data download time  */
@@ -18669,6 +18684,7 @@ typedef uint32_t qmiLocXtraInfoMaskT_v02;
 #define QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST_V02 ((qmiLocXtraInfoMaskT_v02)0x00000010) /**<  Requests the control point to send QMI_LOC_INJECT_UTC_TIME_REQ
        to the engine  */
 #define QMI_LOC_XTRA_INFO_MASK_PREF_VALID_AGE_V02 ((qmiLocXtraInfoMaskT_v02)0x00000020) /**<  Preferred valid age  */
+#define QMI_LOC_XTRA_INFO_MASK_NAVIC_EPH_ASSIST_V02 ((qmiLocXtraInfoMaskT_v02)0x00000040) /**<  Support for Navic Ephemeris assistance data  */
 /** @addtogroup loc_qmi_aggregates
     @{
   */
@@ -18683,7 +18699,8 @@ typedef struct {
       - QMI_LOC_XTRA_INFO_MASK_NTP_SERVER (0x00000008) --  Network Time Protocol (NTP) server URLs
       - QMI_LOC_XTRA_INFO_MASK_TIME_REQUEST (0x00000010) --  Requests the control point to send QMI_LOC_INJECT_UTC_TIME_REQ
        to the engine
-      - QMI_LOC_XTRA_INFO_MASK_PREF_VALID_AGE (0x00000020) --  Preferred valid age  */
+      - QMI_LOC_XTRA_INFO_MASK_PREF_VALID_AGE (0x00000020) --  Preferred valid age
+      - QMI_LOC_XTRA_INFO_MASK_NAVIC_EPH_ASSIST (0x00000040) --  Support for Navic Ephemeris assistance data  */
 
   uint16_t absAgeHrs;
   /**<   Number of hours for which the current XTRA information is valid \n
@@ -18727,6 +18744,7 @@ typedef struct {
   /**<   XTRA configuration.
  Valid values: \n
       - QMI_LOC_XTRA_CONFIG_DISABLE_AUTO_DOWNLOAD_TIMER (0x00000001) --  Ask the engine to disable the XTRA auto download timer
+      - QMI_LOC_XTRA_CONFIG_NAVIC_EPH_ASSIST (0x00000002) --  Inform the engine of NAVIC eph assist support
  */
 }qmiLocQueryXtraInfoReqMsgT_v02;  /* Message */
 /**
@@ -21674,6 +21692,80 @@ typedef struct {
     @}
   */
 
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; This message is used to configure Robust Location. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Enable */
+  uint8_t enable;
+  /**<   Specifies the Robust Location configuration.  \n
+       - 0x00 (FALSE) -- Disable \n
+       - 0x01 (TRUE)  -- Enable  \n
+  */
+
+  /* Optional */
+  /*  Enable for E911 */
+  uint8_t enableForE911_valid;  /**< Must be set to true if enableForE911 is being passed */
+  uint8_t enableForE911;
+  /**<    Specifies the Robust Location configuration during e911 state.  \n
+       - 0x00 (FALSE) -- Disable  \n
+       - 0x01 (TRUE)  -- Enable   \n
+  */
+}qmiLocSetRobustLocationReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; This message queries the Robust Location configuration. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the request.
+ Valid values: \n
+      - eQMI_LOC_SUCCESS (0) --  Request was completed successfully \n
+      - eQMI_LOC_GENERAL_FAILURE (1) --  Request failed because of a general failure \n
+      - eQMI_LOC_UNSUPPORTED (2) --  Request failed because it is not supported \n
+      - eQMI_LOC_INVALID_PARAMETER (3) --  Request failed because it contained invalid parameters \n
+      - eQMI_LOC_ENGINE_BUSY (4) --  Request failed because the engine is busy \n
+      - eQMI_LOC_PHONE_OFFLINE (5) --  Request failed because the phone is offline \n
+      - eQMI_LOC_TIMEOUT (6) --  Request failed because it has timed out \n
+      - eQMI_LOC_CONFIG_NOT_SUPPORTED (7) --  Request failed because an undefined configuration was requested \n
+      - eQMI_LOC_INSUFFICIENT_MEMORY (8) --  Request failed because the engine could not allocate sufficient memory for the request \n
+      - eQMI_LOC_MAX_GEOFENCE_PROGRAMMED (9) --  Request failed because the maximum number of Geofences are already programmed \n
+      - eQMI_LOC_XTRA_VERSION_CHECK_FAILURE (10) --  Location service failed because of an XTRA version-based file format check failure \n
+      - eQMI_LOC_GNSS_DISABLED (11) --  Request failed because the location service is disabled
+ */
+
+  /* Optional */
+  /*  Enable */
+  uint8_t isEnabled_valid;  /**< Must be set to true if isEnabled is being passed */
+  uint8_t isEnabled;
+  /**<   Configuration of Robust Location.  \n
+       - 0x00 (FALSE) -- Disabled  \n
+       - 0x01 (TRUE)  -- Enabled   \n
+  */
+
+  /* Optional */
+  /*  Enable for E911 */
+  uint8_t isEnabledForE911_valid;  /**< Must be set to true if isEnabledForE911 is being passed */
+  uint8_t isEnabledForE911;
+  /**<    Configuration of Robust Location during e911 state. \n
+       - 0x00 (FALSE) -- Disabled \n
+       - 0x01 (TRUE)  -- Enabled  \n
+  */
+}qmiLocGetRobustLocationConfigIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
 /* Conditional compilation tags for message removal */
 //#define REMOVE_QMI_LOC_ADD_CIRCULAR_GEOFENCE_V02
 //#define REMOVE_QMI_LOC_ADD_GEOFENCE_CONTEXT_V02
@@ -21765,6 +21857,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_V02
 //#define REMOVE_QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_V02
 //#define REMOVE_QMI_LOC_GET_REGISTERED_EVENTS_V02
+//#define REMOVE_QMI_LOC_GET_ROBUST_LOCATION_CONFIG_V02
 //#define REMOVE_QMI_LOC_GET_SBAS_CONFIG_V02
 //#define REMOVE_QMI_LOC_GET_SENSOR_CONTROL_CONFIG_V02
 //#define REMOVE_QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_V02
@@ -21835,6 +21928,7 @@ typedef struct {
 //#define REMOVE_QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_V02
 //#define REMOVE_QMI_LOC_SET_PREMIUM_SERVICES_CONFIG_V02
 //#define REMOVE_QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_V02
+//#define REMOVE_QMI_LOC_SET_ROBUST_LOCATION_CONFIG_V02
 //#define REMOVE_QMI_LOC_SET_SBAS_CONFIG_V02
 //#define REMOVE_QMI_LOC_SET_SENSOR_CONTROL_CONFIG_V02
 //#define REMOVE_QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_V02
@@ -22283,6 +22377,12 @@ typedef struct {
 #define QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ_V02 0x00D0
 #define QMI_LOC_INJECT_PLATFORM_POWER_STATE_RESP_V02 0x00D0
 #define QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02 0x00D0
+#define QMI_LOC_SET_ROBUST_LOCATION_CONFIG_REQ_V02 0x00D1
+#define QMI_LOC_SET_ROBUST_LOCATION_CONFIG_RESP_V02 0x00D1
+#define QMI_LOC_SET_ROBUST_LOCATION_CONFIG_IND_V02 0x00D1
+#define QMI_LOC_GET_ROBUST_LOCATION_CONFIG_REQ_V02 0x00D2
+#define QMI_LOC_GET_ROBUST_LOCATION_CONFIG_RESP_V02 0x00D2
+#define QMI_LOC_GET_ROBUST_LOCATION_CONFIG_IND_V02 0x00D2
 /**
     @}
   */

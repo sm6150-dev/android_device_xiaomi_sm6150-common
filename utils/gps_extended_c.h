@@ -806,6 +806,7 @@ typedef struct {
      * navigation solution conform to expectations.
      * Range: 0 (least conforming) to 1 (most conforming) */
     float conformityIndex;
+    GnssLocationPositionDynamicsExt bodyFrameDataExt;
 } GpsLocationExtended;
 
 enum loc_sess_status {

@@ -1,5 +1,4 @@
 GNSS_CFLAGS := \
-    -Werror \
     -Wno-error=unused-parameter \
     -Wno-error=macro-redefined \
     -Wno-error=reorder \
@@ -13,7 +12,9 @@ GNSS_CFLAGS := \
     -Wno-error=undefined-bool-conversion \
     -Wno-error=tautological-compare \
     -Wno-error=switch \
-    -Wno-error=date-time
+    -Wno-error=date-time \
+    -Wno-reorder \
+    -Wno-unevaluated-expression
 
 # GPS-HIDL
 GNSS_HIDL_1_0_TARGET_LIST := msm8960

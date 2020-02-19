@@ -49,7 +49,9 @@ typedef enum
   eMSG_Q_UNAVAILABLE_RESOURCE                = -4,
      /**< Failed because an there were not enough resources. */
   eMSG_Q_INSUFFICIENT_BUFFER                 = -5,
-     /**< Failed because an the supplied buffer was too small. */
+     /**< Failed because the supplied buffer was too small. */
+  eMSG_Q_EMPTY_LIST                          = -6,
+     /**< Failed because the list was empty. */
 }msq_q_err_type;
 
 /*===========================================================================

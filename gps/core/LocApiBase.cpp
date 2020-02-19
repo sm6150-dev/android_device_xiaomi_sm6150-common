@@ -889,7 +889,7 @@ void LocApiBase::
 DEFAULT_IMPL()
 
 void LocApiBase::
-    getRobustLocationConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+    getRobustLocationConfig(uint32_t /*sessionId*/, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

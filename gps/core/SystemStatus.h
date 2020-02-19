@@ -513,9 +513,9 @@ public:
     }
     inline virtual SystemStatusItemBase& collate(SystemStatusItemBase& curInfo) {
         uint64_t allTypes = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mAllTypes;
-        uint64_t networkHandle =
-                (static_cast<SystemStatusNetworkInfo&>(curInfo)).mNetworkHandle;
-        int32_t type = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mType;
+        /*uint64_t networkHandle =
+                (static_cast<SystemStatusNetworkInfo&>(curInfo)).mNetworkHandle;*/
+        /*int32_t type = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mType;*/
         // Replace current with cached table for now and then update
         memcpy(mAllNetworkHandles,
                (static_cast<SystemStatusNetworkInfo&>(curInfo)).getNetworkHandle(),

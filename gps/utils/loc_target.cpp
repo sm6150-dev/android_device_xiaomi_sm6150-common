@@ -142,7 +142,7 @@ void loc_get_auto_platform_name(char *platform_name, int array_length)
 */
 int loc_identify_low_ram_target()
 {
-    int ret = 0;
+    /*int ret = 0;*/
     char low_ram_target[PROPERTY_VALUE_MAX];
     property_get("ro.config.low_ram", low_ram_target, "");
     LOC_LOGd("low ram target: %s\n", low_ram_target);

@@ -58,15 +58,15 @@ using namespace loc_core;
 #define LOG_TAG "LocSvc_XSSO"
 
 class XtraIpcListener : public ILocIpcListener {
-    IOsObserver*    mSystemStatusObsrvr;
     const MsgTask* mMsgTask;
     XtraSystemStatusObserver& mXSSO;
 public:
+    IOsObserver*    mSystemStatusObsrvr;
     inline XtraIpcListener(IOsObserver* observer, const MsgTask* msgTask,
                            XtraSystemStatusObserver& xsso) :
             mSystemStatusObsrvr(observer), mMsgTask(msgTask), mXSSO(xsso) {}
-    virtual void onReceive(const char* data, uint32_t length,
-                           const LocIpcRecver* recver) override {
+    virtual void onReceive(const char* data, uint32_t /*length*/,
+                           const LocIpcRecver* /*recver*/) override {
 #define STRNCMP(str, constStr) strncmp(str, constStr, sizeof(constStr)-1)
         if (!STRNCMP(data, "ping")) {
             LOC_LOGd("ping received");

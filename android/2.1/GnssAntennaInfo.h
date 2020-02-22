@@ -40,31 +40,44 @@ namespace gnss {
 namespace V2_1 {
 namespace implementation {
 
+using ::android::hardware::gnss::V2_1::IGnssAntennaInfo;
+using ::android::hardware::gnss::V2_1::IGnssAntennaInfoCallback;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::hardware::hidl_vec;
 using ::android::hardware::hidl_string;
-using ::android::hardware::gnss::V2_1::IGnssAntennaInfoCallback;
-using ::android::hardware::gnss::V2_1::IGnssAntennaInfo;
 using ::android::sp;
 
-/*
- * Interface for passing GNSS configuration info from platform to HAL.
- */
 struct Gnss;
-struct GnssAntennaInfo : public V2_1::IGnssAntennaInfo {
+struct GnssAntennaInfo : public IGnssAntennaInfo {
     GnssAntennaInfo(Gnss* gnss);
-    ~GnssAntennaInfo() = default;
+    ~GnssAntennaInfo();
 
+    /*
+     * Methods from ::android::hardware::gnss::V1_1::IGnssAntennaInfo follow.
+     * These declarations were generated from IGnssAntennaInfo.hal.
+     */
+    Return<GnssAntennaInfoStatus>
+            setCallback(const sp<IGnssAntennaInfoCallback>& callback) override;
+    Return<void> close(void) override;
 
-    // Methods from ::android::hardware::gnss::V2_1::IGnssAntennaInfo follow.
-    Return<IGnssAntennaInfo::GnssAntennaInfoStatus> setCallback(
-            const sp<IGnssAntennaInfoCallback>& callback) override;
-    Return<void> close() override;
+    void gnssAntennaInfoCb(std::vector<GnssAntennaInformation> gnssAntennaInformations);
 
-
+    static void aiGnssAntennaInfoCb(std::vector<GnssAntennaInformation> gnssAntennaInformations);
 
  private:
+    struct GnssAntennaInfoDeathRecipient : hidl_death_recipient {
+        GnssAntennaInfoDeathRecipient(sp<GnssAntennaInfo> gnssAntennaInfo) :
+                mGnssAntennaInfo(gnssAntennaInfo) {
+        }
+        ~GnssAntennaInfoDeathRecipient() = default;
+        virtual void serviceDied(uint64_t cookie, const wp<IBase>& who) override;
+        sp<GnssAntennaInfo> mGnssAntennaInfo;
+    };
+
+ private:
+    sp<GnssAntennaInfoDeathRecipient> mGnssAntennaInfoDeathRecipient = nullptr;
+    sp<IGnssAntennaInfoCallback> mGnssAntennaInfoCbIface = nullptr;
     Gnss* mGnss = nullptr;
 };
 

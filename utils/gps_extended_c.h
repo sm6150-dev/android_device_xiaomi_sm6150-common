@@ -2199,10 +2199,23 @@ typedef std::function<void(const OdcpiRequestInfo& request)> OdcpiRequestCallbac
 typedef void (*AgnssStatusIpV4Cb)(AGnssExtStatusIpV4 status);
 
 /*
+* Callback with AGNSS(IpV6) status information.
+*
+* @param status Will be of type AGnssExtStatusIpV6.
+*/
+typedef void (*AgnssStatusIpV6Cb)(AGnssExtStatusIpV6 status);
+
+/*
 * Callback with NFW information.
 */
 typedef void(*NfwStatusCb)(GnssNfwNotification notification);
 typedef bool(*IsInEmergencySession)(void);
+
+enum AntennaInfoStatus {
+    ANTENNA_INFO_SUCCESS = 0,
+    ANTENNA_INFO_ERROR_ALREADY_INIT = 1,
+    ANTENNA_INFO_ERROR_GENERIC = 2
+};
 
 /*
 * Callback with Measurement corrections information.
@@ -2215,6 +2228,11 @@ typedef void(*measCorrSetCapabilitiesCb)(GnssMeasurementCorrectionsCapabilitiesM
  * @param status Will be of type AGnssExtStatusIpV6.
  */
 typedef void (*AgnssStatusIpV6Cb)(AGnssExtStatusIpV6 status);
+
+/*
+* Callback with Antenna information.
+*/
+typedef void(*antennaInfoCb)(std::vector<GnssAntennaInformation> gnssAntennaInformations);
 
 /* Constructs for interaction with loc_net_iface library */
 typedef void (*LocAgpsOpenResultCb)(bool isSuccess, AGpsExtType agpsType, const char* apn,

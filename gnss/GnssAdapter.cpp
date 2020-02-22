@@ -449,17 +449,88 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
                 LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDataMask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDataMask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+            LOCATION_NAV_DATA_HAS_PITCH_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_BIT;
         }
+
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT;
+        }
+
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_ROLL_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_ROLL_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_YAW_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_BIT;
+        }
+        if (locationExtended.bodyFrameDataExt.bodyFrameDataMask &
+                LOCATION_NAV_DATA_HAS_YAW_UNC_BIT) {
+            out.bodyFrameDataExt.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_UNC_BIT;
+        }
+
         out.bodyFrameData.longAccel = locationExtended.bodyFrameData.longAccel;
         out.bodyFrameData.latAccel = locationExtended.bodyFrameData.latAccel;
         out.bodyFrameData.vertAccel = locationExtended.bodyFrameData.vertAccel;
         out.bodyFrameData.yawRate = locationExtended.bodyFrameData.yawRate;
         out.bodyFrameData.pitch = locationExtended.bodyFrameData.pitch;
+        out.bodyFrameData.longAccelUnc = locationExtended.bodyFrameData.longAccelUnc;
+        out.bodyFrameData.latAccelUnc  = locationExtended.bodyFrameData.latAccelUnc;
+        out.bodyFrameData.vertAccelUnc = locationExtended.bodyFrameData.vertAccelUnc;
+        out.bodyFrameData.yawRateUnc   = locationExtended.bodyFrameData.yawRateUnc;
+        out.bodyFrameData.pitchUnc     = locationExtended.bodyFrameData.pitchUnc;
+
+        out.bodyFrameDataExt.pitchRate    = locationExtended.bodyFrameDataExt.pitchRate;
+        out.bodyFrameDataExt.pitchRateUnc = locationExtended.bodyFrameDataExt.pitchRateUnc;
+        out.bodyFrameDataExt.roll         = locationExtended.bodyFrameDataExt.roll;
+        out.bodyFrameDataExt.rollUnc      = locationExtended.bodyFrameDataExt.rollUnc;
+        out.bodyFrameDataExt.rollRate     = locationExtended.bodyFrameDataExt.rollRate;
+        out.bodyFrameDataExt.rollRateUnc  = locationExtended.bodyFrameDataExt.rollRateUnc;
+        out.bodyFrameDataExt.yaw          = locationExtended.bodyFrameDataExt.yaw;
+        out.bodyFrameDataExt.yawUnc       = locationExtended.bodyFrameDataExt.yawUnc;
     }
     if (GPS_LOCATION_EXTENDED_HAS_GPS_TIME & locationExtended.flags) {
         out.flags |= GPS_LOCATION_EXTENDED_HAS_GPS_TIME;
@@ -527,6 +598,19 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_CONFORMITY_INDEX & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT;
         out.conformityIndex = locationExtended.conformityIndex;
+    }
+
+    if (GPS_LOCATION_EXTENDED_HAS_LLA_VRP_BASED & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT;
+        out.llaVRPBased = locationExtended.llaVRPBased;
+    }
+
+    if (GPS_LOCATION_EXTENDED_HAS_ENU_VELOCITY_LLA_VRP_BASED & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT;
+        // copy over east, north and up vrp based velocity
+        out.enuVelocityVRPBased[0] = locationExtended.enuVelocityVRPBased[0];
+        out.enuVelocityVRPBased[1] = locationExtended.enuVelocityVRPBased[1];
+        out.enuVelocityVRPBased[2] = locationExtended.enuVelocityVRPBased[2];
     }
 }
 

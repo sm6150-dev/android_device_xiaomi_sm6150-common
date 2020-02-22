@@ -197,6 +197,8 @@ typedef enum {
     GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<27), // valid output engine type
     GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28), // valid output engine mask
     GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29), // valid conformity index
+    GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30), // valid VRP-based lat/long/alt
+    GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<31), // VRP-based east/north/up vel
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -1003,6 +1005,12 @@ typedef struct {
 } GnssSystemTime;
 
 typedef struct {
+    double latitude;  // in degree
+    double longitude; // in degree
+    float altitude;  // altitude wrt to ellipsoid
+} LLAInfo;
+
+typedef struct {
     uint32_t size;                      // set to sizeof(GnssLocationInfo)
     Location location;                  // basic locaiton info, latitude, longitude, and etc
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
@@ -1049,12 +1057,16 @@ typedef struct {
     // when loc output eng type is set to fused, this field
     // indicates the set of engines contribute to the fix.
     PositioningEngineMask locOutputEngMask;
-    /* When robust location is enabled, this field
-     * will how well the various input data considered for
-     * navigation solution conform to expectations.
-     * Range: 0 (least conforming) to 1 (most conforming) */
+    // When robust location is enabled, this field
+    // will how well the various input data considered for
+    // navigation solution conform to expectations.
+    // Range: 0 (least conforming) to 1 (most conforming)
     float conformityIndex;
     GnssLocationPositionDynamicsExt bodyFrameDataExt;   // Additional Body Frame Dynamics
+    // VRR-based latitude/longitude/altitude
+    LLAInfo llaVRPBased;
+    // VRR-based east, north, and up velocity
+    float enuVelocityVRPBased[3];
 } GnssLocationInfoNotification;
 
 typedef struct {

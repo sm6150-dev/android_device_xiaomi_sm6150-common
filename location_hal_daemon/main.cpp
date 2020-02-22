@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -43,6 +43,7 @@
 
 #define HAL_DAEMON_VERSION "1.1.0"
 
+typedef void (StartDgnssApiServiceApi)();
 
 // this function will block until the directory specified in
 // dirName has been created
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
             LOC_PROCESS_MAX_NUM_GROUPS, ' ');
 
     int numGrpIds=0;
-    for(int i=0; i<numGrps; i++) {
+    for (int i=0; i<numGrps; i++) {
         struct group* grp = getgrnam(splitGrpString[i]);
         if (grp) {
             groupIds[numGrpIds] = grp->gr_gid;
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
         }
     }
     if (0 != numGrpIds) {
-        if(-1 == setgroups(numGrpIds, groupIds)) {
+        if (-1 == setgroups(numGrpIds, groupIds)) {
             LOC_LOGe("Error: setgroups failed %s", strerror(errno));
         }
     }
@@ -131,16 +132,16 @@ int main(int argc, char *argv[])
         struct __user_cap_header_struct cap_hdr = {};
         cap_hdr.version = _LINUX_CAPABILITY_VERSION;
         cap_hdr.pid = getpid();
-        if(prctl(PR_SET_KEEPCAPS, 1) < 0) {
+        if (prctl(PR_SET_KEEPCAPS, 1) < 0) {
             LOC_LOGe("Error: prctl failed. %s", strerror(errno));
         }
 
         // Set the group id first and then set the effective userid, to gps.
-        if(-1 == setgid(GID_GPS)) {
+        if (-1 == setgid(GID_GPS)) {
             LOC_LOGe("Error: setgid failed. %s", strerror(errno));
         }
         // Set user id
-        if(-1 == setuid(UID_GPS)) {
+        if (-1 == setuid(UID_GPS)) {
             LOC_LOGe("Error: setuid failed. %s", strerror(errno));
         }
 
@@ -149,7 +150,7 @@ int main(int argc, char *argv[])
         cap_data.permitted = (1 << CAP_NET_BIND_SERVICE) | (1 << CAP_NET_ADMIN);
         cap_data.effective = cap_data.permitted;
         LOC_LOGv("cap_data.permitted: %d", (int)cap_data.permitted);
-        if(capset(&cap_hdr, &cap_data)) {
+        if (capset(&cap_hdr, &cap_data)) {
             LOC_LOGe("Error: capset failed. %s", strerror(errno));
         }
 #endif
@@ -157,6 +158,18 @@ int main(int argc, char *argv[])
 
     // move to root dir
     chdir("/");
+
+    // start listening for dgnss client events
+    StartDgnssApiServiceApi* pStartDgnssApiService = nullptr;
+    void* libhandle = nullptr;
+    const char* libName = "libcdfw.so";
+
+    pStartDgnssApiService =
+            (StartDgnssApiServiceApi*)dlGetSymFromLib(libhandle, libName,
+                                                      "startDgnssApiService");
+    if (nullptr != pStartDgnssApiService){
+        pStartDgnssApiService();
+    }
 
     // start listening for client events - will not return
     if (!LocationApiService::getInstance(configParamRead)) {

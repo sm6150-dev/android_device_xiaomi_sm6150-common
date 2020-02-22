@@ -85,8 +85,11 @@ private:
 static pthread_mutex_t qMutex;
 static bool qMutexInitDone = false;
 static LocationClientApi* pLocClientApi = nullptr;
+static LocationClientApi* pLocPassiveClientApi = nullptr;
 static QapiTimer mTimer;
 qapi_Location_Callbacks_t   qLocationCallbacks;
+static qapi_Location_t qCacheLocation;
+static QapiTimer mPassiveTimer;
 
 static qapi_Location_Error_t get_qapi_error(LocationResponse err)
 {
@@ -207,7 +210,7 @@ static void location_collective_response_callback(
 static void location_tracking_callback(
     Location location)
 {
-    qapi_Location_t qLocation;
+    qapi_Location_t qLocation = {};
     bool bIsSingleShot = false;
 
     // first check if location is valid
@@ -233,6 +236,7 @@ static void location_tracking_callback(
     qLocation.altitude = location.altitude;
 // TODO
 //    qLocation.altitudeMeanSeaLevel = location.altitudeMeanSeaLevel;
+    qLocation.flags &= ~QAPI_LOCATION_HAS_ALTITUDE_MSL_BIT;
     qLocation.speed = location.speed;
     qLocation.bearing = location.bearing;
     qLocation.accuracy = location.horizontalAccuracy;
@@ -259,6 +263,49 @@ static void location_tracking_callback(
         }
     }
 }
+
+static void loc_passive_capabilities_callback(
+    LocationCapabilitiesMask capsMask)
+{
+    LOC_LOGv("loc_passive_capabilities_callback!");
+}
+
+static void loc_passive_tracking_callback(
+    Location location)
+{
+    qCacheLocation.size = sizeof(qapi_Location_t);
+    qCacheLocation.timestamp = location.timestamp;
+    qCacheLocation.latitude = location.latitude;
+    qCacheLocation.longitude = location.longitude;
+    qCacheLocation.altitude = location.altitude;
+    // TODO
+    //    qCacheLocation.altitudeMeanSeaLevel = location.altitudeMeanSeaLevel;
+    qCacheLocation.flags &= ~QAPI_LOCATION_HAS_ALTITUDE_MSL_BIT;
+
+    qCacheLocation.speed = location.speed;
+    qCacheLocation.bearing = location.bearing;
+    qCacheLocation.accuracy = location.horizontalAccuracy;
+    qCacheLocation.flags = location.flags;
+    qCacheLocation.flags |= QAPI_LOCATION_IS_BEST_AVAIL_POS_BIT;
+    qCacheLocation.verticalAccuracy = location.verticalAccuracy;
+    qCacheLocation.speedAccuracy = location.speedAccuracy;
+    qCacheLocation.bearingAccuracy = location.bearingAccuracy;
+
+    print_qLocation_array(&qCacheLocation, 1);
+}
+
+static void loc_passive_response_callback(
+    LocationResponse err)
+{
+    LOC_LOGv("loc_passive_response_callback!");
+}
+
+struct ClientCallbacks {
+    CapabilitiesCb capabilitycb;
+    ResponseCb responsecb;
+    CollectiveResponseCb collectivecb;
+    LocationCb locationcb;
+};
 
 static ClientCallbacks gLocationCallbacks = {
     location_capabilities_callback,
@@ -350,6 +397,28 @@ extern "C" {
             } else {
                 retVal = QAPI_LOCATION_ERROR_ALREADY_STARTED;
             }
+            /* Start passive listener here in order to be able to satisfy
+            qapi_Loc_Get_Best_Available_Position call */
+
+            if (nullptr == pLocPassiveClientApi) {
+                pLocPassiveClientApi = new LocationClientApi(
+                    loc_passive_capabilities_callback);
+                retVal = QAPI_LOCATION_ERROR_SUCCESS;
+                bool ret;
+                memset(&qCacheLocation, 0, sizeof(qCacheLocation));
+                qCacheLocation.flags |= QAPI_LOCATION_IS_BEST_AVAIL_POS_BIT;
+                ret = pLocPassiveClientApi->startPositionSession(
+                                    0,  // both 0 means passive listener
+                                    0,  // both 0 means passive listener
+                                    loc_passive_tracking_callback,
+                                    loc_passive_response_callback);
+                if (!ret) {
+                    retVal = QAPI_LOCATION_ERROR_GENERAL_FAILURE;
+                }
+            } else {
+                retVal = QAPI_LOCATION_ERROR_ALREADY_STARTED;
+            }
+
             *pClientId = 0;
         } while (0);
         pthread_mutex_unlock(&qMutex);
@@ -373,6 +442,14 @@ extern "C" {
         }
         pthread_mutex_unlock(&qMutex);
         return retVal;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Set_User_Buffer(
+        qapi_loc_client_id clientId,
+        uint8_t* pUserBuffer,
+        size_t bufferSize)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
     }
 
     qapi_Location_Error_t qapi_Loc_Start_Tracking(
@@ -437,6 +514,88 @@ extern "C" {
         }
         pthread_mutex_unlock(&qMutex);
         return retVal;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Update_Tracking_Options(
+        qapi_loc_client_id clientId,
+        uint32_t sessionId,
+        const qapi_Location_Options_t* pOptions)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Start_Batching(
+        qapi_loc_client_id clientId,
+        const qapi_Location_Options_t* pOptions,
+        uint32_t* pSessionId)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Stop_Batching(
+        qapi_loc_client_id clientId,
+        uint32_t sessionId)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Update_Batching_Options(
+        qapi_loc_client_id clientId,
+        uint32_t sessionId,
+        const qapi_Location_Options_t* pOptions)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Get_Batched_Locations(
+        qapi_loc_client_id clientId,
+        uint32_t sessionId,
+        size_t count)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Add_Geofences(
+        qapi_loc_client_id clientId,
+        size_t count,
+        const qapi_Geofence_Option_t* pOptions,
+        const qapi_Geofence_Info_t* pInfo,
+        uint32_t** pIdArray)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Remove_Geofences(
+        qapi_loc_client_id clientId,
+        size_t count,
+        const uint32_t* pIDs)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Modify_Geofences(
+        qapi_loc_client_id clientId,
+        size_t count,
+        const uint32_t* pIDs,
+        const qapi_Geofence_Option_t* options)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Pause_Geofences(
+        qapi_loc_client_id clientId,
+        size_t count,
+        const uint32_t* pIDs)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Resume_Geofences(
+        qapi_loc_client_id clientId,
+        size_t count,
+        const uint32_t* pIDs)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
     }
 
     qapi_Location_Error_t qapi_Loc_Get_Single_Shot(
@@ -518,6 +677,49 @@ extern "C" {
         } else {
             LOC_LOGd("No singleshot session in progress!");
         }
+        pthread_mutex_unlock(&qMutex);
+        return retVal;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Start_Get_Gnss_Data(
+        qapi_loc_client_id clientId,
+        uint32_t* pSessionId)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Stop_Get_Gnss_Data(
+        qapi_loc_client_id clientId,
+        uint32_t sessionId)
+    {
+        return QAPI_LOCATION_ERROR_NOT_SUPPORTED;
+    }
+
+    qapi_Location_Error_t qapi_Loc_Get_Best_Available_Position(
+        qapi_loc_client_id clientId,
+        uint32_t* pSessionId)
+    {
+        qapi_Location_Error_t retVal = QAPI_LOCATION_ERROR_SUCCESS;
+
+        LOC_LOGv("qapi_Loc_Get_Best_Available_Position! clientId %d", clientId);
+        pthread_mutex_lock(&qMutex);
+        do {
+            if (nullptr != pLocClientApi) {
+                Runnable timerRunnable = [] {
+                    if (qLocationCallbacks.singleShotCb) {
+                        qLocationCallbacks.singleShotCb(qCacheLocation, QAPI_LOCATION_ERROR_SUCCESS);
+                    } else {
+                        LOC_LOGe("No singleshot cb registered");
+                    }
+                };
+                mPassiveTimer.set(500, timerRunnable);
+                mPassiveTimer.start();
+
+            } else {
+                retVal = QAPI_LOCATION_ERROR_GENERAL_FAILURE;
+            }
+        } while (0);
+
         pthread_mutex_unlock(&qMutex);
         return retVal;
     }

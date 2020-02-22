@@ -43,17 +43,20 @@ extern "C" {
     * GNSS location error codes.
     */
     typedef enum {
-        QAPI_LOCATION_ERROR_SUCCESS = 0,        /**< Success. */
-        QAPI_LOCATION_ERROR_GENERAL_FAILURE,    /**< General failure. */
-        QAPI_LOCATION_ERROR_CALLBACK_MISSING,   /**< Callback is missing. */
-        QAPI_LOCATION_ERROR_INVALID_PARAMETER,  /**< Invalid parameter. */
-        QAPI_LOCATION_ERROR_ID_EXISTS,          /**< ID already exists. */
-        QAPI_LOCATION_ERROR_ID_UNKNOWN,         /**< ID is unknown. */
-        QAPI_LOCATION_ERROR_ALREADY_STARTED,    /**< Already started. */
-        QAPI_LOCATION_ERROR_NOT_INITIALIZED,    /**< Not initialized. */
-        QAPI_LOCATION_ERROR_GEOFENCES_AT_MAX,   /**< Maximum number of geofences reached. */
-        QAPI_LOCATION_ERROR_NOT_SUPPORTED,      /**< Not supported. */
-        QAPI_LOCATION_ERROR_TIMEOUT             /**< Timeout when asking single shot. */
+        QAPI_LOCATION_ERROR_SUCCESS = 0,            /**< Success. */
+        QAPI_LOCATION_ERROR_GENERAL_FAILURE,        /**< General failure. */
+        QAPI_LOCATION_ERROR_CALLBACK_MISSING,       /**< Callback is missing. */
+        QAPI_LOCATION_ERROR_INVALID_PARAMETER,      /**< Invalid parameter. */
+        QAPI_LOCATION_ERROR_ID_EXISTS,              /**< ID already exists. */
+        QAPI_LOCATION_ERROR_ID_UNKNOWN,             /**< ID is unknown. */
+        QAPI_LOCATION_ERROR_ALREADY_STARTED,        /**< Already started. */
+        QAPI_LOCATION_ERROR_NOT_INITIALIZED,        /**< Not initialized. */
+        QAPI_LOCATION_ERROR_GEOFENCES_AT_MAX,       /**< Maximum number of geofences reached. */
+        QAPI_LOCATION_ERROR_NOT_SUPPORTED,          /**< Not supported. */
+        QAPI_LOCATION_ERROR_TIMEOUT,                /**< Timeout when asking single shot. */
+        QAPI_LOCATION_ERROR_LOAD_FAILURE,           /**< GNSS engine could not get loaded. */
+        QAPI_LOCATION_ERROR_LOCATION_DISABLED,      /**< Location module license is disabled. */
+        QAPI_LOCATION_ERROR_BEST_AVAIL_POS_INVALID, /**< Best available position is invalid. */
     } qapi_Location_Error_t;
 
     typedef uint16_t qapi_Location_Flags_Mask_t;
@@ -61,18 +64,16 @@ extern "C" {
     * Flags to indicate which values are valid in a location.
     */
     typedef enum {
-        QAPI_LOCATION_HAS_LAT_LONG_BIT = (1 << 0),   /**< Location has a valid latitude and
-                                                     longitude. */
-        QAPI_LOCATION_HAS_ALTITUDE_BIT = (1 << 1),   /**< Location has a valid altitude. */
-        QAPI_LOCATION_HAS_SPEED_BIT = (1 << 2),   /**< Location has a valid speed. */
-        QAPI_LOCATION_HAS_BEARING_BIT = (1 << 3),   /**< Location has a valid bearing. */
-        QAPI_LOCATION_HAS_ACCURACY_BIT = (1 << 4),   /**< Location has valid accuracy. */
-        QAPI_LOCATION_HAS_VERTICAL_ACCURACY_BIT = (1 << 5),   /**< Location has valid vertical
-                                                              accuracy. */
-        QAPI_LOCATION_HAS_SPEED_ACCURACY_BIT = (1 << 6),   /**< Location has valid speed
-                                                           accuracy. */
-        QAPI_LOCATION_HAS_BEARING_ACCURACY_BIT = (1 << 7),   /**< Location has valid bearing
-                                                             accuracy. */
+        QAPI_LOCATION_HAS_LAT_LONG_BIT =            (1 << 0),   /**< Location has a valid latitude and longitude. */
+        QAPI_LOCATION_HAS_ALTITUDE_BIT =            (1 << 1),   /**< Location has a valid altitude. */
+        QAPI_LOCATION_HAS_SPEED_BIT =               (1 << 2),   /**< Location has a valid speed. */
+        QAPI_LOCATION_HAS_BEARING_BIT =             (1 << 3),   /**< Location has a valid bearing. */
+        QAPI_LOCATION_HAS_ACCURACY_BIT =            (1 << 4),   /**< Location has valid accuracy. */
+        QAPI_LOCATION_HAS_VERTICAL_ACCURACY_BIT =   (1 << 5),   /**< Location has valid vertical accuracy. */
+        QAPI_LOCATION_HAS_SPEED_ACCURACY_BIT =      (1 << 6),   /**< Location has valid speed accuracy. */
+        QAPI_LOCATION_HAS_BEARING_ACCURACY_BIT =    (1 << 7),   /**< Location has valid bearing accuracy. */
+        QAPI_LOCATION_HAS_ALTITUDE_MSL_BIT =        (1 << 8),   /**< Location has valid altitude wrt mean sea level. */
+        QAPI_LOCATION_IS_BEST_AVAIL_POS_BIT =       (1 << 9),   /**< Location is the currently best available position. */
     } qapi_Location_Flags_t;
 
     /**
@@ -121,14 +122,13 @@ extern "C" {
         QAPI_GNSS_SV_TYPE_QZSS,        /**< QZSS. */
         QAPI_GNSS_SV_TYPE_BEIDOU,      /**< BEIDOU. */
         QAPI_GNSS_SV_TYPE_GALILEO,     /**< GALILEO. */
-        QAPI_MAX_NUMBER_OF_CONSTELLATIONS
+        QAPI_MAX_NUMBER_OF_CONSTELLATIONS /**< Maximum number of constellations. */
     } qapi_Gnss_Sv_t;
 
     typedef enum {
-        /* Use all technologies available to calculate location.   */
-        QAPI_LOCATION_POWER_HIGH = 0,
-        /* Use all low power technologies to calculate location.   */
-        QAPI_LOCATION_POWER_LOW,
+        QAPI_LOCATION_POWER_HIGH = 0,           /**< Use all technologies available to calculate location.   */
+        QAPI_LOCATION_POWER_LOW,                /**< Use all low power technologies to calculate location.   */
+        QAPI_LOCATION_POWER_MED,                /**< Use only low and medium power technologies to calculate location */
     } qapi_Location_Power_Level_t;
 
     /** Structure for location information. */
@@ -834,6 +834,42 @@ extern "C" {
     qapi_Location_Error_t qapi_Loc_Stop_Get_Gnss_Data(
         qapi_loc_client_id clientId,
         uint32_t sessionId);
+
+    /**
+    * @versiontable{2.0,2.45,
+    * Location 1.2.0  &  Introduced. @tblendline
+    * }
+    *
+    * Fetches the best available position with the GNSS Engine.
+    It returns a session ID that will be sent in response callback
+    to match the command with a response.
+    responseCb returns:
+    QAPI_LOCATION_ERROR_CALLBACK_MISSING if no singleShotCb passed in qapi_Loc_Init().
+    QAPI_LOCATION_ERROR_INVALID_PARAMETER if any parameter is invalid.
+    QAPI_LOCATION_ERROR_SUCCESS if request was successfully placed to GNSS Engine.
+    If responseCb reports LOCATION_ERROR_SUCESS, then the following is what
+    can happen:
+    1) A location will be reported on the singleShotCb.
+    The location object would have QAPI_LOCATION_IS_BEST_AVAIL_POS_BIT
+    set in the flags field to indicate that this position is the best
+    available position and not a response to the singleshot request.
+    This location can have a large accuracy value, which must be
+    checked by the client if it suffices it's purpose.
+
+    @param[in]  clientId    Client identifier for the location client.
+    @param[out] pSessionId  Pointer to the session ID to be returned.
+
+    @return
+    QAPI_LOCATION_ERROR_SUCCESS -- The operation was successful. \n
+    QAPI_LOCATION_ERROR_ID_UNKNOWN -- Invalid client id provided. \n
+    QAPI_LOCATION_ERROR_NOT_INITIALIZED -- No user space buffer is set. \n
+    QAPI_LOCATION_ERROR_CALLBACK_MISSING -- Singleshot callback is not set. \n
+    QAPI_LOCATION_ERROR_GENERAL_FAILURE -- Internal failure while processing
+    the request.
+    */
+    qapi_Location_Error_t qapi_Loc_Get_Best_Available_Position(
+        qapi_loc_client_id clientId,
+        uint32_t* pSessionId);
 
     /** @} */ /* end_addtogroup qapi_location */
 

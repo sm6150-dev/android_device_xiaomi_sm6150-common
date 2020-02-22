@@ -99,6 +99,8 @@ struct GnssInterface {
     bool (*measCorrInit)(const measCorrSetCapabilitiesCb setCapabilitiesCb);
     bool (*measCorrSetCorrections)(const GnssMeasurementCorrections gnssMeasCorr);
     void (*measCorrClose)();
+    uint32_t (*antennaInfoInit)(const antennaInfoCb antennaInfoCallback);
+    void (*antennaInfoClose) ();
 };
 
 struct BatchingInterface {

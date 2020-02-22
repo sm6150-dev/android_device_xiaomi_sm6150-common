@@ -204,6 +204,7 @@ class GnssAdapter : public LocAdapterBase {
     bool mIsMeasCorrInterfaceOpen;
     measCorrSetCapabilitiesCb mMeasCorrSetCapabilitiesCb;
     bool initMeasCorr(bool bSendCbWhenNotSupported);
+    bool mIsAntennaInfoInterfaceOpened;
 
     /* ==== ODCPI ========================================================================== */
     OdcpiRequestCallback mOdcpiRequestCb;
@@ -380,6 +381,8 @@ public:
     bool openMeasCorrCommand(const measCorrSetCapabilitiesCb setCapabilitiesCb);
     bool measCorrSetCorrectionsCommand(const GnssMeasurementCorrections gnssMeasCorr);
     inline void closeMeasCorrCommand() { mIsMeasCorrInterfaceOpen = false; }
+    uint32_t antennaInfoInitCommand(const antennaInfoCb antennaInfoCallback);
+    inline void antennaInfoCloseCommand() { mIsAntennaInfoInterfaceOpened = false; }
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -473,6 +476,8 @@ public:
     void requestSvPolyForClient(LocationAPI* client,
                                 const LocationCallbacks& callbacks);
 
+    std::vector<double> parseDoublesString(char* dString);
+    void reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallback);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);

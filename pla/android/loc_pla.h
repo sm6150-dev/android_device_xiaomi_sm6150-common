@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -59,6 +59,7 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/vendor/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/vendor/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/vendor/etc/quipc.conf"
+#define LOC_PATH_ANT_CORR_STR      "/vendor/etc/gnss_antenna_info.conf"
 
 #ifdef __cplusplus
 }

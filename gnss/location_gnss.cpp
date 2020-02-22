@@ -92,6 +92,8 @@ static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb);
 static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr);
 static void measCorrClose();
+static uint32_t antennaInfoInit(const antennaInfoCb antennaInfoCallback);
+static void antennaInfoClose();
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -140,7 +142,9 @@ static const GnssInterface gGnssInterface = {
     configRobustLocation,
     measCorrInit,
     measCorrSetCorrections,
-    measCorrClose
+    measCorrClose,
+    antennaInfoInit,
+    antennaInfoClose
 };
 
 #ifndef DEBUG_X86
@@ -492,5 +496,19 @@ static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr
 static void measCorrClose() {
     if (NULL != gGnssAdapter) {
         gGnssAdapter->closeMeasCorrCommand();
+    }
+}
+
+static uint32_t antennaInfoInit(const antennaInfoCb antennaInfoCallback) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->antennaInfoInitCommand(antennaInfoCallback);
+    } else {
+        return ANTENNA_INFO_ERROR_GENERIC;
+    }
+}
+
+static void antennaInfoClose() {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->antennaInfoCloseCommand();
     }
 }

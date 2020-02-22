@@ -12,3 +12,10 @@ prebuilt_etc {
     vendor: true,
     src: "flp.conf",
 }
+
+prebuilt_etc {
+
+    name: "gnss_antenna_info.conf",
+    vendor: true,
+    src: "gnss_antenna_info.conf",
+}

@@ -146,6 +146,7 @@ private:
     // Location control API callback
     void onControlResponseCallback(LocationError err, uint32_t id);
     void onControlCollectiveResponseCallback(size_t count, LocationError *errs, uint32_t *ids);
+    void onGnssConfigCallback(uint32_t sessionId, const GnssConfig& config);
     void onGnssEnergyConsumedCb(uint64_t totalEnergyConsumedSinceFirstBoot);
 
     // Location configuration API requests
@@ -160,6 +161,11 @@ private:
     void configLeverArm(const LocConfigLeverArmReqMsg* pMsg);
     void configRobustLocation(const LocConfigRobustLocationReqMsg* pMsg);
 
+    // Location configuration API get/read requests
+    void getGnssConfig(const LocAPIMsgHeader* pReqMsg,
+                       GnssConfigFlagsBits configFlag);
+
+    // Location configuration API util routines
     void addConfigRequestToMap(uint32_t sessionId,
                                const LocAPIMsgHeader* pMsg);
 

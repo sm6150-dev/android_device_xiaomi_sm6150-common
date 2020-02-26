@@ -89,6 +89,7 @@ public:
     void updateTrackingOptions(LocationOptions & locOptions);
     void onGnssEnergyConsumedInfoAvailable(LocAPIGnssEnergyConsumedIndMsg &msg);
     void onControlResponseCb(LocationError err, ELocMsgID msgId);
+    void onGnssConfigCb(ELocMsgID configMsgId, const GnssConfig & gnssConfig);
     bool hasPendingEngineInfoRequest(uint32_t mask);
     void addEngineInfoRequst(uint32_t mask);
 

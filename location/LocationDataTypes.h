@@ -313,6 +313,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT                 = (1<<8),
     GNSS_CONFIG_FLAGS_SUPL_MODE_BIT                        = (1<<9),
     GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT               = (1<<10),
+    GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<11),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -1281,6 +1282,32 @@ typedef struct {
     uint64_t sbasBlacklistSvMask;
 } GnssSvIdConfig;
 
+// Specify the valid mask for robust location configure that
+//  will be returned via LocConfigGetMinGpsWeekCb when invoking
+//  getRobustLocationConfig. */
+enum GnssConfigRobustLocationValidMask {
+    // GnssConfigRobustLocation has valid enabled field.
+    GNSS_CONFIG_ROBUST_LOCATION_ENABLED_VALID_BIT          = (1<<0),
+    // GnssConfigRobustLocation has valid enabledForE911 field.
+    GNSS_CONFIG_ROBUST_LOCATION_ENABLED_FOR_E911_VALID_BIT = (1<<1),
+};
+
+// specify the robust location configuration used by modem GNSS engine
+struct GnssConfigRobustLocation {
+   GnssConfigRobustLocationValidMask validMask;
+   bool enabled;
+   bool enabledForE911;
+
+   inline bool equals(const GnssConfigRobustLocation& config) const {
+        if (config.validMask == validMask &&
+            config.enabled == enabled &&
+            config.enabledForE911 == enabledForE911) {
+            return true;
+        }
+        return false;
+    }
+};
+
 struct GnssConfig{
     uint32_t size;  // set to sizeof(GnssConfig)
     GnssConfigFlagsMask flags; // bitwise OR of GnssConfigFlagsBits to mark which params are valid
@@ -1295,6 +1322,7 @@ struct GnssConfig{
     GnssConfigSuplEmergencyServices suplEmergencyServices;
     GnssConfigSuplModeMask suplModeMask; //bitwise OR of GnssConfigSuplModeBits
     std::vector<GnssSvIdSource> blacklistedSvIds;
+    GnssConfigRobustLocation robustLocationConfig;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1308,7 +1336,8 @@ struct GnssConfig{
                 emergencyPdnForEmergencySupl == config.emergencyPdnForEmergencySupl &&
                 suplEmergencyServices == config.suplEmergencyServices &&
                 suplModeMask == config.suplModeMask  &&
-                blacklistedSvIds == config.blacklistedSvIds) {
+                blacklistedSvIds == config.blacklistedSvIds &&
+                robustLocationConfig.equals(config.robustLocationConfig)) {
             return true;
         }
         return false;
@@ -1589,7 +1618,8 @@ typedef std::function<void(
 
 /* Provides the current GNSS configuration to the client */
 typedef std::function<void(
-    GnssConfig& config
+    uint32_t session_id,
+    const GnssConfig& config
 )> gnssConfigCallback;
 
 /* LocationSystemInfoCb is for receiving rare occuring location

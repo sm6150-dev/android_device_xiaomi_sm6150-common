@@ -1197,9 +1197,6 @@ ifeq ($(TARGET_USES_QCOM_BSP_ATEL),true)
     PRODUCT_PROPERTY_OVERRIDES += persist.radio.multisim.config=dsds
 endif
 
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-    vendor.usb.diag.func.name=diag
-
 # VNDK-SP:
 PRODUCT_PACKAGES += \
     vndk-sp \

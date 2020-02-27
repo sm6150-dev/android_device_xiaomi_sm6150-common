@@ -46,6 +46,7 @@
 #include <Agps.h>
 #include <SystemStatus.h>
 #include <vector>
+#include <loc_misc_utils.h>
 
 #define RAD2DEG    (180.0 / M_PI)
 #define PROCESS_NAME_ENGINE_SERVICE "engine-service"
@@ -62,6 +63,8 @@ static void agpsOpenResultCb (bool isSuccess, AGpsExtType agpsType, const char* 
         AGpsBearerType bearerType, void* userDataPtr);
 static void agpsCloseResultCb (bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
+typedef const CdfwInterface* (*getCdfwInterface)();
+
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
                    LocDualContext::getLocFgContext(NULL,
@@ -70,6 +73,10 @@ GnssAdapter::GnssAdapter() :
                                                    false),
                    true, nullptr, true),
     mEngHubProxy(new EngineHubProxyBase()),
+    mQDgnssListenerHDL(nullptr),
+    mCdfwInterface(nullptr),
+    mDGnssNeedReport(false),
+    mDGnssDataUsage(false),
     mLocPositionMode(),
     mNHzNeeded(false),
     mSPEAlreadyRunningAtHighestInterval(false),
@@ -126,6 +133,7 @@ GnssAdapter::GnssAdapter() :
     readConfigCommand();
     initDefaultAgpsCommand();
     initEngHubProxyCommand();
+    initDGnssUsableReporter();
 
     // at last step, let us inform adapater base that we are done
     // with initialization, e.g.: ready to process handleEngineUpEvent
@@ -4054,10 +4062,34 @@ GnssAdapter::reportGnssMeasurementData(const GnssMeasurementsNotification& measu
 }
 
 void
+GnssAdapter::reportDGnssDataUsable(GnssSvMeasurementSet &svMeasurementSet)
+{
+    uint32_t i;
+    bool preDGnssDataUsage = mDGnssDataUsage;
+
+    mDGnssDataUsage = false;
+    for (i = 0; i < svMeasurementSet.svMeasCount; i++) {
+        Gnss_SVMeasurementStructType& svMeas = svMeasurementSet.svMeas[i];
+        if (svMeas.dgnssSvMeas.dgnssMeasStatus) {
+            mDGnssDataUsage = true;
+            break;
+        }
+    }
+    if (mDGnssDataUsage != preDGnssDataUsage) {
+        if (mCdfwInterface) {
+            mCdfwInterface->reportUsable(mQDgnssListenerHDL, mDGnssDataUsage);
+        }
+    }
+}
+
+void
 GnssAdapter::reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet)
 {
     LOC_LOGD("%s]: ", __func__);
     mEngHubProxy->gnssReportSvMeasurement(svMeasurementSet);
+    if (mDGnssNeedReport) {
+        reportDGnssDataUsable(svMeasurementSet);
+    }
 }
 
 void
@@ -5476,4 +5508,27 @@ GnssAdapter::initEngHubProxy() {
 
     firstTime = false;
     return engHubLoadSuccessful;
+}
+
+/* ==== DGnss Usable Reporter ========================================================= */
+/* ======== UTILITIES ================================================================= */
+
+void GnssAdapter::initDGnssUsableReporter()
+{
+    if (nullptr == mCdfwInterface) {
+        void* libHandle = nullptr;
+        getCdfwInterface getter  = (getCdfwInterface)dlGetSymFromLib(libHandle,
+                          "libcdfw.so", "getQCdfwInterface");
+        if (nullptr == getter) {
+            LOC_LOGe("dlGetSymFromLib getQCdfwInterface failed");
+        } else {
+            mCdfwInterface = getter();
+        }
+    }
+    if (nullptr != mCdfwInterface) {
+        QDgnssSessionActiveCb qDgnssSessionActiveCb = [this] (bool sessionActive) {
+            mDGnssNeedReport = sessionActive;
+        };
+        mQDgnssListenerHDL = mCdfwInterface->createUsableReporter(qDgnssSessionActiveCb);
+    }
 }

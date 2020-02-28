@@ -114,6 +114,7 @@ if [ "$(getprop persist.vendor.usb.config)" == "" -a \
 			      else
 				      setprop persist.vendor.usb.config diag,serial_cdev,rmnet,dpl,adb
 			      fi
+		      ;;
 	              *)
 		          setprop persist.vendor.usb.config diag,adb
 		      ;;

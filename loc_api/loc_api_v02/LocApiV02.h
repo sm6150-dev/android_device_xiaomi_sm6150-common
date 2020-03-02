@@ -416,7 +416,8 @@ public:
   virtual LocationError getGnssEnergyConsumed();
   virtual void updateSystemPowerState(PowerStateType powerState);
   virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
-
+  virtual void configRobustLocation(bool enable, bool enableForE911,
+                                    LocApiResponse *adapterResponse=nullptr);
   /*
   Returns
   Current value of GPS Lock on success

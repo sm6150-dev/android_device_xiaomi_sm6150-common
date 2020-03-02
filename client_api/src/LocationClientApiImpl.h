@@ -175,6 +175,7 @@ public:
             bool enable, float tuncThreshold, uint32_t energyBudget) override;
     virtual uint32_t configPositionAssistedClockEstimator(bool enable) override;
     virtual uint32_t configLeverArm(const LeverArmConfigInfo& configInfo) override;
+    virtual uint32_t configRobustLocation(bool enable, bool enableForE911) override;
 
     // other interface
     void updateNetworkAvailability(bool available);

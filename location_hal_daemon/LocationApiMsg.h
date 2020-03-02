@@ -225,6 +225,7 @@ enum ELocMsgID {
     E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID  = 202,
     E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID  = 203,
     E_INTAPI_CONFIG_LEVER_ARM_MSG_ID  = 204,
+    E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID  = 205,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -623,12 +624,24 @@ struct LocConfigLeverArmReqMsg: LocAPIMsgHeader
 {
     LeverArmConfigInfo mLeverArmConfigInfo;
 
-    inline LocConfigLeverArmReqMsg(const char* name, const
-                                   LeverArmConfigInfo & configInfo) :
+    inline LocConfigLeverArmReqMsg(const char* name,
+                                   const LeverArmConfigInfo & configInfo) :
         LocAPIMsgHeader(name, E_INTAPI_CONFIG_LEVER_ARM_MSG_ID),
         mLeverArmConfigInfo(configInfo) { }
 };
 
+struct LocConfigRobustLocationReqMsg: LocAPIMsgHeader
+{
+    bool mEnable;
+    bool mEnableForE911;
+
+    inline LocConfigRobustLocationReqMsg(const char* name,
+                                         bool enable,
+                                         bool enableForE911) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID),
+        mEnable(enable),
+        mEnableForE911(enableForE911) { }
+};
 
 /******************************************************************************
 IPC message structure - indications

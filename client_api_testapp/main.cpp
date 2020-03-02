@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -65,6 +65,7 @@ static sem_t sem_pingcbreceived;
 #define MULTI_CONFIG_SV    "multiConfigSV"
 #define DELETE_ALL         "deleteAll"
 #define CONFIG_LEVER_ARM   "configLeverArm"
+#define CONFIG_ROBUST_LOCATION  "configRobustLocation"
 
 // debug utility
 static uint64_t getTimestamp() {
@@ -196,6 +197,7 @@ static void printHelp() {
     printf("%s: mulitple config SV \n", MULTI_CONFIG_SV);
     printf("%s: delete all aiding data\n", DELETE_ALL);
     printf("%s: config lever arm\n", CONFIG_LEVER_ARM);
+    printf("%s: config robust location\n", CONFIG_ROBUST_LOCATION);
 }
 
 void setRequiredPermToRunAsLocClient()
@@ -215,6 +217,7 @@ void setRequiredPermToRunAsLocClient()
         numGrpIds = getgroups(LOC_PROCESS_MAX_NUM_GROUPS, appGrpsIds);
         if (numGrpIds == -1) {
             printf("Could not find groups. ngroups:%d\n", numGrpIds);
+            numGrpIds = 0;
         }
         else {
             printf("Curr num_groups = %d, Current GIDs: ", numGrpIds);
@@ -362,6 +365,7 @@ int main(int argc, char *argv[]) {
                 printf("failed to create integration client\n");
                 break;
             }
+            sleep(1); // wait for capability callback
         }
 
         if (strncmp(buf, DISABLE_TUNC, strlen(DISABLE_TUNC)) == 0) {
@@ -416,6 +420,23 @@ int main(int argc, char *argv[]) {
             LeverArmParamsMap configInfo;
             parseLeverArm(buf, configInfo);
             pIntClient->configLeverArm(configInfo);
+        } else if (strncmp(buf, CONFIG_ROBUST_LOCATION, strlen(CONFIG_ROBUST_LOCATION)) == 0) {
+            // get enable and enableForE911
+            static char *save = nullptr;
+            bool enable = false;
+            bool enableForE911 = false;
+            // skip first one of configRobustLocation
+            char* token = strtok_r(buf, " ", &save);
+            token = strtok_r(NULL, " ", &save);
+            if (token != NULL) {
+                enable = (atoi(token) == 1);
+                token = strtok_r(NULL, " ", &save);
+                if (token != NULL) {
+                    enableForE911 = (atoi(token) == 1);
+                }
+            }
+            printf("enable %d, enableForE911 %d\n", enable, enableForE911);
+            pIntClient->configRobustLocation(enable, enableForE911);
         } else {
             int command = buf[0];
             switch(command) {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, 2018-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, 2018-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -756,7 +756,10 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
      sizeof(qmiLocQueryGNSSEnergyConsumedIndMsgT_v02) },
 
    { QMI_LOC_INJECT_PLATFORM_POWER_STATE_IND_V02,
-     sizeof(qmiLocInjectPlatformPowerStateIndMsgT_v02) }
+     sizeof(qmiLocInjectPlatformPowerStateIndMsgT_v02) },
+
+   { QMI_LOC_SET_ROBUST_LOCATION_CONFIG_IND_V02,
+     sizeof(qmiLocGenReqStatusIndMsgT_v02) },
 };
 
 
@@ -1814,6 +1817,12 @@ bool validateRequest(
     case QMI_LOC_INJECT_PLATFORM_POWER_STATE_REQ_V02:
     {
         *pOutLen = sizeof(qmiLocInjectPlatformPowerStateReqMsgT_v02);
+        break;
+    }
+
+    case QMI_LOC_SET_ROBUST_LOCATION_CONFIG_REQ_V02:
+    {
+        *pOutLen = sizeof(qmiLocSetRobustLocationReqMsgT_v02);
         break;
     }
 

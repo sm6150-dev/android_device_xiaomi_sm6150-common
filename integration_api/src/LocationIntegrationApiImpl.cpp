@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -56,6 +56,9 @@ static LocConfigTypeEnum getLocConfigTypeFromMsgId(ELocMsgID  msgId) {
         break;
     case E_INTAPI_CONFIG_LEVER_ARM_MSG_ID:
         configType = CONFIG_LEVER_ARM;
+        break;
+    case E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID:
+        configType = CONFIG_ROBUST_LOCATION;
         break;
     default:
         break;
@@ -247,6 +250,7 @@ void IpcListener::onReceive(const char* data, uint32_t length,
             case E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID:
             case E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID:
             case E_INTAPI_CONFIG_LEVER_ARM_MSG_ID:
+            case E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID:
             {
                 if (sizeof(LocAPIGenericRespMsg) != mMsgData.length()) {
                     LOC_LOGw("payload size does not match for message with id: %d",
@@ -456,6 +460,37 @@ uint32_t LocationIntegrationApiImpl::configLeverArm(
     return 0;
 }
 
+
+uint32_t LocationIntegrationApiImpl::configRobustLocation(
+        bool enable, bool enableForE911) {
+    struct ConfigRobustLocationReq : public LocMsg {
+        ConfigRobustLocationReq(LocationIntegrationApiImpl* apiImpl,
+                                bool enable,
+                                bool enableForE911) :
+                mApiImpl(apiImpl),
+                mEnable(enable),
+                mEnableForE911(enableForE911){}
+        virtual ~ConfigRobustLocationReq() {}
+        void proc() const {
+            LocConfigRobustLocationReqMsg msg(mApiImpl->mSocketName, mEnable, mEnableForE911);
+            mApiImpl->sendConfigMsgToHalDaemon(CONFIG_ROBUST_LOCATION,
+                                               reinterpret_cast<uint8_t*>(&msg),
+                                               sizeof(msg));
+            mApiImpl->mRobustLocationConfigInfo.isValid = true;
+            mApiImpl->mRobustLocationConfigInfo.enable = mEnable;
+            mApiImpl->mRobustLocationConfigInfo.enableForE911 = mEnableForE911;
+        }
+        LocationIntegrationApiImpl* mApiImpl;
+        bool mEnable;
+        bool mEnableForE911;
+    };
+
+    mMsgTask->sendMsg(new (nothrow)
+                      ConfigRobustLocationReq(this, enable, enableForE911));
+
+    return 0;
+}
+
 void LocationIntegrationApiImpl::sendConfigMsgToHalDaemon(
         LocConfigTypeEnum configType, uint8_t* pMsg,
         size_t msgSize, bool invokeResponseCb) {
@@ -531,6 +566,14 @@ void LocationIntegrationApiImpl::processHalReadyMsg() {
     if (mLeverArmConfigInfo.leverArmValidMask) {
         LocConfigLeverArmReqMsg msg(mSocketName, mLeverArmConfigInfo);
         sendConfigMsgToHalDaemon(CONFIG_LEVER_ARM,
+                                 reinterpret_cast<uint8_t*>(&msg),
+                                 sizeof(msg));
+    }
+    if (mRobustLocationConfigInfo.isValid) {
+        LocConfigRobustLocationReqMsg msg(mSocketName,
+                                          mRobustLocationConfigInfo.enable,
+                                          mRobustLocationConfigInfo.enableForE911);
+        sendConfigMsgToHalDaemon(CONFIG_ROBUST_LOCATION,
                                  reinterpret_cast<uint8_t*>(&msg),
                                  sizeof(msg));
     }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,20 +36,22 @@ namespace location_integration
  * Configuration API types that are currently supported
  */
 enum LocConfigTypeEnum{
-    /** blacklist some SV constellations from being used by GNSS
-     *  engine */
+    /** Blacklist some SV constellations from being used by GNSS
+     *  engine. </br> */
     CONFIG_CONSTELLATIONS = 1,
-    /** enable/disable the constrained time uncertainty
-     *  feature and configure related parameters when the feature is
-     *  enabled */
+    /** Enable/disable the constrained time uncertainty feature and
+     *  configure related parameters when the feature is
+     *  enabled. </br> */
     CONFIG_CONSTRAINED_TIME_UNCERTAINTY = 2,
-    /** enable/disable the position assisted clock estimator
-     *  feature */
+    /** Enable/disable the position assisted clock estimator
+     *  feature. </br> */
     CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR = 3,
-    /** delete all aiding data */
+    /** Delete all aiding data. </br> */
     CONFIG_AIDING_DATA_DELETION = 4,
-    /** Config lever arm parameters */
+    /** Config lever arm parameters. </br> */
     CONFIG_LEVER_ARM = 5,
+    /** Config robust location feature. </br> */
+    CONFIG_ROBUST_LOCATION = 6,
 } ;
 
 /**
@@ -70,7 +72,10 @@ typedef std::unordered_map<LocConfigTypeEnum, uint32_t>
 typedef uint32_t GnssConstellationMask;
 
 /**
- *  Specify SV Constellation types. */
+ *  Specify SV Constellation types that can be configured via
+ *  configConstellations. </br>
+ *  Please note that GPS constellation can not be disabled
+ *  and thus not included in the enum list. </br> */
 enum GnssConstellationType {
     /** GLONASS SV system */
     GNSS_CONSTELLATION_TYPE_GLONASS  = 1,
@@ -405,6 +410,31 @@ public:
                 configCb will not be invoked.
     */
     bool configLeverArm(const LeverArmParamsMap& configInfo);
+
+
+    /** @brief
+        Enable/disable robust location feature and enable/disable
+        robust location while device is on E911.
+
+        @param
+        enable: true to enable robust location and false to disable
+        robust location.
+
+        @param
+        enableForE911: true to enable robust location when device is
+        on E911 session and false to disable on E911 session. <br/>
+        This parameter is only valid if robust location is enabled.
+        </br>
+
+        @return true, if robust location are successfully configured
+                as requested. When returning true, configCb will be
+                invoked to deliver asynchronous processing status.
+
+        @return false, if robust location are not successfully
+                configured as requested. When returning false,
+                configCb will not be invoked.
+    */
+    bool configRobustLocation(bool enable, bool enableForE911=false);
 
 private:
     LocationIntegrationApiImpl* mApiImpl;

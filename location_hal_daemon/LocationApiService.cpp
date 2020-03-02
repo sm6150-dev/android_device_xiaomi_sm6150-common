@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -446,6 +446,15 @@ void LocationApiService::processClientMsg(const char* data, uint32_t length) {
                 break;
             }
             configLeverArm(reinterpret_cast<LocConfigLeverArmReqMsg*>(pMsg));
+            break;
+        }
+
+        case E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID: {
+            if (sizeof(LocConfigRobustLocationReqMsg) != length) {
+                LOC_LOGe("invalid message");
+                break;
+            }
+            configRobustLocation(reinterpret_cast<LocConfigRobustLocationReqMsg*>(pMsg));
             break;
         }
 
@@ -951,7 +960,6 @@ void LocationApiService::configAidingDataDeletion(
     resumeAllTrackingSessions();
 }
 
-
 void LocationApiService::configLeverArm(const LocConfigLeverArmReqMsg* pMsg){
 
     std::lock_guard<std::mutex> lock(mMutex);
@@ -962,6 +970,20 @@ void LocationApiService::configLeverArm(const LocConfigLeverArmReqMsg* pMsg){
     addConfigRequestToMap(sessionId, pMsg);
 }
 
+void LocationApiService::configRobustLocation(
+        const LocConfigRobustLocationReqMsg* pMsg){
+
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (!pMsg) {
+        return;
+    }
+    LOC_LOGi(">-- client %s, enable %d, enableForE911 %d",
+             pMsg->mSocketName, pMsg->mEnable, pMsg->mEnableForE911);
+
+    uint32_t sessionId = mLocationControlApi->configRobustLocation(
+            pMsg->mEnable, pMsg->mEnableForE911);
+    addConfigRequestToMap(sessionId, pMsg);
+}
 
 void LocationApiService::addConfigRequestToMap(
         uint32_t sessionId, const LocAPIMsgHeader* pMsg){

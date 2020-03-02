@@ -329,6 +329,7 @@ void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr
     diagGnssLocPtr->numSvUsedInPosition = gnssLocation.numSvUsedInPosition;
     diagGnssLocPtr->calibrationConfidencePercent = gnssLocation.calibrationConfidencePercent;
     diagGnssLocPtr->calibrationStatus = gnssLocation.calibrationStatus;
+    diagGnssLocPtr->conformityIndex = gnssLocation.conformityIndex;
 
     struct timespec ts;
     clock_gettime(CLOCK_BOOTTIME, &ts);

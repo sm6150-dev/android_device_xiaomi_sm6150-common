@@ -305,8 +305,10 @@ public:
     virtual void updatePowerState(PowerStateType powerState);
     virtual void configRobustLocation(bool enable, bool enableForE911,
                                       LocApiResponse* adapterResponse=nullptr);
-
     virtual void getRobustLocationConfig(uint32_t sessionId, LocApiResponse* adapterResponse);
+    virtual void configMinGpsWeek(uint16_t minGpsWeek,
+                                  LocApiResponse* adapterResponse=nullptr);
+    virtual void getMinGpsWeek(uint32_t sessionId, LocApiResponse* adapterResponse);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

@@ -1529,6 +1529,20 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
                 }
             }
 
+            if (mConfigMask & GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT) {
+                uint32_t sessionId = *(mIds+index);
+                LocApiResponse* locApiResponse =
+                        new LocApiResponse(*mAdapter.getContext(),
+                                           [this, sessionId] (LocationError err) {
+                                           mAdapter.reportResponse(err, sessionId);});
+                if (!locApiResponse) {
+                    LOC_LOGe("memory alloc failed");
+                    mAdapter.reportResponse(LOCATION_ERROR_GENERAL_FAILURE, sessionId);
+                } else {
+                   mApi.getMinGpsWeek(sessionId, locApiResponse);
+                }
+            }
+
             mAdapter.reportResponse(index, errs, mIds);
             delete[] errs;
 
@@ -5343,7 +5357,6 @@ GnssAdapter::configLeverArmCommand(const LeverArmConfigInfo& configInfo) {
     return sessionId;
 }
 
-
 void
 GnssAdapter::configRobustLocation(uint32_t sessionId,
                                   bool enable, bool enableForE911) {
@@ -5351,9 +5364,6 @@ GnssAdapter::configRobustLocation(uint32_t sessionId,
     mLocConfigInfo.robustLocationConfigInfo.isValid = true;
     mLocConfigInfo.robustLocationConfigInfo.enable = enable;
     mLocConfigInfo.robustLocationConfigInfo.enableFor911 = enableForE911;
-
-    // suspend all tracking sessions so modem can take the E911 configure
-    suspendSessions();
 
     LocApiResponse* locApiResponse = nullptr;
     if (sessionId != 0) {
@@ -5366,9 +5376,6 @@ GnssAdapter::configRobustLocation(uint32_t sessionId,
         }
     }
     mLocApi->configRobustLocation(enable, enableForE911, locApiResponse);
-
-    // resume all tracking sessions after the E911 configure
-    restartSessions(false);
 }
 
 uint32_t GnssAdapter::configRobustLocationCommand(
@@ -5399,6 +5406,55 @@ uint32_t GnssAdapter::configRobustLocationCommand(
     };
 
     sendMsg(new MsgConfigRobustLocation(*this, sessionId, enable, enableForE911));
+    return sessionId;
+}
+
+
+void
+GnssAdapter::configMinGpsWeek(uint32_t sessionId, uint16_t minGpsWeek) {
+    // suspend all sessions for modem to take the min GPS week config
+    suspendSessions();
+
+    LocApiResponse* locApiResponse = nullptr;
+    if (sessionId != 0) {
+        locApiResponse =
+                new LocApiResponse(*getContext(),
+                                   [this, sessionId] (LocationError err) {
+                                   reportResponse(err, sessionId);});
+        if (!locApiResponse) {
+            LOC_LOGe("memory alloc failed");
+        }
+    }
+    mLocApi->configMinGpsWeek(minGpsWeek, locApiResponse);
+
+    // resume all tracking sessions after the min GPS week config
+    // has been changed
+    restartSessions(false);
+}
+
+uint32_t GnssAdapter::configMinGpsWeekCommand(uint16_t minGpsWeek) {
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgConfigMinGpsWeek : public LocMsg {
+        GnssAdapter&     mAdapter;
+        uint32_t         mSessionId;
+        uint16_t         mMinGpsWeek;
+
+        inline MsgConfigMinGpsWeek(GnssAdapter& adapter,
+                                   uint32_t sessionId,
+                                   uint16_t minGpsWeek) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mMinGpsWeek(minGpsWeek) {}
+        inline virtual void proc() const {
+            mAdapter.configMinGpsWeek(mSessionId, mMinGpsWeek);
+        }
+    };
+
+    sendMsg(new MsgConfigMinGpsWeek(*this, sessionId, minGpsWeek));
     return sessionId;
 }
 

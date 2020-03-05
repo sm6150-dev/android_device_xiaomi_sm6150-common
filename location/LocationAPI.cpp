@@ -839,3 +839,17 @@ uint32_t LocationControlAPI::configRobustLocation(bool enable, bool enableForE91
     pthread_mutex_unlock(&gDataMutex);
     return id;
 }
+
+uint32_t LocationControlAPI::configMinGpsWeek(uint16_t minGpsWeek) {
+    uint32_t id = 0;
+    pthread_mutex_lock(&gDataMutex);
+
+    if (gData.gnssInterface != NULL) {
+        id = gData.gnssInterface->configMinGpsWeek(minGpsWeek);
+    } else {
+        LOC_LOGe("No gnss interface available for Location Control API");
+    }
+
+    pthread_mutex_unlock(&gDataMutex);
+    return id;
+}

@@ -1707,8 +1707,15 @@ void LocationClientApiImpl::getGnssEnergyConsumed(
             // send msg to the hal daemon
             if (nullptr != mApiImpl->mGnssEnergyConsumedInfoCb) {
                 LocAPIGetGnssEnergyConsumedReqMsg msg(mApiImpl->mSocketName);
-                mApiImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg),
+                bool rc = mApiImpl->sendMessage(reinterpret_cast<uint8_t*>(&msg),
                                            sizeof(msg));
+                if (mResponseCb) {
+                    if (true == rc) {
+                        mResponseCb(LOCATION_RESPONSE_SUCCESS);
+                    } else {
+                        mResponseCb(LOCATION_RESPONSE_UNKOWN_FAILURE);
+                    }
+                }
             }
         }
 

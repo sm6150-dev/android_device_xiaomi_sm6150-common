@@ -484,7 +484,7 @@ void LocationClientApi::getGnssEnergyConsumed(
                                         responseCallback);
     } else {
         if (responseCallback) {
-            responseCallback(LOCATION_RESPONSE_NOT_SUPPORTED);
+            responseCallback(LOCATION_RESPONSE_PARAM_INVALID);
         }
     }
 }
@@ -498,7 +498,7 @@ void LocationClientApi::updateLocationSystemInfoListener(
             locSystemInfoCallback, responseCallback);
     } else {
         if (responseCallback) {
-            responseCallback(LOCATION_RESPONSE_NOT_SUPPORTED);
+            responseCallback(LOCATION_RESPONSE_PARAM_INVALID);
         }
     }
 }

@@ -195,8 +195,8 @@ static void printHelp() {
     printf("p: Ping test\n");
     printf("q: Quit\n");
     printf("r: delete client\n");
-    printf("%s tuncThreshold energyBudget: enable tunc\n", ENABLE_TUNC);
-    printf("%s: disable tunc\n", DISABLE_TUNC);
+    printf("%s tuncThreshold energyBudget: enable TUNC\n", ENABLE_TUNC);
+    printf("%s: disable TUNC\n", DISABLE_TUNC);
     printf("%s: enable PACE\n", ENABLE_PACE);
     printf("%s: disable PACE\n", DISABLE_PACE);
     printf("%s: reset sv config to default\n", RESET_SV_CONFIG);

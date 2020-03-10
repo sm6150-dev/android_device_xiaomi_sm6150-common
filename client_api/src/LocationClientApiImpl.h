@@ -77,8 +77,6 @@ void populateClientDiagGnssSv(clientDiagGnssSvStructType* diagGnssSvPtr,
         std::vector<GnssSv>& gnssSvs);
 void populateClientDiagNmea(clientDiagGnssNmeaStructType *diagGnssNmeaPtr,
         const LocAPINmeaSerializedPayload &nmeaSerializedPayload);
-void populateClientDiagSvPoly(clientDiagGnssSvPoly *diagGnssSvPolyPtr,
-        const GnssSvPoly &gnssSvPoly);
 #endif // FEATURE_EXTERNAL_AP
 
 enum ReportCbEnumType {
@@ -243,7 +241,6 @@ private:
     GnssNmeaCb              mGnssNmeaCb;
     GnssDataCb              mGnssDataCb;
     GnssMeasurementsCb      mGnssMeasurementsCb;
-    GnssSvPolyCb            mGnssSvPolyCb;
 
     GnssEnergyConsumedCb    mGnssEnergyConsumedInfoCb;
     ResponseCb              mGnssEnergyConsumedResponseCb;

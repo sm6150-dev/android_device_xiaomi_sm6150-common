@@ -2112,8 +2112,6 @@ GnssAdapter::addClientCommand(LocationAPI* client, const LocationCallbacks& call
         inline virtual void proc() const {
             // check whether we need to notify client of cached location system info
             mAdapter.notifyClientOfCachedLocationSystemInfo(mClient, mCallbacks);
-            // check whether we need to request sv poly for the registered client
-            mAdapter.requestSvPolyForClient(mClient, mCallbacks);
             mAdapter.saveClient(mClient, mCallbacks);
         }
     };
@@ -2186,9 +2184,6 @@ GnssAdapter::updateClientsEventMask()
         }
         if (it->second.gnssMeasurementsCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
-        }
-        if (it->second.gnssSvPolynomialCb != nullptr) {
-            mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         }
         if (it->second.gnssDataCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
@@ -2458,18 +2453,6 @@ GnssAdapter::notifyClientOfCachedLocationSystemInfo(
 }
 
 void
-GnssAdapter::requestSvPolyForClient(LocationAPI* client, const LocationCallbacks& callbacks) {
-    if (callbacks.gnssSvPolynomialCb) {
-        LocationCallbacks oldCallbacks = getClientCallbacks(client);
-        if (!oldCallbacks.gnssSvPolynomialCb) {
-            LOC_LOGd("request sv poly");
-            GnssAidingDataSvMask svDataMask = GNSS_AIDING_DATA_SV_POLY_BIT;
-            mLocApi->requestForAidingData(svDataMask);
-        }
-    }
-}
-
-void
 GnssAdapter::eraseClient(LocationAPI* client)
 {
     auto it = mClientData.find(client);
@@ -2486,8 +2469,7 @@ GnssAdapter::hasCallbacksToStartTracking(LocationAPI* client)
     auto it = mClientData.find(client);
     if (it != mClientData.end()) {
         if (it->second.trackingCb || it->second.gnssLocationInfoCb ||
-            it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb ||
-            it->second.gnssSvPolynomialCb) {
+            it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb) {
             allowed = true;
         } else {
             LOC_LOGi("missing right callback to start tracking")
@@ -4079,40 +4061,10 @@ GnssAdapter::reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet)
 }
 
 void
-GnssAdapter::reportSvPolynomial(const GnssSvPolynomial &svPolynomial)
-{
-    for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-        if (nullptr != it->second.gnssSvPolynomialCb) {
-            it->second.gnssSvPolynomialCb(svPolynomial);
-        }
-    }
-}
-
-void
 GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
 {
     LOC_LOGD("%s]: ", __func__);
-
-    // report SV poly to engine hub to dispatch to engine plugins
     mEngHubProxy->gnssReportSvPolynomial(svPolynomial);
-
-    // report SV poly to registered client
-    struct MsgReportGnssSvPolynomial : public LocMsg {
-        GnssAdapter& mAdapter;
-        GnssSvPolynomial mGnssSvPolynomialNotify;
-        inline MsgReportGnssSvPolynomial(GnssAdapter& adapter,
-                                         const GnssSvPolynomial& svPoly) :
-                LocMsg(),
-                mAdapter(adapter),
-                mGnssSvPolynomialNotify(svPoly) {
-        }
-
-        inline virtual void proc() const {
-            mAdapter.reportSvPolynomial(mGnssSvPolynomialNotify);
-        }
-    };
-
-    sendMsg(new MsgReportGnssSvPolynomial(*this, svPolynomial));
 }
 
 void

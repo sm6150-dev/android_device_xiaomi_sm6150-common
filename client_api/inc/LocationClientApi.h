@@ -230,7 +230,31 @@ enum GnssLocationPosDataMask {
     LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT    = (1<<8),
     /** GnssLocationPositionDynamics has valid
      *  GnssLocationPositionDynamics::pitchUnc. <br/>   */
-    LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT       = (1<<9)
+    LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT       = (1<<9),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::pitchRate. <br/>   */
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT      = (1<<10),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::pitchRateUnc. <br/>   */
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT  = (1<<11),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::roll. <br/>   */
+    LOCATION_NAV_DATA_HAS_ROLL_BIT            = (1<<12),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::rollUnc. <br/>   */
+    LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT        = (1<<13),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::rollRate. <br/>   */
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT       = (1<<14),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::rollRateUnc. <br/>   */
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT   = (1<<15),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::yaw. <br/>   */
+    LOCATION_NAV_DATA_HAS_YAW_BIT             = (1<<16),
+    /** GnssLocationPositionDynamics has valid
+     *  GnssLocationPositionDynamics::yawUnc. <br/>   */
+    LOCATION_NAV_DATA_HAS_YAW_UNC_BIT         = (1<<17),
 };
 
 /** Specify the mask for available GNSS signal type and RF band
@@ -418,7 +442,10 @@ enum GnssLocationInfoFlagMask {
     GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28),
     /** GnssLocation has valid GnssLocation::conformityIndex.
      *  <br/> */
-    GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT         = (1<<29),
+    GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29),
+    /** GnssLocation has valid
+     *  GnssLocation::llaVRPBased. <br/>   */
+    GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30),
 };
 
 /** Specify the reliability level of
@@ -607,6 +634,28 @@ struct GnssLocationPositionDynamics {
     float           yawRateUnc;
     /** Uncertainty of body pitch, in unit of radians. <br/>   */
     float           pitchUnc;
+    /** Body pitch rate, in unit of radians/second.  <br/> */
+    float pitchRate;
+    /** Uncertainty of pitch rate, in unit of radians/second.  <br/> */
+    float pitchRateUnc;
+    /** Roll of body frame, clockwise is positive, in unit of
+     *  radian.  <br/> */
+    float roll;
+    /** Uncertainty of roll, 68% confidence level, in unit of
+    radian. <br/>  */
+    float rollUnc;
+    /** Roll rate of body frame, clockwise is
+    positive, in unit of radian/second. <br/> */
+    float rollRate;
+    /** Uncertainty of roll rate, 68% confidence level, in unit of
+     *  radian/second. <br/>  */
+    float rollRateUnc;
+    /** Yaw of body frame, clockwise is positive, in unit of
+     *  radian. <br/> */
+    float yaw;
+    /** Uncertainty of yaw, 68% confidence level, in unit of radian.
+     *  <br/> */
+    float yawUnc;
 };
 
 /** Specify none-Glonass GNSS system time info. */
@@ -798,6 +847,22 @@ struct Location {
     LocationTechnologyMask techMask;
 };
 
+/** Specify latitude, longitude and altitude info of location.
+ *  <br/>
+ */
+typedef struct {
+    /**  Latitude, in unit of degrees, range [-90.0, 90.0]. <br/> */
+    double latitude;
+
+    /**  Longitude, in unit of degrees, range [-180.0, 180.0]. <br/>
+    */
+    double longitude;
+
+    /** Altitude above the WGS 84 reference ellipsoid, in unit
+    of meters. <br/> */
+    float altitude;
+} LLAInfo;
+
 /** Specify the location info received by client via
  *  startPositionSession(uint32_t, const
  *  GnssReportCbs&, ResponseCb) and
@@ -901,6 +966,8 @@ struct GnssLocation : public Location {
      * Range: [0.0, 1.0], with 0.0 for least conforming and 1.0 for
      * most conforming. </br> */
     float conformityIndex;
+    /** VRR-based latitude/longitude/altitude.  <br/> */
+    LLAInfo llaVRPBased;
 
     /* Default constructor to initalize GnssLocation structure */
     inline GnssLocation() :
@@ -923,7 +990,8 @@ struct GnssLocation : public Location {
             calibrationStatus((DrCalibrationStatusMask)0),
             locOutputEngType ((LocOutputEngineType)0),
             locOutputEngMask((PositioningEngineMask)0),
-            conformityIndex(0.0f) {
+            conformityIndex(0.0f),
+            llaVRPBased({}) {
     }
 };
 

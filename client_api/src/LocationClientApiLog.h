@@ -39,7 +39,7 @@
 
 #define CLIENT_DIAG_GNSS_SV_MAX            (176)
 #define CLIENT_DIAG_GNSS_MEASUREMENTS_MAX  (128)
-#define LOG_CLIENT_LOCATION_DIAG_MSG_VERSION        (1)
+#define LOG_CLIENT_LOCATION_DIAG_MSG_VERSION        (2)
 #define LOG_CLIENT_SV_REPORT_DIAG_MSG_VERSION       (2)
 #define LOG_CLIENT_NMEA_REPORT_DIAG_MSG_VERSION     (1)
 #define LOG_CLIENT_MEASUREMENTS_DIAG_MSG_VERSION    (1)
@@ -92,7 +92,7 @@ typedef enum {
     /** Navigation data has Vertical Acceleration */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT  = (1<<2),
     /** Navigation data has Heading Rate */
-    pLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3),
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3),
     /** Navigation data has Body pitch */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4),
     /** Navigation data has Forward Acceleration uncertainty */
@@ -104,7 +104,23 @@ typedef enum {
     /** Navigation data has Heading Rate uncertainty */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT   = (1<<8),
     /** Navigation data has Body pitch uncertainty */
-    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9)
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9),
+    /** Navigation data has pitch rate */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT     = (1<<10),
+    /** Navigation data has body pitch rate uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT = (1<<11),
+    /** Navigation data has body roll */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_BIT           = (1<<12),
+    /** Navigation data has body roll uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT       = (1<<13),
+    /** Navigation data has body rate roll */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT      = (1<<14),
+    /** Navigation data has body roll rate uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT  = (1<<15),
+    /** Navigation data has body yaw */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_BIT            = (1<<16),
+    /** Navigation data has body roll uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<17)
 } clientDiagGnssLocationPosDataBits;
 
 typedef enum
@@ -247,6 +263,23 @@ typedef PACKED struct PACKED_POST {
     float           yawRateUnc;
     /** Uncertainty of Body pitch */
     float           pitchUnc;
+    /** Body pitch rate (Radians/second) */
+    float pitchRate;
+    /** Uncertainty of pitch rate (Radians/second) */
+    float pitchRateUnc;
+    /** Roll of body frame. Clockwise positive. (Radian) */
+    float roll;
+    /** Uncertainty of Roll, 68% confidence level (radian) */
+    float rollUnc;
+    /** Roll rate of body frame. Clockwise positive. (radian/second)
+    */
+    float rollRate;
+    /** Uncertainty of Roll rate, 68% confidence level (radian/second) */
+    float rollRateUnc;
+    /** Yaw of body frame. Clockwise positive (radian) */
+    float yaw;
+    /** Uncertainty of Yaw, 68% confidence level (radian) */
+    float yawUnc;
 } clientDiagGnssLocationPositionDynamics;
 
 /** @struct
@@ -457,6 +490,9 @@ typedef enum {
     CLIENT_DIAG_GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28),
     /** valid output conformityIndex */
     CLIENT_DIAG_GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29),
+    /** GnssLocation has valid
+     *  GnssLocation::llaVRPBased.  */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30),
 } clientDiagGnssLocationInfoFlagBits;
 
 typedef enum {
@@ -524,6 +560,18 @@ typedef enum {
     CLIENT_DIAG_DEAD_RECKONING_ENGINE       = (1 << 1),
     CLIENT_DIAG_PRECISE_POSITIONING_ENGINE  = (1 << 2)
 } clientDiagPositioningEngineBits;
+
+typedef PACKED struct PACKED_POST {
+    /**  Latitude, in unit of degrees, range [-90.0, 90.0]. */
+    double latitude;
+
+    /**  Longitude, in unit of degrees, range [-180.0, 180.0]. */
+    double longitude;
+
+    /** Altitude above the WGS 84 reference ellipsoid, in unit
+    of meters.  */
+    float altitude;
+} clientDiagLLAInfo;
 
 typedef PACKED struct PACKED_POST {
     /** Used by Logging Module
@@ -638,6 +686,8 @@ typedef PACKED struct PACKED_POST {
      * Range: [0.0, 1.0], with 0.0 for least conforming and 1.0 for
      * most conforming. */
     float conformityIndex;
+    /** VRR-based latitude/longitude/altitude. */
+    clientDiagLLAInfo llaVRPBased;
 } clientDiagGnssLocationStructType;
 
 typedef uint32_t clientDiagGnssMeasurementsDataFlagsMask;

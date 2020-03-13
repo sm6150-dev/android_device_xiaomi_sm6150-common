@@ -52,6 +52,25 @@ enum LocConfigTypeEnum{
     CONFIG_LEVER_ARM = 5,
     /** Config robust location feature. </br> */
     CONFIG_ROBUST_LOCATION = 6,
+    /** Get configuration regarding robust location setting used by
+     *  GNSS engine.  </br> */
+    GET_ROBUST_LOCATION_CONFIG = 100,
+} ;
+
+/**
+ *  Specify the asynchronous response when calling location
+ *  integration API. */
+enum LocIntegrationResponse {
+    /** Location integration API request is processed
+     *  successfully */
+    LOC_INT_RESPONSE_SUCCESS = 1,
+    /** Location integration API request is not processed
+     *  successfully */
+    LOC_INT_RESPONSE_FAILURE = 2,
+    /** Location integration API request is not supported */
+    LOC_INT_RESPONSE_NOT_SUPPORTED = 3,
+    /** Location integration API request has invalid parameter */
+    LOC_INT_RESPONSE_PARAM_INVALID = 4,
 } ;
 
 /**
@@ -171,22 +190,6 @@ typedef std::unordered_map<LeverArmType, LeverArmParams> LeverArmParamsMap;
 #define GNSS_SV_ID_BLACKLIST_ALL (0)
 typedef std::vector<GnssSvIdInfo> LocConfigBlacklistedSvIdList;
 
-/**
- *  Specify the asynchronous response when calling location
- *  integration API. */
-enum LocIntegrationResponse {
-    /** Location integration API request is processed
-     *  successfully */
-    LOC_INT_RESPONSE_SUCCESS = 1,
-    /** Location integration API request is not processed
-     *  successfully */
-    LOC_INT_RESPONSE_FAILURE = 2,
-    /** Location integration API request is not supported */
-    LOC_INT_RESPONSE_NOT_SUPPORTED = 3,
-    /** Location integration API request has invalid parameter */
-    LOC_INT_RESPONSE_PARAM_INVALID = 4,
-};
-
 /** @fn
     @brief
     Used to get the asynchronous notification of the processing
@@ -208,15 +211,61 @@ typedef std::function<void(
     LocIntegrationResponse response
 )> LocConfigCb;
 
+/** Specify the valid mask for robust location configuration
+ *  used by GNSS engine on modem. The robust location
+ *  configuraiton can be retrieved by invoking
+ *  LocConfigGetRobustLocationConfigCb. <br/> */
+enum RobustLocationConfigValidMask {
+    /** RobustLocationConfig has valid
+     *  RobustLocationConfig::enabled. <br/> */
+    ROBUST_LOCATION_CONFIG_VALID_ENABLED          = (1<<0),
+    /** RobustLocationConfig has valid
+     *  RobustLocationConfig::enabledForE911. <br/> */
+    ROBUST_LOCATION_CONFIG_VALID_ENABLED_FOR_E911 = (1<<1),
+};
+
+/** Specify the robust location configuration used by modem GNSS
+ *  engine that will be returned when invoking
+ *  LocConfigGetRobustLocationConfigCb. The configuration will
+ *  be returned via LocConfigGetRobustLocationConfigCb. <br/> */
+struct RobustLocationConfig {
+    /** Bitwise OR of RobustLocationConfigValidMask to specify
+     *  the valid fields. <br/> */
+    RobustLocationConfigValidMask validMask;
+    /** Specify whether robust location feature is enabled or
+     *  not. <br/> */
+    bool enabled;
+    /** Specify whether robust location feature is enabled or not
+     *  when device is on E911 call. <br/> */
+    bool enabledForE911;
+};
+
+/**
+ *  Specify the callback to retrieve the robust location setting
+ *  used by modem GNSS engine. The callback will be invoked
+ *  for successful processing of getRobustLocationConfig().
+ *  <br/>
+ *
+ *  In order to receive the robust location configuration, user
+ *  shall instantiate the callback and pass it to the
+ *  LocationIntegrationApi constructor and then invoke
+ *  getRobustLocationConfig(). <br/> */
+typedef std::function<void(
+    RobustLocationConfig robustLocationConfig
+)> LocConfigGetRobustLocationConfigCb;
+
 /**
  *  Specify the set of callbacks that can be passed to
  *  LocationIntegrationAPI constructor to receive configuration
  *  command processing status and the requested data.
  */
 struct LocIntegrationCbs {
+    /** Callback to receive the procesings status, e.g.: success
+     *  or failure.  <br/> */
     LocConfigCb configCb;
+    /** Callback to receive the robust location setting.  <br/> */
+    LocConfigGetRobustLocationConfigCb getRobustLocationConfigCb;
 };
-
 
 class LocationIntegrationApiImpl;
 class LocationIntegrationApi
@@ -435,6 +484,24 @@ public:
                 configCb will not be invoked.
     */
     bool configRobustLocation(bool enable, bool enableForE911=false);
+
+    /** @brief
+        Request robust location setting used by GNSS engine. If
+        processing of the command fails, the failure status will be
+        returned via configCb. If the processing of the command is
+        successful, the successful status will be returned via
+        configCB, and the robust location config info will be
+        returned via getRobustLocationConfigCb passed via the
+        constructor.
+
+        @return true, if the API request has been accepted.
+
+        @return false, if the API request has not been accepted for
+                further processing. When returning false, configCb
+                and getRobustLocationConfigCb will not be
+                invoked.
+    */
+    bool getRobustLocationConfig();
 
 private:
     LocationIntegrationApiImpl* mApiImpl;

@@ -256,4 +256,15 @@ bool LocationIntegrationApi::configRobustLocation(bool enable, bool enableForE91
     }
 }
 
+bool LocationIntegrationApi::getRobustLocationConfig() {
+    if (mApiImpl) {
+        // mApiImpl->getRobustLocationConfig returns none-zero when
+        // there is no callback
+        return (mApiImpl->getRobustLocationConfig() == 0);
+    } else {
+        LOC_LOGe ("NULL mApiImpl");
+        return false;
+    }
+}
+
 } // namespace location_integration

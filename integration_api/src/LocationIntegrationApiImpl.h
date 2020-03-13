@@ -100,6 +100,8 @@ public:
     virtual uint32_t* gnssUpdateConfig(GnssConfig config) override;
     virtual uint32_t gnssDeleteAidingData(GnssAidingData& data) override;
 
+    uint32_t getRobustLocationConfig();
+
 private:
     ~LocationIntegrationApiImpl();
     bool integrationClientAllowed();
@@ -112,8 +114,9 @@ private:
 
     void addConfigReq(LocConfigTypeEnum configType);
     void flushConfigReqs();
-    void invokeConfigRespCb(LocConfigTypeEnum configType,
-                            LocIntegrationResponse response);
+    void processConfigRespCb(const LocAPIGenericRespMsg* pRespMsg);
+    void processGetRobustLocationConfigRespCb(
+            const LocConfigGetRobustLocationConfigRespMsg* pRespMsg);
 
     // internal session parameter
     static mutex             mMutex;

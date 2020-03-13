@@ -60,6 +60,10 @@ static LocConfigTypeEnum getLocConfigTypeFromMsgId(ELocMsgID  msgId) {
     case E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID:
         configType = CONFIG_ROBUST_LOCATION;
         break;
+    case E_INTAPI_GET_ROBUST_LOCATION_CONFIG_REQ_MSG_ID:
+    case E_INTAPI_GET_ROBUST_LOCATION_CONFIG_RESP_MSG_ID:
+        configType = GET_ROBUST_LOCATION_CONFIG;
+        break;
     default:
         break;
     }
@@ -233,7 +237,6 @@ void IpcListener::onReceive(const char* data, uint32_t length,
         virtual ~OnReceiveHandler() {}
         void proc() const {
             LocAPIMsgHeader *pMsg = (LocAPIMsgHeader *)(mMsgData.data());
-
             switch (pMsg->msgId) {
             case E_LOCAPI_HAL_READY_MSG_ID:
                 LOC_LOGd("<<< HAL ready");
@@ -251,19 +254,24 @@ void IpcListener::onReceive(const char* data, uint32_t length,
             case E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID:
             case E_INTAPI_CONFIG_LEVER_ARM_MSG_ID:
             case E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID:
+            case E_INTAPI_GET_ROBUST_LOCATION_CONFIG_REQ_MSG_ID:
             {
                 if (sizeof(LocAPIGenericRespMsg) != mMsgData.length()) {
                     LOC_LOGw("payload size does not match for message with id: %d",
                              pMsg->msgId);
                 }
-                const LocAPIGenericRespMsg* pRespMsg = (LocAPIGenericRespMsg*)(pMsg);
-                LocConfigTypeEnum configType = getLocConfigTypeFromMsgId(pMsg->msgId);
-                LocIntegrationResponse intResponse = getLocIntegrationResponse(pRespMsg->err);
-                LOC_LOGd("<<< response message id: %d, msg err: %d, "
-                         "config type: %d, int response %d",
-                         pMsg->msgId, pRespMsg->err, configType, intResponse);
+                mApiImpl.processConfigRespCb((LocAPIGenericRespMsg*)pMsg);
+                break;
+            }
 
-                mApiImpl.invokeConfigRespCb(configType, intResponse);
+            case E_INTAPI_GET_ROBUST_LOCATION_CONFIG_RESP_MSG_ID:
+            {
+                if (sizeof(LocConfigGetRobustLocationConfigRespMsg) != mMsgData.length()) {
+                    LOC_LOGw("payload size does not match for message with id: %d",
+                             pMsg->msgId);
+                }
+                mApiImpl.processGetRobustLocationConfigRespCb(
+                        (LocConfigGetRobustLocationConfigRespMsg*)pMsg);
                 break;
             }
 
@@ -491,6 +499,31 @@ uint32_t LocationIntegrationApiImpl::configRobustLocation(
     return 0;
 }
 
+uint32_t LocationIntegrationApiImpl::getRobustLocationConfig() {
+
+    struct GetRobustLocationConfigReq : public LocMsg {
+        GetRobustLocationConfigReq(LocationIntegrationApiImpl* apiImpl) :
+                mApiImpl(apiImpl) {}
+        virtual ~GetRobustLocationConfigReq() {}
+        void proc() const {
+            LocConfigGetRobustLocationConfigReqMsg msg(mApiImpl->mSocketName);
+            mApiImpl->sendConfigMsgToHalDaemon(GET_ROBUST_LOCATION_CONFIG,
+                                               reinterpret_cast<uint8_t*>(&msg),
+                                               sizeof(msg));
+        }
+        LocationIntegrationApiImpl* mApiImpl;
+    };
+
+    if (mIntegrationCbs.getRobustLocationConfigCb == nullptr) {
+        LOC_LOGe("no callback passed in constructor to receive robust location config");
+        // return 1 to signal error
+        return 1;
+    }
+    mMsgTask->sendMsg(new (nothrow) GetRobustLocationConfigReq(this));
+
+    return 0;
+}
+
 void LocationIntegrationApiImpl::sendConfigMsgToHalDaemon(
         LocConfigTypeEnum configType, uint8_t* pMsg,
         size_t msgSize, bool invokeResponseCb) {
@@ -526,8 +559,14 @@ void LocationIntegrationApiImpl::sendClientRegMsgToHalDaemon(){
 }
 
 void LocationIntegrationApiImpl::processHalReadyMsg() {
-    // when hal daemon crashes, we need to find the new node/port
-    // when remote socket api is used
+    // when location hal daemon crashes and restarts,
+    // we flush out all pending requests and notify each client
+    // that the request has failed.
+    flushConfigReqs();
+
+    // when hal daemon crashes and then restarted,
+    // we need to find the new node/port when remote socket api is used,
+    //
     // this code can not be moved to inside of onListenerReady as
     // onListenerReady can be invoked from other places
     if (mIpcSender != nullptr) {
@@ -592,15 +631,19 @@ void LocationIntegrationApiImpl::addConfigReq(LocConfigTypeEnum configType) {
     }
 }
 
-void LocationIntegrationApiImpl::invokeConfigRespCb(LocConfigTypeEnum configType,
-                                                    LocIntegrationResponse response) {
+void LocationIntegrationApiImpl::processConfigRespCb(const LocAPIGenericRespMsg* pRespMsg) {
+    LocConfigTypeEnum configType = getLocConfigTypeFromMsgId(pRespMsg->msgId);
+    LocIntegrationResponse intResponse = getLocIntegrationResponse(pRespMsg->err);
+    LOC_LOGd("<<< response message id: %d, msg err: %d, "
+             "config type: %d, int response %d",
+             pRespMsg->msgId, pRespMsg->err, configType, intResponse);
 
     if (mIntegrationCbs.configCb) {
         auto configReqData = mConfigReqCntMap.find(configType);
         if (configReqData != std::end(mConfigReqCntMap)) {
             int reqCnt = configReqData->second;
             if (reqCnt > 0) {
-                mIntegrationCbs.configCb(configType, response);
+                mIntegrationCbs.configCb(configType, intResponse);
             }
             mConfigReqCntMap.erase(configReqData);
             // there are still some request pending for this config type
@@ -624,6 +667,34 @@ void LocationIntegrationApiImpl::flushConfigReqs() {
     mConfigReqCntMap.clear();
 }
 
+void LocationIntegrationApiImpl::processGetRobustLocationConfigRespCb(
+        const LocConfigGetRobustLocationConfigRespMsg* pRespMsg) {
+
+    LOC_LOGd("<<< response message id: %d, mask 0x%x, enabled: %d, enabledFor911: %d",
+             pRespMsg->msgId,
+             pRespMsg->mRobustLoationConfig.validMask,
+             pRespMsg->mRobustLoationConfig.enabled,
+             pRespMsg->mRobustLoationConfig.enabledForE911);
+
+    if (mIntegrationCbs.getRobustLocationConfigCb) {
+        // conversion between the enums
+        RobustLocationConfig robustConfig = {};
+        uint32_t validMask = 0;;
+        if (pRespMsg->mRobustLoationConfig.validMask &
+                GNSS_CONFIG_ROBUST_LOCATION_ENABLED_VALID_BIT) {
+            validMask |= ROBUST_LOCATION_CONFIG_VALID_ENABLED;
+            robustConfig.enabled = pRespMsg->mRobustLoationConfig.enabled;
+        }
+        if (pRespMsg->mRobustLoationConfig.validMask &
+                GNSS_CONFIG_ROBUST_LOCATION_ENABLED_FOR_E911_VALID_BIT) {
+            validMask |= ROBUST_LOCATION_CONFIG_VALID_ENABLED_FOR_E911;
+            robustConfig.enabledForE911 = pRespMsg->mRobustLoationConfig.enabledForE911;
+        }
+
+        robustConfig.validMask = (RobustLocationConfigValidMask) validMask;
+        mIntegrationCbs.getRobustLocationConfigCb(robustConfig);
+    }
+}
 
 /******************************************************************************
 LocationIntegrationApiImpl - Not implemented ILocationControlAPI functions

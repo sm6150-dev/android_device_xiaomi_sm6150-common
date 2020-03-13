@@ -251,6 +251,7 @@ private:
   bool cacheGnssMeasurementSupport();
   void registerMasterClient();
   int getGpsLock(uint8_t subType);
+  void getRobustLocationConfig(uint32_t sessionId, LocApiResponse* adapterResponse);
 
   /* Convert get blacklist sv info to GnssSvIdConfig */
   void reportGnssSvIdConfig

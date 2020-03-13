@@ -226,6 +226,10 @@ enum ELocMsgID {
     E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID  = 203,
     E_INTAPI_CONFIG_LEVER_ARM_MSG_ID  = 204,
     E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID  = 205,
+
+    // integration API config retrieval request/response
+    E_INTAPI_GET_ROBUST_LOCATION_CONFIG_REQ_MSG_ID  = 300,
+    E_INTAPI_GET_ROBUST_LOCATION_CONFIG_RESP_MSG_ID  = 301,
 };
 
 typedef uint32_t LocationCallbacksMask;
@@ -568,81 +572,6 @@ struct LocAPIGetGnssEnergyConsumedReqMsg: LocAPIMsgHeader
         LocAPIMsgHeader(name, E_LOCAPI_GET_GNSS_ENGERY_CONSUMED_MSG_ID) { }
 };
 
-struct LocConfigConstrainedTuncReqMsg: LocAPIMsgHeader
-{
-    bool     mEnable;
-    float    mTuncConstraint;
-    uint32_t mEnergyBudget;
-
-    inline LocConfigConstrainedTuncReqMsg(const char* name,
-                                          bool enable,
-                                          float tuncConstraint,
-                                          uint32_t energyBudget) :
-            LocAPIMsgHeader(name, E_INTAPI_CONFIG_CONSTRAINTED_TUNC_MSG_ID),
-            mEnable(enable),
-            mTuncConstraint(tuncConstraint),
-            mEnergyBudget(energyBudget) { }
-};
-
-struct LocConfigPositionAssistedClockEstimatorReqMsg: LocAPIMsgHeader
-{
-    bool     mEnable;
-    inline LocConfigPositionAssistedClockEstimatorReqMsg(const char* name,
-                                                         bool enable) :
-            LocAPIMsgHeader(name,
-                            E_INTAPI_CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR_MSG_ID),
-            mEnable(enable) { }
-};
-
-struct LocConfigSvConstellationReqMsg: LocAPIMsgHeader
-{
-    bool mResetToDefault;
-    GnssSvTypeConfig mSvTypeConfig;
-    GnssSvIdConfig   mSvIdConfig;
-
-    inline LocConfigSvConstellationReqMsg(const char* name,
-                                          bool resetToDefault,
-                                          const GnssSvTypeConfig& svTypeConfig,
-                                          const GnssSvIdConfig& svIdConfig) :
-            LocAPIMsgHeader(name, E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID),
-            mResetToDefault(resetToDefault),
-            mSvTypeConfig(svTypeConfig),
-            mSvIdConfig(svIdConfig){ }
-};
-
-// defintion for message with msg id of E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID
-struct LocConfigAidingDataDeletionReqMsg: LocAPIMsgHeader
-{
-    GnssAidingData mAidingData;
-
-    inline LocConfigAidingDataDeletionReqMsg(const char* name, GnssAidingData& aidingData) :
-        LocAPIMsgHeader(name, E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID),
-        mAidingData(aidingData) { }
-};
-
-struct LocConfigLeverArmReqMsg: LocAPIMsgHeader
-{
-    LeverArmConfigInfo mLeverArmConfigInfo;
-
-    inline LocConfigLeverArmReqMsg(const char* name,
-                                   const LeverArmConfigInfo & configInfo) :
-        LocAPIMsgHeader(name, E_INTAPI_CONFIG_LEVER_ARM_MSG_ID),
-        mLeverArmConfigInfo(configInfo) { }
-};
-
-struct LocConfigRobustLocationReqMsg: LocAPIMsgHeader
-{
-    bool mEnable;
-    bool mEnableForE911;
-
-    inline LocConfigRobustLocationReqMsg(const char* name,
-                                         bool enable,
-                                         bool enableForE911) :
-        LocAPIMsgHeader(name, E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID),
-        mEnable(enable),
-        mEnableForE911(enableForE911) { }
-};
-
 /******************************************************************************
 IPC message structure - indications
 ******************************************************************************/
@@ -788,6 +717,104 @@ struct LocAPILocationSystemInfoIndMsg: LocAPIMsgHeader
     inline LocAPILocationSystemInfoIndMsg(const char* name, const LocationSystemInfo & systemInfo) :
         LocAPIMsgHeader(name, E_LOCAPI_LOCATION_SYSTEM_INFO_MSG_ID),
         locationSystemInfo(systemInfo) { }
+};
+
+/******************************************************************************
+IPC message structure - Location Integration API Configure Request
+******************************************************************************/
+struct LocConfigConstrainedTuncReqMsg: LocAPIMsgHeader
+{
+    bool     mEnable;
+    float    mTuncConstraint;
+    uint32_t mEnergyBudget;
+
+    inline LocConfigConstrainedTuncReqMsg(const char* name,
+                                          bool enable,
+                                          float tuncConstraint,
+                                          uint32_t energyBudget) :
+            LocAPIMsgHeader(name, E_INTAPI_CONFIG_CONSTRAINTED_TUNC_MSG_ID),
+            mEnable(enable),
+            mTuncConstraint(tuncConstraint),
+            mEnergyBudget(energyBudget) { }
+};
+
+struct LocConfigPositionAssistedClockEstimatorReqMsg: LocAPIMsgHeader
+{
+    bool     mEnable;
+    inline LocConfigPositionAssistedClockEstimatorReqMsg(const char* name,
+                                                         bool enable) :
+            LocAPIMsgHeader(name,
+                            E_INTAPI_CONFIG_POSITION_ASSISTED_CLOCK_ESTIMATOR_MSG_ID),
+            mEnable(enable) { }
+};
+
+struct LocConfigSvConstellationReqMsg: LocAPIMsgHeader
+{
+    bool mResetToDefault;
+    GnssSvTypeConfig mSvTypeConfig;
+    GnssSvIdConfig   mSvIdConfig;
+
+    inline LocConfigSvConstellationReqMsg(const char* name,
+                                          bool resetToDefault,
+                                          const GnssSvTypeConfig& svTypeConfig,
+                                          const GnssSvIdConfig& svIdConfig) :
+            LocAPIMsgHeader(name, E_INTAPI_CONFIG_SV_CONSTELLATION_MSG_ID),
+            mResetToDefault(resetToDefault),
+            mSvTypeConfig(svTypeConfig),
+            mSvIdConfig(svIdConfig){ }
+};
+
+// defintion for message with msg id of E_LOCAPI_CONTROL_DELETE_AIDING_DATA_MSG_ID
+struct LocConfigAidingDataDeletionReqMsg: LocAPIMsgHeader
+{
+    GnssAidingData mAidingData;
+
+    inline LocConfigAidingDataDeletionReqMsg(const char* name, GnssAidingData& aidingData) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_AIDING_DATA_DELETION_MSG_ID),
+        mAidingData(aidingData) { }
+};
+
+struct LocConfigLeverArmReqMsg: LocAPIMsgHeader
+{
+    LeverArmConfigInfo mLeverArmConfigInfo;
+
+    inline LocConfigLeverArmReqMsg(const char* name,
+                                   const LeverArmConfigInfo & configInfo) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_LEVER_ARM_MSG_ID),
+        mLeverArmConfigInfo(configInfo) { }
+};
+
+struct LocConfigRobustLocationReqMsg: LocAPIMsgHeader
+{
+    bool mEnable;
+    bool mEnableForE911;
+
+    inline LocConfigRobustLocationReqMsg(const char* name,
+                                         bool enable,
+                                         bool enableForE911) :
+        LocAPIMsgHeader(name, E_INTAPI_CONFIG_ROBUST_LOCATION_MSG_ID),
+        mEnable(enable),
+        mEnableForE911(enableForE911) { }
+};
+
+/******************************************************************************
+IPC message structure - Location Integration API Get request/response message
+******************************************************************************/
+struct LocConfigGetRobustLocationConfigReqMsg: LocAPIMsgHeader
+{
+    inline LocConfigGetRobustLocationConfigReqMsg(const char* name) :
+        LocAPIMsgHeader(name, E_INTAPI_GET_ROBUST_LOCATION_CONFIG_REQ_MSG_ID) { }
+};
+
+struct LocConfigGetRobustLocationConfigRespMsg: LocAPIMsgHeader
+{
+    GnssConfigRobustLocation mRobustLoationConfig;
+
+    inline LocConfigGetRobustLocationConfigRespMsg(
+            const char* name,
+            GnssConfigRobustLocation robustLoationConfig) :
+        LocAPIMsgHeader(name, E_INTAPI_GET_ROBUST_LOCATION_CONFIG_RESP_MSG_ID),
+        mRobustLoationConfig(robustLoationConfig) { }
 };
 
 /******************************************************************************

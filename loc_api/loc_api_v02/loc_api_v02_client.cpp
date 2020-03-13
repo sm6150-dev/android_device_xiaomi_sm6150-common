@@ -760,6 +760,9 @@ static const locClientRespIndTableStructT locClientRespIndTable[]= {
 
    { QMI_LOC_SET_ROBUST_LOCATION_CONFIG_IND_V02,
      sizeof(qmiLocGenReqStatusIndMsgT_v02) },
+
+   { QMI_LOC_GET_ROBUST_LOCATION_CONFIG_IND_V02,
+     sizeof(qmiLocGetRobustLocationConfigIndMsgT_v02) },
 };
 
 
@@ -1258,7 +1261,6 @@ bool validateRequest(
 {
   bool noPayloadFlag = false;
 
-  LOC_LOGV("%s:%d]: reqId = %d\n", __func__, __LINE__, reqId);
   switch(reqId)
   {
     case QMI_LOC_INFORM_CLIENT_REVISION_REQ_V02:
@@ -1849,14 +1851,14 @@ bool validateRequest(
     case QMI_LOC_QUERY_OTB_ACCUMULATED_DISTANCE_REQ_V02:
     case QMI_LOC_GET_BLACKLIST_SV_REQ_V02:
     case QMI_LOC_GET_CONSTELLATION_CONTROL_REQ_V02:
+    case QMI_LOC_GET_ROBUST_LOCATION_CONFIG_REQ_V02:
     {
       noPayloadFlag = true;
       break;
     }
 
     default:
-      LOC_LOGW("%s:%d]: Error unknown reqId=%d\n", __func__, __LINE__,
-                    reqId);
+      LOC_LOGw("Error unknown reqId=%d", reqId);
       return false;
   }
   if(true == noPayloadFlag)
@@ -1869,8 +1871,7 @@ bool validateRequest(
     //set dummy pointer for request union
     *ppOutData = (void*) reqPayload.pInformClientRevisionReq;
   }
-  LOC_LOGV("%s:%d]: reqId=%d, len = %d\n", __func__, __LINE__,
-                reqId, *pOutLen);
+  LOC_LOGv("reqId=%d, len = %d", reqId, *pOutLen);
   return true;
 }
 

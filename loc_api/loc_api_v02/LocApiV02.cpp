@@ -6845,6 +6845,11 @@ void LocApiV02::configRobustLocation
     req.enable = enable;
     req.enableForE911_valid = true;
     req.enableForE911 = enableForE911;
+    if (enable == false && enableForE911 == true) {
+        LOC_LOGw("enableForE911 is not allowed when enable is set to false");
+        // change enableForE911 to false to simplify processing
+        req.enableForE911 = false;
+    }
 
     req_union.pSetRobustLocationReq = &req;
     status = locSyncSendReq(QMI_LOC_SET_ROBUST_LOCATION_CONFIG_REQ_V02,
@@ -6860,6 +6865,62 @@ void LocApiV02::configRobustLocation
     if (adapterResponse) {
         adapterResponse->returnToSender(err);
     }
+    LOC_LOGv("Exit. err: %u", err);
+    }));
+}
+
+void LocApiV02 :: getRobustLocationConfig(uint32_t sessionId, LocApiResponse *adapterResponse)
+{
+    sendMsg(new LocApiMsg([this, sessionId, adapterResponse] () {
+
+    LocationError err = LOCATION_ERROR_SUCCESS;
+    locClientStatusEnumType status = eLOC_CLIENT_FAILURE_GENERAL;
+    locClientReqUnionType req_union = {};
+    qmiLocGetRobustLocationConfigIndMsgT_v02 getRobustLocationConfigInd = {};
+
+    status = locSyncSendReq(QMI_LOC_GET_ROBUST_LOCATION_CONFIG_REQ_V02,
+                            req_union, LOC_ENGINE_SYNC_REQUEST_LONG_TIMEOUT,
+                            QMI_LOC_GET_ROBUST_LOCATION_CONFIG_IND_V02,
+                            &getRobustLocationConfigInd);
+
+    if ((status == eLOC_CLIENT_SUCCESS) &&
+        (getRobustLocationConfigInd.status == eQMI_LOC_SUCCESS_V02)) {
+        err = LOCATION_ERROR_SUCCESS;
+    }else {
+        LOC_LOGe("getRobustLocationConfig: failed. status: %s, ind status:%s",
+                 loc_get_v02_client_status_name(status),
+                 loc_get_v02_qmi_status_name(getRobustLocationConfigInd.status));
+        if (status == eLOC_CLIENT_FAILURE_UNSUPPORTED) {
+            err = LOCATION_ERROR_NOT_SUPPORTED;
+        } else {
+            err = LOCATION_ERROR_GENERAL_FAILURE;
+        }
+    }
+
+    if (LOCATION_ERROR_SUCCESS != err) {
+        adapterResponse->returnToSender(err);
+    } else {
+        GnssConfig config = {};
+        uint32_t robustLocationValidMask = 0;
+        config.flags |= GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT;
+        if (getRobustLocationConfigInd.isEnabled_valid) {
+            robustLocationValidMask |= GNSS_CONFIG_ROBUST_LOCATION_ENABLED_VALID_BIT;
+        }
+        if (getRobustLocationConfigInd.isEnabledForE911_valid) {
+            robustLocationValidMask |= GNSS_CONFIG_ROBUST_LOCATION_ENABLED_FOR_E911_VALID_BIT;
+        }
+        config.robustLocationConfig.validMask =
+                (GnssConfigRobustLocationValidMask) robustLocationValidMask;
+        config.robustLocationConfig.enabled = getRobustLocationConfigInd.isEnabled;
+        config.robustLocationConfig.enabledForE911 = getRobustLocationConfigInd.isEnabledForE911;
+        LOC_LOGd("session id: %d, enabled (%d %d), enabledForE911 (%d, %d)",
+                 sessionId, getRobustLocationConfigInd.isEnabled_valid,
+                 getRobustLocationConfigInd.isEnabledForE911_valid,
+                 config.robustLocationConfig.enabled,
+                 config.robustLocationConfig.enabledForE911);
+        LocApiBase::reportGnssConfig(sessionId, config);
+    }
+
     LOC_LOGv("Exit. err: %u", err);
     }));
 }

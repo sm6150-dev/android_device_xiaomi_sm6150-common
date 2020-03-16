@@ -5409,7 +5409,6 @@ uint32_t GnssAdapter::configRobustLocationCommand(
     return sessionId;
 }
 
-
 void
 GnssAdapter::configMinGpsWeek(uint32_t sessionId, uint16_t minGpsWeek) {
     // suspend all sessions for modem to take the min GPS week config
@@ -5455,6 +5454,38 @@ uint32_t GnssAdapter::configMinGpsWeekCommand(uint16_t minGpsWeek) {
     };
 
     sendMsg(new MsgConfigMinGpsWeek(*this, sessionId, minGpsWeek));
+    return sessionId;
+}
+
+uint32_t GnssAdapter::configBodyToSensorMountParamsCommand(
+        const BodyToSensorMountParams& b2sParams) {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgConfigB2sParams : public LocMsg {
+        GnssAdapter&       mAdapter;
+        uint32_t           mSessionId;
+        BodyToSensorMountParams mB2sParams;
+
+        inline MsgConfigB2sParams(GnssAdapter& adapter,
+                                  uint32_t sessionId,
+                                  const BodyToSensorMountParams& b2sParams) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mB2sParams(b2sParams) {}
+        inline virtual void proc() const {
+            LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
+            if (true == mAdapter.mEngHubProxy->configBodyToSensorMountParams(mB2sParams)) {
+                err = LOCATION_ERROR_SUCCESS;
+            }
+            mAdapter.reportResponse(err, mSessionId);
+        }
+    };
+
+    sendMsg(new MsgConfigB2sParams(*this, sessionId, b2sParams));
     return sessionId;
 }
 

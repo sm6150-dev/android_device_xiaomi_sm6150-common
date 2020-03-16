@@ -393,7 +393,9 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
     mMutex.unlock();
 
     if (gnssCbIface_2_1 != nullptr ||gnssCbIface_2_0 != nullptr || gnssCbIface != nullptr) {
-        uint32_t data = 0;
+
+        uint32_t data = (uint32_t) V2_1::IGnssCallback::Capabilities::ANTENNA_INFO;
+
         if ((capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT) ||
                 (capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_BATCHING_BIT) ||
                 (capabilitiesMask & LOCATION_CAPABILITIES_DISTANCE_BASED_TRACKING_BIT) ||
@@ -411,9 +413,13 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
             data |= IGnssCallback::Capabilities::LOW_POWER_MODE;
         if (capabilitiesMask & LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT)
             data |= IGnssCallback::Capabilities::SATELLITE_BLACKLIST;
+        if (capabilitiesMask & LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT)
+            data |= V2_0::IGnssCallback::Capabilities::MEASUREMENT_CORRECTIONS;
 
         IGnssCallback::GnssSystemInfo gnssInfo;
-        if (capabilitiesMask & LOCATION_CAPABILITIES_PRIVACY_BIT) {
+        if (capabilitiesMask & LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT) {
+            gnssInfo.yearOfHw = 2020;
+        }  else if (capabilitiesMask & LOCATION_CAPABILITIES_PRIVACY_BIT) {
             gnssInfo.yearOfHw = 2019;
         } else if (capabilitiesMask & LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT ||
             capabilitiesMask & LOCATION_CAPABILITIES_AGPM_BIT) {
@@ -428,9 +434,9 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
         LOC_LOGV("%s:%d] set_system_info_cb (%d)", __FUNCTION__, __LINE__, gnssInfo.yearOfHw);
 
         if (gnssCbIface_2_1 != nullptr) {
-            auto r = gnssCbIface_2_1->gnssSetCapabilitiesCb_2_0(data);
+            auto r = gnssCbIface_2_1->gnssSetCapabilitiesCb_2_1(data);
             if (!r.isOk()) {
-                LOC_LOGE("%s] Error from gnssSetCapabilitiesCb_2_0 description=%s",
+                LOC_LOGE("%s] Error from gnssSetCapabilitiesCb_2_1 description=%s",
                     __func__, r.description().c_str());
             }
             r = gnssCbIface_2_1->gnssSetSystemInfoCb(gnssInfo);
@@ -835,6 +841,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
             out[i].v2_0.v1_0.svFlag |= IGnssCallback::GnssSvFlags::HAS_CARRIER_FREQUENCY;
 
         convertGnssConstellationType(in.gnssSvs[i].type, out[i].v2_0.constellation);
+        out[i].basebandCN0DbHz = in.gnssSvs[i].cN0Dbhz;
     }
 }
 

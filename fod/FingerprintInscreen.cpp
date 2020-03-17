@@ -20,6 +20,7 @@
 
 #include <android-base/file.h>
 #include <android-base/logging.h>
+#include <hardware_legacy/power.h>
 #include <cmath>
 
 #define COMMAND_NIT 10
@@ -85,6 +86,7 @@ Return<void> FingerprintInscreen::onFinishEnroll() {
 }
 
 Return<void> FingerprintInscreen::onPress() {
+    acquire_wake_lock(PARTIAL_WAKE_LOCK, LOG_TAG);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     WriteToFile(DSI(dim_layer_enable), 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 3);
@@ -96,6 +98,7 @@ Return<void> FingerprintInscreen::onRelease() {
     WriteToFile(DSI(dim_layer_enable), 0);
     xiaomiDisplayFeatureService->setFeature(0, 11, 0, 3);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_NONE);
+    release_wake_lock(LOG_TAG);
     return Void();
 }
 

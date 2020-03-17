@@ -19,6 +19,8 @@
 #include "FingerprintInscreen.h"
 
 #include <android-base/logging.h>
+#include <hardware_legacy/power.h>
+
 #include <fstream>
 #include <cmath>
 
@@ -94,6 +96,7 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
+    acquire_wake_lock(PARTIAL_WAKE_LOCK, LOG_TAG);
     xiaomiDisplayFeatureService->setFeature(0, 17, 2, 1);
     xiaomiDisplayFeatureService->setFeature(0, 17, 1, 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
@@ -101,6 +104,7 @@ Return<void> FingerprintInscreen::onShowFODView() {
 }
 
 Return<void> FingerprintInscreen::onHideFODView() {
+    release_wake_lock(LOG_TAG);
     xiaomiDisplayFeatureService->setFeature(0, 17, 0, 255);
     xiaomiDisplayFeatureService->setFeature(0, 17, 0, 1);
     return Void();

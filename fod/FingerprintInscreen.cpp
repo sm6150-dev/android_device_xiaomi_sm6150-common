@@ -21,6 +21,7 @@
 #include <android-base/file.h>
 #include <android-base/logging.h>
 #include <cmath>
+#include <hardware_legacy/power.h>
 
 #define FINGERPRINT_ERROR_VENDOR 8
 
@@ -102,6 +103,7 @@ Return<void> FingerprintInscreen::onFinishEnroll() {
 Return<void> FingerprintInscreen::onPress() {
     CalDimAlpha();
     WriteToFile(DSI(hbm), ON);
+    acquire_wake_lock(PARTIAL_WAKE_LOCK, LOG_TAG);
     TouchFeatureService->setTouchMode(Touch_Fod_Enable, ON);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, ON);
     return Void();
@@ -109,6 +111,7 @@ Return<void> FingerprintInscreen::onPress() {
 
 Return<void> FingerprintInscreen::onRelease() {
     WriteToFile(DSI(hbm), OFF);
+    release_wake_lock(LOG_TAG);
     TouchFeatureService->resetTouchMode(Touch_Fod_Enable);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, ON);
     return Void();

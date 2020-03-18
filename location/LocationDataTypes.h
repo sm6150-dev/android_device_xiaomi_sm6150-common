@@ -1257,14 +1257,25 @@ typedef struct {
     uint64_t sbasBlacklistSvMask;
 } GnssSvIdConfig;
 
-// Specify the valid mask for robust location configure that
-//  will be returned via LocConfigGetMinGpsWeekCb when invoking
-//  getRobustLocationConfig. */
+// Specify the valid mask for robust location configure
+// defined in GnssConfigRobustLocation.
 enum GnssConfigRobustLocationValidMask {
     // GnssConfigRobustLocation has valid enabled field.
     GNSS_CONFIG_ROBUST_LOCATION_ENABLED_VALID_BIT          = (1<<0),
     // GnssConfigRobustLocation has valid enabledForE911 field.
     GNSS_CONFIG_ROBUST_LOCATION_ENABLED_FOR_E911_VALID_BIT = (1<<1),
+    // GnssConfigRobustLocation has valid version field.
+    GNSS_CONFIG_ROBUST_LOCATION_VERSION_VALID_BIT          = (1<<2),
+};
+
+struct GnssConfigRobustLocationVersion {
+    // Major version number
+    uint8_t major;
+    // Minor version number
+    uint16_t minor;
+    inline bool equals(const GnssConfigRobustLocationVersion& version) const {
+        return (version.major == major && version.minor == minor);
+    }
 };
 
 // specify the robust location configuration used by modem GNSS engine
@@ -1272,11 +1283,13 @@ struct GnssConfigRobustLocation {
    GnssConfigRobustLocationValidMask validMask;
    bool enabled;
    bool enabledForE911;
+   GnssConfigRobustLocationVersion version;
 
    inline bool equals(const GnssConfigRobustLocation& config) const {
         if (config.validMask == validMask &&
             config.enabled == enabled &&
-            config.enabledForE911 == enabledForE911) {
+            config.enabledForE911 == enabledForE911 &&
+            config.version.equals(version)) {
             return true;
         }
         return false;

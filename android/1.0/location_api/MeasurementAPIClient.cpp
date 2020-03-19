@@ -171,7 +171,11 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         out.svid = in.svId;
         break;
     case GNSS_SV_TYPE_GLONASS:
-        out.svid = in.svId - GLO_SV_PRN_MIN + 1;
+        if (in.svId != 255) { // OSN is known
+            out.svid = in.svId - GLO_SV_PRN_MIN + 1;
+        } else { // OSN is not known, report FCN
+            out.svid = in.gloFrequency + 92;
+        }
         break;
     case GNSS_SV_TYPE_QZSS:
         out.svid = in.svId;
@@ -181,6 +185,11 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         break;
     case GNSS_SV_TYPE_GALILEO:
         out.svid = in.svId - GAL_SV_PRN_MIN + 1;
+        break;
+    case GNSS_SV_TYPE_NAVIC:
+        /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
+          will update this once Android give Navic svid definiitons */
+        out.svid = in.svId - NAVIC_SV_PRN_MIN + 1;
         break;
     default:
         out.svid = in.svId;

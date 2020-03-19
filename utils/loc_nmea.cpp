@@ -39,6 +39,7 @@
 #define QZSS_SV_ID_OFFSET    (192)
 #define BDS_SV_ID_OFFSET     (200)
 #define GALILEO_SV_ID_OFFSET (300)
+#define NAVIC_SV_ID_OFFSET   (400)
 #define MAX_SV_COUNT_SUPPORTED_IN_ONE_CONSTELLATION  64
 #define MAX_SATELLITES_IN_USE 12
 #define MSEC_IN_ONE_WEEK      604800000ULL
@@ -469,7 +470,8 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
             sv_meta.talker[0] = 'G';
             sv_meta.talker[1] = 'I';
             sv_meta.mask = sv_cache_info.navic_used_mask;
-            // NAVIC SV ids are from 401-414. So keep svIdOffset 0
+            // NAVIC SV ids are from 401-414. So keep svIdOffset 400
+            sv_meta.svIdOffset = NAVIC_SV_ID_OFFSET;
             sv_meta.systemId = SYSTEM_ID_NAVIC;
             if (GNSS_SIGNAL_NAVIC_L5 == signalType) {
                 sv_meta.svCount = sv_cache_info.navic_l5_count;

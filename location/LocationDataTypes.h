@@ -1122,6 +1122,7 @@ typedef struct {
     GnssMeasurementsMultipathIndicator multipathIndicator;
     double signalToNoiseRatioDb;
     double agcLevelDb;
+    int16_t gloFrequency;
 } GnssMeasurementsData;
 
 typedef struct {

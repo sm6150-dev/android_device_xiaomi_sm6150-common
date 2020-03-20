@@ -52,6 +52,8 @@ const char EXIT_TAG[]   = "Exiting";
 const char ENTRY_TAG[]  = "Entering";
 const char EXIT_ERROR_TAG[]  = "Exiting with error";
 
+int build_type_prop = BUILD_TYPE_PROP_NA;
+
 /* Logging Mechanism */
 loc_logger_s_type loc_logger;
 

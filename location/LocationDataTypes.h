@@ -142,6 +142,26 @@ typedef enum {
     LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9)
 } GnssLocationPosDataBits;
 
+typedef uint32_t GnssLocationPosDataMaskExt;
+typedef enum {
+    // Navigation data has pitch rate
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT     = (1<<0),
+    // Navigation data has body pitch rate uncertainty
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT = (1<<1),
+    // Navigation data has body roll
+    LOCATION_NAV_DATA_HAS_ROLL_BIT           = (1<<2),
+    // Navigation data has body roll uncertainty
+    LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT       = (1<<3),
+    // Navigation data has body rate roll
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT      = (1<<4),
+    // Navigation data has body roll rate uncertainty
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT  = (1<<5),
+    // Navigation data has body yaw
+    LOCATION_NAV_DATA_HAS_YAW_BIT            = (1<<6),
+    // Navigation data has body roll uncertainty
+    LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<7)
+} GnssLocationPosDataBitsExt;
+
 typedef uint32_t GnssLocationInfoFlagMask;
 typedef enum {
     GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0), // valid altitude mean sea level
@@ -159,6 +179,7 @@ typedef enum {
     GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
     GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
     GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<12),// valid position dynamics data
+                                                                  // and Position Dynamics Ext
     GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<13),// valid gdop, tdop
     GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT                = (1<<14),// valid North standard deviation
     GNSS_LOCATION_INFO_EAST_STD_DEV_BIT                 = (1<<15),// valid East standard deviation
@@ -880,6 +901,19 @@ typedef struct {
 } GnssLocationPositionDynamics;
 
 typedef struct {
+    GnssLocationPosDataMaskExt bodyFrameDataMask; // Contains Ext Body frame LocPosDataMask bits
+    float pitchRate;      // Body pitch rate (Radians/second)
+    float pitchRateUnc;   // Uncertainty of pitch rate (Radians/second)
+    float roll;           // Roll of body frame. Clockwise positive. (radian
+    float rollUnc;        // Uncertainty of Roll, 68% confidence level (radian)
+    float rollRate;       // Roll rate of body frame. Clockwise positive. (radian/second)
+    float rollRateUnc;    // Uncertainty of Roll rate, 68% confidence level (radian/second)
+    float yaw;            // Yaw of body frame. Clockwise positive (radian)
+    float yawUnc;         // Uncertainty of Yaw, 68% confidence level (radian)
+} GnssLocationPositionDynamicsExt;
+
+
+typedef struct {
     /** Validity mask for below fields */
     GnssSystemTimeStructTypeFlags validityMask;
     /** Extended week number at reference tick.
@@ -1020,6 +1054,7 @@ typedef struct {
      * navigation solution conform to expectations.
      * Range: 0 (least conforming) to 1 (most conforming) */
     float conformityIndex;
+    GnssLocationPositionDynamicsExt bodyFrameDataExt;   // Additional Body Frame Dynamics
 } GnssLocationInfoNotification;
 
 typedef struct {

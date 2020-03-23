@@ -33,8 +33,8 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "../include/qmi_client.h"
-#include "../include/qmi_idl_lib.h"
+#include "qmi_client.h"
+#include "qmi_idl_lib.h"
 
 #if defined( _ANDROID_)
 #define LOG_NDEBUG 0

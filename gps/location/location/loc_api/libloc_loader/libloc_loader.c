@@ -4,8 +4,8 @@
 
 #include <log/log.h>
 
-#include "../include/qmi_client.h"
-#include "../include/qmi_idl_lib.h"
+#include "qmi_client.h"
+#include "qmi_idl_lib.h"
 #include "libloc_loader.h"
 
 void *lib_handle = NULL;

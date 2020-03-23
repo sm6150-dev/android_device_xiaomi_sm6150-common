@@ -34,7 +34,7 @@
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
-#include "../include/qmi_client.h"
+#include "qmi_client.h"
 #include "location_service_v02.h"
 
 /*Type Definitions*/

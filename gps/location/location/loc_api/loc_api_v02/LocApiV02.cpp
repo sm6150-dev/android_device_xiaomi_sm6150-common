@@ -42,7 +42,8 @@
 #include <loc_api_sync_req.h>
 #include <loc_api_v02_client.h>
 #include <loc_util_log.h>
-#include <gps_extended.h>
+// Already included by LocApiV02.h
+//#include <gps_extended.h>
 #include "loc_pla.h"
 #include <loc_cfg.h>
 #include <LocContext.h>

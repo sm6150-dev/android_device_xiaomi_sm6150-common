@@ -31,6 +31,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include <gps_extended.h>
+
 #include <LocApiBase.h>
 #include <loc_api_v02_client.h>
 #include <vector>

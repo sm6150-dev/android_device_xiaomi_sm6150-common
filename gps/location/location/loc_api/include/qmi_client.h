@@ -70,6 +70,8 @@ qmi_client_error_type (*qmi_client_send_msg_sync)(
     uint32_t timeout
 );
 
-int (*qmi_client_release) ();
+qmi_client_error_type (*qmi_client_release)(
+    qmi_client_type user_handle
+);
 
 #endif /* QMI_CLIENT_H */

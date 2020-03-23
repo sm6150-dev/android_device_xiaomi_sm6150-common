@@ -109,8 +109,15 @@ typedef struct {
     uint16_t msg_len;
 } qmi_idl_service_message_table_entry;
 
-// Forward declaration
-struct qmi_idl_type_table_object;
+typedef struct qmi_idl_type_table_object {
+    uint16_t num_types;
+    uint16_t num_messages;
+    uint8_t num_tables;
+    const qmi_idl_type_table_entry *type_table;
+    const qmi_idl_message_table_entry *message_table;
+    const struct qmi_idl_type_table_object **type_table_object;
+    const void *unk1;
+} qmi_idl_type_table_object;
 
 typedef struct qmi_idl_service_object {
     uint32_t unk1;
@@ -124,20 +131,10 @@ typedef struct qmi_idl_service_object {
     struct qmi_idl_service_object *parent;
 } qmi_idl_service_object;
 
-typedef struct qmi_idl_type_table_object {
-    uint16_t num_types;
-    uint16_t num_messages;
-    uint8_t num_tables;
-    const qmi_idl_type_table_entry *type_table;
-    const qmi_idl_message_table_entry *message_table;
-    const struct qmi_idl_type_table_object **type_table_object;
-    const void *unk1;
-} qmi_idl_type_table_object;
-
 // Opague pointer allocated and used by external library
 typedef void* qmi_client_type;
 
 // Provided by qcom library
-qmi_idl_type_table_object common_qmi_idl_type_table_object_v01;
+extern qmi_idl_type_table_object common_qmi_idl_type_table_object_v01;
 
 #endif /* QMI_IDL_LIB_H */

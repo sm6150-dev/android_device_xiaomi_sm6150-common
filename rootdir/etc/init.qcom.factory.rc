@@ -27,7 +27,7 @@
 #
 
 # Define fastmmi
-service fastmmi /system/bin/mmi
+service fastmmi /system_ext/bin/mmi
     user root
     group root
     disabled
@@ -37,7 +37,7 @@ service vendor.mmid /vendor/bin/mmid
     group root
     disabled
 
-service mmi_diag /system/bin/mmi_diag
+service mmi_diag /system_ext/bin/mmi_diag
         class main
         user root
         group root oem_2901

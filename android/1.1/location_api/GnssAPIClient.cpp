@@ -560,6 +560,11 @@ static void convertGnssSvStatus(GnssSvNotification& in, IGnssCallback::GnssSvSta
         case GNSS_SV_TYPE_GALILEO:
             info.svid = in.gnssSvs[i].svId - GAL_SV_PRN_MIN + 1;
             break;
+        case GNSS_SV_TYPE_NAVIC:
+            /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
+              will update this once Android give Navic svid definiitons */
+            info.svid = in.gnssSvs[i].svId - NAVIC_SV_PRN_MIN + 1;
+            break;
         default:
             info.svid = in.gnssSvs[i].svId;
             break;

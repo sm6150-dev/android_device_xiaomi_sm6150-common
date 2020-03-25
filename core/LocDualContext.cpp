@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,7 +29,6 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_DualCtx"
 
-#include <cutils/sched_policy.h>
 #include <unistd.h>
 #include <LocDualContext.h>
 #include <msg_q.h>

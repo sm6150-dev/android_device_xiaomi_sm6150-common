@@ -761,4 +761,13 @@ void LocApiBase::
     getRobustLocationConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
+void LocApiBase::
+    configMinGpsWeek(uint16_t minGpsWeek,
+                     LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getMinGpsWeek(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
 } // namespace loc_core

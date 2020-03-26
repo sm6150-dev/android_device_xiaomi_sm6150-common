@@ -323,6 +323,21 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
     virtual uint32_t configRobustLocation(bool enable, bool enableForE911) = 0;
+
+    /** @brief
+        Config the minimum GPS week used by modem GNSS engine.
+
+        @param
+        minGpsWeek: minimum GPS week to be used by modem GNSS engine.
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configMinGpsWeek(uint16_t minGpsWeek) = 0;
 };
 
 #endif /* ILOCATIONAPI_H */

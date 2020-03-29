@@ -76,6 +76,7 @@ typedef enum {
     LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7), // location has valid bearing accuracy
     LOCATION_HAS_SPOOF_MASK            = (1<<8), // location has valid spoof mask
     LOCATION_HAS_ELAPSED_REAL_TIME     = (1<<9), // location has valid elapsed real time
+    LOCATION_HAS_CONFORMITY_INDEX_BIT  = (1<<10), // location has valid conformity index
 } LocationFlagsBits;
 
 typedef uint16_t LocationTechnologyMask;
@@ -255,6 +256,8 @@ typedef enum {
     LOCATION_CAPABILITIES_PRIVACY_BIT                       = (1<<12),
     // support measurement corrections
     LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT       = (1<<13),
+    // support Robust Location
+    LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT               = (1<<14),
 } LocationCapabilitiesBits;
 
 typedef enum {
@@ -790,6 +793,7 @@ typedef struct {
     float verticalAccuracy;  // in meters
     float speedAccuracy;     // in meters/second
     float bearingAccuracy;   // in degrees (0 to 359.999)
+    float conformityIndex;   // in range [0, 1]
     LocationTechnologyMask techMask;
     LocationSpoofMask      spoofMask;
     uint64_t elapsedRealTime;    // in ns

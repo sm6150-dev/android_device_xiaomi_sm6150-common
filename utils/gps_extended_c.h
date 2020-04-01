@@ -468,7 +468,7 @@ typedef uint32_t GnssAdditionalSystemInfoMask;
 #define QZSS_SV_PRN_MIN     193
 #define QZSS_SV_PRN_MAX     197
 #define BDS_SV_PRN_MIN      201
-#define BDS_SV_PRN_MAX      237
+#define BDS_SV_PRN_MAX      263
 #define GAL_SV_PRN_MIN      301
 #define GAL_SV_PRN_MAX      336
 #define NAVIC_SV_PRN_MIN    401
@@ -665,7 +665,7 @@ typedef struct {
      *    - For GLONASS: 65 to 96
      *    - For SBAS:    120 to 158 and 183 to 191
      *    - For QZSS:    193 to 197
-     *    - For BDS:     201 to 237
+     *    - For BDS:     201 to 263
      *    - For GAL:     301 to 336
      *    - For NAVIC:   401 to 414 */
     uint16_t gnssSvId;

@@ -524,7 +524,9 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT   = (1<<3),
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
     GNSS_AIDING_DATA_SV_TYPE_NAVIC_BIT    = (1<<5),
+    GNSS_AIDING_DATA_SV_TYPE_MAX          = (1<<6),
 } GnssAidingDataSvTypeBits;
+#define GNSS_AIDING_DATA_SV_TYPE_MASK_ALL (GNSS_AIDING_DATA_SV_TYPE_MAX-1)
 
 /* Gnss constellation type mask */
 typedef uint16_t GnssConstellationTypeMask;

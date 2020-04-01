@@ -1161,7 +1161,7 @@ typedef struct {
     //    - For GLONASS: 65 to 96
     //    - For SBAS:    120 to 158 and 183 to 191
     //    - For QZSS:    193 to 197
-    //    - For BDS:     201 to 237
+    //    - For BDS:     201 to 263
     //    - For GAL:     301 to 336
     //    - For NAVIC:   401 to 414
     uint16_t svId;
@@ -1331,11 +1331,11 @@ typedef uint16_t GnssSvPolyStatusMaskValidity;
 #define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x08)
 
 typedef struct {
-    uint32_t      size;
-    uint16_t     gnssSvId;
+    uint32_t    size;
+    uint16_t    gnssSvId;
     /** Unique SV Identifier.
      *  For SV Range of supported constellation, please refer to the
-     *  comment section of gnssSvId in GpsMeasUsageInfo.
+     * comment section of svId in GnssSv.
     */
     int8_t      freqNum;
     /** Freq index, only valid if u_SysInd is GLO */

@@ -1314,6 +1314,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_add_call_during_video_call" value="false" />
         <boolean name="allow_holding_video_call" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="01">
@@ -1341,6 +1342,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -1391,6 +1393,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_add_call_during_video_call" value="false" />
         <boolean name="allow_holding_video_call" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="03">
@@ -1427,6 +1430,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="04">
@@ -1455,6 +1459,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="06">
@@ -1478,6 +1483,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -1527,6 +1533,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_add_call_during_video_call" value="false" />
         <boolean name="allow_holding_video_call" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="08">
@@ -1575,6 +1582,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_add_call_during_video_call" value="false" />
         <boolean name="allow_holding_video_call" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="09">
@@ -1597,6 +1605,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="10">
@@ -1642,6 +1651,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="12">
@@ -1671,6 +1681,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
         <boolean name="config_disable_clir_over_ut" value="true" />
+        <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="310" mnc="00">

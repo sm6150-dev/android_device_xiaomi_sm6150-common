@@ -154,6 +154,20 @@ typedef std::function<void(
 
 typedef void (*removeClientCompleteCallback)(LocationAPI* client);
 
+typedef void* QDgnssListenerHDL;
+typedef std::function<void(
+    bool    sessionActive
+)> QDgnssSessionActiveCb;
+
+struct CdfwInterface {
+    QDgnssListenerHDL (*createUsableReporter)(
+            QDgnssSessionActiveCb sessionActiveCb);
+
+    void (*destroyUsableReporter)(QDgnssListenerHDL handle);
+
+    void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
+};
+
 class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
@@ -191,6 +205,13 @@ class GnssAdapter : public LocAdapterBase {
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
     void initAgps(const AgpsCbInfo& cbInfo);
+
+    /* ==== DGNSS Data Usable Report======================================================== */
+    QDgnssListenerHDL mQDgnssListenerHDL;
+    const CdfwInterface* mCdfwInterface;
+    bool mDGnssNeedReport;
+    bool mDGnssDataUsage;
+    void reportDGnssDataUsable(GnssSvMeasurementSet &svMeasurementSet);
 
     /* ==== ODCPI ========================================================================== */
     OdcpiRequestCallback mOdcpiRequestCb;
@@ -387,6 +408,7 @@ public:
     virtual bool isInSession() { return !mTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
+    void initDGnssUsableReporter();
     void odcpiTimerExpireEvent();
 
     /* ==== REPORTS ======================================================================== */
@@ -489,6 +511,9 @@ public:
                          int blockDurationMsec, double latLonDiffThreshold);
 
     void updatePowerStateCommand(PowerStateType powerState);
+
+    /*==== DGnss Usable Report Flag ====================================================*/
+    inline void setDGnssUsableFLag(bool dGnssNeedReport) { mDGnssNeedReport = dGnssNeedReport;}
 };
 
 #endif //GNSS_ADAPTER_H

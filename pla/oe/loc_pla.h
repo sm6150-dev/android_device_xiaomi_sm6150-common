@@ -114,6 +114,27 @@ inline int property_get(const char* key, char* value, const char* default_value)
 }
 #endif /* FEATURE_EXTERNAL_AP */
 
+/*!
+ * @brief Function for memory block copy
+ *
+ * @param[out] p_Dest     Destination buffer.
+ * @param[in]  q_DestSize Destination buffer size.
+ * @param[in]  p_Src      Source buffer.
+ * @param[in]  q_SrcSize  Source buffer size.
+ *
+ * @return Number of bytes copied.
+ */
+inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+{
+    size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
+    if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {
+        memcpy(p_Dest, p_Src, res);
+    } else {
+        res = 0;
+    }
+    return res;
+}
+
 #ifdef __cplusplus
 }
 #endif /*__cplusplus */

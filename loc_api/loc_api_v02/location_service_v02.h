@@ -63,7 +63,7 @@
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
 /* This file was generated with Tool version 6.14.9
-   It was generated on: Wed Feb  5 2020 (Spin 0)
+   It was generated on: Thu Feb 13 2020 (Spin 1)
    From IDL File: location_service_v02.idl */
 
 /** @defgroup loc_qmi_consts Constant values defined in the IDL */
@@ -89,7 +89,7 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x76
+#define LOC_V02_IDL_MINOR_VERS 0x77
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x06
 /** Maximum Defined Message ID */
@@ -1903,11 +1903,11 @@ typedef struct {
   */
 
   /* Optional */
-  /*  Probability of Good Fix  */
-  uint8_t probabilityOfGoodFix_valid;  /**< Must be set to true if probabilityOfGoodFix is being passed */
-  float probabilityOfGoodFix;
-  /**<   Probability of fix being good
-       - Range: 0 to 1;
+  /*  Conformity Index */
+  uint8_t conformityIndex_valid;  /**< Must be set to true if conformityIndex is being passed */
+  float conformityIndex;
+  /**<   Indicates how well the various input data considered for navigation solution conform to expectations
+       - Range: 0 (least conforming) to 1 (most conforming)
   */
 }qmiLocEventPositionReportIndMsgT_v02;  /* Message */
 /**

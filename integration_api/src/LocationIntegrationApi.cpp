@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -239,6 +239,28 @@ bool LocationIntegrationApi::configLeverArm(const LeverArmParamsMap& configInfo)
         }
         mApiImpl->configLeverArm(halLeverArmConfigInfo);
         return true;
+    } else {
+        LOC_LOGe ("NULL mApiImpl");
+        return false;
+    }
+}
+
+bool LocationIntegrationApi::configRobustLocation(bool enable, bool enableForE911) {
+
+    if (mApiImpl) {
+        mApiImpl->configRobustLocation(enable, enableForE911);
+        return true;
+    } else {
+        LOC_LOGe ("NULL mApiImpl");
+        return false;
+    }
+}
+
+bool LocationIntegrationApi::getRobustLocationConfig() {
+    if (mApiImpl) {
+        // mApiImpl->getRobustLocationConfig returns none-zero when
+        // there is no callback
+        return (mApiImpl->getRobustLocationConfig() == 0);
     } else {
         LOC_LOGe ("NULL mApiImpl");
         return false;

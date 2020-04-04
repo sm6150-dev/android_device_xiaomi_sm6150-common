@@ -148,15 +148,6 @@ void LocHalDaemonClientHandler::updateSubscription(uint32_t mask) {
         mCallbacks.gnssMeasurementsCb = nullptr;
     }
 
-    // SV poly
-    if (mSubscriptionMask & E_LOC_CB_GNSS_SV_POLY_BIT) {
-        mCallbacks.gnssSvPolynomialCb = [this](GnssSvPolynomial notification) {
-            onGnssSvPolynomialCb(notification);
-        };
-    } else {
-        mCallbacks.gnssMeasurementsCb = nullptr;
-    }
-
     // system info
     if (mSubscriptionMask & E_LOC_CB_SYSTEM_INFO_BIT) {
         mCallbacks.locationSystemInfoCb = [this](LocationSystemInfo notification) {
@@ -587,6 +578,39 @@ void LocHalDaemonClientHandler::onControlResponseCb(LocationError err, ELocMsgID
     }
 }
 
+void LocHalDaemonClientHandler::onGnssConfigCb(ELocMsgID configMsgId,
+                                               const GnssConfig & gnssConfig) {
+    uint8_t* msg = nullptr;
+    size_t msgLen = 0;
+
+    switch (configMsgId) {
+    case E_INTAPI_GET_ROBUST_LOCATION_CONFIG_REQ_MSG_ID:
+        if (gnssConfig.flags & GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT) {
+            msg = (uint8_t*) new LocConfigGetRobustLocationConfigRespMsg(
+                    SERVICE_NAME, gnssConfig.robustLocationConfig);
+            msgLen = sizeof(LocConfigGetRobustLocationConfigRespMsg);
+        }
+        break;
+    default:
+        break;
+    }
+
+    if ((nullptr != mIpcSender) && (nullptr != msg)) {
+        int rc = sendMessage(msg, msgLen);
+        // purge this client if failed
+        if (!rc) {
+            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
+            mService->deleteClientbyName(mName);
+        }
+    }
+
+    // cleanup
+    if (nullptr != msg) {
+        delete msg;
+        msg = nullptr;
+    }
+}
+
 /******************************************************************************
 LocHalDaemonClientHandler - Location API callback functions
 ******************************************************************************/
@@ -890,23 +914,6 @@ void LocHalDaemonClientHandler::onGnssMeasurementsCb(GnssMeasurementsNotificatio
     if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_GNSS_MEAS_BIT)) {
         LocAPIMeasIndMsg msg(SERVICE_NAME, notification);
         LOC_LOGv("Sending meas message");
-        int rc = sendMessage(msg);
-        // purge this client if failed
-        if (!rc) {
-            LOC_LOGe("failed rc=%d purging client=%s", rc, mName.c_str());
-            mService->deleteClientbyName(mName);
-        }
-    }
-}
-
-void LocHalDaemonClientHandler::onGnssSvPolynomialCb(GnssSvPolynomial notification) {
-
-    std::lock_guard<std::mutex> lock(LocationApiService::mMutex);
-    LOC_LOGd("--< onGnssSvPolynomialCb");
-
-    if ((nullptr != mIpcSender) && (mSubscriptionMask & E_LOC_CB_GNSS_SV_POLY_BIT)) {
-        LocAPIGnssSvPolyIndMsg msg(SERVICE_NAME, notification);
-        LOC_LOGv("Sending sv poly message");
         int rc = sendMessage(msg);
         // purge this client if failed
         if (!rc) {

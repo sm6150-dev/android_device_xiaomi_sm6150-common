@@ -39,11 +39,11 @@
 
 #define CLIENT_DIAG_GNSS_SV_MAX            (176)
 #define CLIENT_DIAG_GNSS_MEASUREMENTS_MAX  (128)
-#define LOG_CLIENT_LOCATION_DIAG_MSG_VERSION        (1)
+#define LOG_CLIENT_LOCATION_DIAG_MSG_VERSION        (2)
 #define LOG_CLIENT_SV_REPORT_DIAG_MSG_VERSION       (2)
 #define LOG_CLIENT_NMEA_REPORT_DIAG_MSG_VERSION     (1)
 #define LOG_CLIENT_MEASUREMENTS_DIAG_MSG_VERSION    (1)
-#define LOG_CLIENT_SV_POLY_DIAG_MSG_VERSION         (1)
+
 
 #ifndef LOG_GNSS_CLIENT_API_NMEA_REPORT_C
 #define LOG_GNSS_CLIENT_API_NMEA_REPORT_C (0x1CB2)
@@ -51,10 +51,6 @@
 
 #ifndef LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C
 #define LOG_GNSS_CLIENT_API_MEASUREMENTS_REPORT_C (0x1CB7)
-#endif
-
-#ifndef LOG_GNSS_CLIENT_API_SV_POLY_REPORT_C
-#define LOG_GNSS_CLIENT_API_SV_POLY_REPORT_C (0x1CC7)
 #endif
 
 namespace location_client
@@ -92,7 +88,7 @@ typedef enum {
     /** Navigation data has Vertical Acceleration */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT  = (1<<2),
     /** Navigation data has Heading Rate */
-    pLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3),
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3),
     /** Navigation data has Body pitch */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4),
     /** Navigation data has Forward Acceleration uncertainty */
@@ -104,7 +100,23 @@ typedef enum {
     /** Navigation data has Heading Rate uncertainty */
     CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT   = (1<<8),
     /** Navigation data has Body pitch uncertainty */
-    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9)
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9),
+    /** Navigation data has pitch rate */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT     = (1<<10),
+    /** Navigation data has body pitch rate uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT = (1<<11),
+    /** Navigation data has body roll */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_BIT           = (1<<12),
+    /** Navigation data has body roll uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT       = (1<<13),
+    /** Navigation data has body rate roll */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT      = (1<<14),
+    /** Navigation data has body roll rate uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT  = (1<<15),
+    /** Navigation data has body yaw */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_BIT            = (1<<16),
+    /** Navigation data has body roll uncertainty */
+    CLIENT_DIAG_LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<17)
 } clientDiagGnssLocationPosDataBits;
 
 typedef enum
@@ -247,6 +259,23 @@ typedef PACKED struct PACKED_POST {
     float           yawRateUnc;
     /** Uncertainty of Body pitch */
     float           pitchUnc;
+    /** Body pitch rate (Radians/second) */
+    float pitchRate;
+    /** Uncertainty of pitch rate (Radians/second) */
+    float pitchRateUnc;
+    /** Roll of body frame. Clockwise positive. (Radian) */
+    float roll;
+    /** Uncertainty of Roll, 68% confidence level (radian) */
+    float rollUnc;
+    /** Roll rate of body frame. Clockwise positive. (radian/second)
+    */
+    float rollRate;
+    /** Uncertainty of Roll rate, 68% confidence level (radian/second) */
+    float rollRateUnc;
+    /** Yaw of body frame. Clockwise positive (radian) */
+    float yaw;
+    /** Uncertainty of Yaw, 68% confidence level (radian) */
+    float yawUnc;
 } clientDiagGnssLocationPositionDynamics;
 
 /** @struct
@@ -455,6 +484,11 @@ typedef enum {
     CLIENT_DIAG_GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<27),
     /** valid output engine mask */
     CLIENT_DIAG_GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28),
+    /** valid output conformityIndex */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29),
+    /** GnssLocation has valid
+     *  GnssLocation::llaVRPBased.  */
+    CLIENT_DIAG_GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30),
 } clientDiagGnssLocationInfoFlagBits;
 
 typedef enum {
@@ -522,6 +556,18 @@ typedef enum {
     CLIENT_DIAG_DEAD_RECKONING_ENGINE       = (1 << 1),
     CLIENT_DIAG_PRECISE_POSITIONING_ENGINE  = (1 << 2)
 } clientDiagPositioningEngineBits;
+
+typedef PACKED struct PACKED_POST {
+    /**  Latitude, in unit of degrees, range [-90.0, 90.0]. */
+    double latitude;
+
+    /**  Longitude, in unit of degrees, range [-180.0, 180.0]. */
+    double longitude;
+
+    /** Altitude above the WGS 84 reference ellipsoid, in unit
+    of meters.  */
+    float altitude;
+} clientDiagLLAInfo;
 
 typedef PACKED struct PACKED_POST {
     /** Used by Logging Module
@@ -630,6 +676,14 @@ typedef PACKED struct PACKED_POST {
     /** when loc output eng type is set to fused, this field
         indicates the set of engines contribute to the fix. */
     clientDiagPositioningEngineMask locOutputEngMask;
+    /** When robust location is enabled, this field
+     * will indicate how well the various input data considered for
+     * navigation solution conform to expectations.
+     * Range: [0.0, 1.0], with 0.0 for least conforming and 1.0 for
+     * most conforming. */
+    float conformityIndex;
+    /** VRR-based latitude/longitude/altitude. */
+    clientDiagLLAInfo llaVRPBased;
 } clientDiagGnssLocationStructType;
 
 typedef uint32_t clientDiagGnssMeasurementsDataFlagsMask;
@@ -775,308 +829,6 @@ typedef PACKED struct PACKED_POST {
 /** One or more nmea strings separated by \n charachter */
     uint8_t nmea[1];
 } clientDiagGnssNmeaStructType;
-
-
-/** Specify the valid fields in clientDiagGnssSvPoly. <br/> */
-enum clientDiagGnssSvPolyValidityMask {
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::svId. <br/>
-     *  This flag should always be set. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_SV_ID              = 0x0000000001,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::svConstellation. <br/>
-     *  This flag should always be set. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_SV_CONSTELLATION   = 0x0000000002,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gloFrequency. <br/>
-     *  This flag should be set only if this is Glonass SV. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GLO_FREQUENCY      = 0x0000000004,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::actionType. <br/>
-     *  This flag should always be set. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_ACTION_TYPE        = 0x0000000008,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::statusMask. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_STATUS_MASK        = 0x0000000010,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::T0. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_T0                 = 0x0000000020,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::polyCofXYZ0. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_POLY_COF_XYZ0      = 0x0000000040,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::polyCofXYZN. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_POLY_COF_XYZN      = 0x0000000080,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::polyCofClockBias. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_POLY_COF_CLK_BIAS  = 0x0000000100,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::iode. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_IODE               = 0x0000000200,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::enhancedIOD. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_ENHANCED_IOD       = 0x0000000400,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::svPosUnc. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_SV_POS_UNC         = 0x0000000800,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::ionoDelay. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_IONO_DELAY         = 0x0000001000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::ionoDot.  <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_IONO_DOT           = 0x0000002000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::sbasIonoDelay. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_SBAS_IONO_DELAY    = 0x0000004000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::sbasIonoDot. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_SBAS_IONO_DOT      = 0x0000008000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::tropoDelay. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_TROPO_DELAY        = 0x0000010000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::elevation. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_ELEVATION          = 0x0000020000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::elevationDot. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_ELEVATION_DOT      = 0x0000040000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::elevationUnc. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_ELEVATION_UNC      = 0x0000080000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::velCof. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_VEL_COF            = 0x0000100000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gpsIscL1ca. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GPS_ISC_L1CA       = 0x0000200000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gpsIscL2c. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GPS_ISC_L2C        = 0x0000400000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gpsIscL5I5. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GPS_ISC_L5I5       = 0x0000800000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gpsIscL5Q5. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GPS_ISC_L5Q5       = 0x0001000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gpsTgd.  <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GPS_TGD            = 0x0002000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::gloTgdG1G2. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GLO_TGD_G1G2       = 0x0004000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::bdsTgdB1. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_BDS_TGD_B1         = 0x00080000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::bdsTgdB2. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_BDS_TGD_B2         = 0x00100000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::bdsTgdB2a. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_BDS_TGD_B2A        = 0x00200000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::bdsIscB2a. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_BDS_ISC_B2A        = 0x00400000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::galBgdE1E5a. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GAL_BGD_E1E5A      = 0x00800000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::galBgdE1E5b. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_GAL_BGD_E1E5B      = 0x01000000000,
-    /** clientDiagGnssSvPoly has valid clientDiagGnssSvPoly::navicTgdL5. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_HAS_NAVIC_TDG_L5       = 0x02000000000,
-};
-
-/**  SV Polynomial Report Status. <br/> */
-enum clientDiagGnssSvPolyStatusMask {
-    /** Polynomials based on XTRA. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_STATUS_SRC_ALM_CORR = 0x01,
-    /** GLONASS string 4 has been received. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_STATUS_GLO_STR4 = 0x2,
-    /** GALILEO polynomial computed from I/Nav navigation
-     *  message. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_STATUS_GAL_FNAV = 0x04,
-    /** GALILEO polynomial computed from F/Nav navigation message.
-     *  <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_STATUS_GAL_INAV = 0x08,
-};
-
-/** Action to be performed for the received polynomial for this
- *  satellite. <br/> */
-enum clientDiagGnssSvPolyActionType {
-    /** Update Polynomial for this satellite. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_ACTION_UPDATE = 1,
-    /** Invalidate any previously received polynomial. <br/> */
-    CLIENT_DIAG_GNSS_SV_POLY_ACTION_INVALIDATE = 2,
-};
-
-/** Const define for the array size of clientDiagGnssSvPoly::velCoef.
- *  <br/>  */
-#define CLIENT_DIAG_GNSS_SV_POLY_VELOCITY_COF_SIZE       12
-/** Const define for the array size of
- *  clientDiagGnssSvPoly::polyCofXYZ0. <br/>  */
-#define CLIENT_DIAG_GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE  3
-/** Const define for the array size of
- *  clientDiagGnssSvPoly::polyCofXYZN. <br/>  */
-#define CLIENT_DIAG_GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE  9
-/** Const define for the array size of
- *  clientDiagGnssSvPoly::polyCofClockBias. <br/>  */
-#define CLIENT_DIAG_GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE      4
-
-typedef PACKED struct PACKED_POST {
-    /** Used by Logging Module
-      *  Mandatory field */
-    log_hdr_type logHeader;
-    /** clientDiag Message Version
-     *  Mandatory field */
-    uint8 version;
-    /** Bitwise OR of clientDiagGnssSvPolyValidityMask to specify the
-     *  valid fields in clientDiagGnssSvPoly. <br/> */
-    clientDiagGnssSvPolyValidityMask validityMask;
-
-    /** Specify satellite vehicle ID number. <br/> For SV id range
-     *  of each supported constellations, refer to documentation in
-     *  GnssSv::svId. <br/>
-     */
-    uint16_t svId;
-
-    /** Specify GNSS Constellation Type for the SV. */
-    clientDiagGnss_LocSvSystemEnumType svConstellation;
-
-    /**  GLONASS frequency number + 8. Valid only for GLONASS
-     *   systems and must be ignored for all other systems. <br/>
-     *   Range: 1 to 14 <br/>   */
-    uint8_t gloFrequency;
-
-    /** SV polynomial action type, update or invalidate. <br/> */
-    clientDiagGnssSvPolyActionType actionType;
-
-    /**  SV Polynomial Report Status. <br/> */
-    clientDiagGnssSvPolyStatusMask statusMask;
-
-    /**  Reference time for polynomial calculations. <br/>
-     * - GPS, QZSS: Seconds in the week <br/>
-     * - GLONASS: Full seconds since Jan. 1, 1996 <br/>
-     * - BDS: Full seconds since Jan. 1, 2006 <br/>
-     * - Galileo: Calculated from 00:00 UT on Sunday, August 22,
-     *     1999 (midnight between August 21 and August 22) <br/>
-     */
-    double T0;
-
-    /** Polynomial Coefficient's 0th Term for X, Y, and Z
-     *  Coordinates (C0X, C0Y, C0Z). <br/>
-     *  If this field is indicated as valid via validityMask, then
-     *  every element is valid. <br/> */
-    double polyCofXYZ0[CLIENT_DIAG_GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE];
-
-    /** Polynomial coefficient's 1st, 2nd, and 3rd terms for X, Y
-     *  and Z coordinates (C1X, C2X,... C2Z, C3Z). <br/>
-     *  If this field is indicated as valid via validityMask, then
-     *  every element is valid. <br/>
-     *  Units are specified as below: <br/>
-     *       - 1st term -- Meters/second <br/>
-     *       - 2nd term -- Meters/second^2 <br/>
-     *       - 3rd term -- Meters/seconds^3 <br/> */
-    double polyCofXYZN[CLIENT_DIAG_GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE];
-
-    /** Polynomial coefficients for satellite clock bias
-     *  correction (C0T, C1T, C2T, C3T). <br/> If this field is
-     *  indicated as valid via validityMask, then every element is
-     *  valid. <br/>
-     *  Units are specified below <br/>
-     *        - 0th term -- Milliseconds/second <br/>
-     *        - 1st term -- Milliseconds/second^2 <br/>
-     *        - 2nd term -- Milliseconds/second^3 <br/>
-     *        - 3rd term -- Milliseconds/second^4 <br/> */
-    float polyCofClockBias[CLIENT_DIAG_GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE];
-
-    /**  Ephemeris reference time. <br/>
-     *       - GPS -- Issue of data ephemeris used (unitless) <br/>
-     *       - GLONASS -- Tb 7-bit <br/>
-     *       - Galileo -- 10-bit <br/>  */
-    uint16_t iode;
-
-    /** Enhanced Reference Time, for BDS ephemeris, this is TOE.
-     *  <br/> */
-    uint32_t enhancedIOD;
-
-    /** SV Position Uncertainty, in unit of meters. <br/> */
-    float svPosUnc;
-
-    /** Ionospheric delay at T0, in unit of meters. <br/> */
-    float ionoDelay;
-
-    /** Ionospheric delay rate, in unit of Meters/second. <br/>
-     */
-    float ionoDot;
-
-    /** SBAS ionospheric delay at T0, in unit of  Meters. <br/>
-    */
-    float sbasIonoDelay;
-
-    /** SBAS ionospheric delay rate, in unit of Meters/second. <br/>
-    */
-    float sbasIonoDot;
-
-    /** Tropospheric delay, in unit of Meters. <br/>
-    */
-    float tropoDelay;
-
-    /** Satellite elevation at T0, in unit of Radians. <br/>
-    */
-    float elevation;
-
-    /** Satellite elevation rate, in unit of Radians/second. <br/>
-    */
-    float elevationDot;
-
-    /** SV elevation uncertainty, in unit of Radians. <br/>
-    */
-    float elevationUnc;
-
-    /** Polynomial coefficients for SV velocity (C0X, C1X, C2X,
-     *  C3X,... C2Z, C3Z). <br/>
-     *  If this field is indicated as valid via validityMask, then
-     *    every element is valid. <br/>
-     *    Units: <br/>
-     *    - 0th term -- Meters/second <br/>
-     *    - 1st term -- Meters/second^2 <br/>
-     *    - 2nd term -- Meters/second^3 <br/>
-     *   - 3rd term -- Meters/second^4 <br/> */
-    double velCof[CLIENT_DIAG_GNSS_SV_POLY_VELOCITY_COF_SIZE];
-
-    /** Inter-signal correction - GPS/QZSS L1C/A, in unit of
-     *  milliseconds. <br/>
-     */
-    float gpsIscL1ca;
-
-    /** Inter-signal correction - GPS/QZSS L2C, in unit of
-     *  milliseconds. <br/>
-     */
-    float gpsIscL2c;
-
-    /** Inter-signal correction - GPS/QZSS L5I5, in unit of
-     *  milliseconds. <br/>
-     */
-    float gpsIscL5I5;
-
-    /** Inter-signal correction - GPS/QZSS L5Q5, in unit of
-     *  milliseconds. <br/>
-     */
-    float gpsIscL5Q5;
-
-    /** Time of group delay - GPS/QZSS, 13 bits from CNAV, 8 bits
-     *  from LNAV, in unit of  milliseconds. <br/>
-     */
-    float gpsTgd;
-
-    /** Time of group delay - GLONASS G1-G2, in unit of
-     *  milliseconds. <br/>
-     */
-    float gloTgdG1G2;
-
-    /** Time of group delay - BDS B1, in unit of
-     *  milliseconds. <br/>
-     */
-    float bdsTgdB1;
-
-    /** Time of group delay - BDS B2, in unit of
-     *  milliseconds. <br/>
-     */
-    float bdsTgdB2;
-
-    /** Time of group delay - BDS B2A, in unit of milliseconds.
-     *  <br/>
-     */
-    float bdsTgdB2a;
-
-    /** Inter-signal correction - BDS B2A, in unit of milliseconds.
-     *  <br/>
-     */
-    float bdsIscB2a;
-
-    /** Broadcast group delay - Galileo E1-E5a, in unit of
-     *  milliseconds. <br/>
-     */
-    float galBgdE1E5a;
-
-    /** Broadcast group delay - Galileo E1-E5b, in unit of
-     *  milliseconds. <br/>
-     */
-    float galBgdE1E5b;
-
-    /** Time of group delay - NavIC L5, in unit of
-     *  milliseconds. <br/>
-     */
-    float navicTgdL5;
-
-} clientDiagGnssSvPoly;
 
 }
 #endif /*LOCATION_CLIENT_API_LOG_H */

@@ -329,6 +329,7 @@ void populateClientDiagLocation(clientDiagGnssLocationStructType* diagGnssLocPtr
     diagGnssLocPtr->numSvUsedInPosition = gnssLocation.numSvUsedInPosition;
     diagGnssLocPtr->calibrationConfidencePercent = gnssLocation.calibrationConfidencePercent;
     diagGnssLocPtr->calibrationStatus = gnssLocation.calibrationStatus;
+    diagGnssLocPtr->conformityIndex = gnssLocation.conformityIndex;
 
     struct timespec ts;
     clock_gettime(CLOCK_BOOTTIME, &ts);
@@ -440,85 +441,6 @@ void populateClientDiagNmea(clientDiagGnssNmeaStructType *diagGnssNmeaPtr,
     diagGnssNmeaPtr->timestamp = nmeaSerializedPayload.timestamp;
     diagGnssNmeaPtr->nmeaLength = nmeaSerializedPayload.length;
     memcpy(&diagGnssNmeaPtr->nmea, nmeaSerializedPayload.nmea, nmeaSerializedPayload.length);
-}
-
-void populateClientDiagSvPoly(clientDiagGnssSvPoly *diagGnssSvPolyPtr,
-        const GnssSvPoly &gnssSvPoly) {
-
-    diagGnssSvPolyPtr->validityMask =
-            (clientDiagGnssSvPolyValidityMask)gnssSvPoly.validityMask;
-    diagGnssSvPolyPtr->svId = gnssSvPoly.svId;
-    diagGnssSvPolyPtr->svConstellation =
-            (clientDiagGnss_LocSvSystemEnumType) gnssSvPoly.svConstellation;
-    diagGnssSvPolyPtr->gloFrequency = gnssSvPoly.gloFrequency;
-    diagGnssSvPolyPtr->actionType =
-            (clientDiagGnssSvPolyActionType) gnssSvPoly.actionType;
-    diagGnssSvPolyPtr->statusMask =
-            (clientDiagGnssSvPolyStatusMask) gnssSvPoly.statusMask;
-    diagGnssSvPolyPtr->T0 = gnssSvPoly.T0;
-    uint32_t index = 0;
-    if (GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE ==
-            CLIENT_DIAG_GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE) {
-        for (index = 0; index < GNSS_SV_POLY_XYZ_0_TH_ORDER_COF_SIZE; index++) {
-            diagGnssSvPolyPtr->polyCofXYZ0[index] = gnssSvPoly.polyCofXYZ0[index];
-        }
-    } else {
-        LOC_LOGe("array size for polyCofXYZ0 not match");
-    }
-
-    if (GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE ==
-            CLIENT_DIAG_GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE) {
-        for (index = 0; index < GNSS_SV_POLY_XYZ_N_TH_ORDER_COF_SIZE; index++) {
-            diagGnssSvPolyPtr->polyCofXYZN[index] = gnssSvPoly.polyCofXYZN[index];
-        }
-    } else {
-        LOC_LOGe("array size for polyCofXYZN not match");
-    }
-
-    if (GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE ==
-            CLIENT_DIAG_GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE) {
-        for (index = 0; index < GNSS_SV_POLY_SV_CLKBIAS_COF_SIZE; index++) {
-            diagGnssSvPolyPtr->polyCofClockBias[index] = gnssSvPoly.polyCofClockBias[index];
-        }
-    } else {
-        LOC_LOGe("array size for polyCofClockBias not match");
-    }
-
-    diagGnssSvPolyPtr->iode = gnssSvPoly.iode;
-    diagGnssSvPolyPtr->enhancedIOD = gnssSvPoly.enhancedIOD;
-    diagGnssSvPolyPtr->svPosUnc = gnssSvPoly.svPosUnc;
-    diagGnssSvPolyPtr->ionoDelay = gnssSvPoly.ionoDelay;
-    diagGnssSvPolyPtr->ionoDot = gnssSvPoly.ionoDot;
-    diagGnssSvPolyPtr->sbasIonoDelay = gnssSvPoly.sbasIonoDelay;
-    diagGnssSvPolyPtr->sbasIonoDot = gnssSvPoly.sbasIonoDot;
-    diagGnssSvPolyPtr->tropoDelay = gnssSvPoly.tropoDelay;
-    diagGnssSvPolyPtr->elevation = gnssSvPoly.elevation;
-    diagGnssSvPolyPtr->elevationDot = gnssSvPoly.elevationDot;
-    diagGnssSvPolyPtr->elevationUnc = gnssSvPoly.elevationUnc;
-    if (GNSS_SV_POLY_VELOCITY_COF_SIZE ==
-            CLIENT_DIAG_GNSS_SV_POLY_VELOCITY_COF_SIZE) {
-        for (index = 0; index < GNSS_SV_POLY_VELOCITY_COF_SIZE; index++) {
-            diagGnssSvPolyPtr->velCof[index] = gnssSvPoly.velCof[index];
-        }
-    } else {
-        LOC_LOGe("array size for velCof not match");
-    }
-
-    diagGnssSvPolyPtr->gpsIscL1ca = gnssSvPoly.gpsIscL1ca;
-    diagGnssSvPolyPtr->gpsIscL2c = gnssSvPoly.gpsIscL2c;
-    diagGnssSvPolyPtr->gpsIscL5I5 = gnssSvPoly.gpsIscL5I5;
-    diagGnssSvPolyPtr->gpsIscL5Q5 = gnssSvPoly.gpsIscL5Q5;
-    diagGnssSvPolyPtr->gpsTgd = gnssSvPoly.gpsTgd;
-
-    diagGnssSvPolyPtr->gloTgdG1G2 = gnssSvPoly.gloTgdG1G2;
-    diagGnssSvPolyPtr->bdsTgdB1 = gnssSvPoly.bdsTgdB1;
-    diagGnssSvPolyPtr->bdsTgdB2 = gnssSvPoly.bdsTgdB2;
-    diagGnssSvPolyPtr->bdsTgdB2a = gnssSvPoly.bdsTgdB2a;
-    diagGnssSvPolyPtr->bdsIscB2a = gnssSvPoly.bdsIscB2a;
-    diagGnssSvPolyPtr->galBgdE1E5a = gnssSvPoly.galBgdE1E5a;
-    diagGnssSvPolyPtr->galBgdE1E5b = gnssSvPoly.galBgdE1E5b;
-    diagGnssSvPolyPtr->navicTgdL5 = gnssSvPoly.navicTgdL5;
-
 }
 
 }

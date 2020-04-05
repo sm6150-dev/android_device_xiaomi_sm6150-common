@@ -1,0 +1,4 @@
+# IMEI
+persist.radio.imei      u:object_r:deviceid_prop:s0
+persist.radio.meid      u:object_r:deviceid_prop:s0
+ro.ril.                 u:object_r:deviceid_prop:s0

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The LineageOS Project
+ * Copyright (C) 2019-2020 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -45,13 +44,13 @@ public class PopupCameraService extends Service {
     private static final int FREE_FALL_SENSOR_ID = 33171042;
     private static final String GREEN_LED_PATH = "/sys/class/leds/green/brightness";
     private static final String BLUE_LED_PATH = "/sys/class/leds/blue/brightness";
-    private static String mCameraState = "-1";
     private static Handler mHandler = new Handler();
     private IMotor mMotor = null;
     private boolean mMotorBusy = false;
     private SensorManager mSensorManager;
     private Sensor mFreeFallSensor;
     private PopupCameraPreferences mPopupCameraPreferences;
+
     private String[] mSoundNames = { "popup_muqin_up.ogg", "popup_muqin_down.ogg", "popup_yingyan_up.ogg",
             "popup_yingyan_down.ogg", "popup_mofa_up.ogg", "popup_mofa_down.ogg", "popup_jijia_up.ogg",
             "popup_jijia_down.ogg", "popup_chilun_up.ogg", "popup_chilun_down.ogg", "popup_cangmen_up.ogg",
@@ -71,22 +70,11 @@ public class PopupCameraService extends Service {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
     };
-    private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (lineageos.content.Intent.ACTION_CAMERA_STATUS_CHANGED.equals(action)) {
-                mCameraState = intent.getExtras().getString(lineageos.content.Intent.EXTRA_CAMERA_STATE);
-                updateMotor(mCameraState);
-            }
-        }
-    };
 
     @Override
     public void onCreate() {
         mSensorManager = getSystemService(SensorManager.class);
         mFreeFallSensor = mSensorManager.getDefaultSensor(FREE_FALL_SENSOR_ID);
-        registerReceiver();
         mPopupCameraPreferences = new PopupCameraPreferences(this);
         mSoundPool = new SoundPool.Builder().setMaxStreams(1)
                 .setAudioAttributes(
@@ -118,20 +106,12 @@ public class PopupCameraService extends Service {
     public void onDestroy() {
         if (DEBUG)
             Log.d(TAG, "Destroying service");
-        unregisterReceiver(mIntentReceiver);
         super.onDestroy();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    private void registerReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(lineageos.content.Intent.ACTION_CAMERA_STATUS_CHANGED);
-        registerReceiver(mIntentReceiver, filter);
     }
 
     private void updateMotor(String cameraState) {
@@ -145,16 +125,15 @@ public class PopupCameraService extends Service {
                 if (mMotor == null)
                     return;
                 try {
-                    if (cameraState.equals(openCameraState) && mMotor.getMotorStatus() == 13) {
+		int status = mMotor.getMotorStatus();
+                    if (status == 8) /* POPUP_STATUS_POPUPING = 8 */{
                         lightUp();
                         playSoundEffect(openCameraState);
-                        mMotor.popupMotor(1);
                         mSensorManager.registerListener(mFreeFallListener, mFreeFallSensor,
                                 SensorManager.SENSOR_DELAY_NORMAL);
-                    } else if (cameraState.equals(closeCameraState) && mMotor.getMotorStatus() == 11) {
+                    } else if (status == 7) /* POPUP_STATUS_TAKEBACKING = 7 */{
                         lightUp();
                         playSoundEffect(closeCameraState);
-                        mMotor.takebackMotor(1);
                         mSensorManager.unregisterListener(mFreeFallListener, mFreeFallSensor);
                     }
                 } catch (Exception e) {

@@ -1,0 +1,5 @@
+# Allow hal_lineage_camera_motor_default to hal_motor_hwservice
+allow hal_lineage_camera_motor_default hal_motor_hwservice:hwservice_manager find;
+
+# Allow binder communication with hal_motor_default
+binder_call(hal_lineage_camera_motor_default, hal_motor_default)

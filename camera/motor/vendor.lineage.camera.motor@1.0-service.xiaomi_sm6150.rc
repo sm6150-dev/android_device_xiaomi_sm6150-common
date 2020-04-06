@@ -1,0 +1,10 @@
+on init
+    chown system system /dev/drv8846_dev
+    chmod 660 /dev/drv8846_dev
+
+service vendor.camera-motor-1-0 /vendor/bin/hw/vendor.lineage.camera.motor@1.0-service.xiaomi_sm6150
+    interface vendor.lineage.camera.motor@1.0::ICameraMotor default
+    class hal
+    user system
+    group system
+    shutdown critical

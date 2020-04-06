@@ -30,6 +30,7 @@
 #include <LocationUtil.h>
 #include <log_util.h>
 #include <inttypes.h>
+#include <loc_misc_utils.h>
 
 namespace android {
 namespace hardware {
@@ -125,31 +126,38 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
 {
     memset(&out, 0, sizeof(V2_0::GnssLocation));
     convertGnssLocation(in, out.v1_0);
+    if (in.flags & LOCATION_HAS_ELAPSED_REAL_TIME) {
+        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+        uint64_t qtimerDiff = in.elapsedRealTime - getQTimerTickCount();
+        out.elapsedRealtime.timestampNs = qTimerTicksToNanos(double(qtimerDiff));
+        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+        out.elapsedRealtime.timeUncertaintyNs = in.elapsedRealTimeUnc;
+    } else {
+        struct timespec currentTime;
+        int64_t sinceBootTimeNanos;
 
-    struct timespec currentTime;
-    int64_t sinceBootTimeNanos;
-
-    if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
-        int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
-        int64_t locationTimeNanos = in.timestamp*1000000;
-        LOC_LOGD("%s]: sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+        if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
+            int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
+            int64_t locationTimeNanos = in.timestamp*1000000;
+            LOC_LOGD("%s]: sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
                 " locationTimeNanos:%" PRIi64 "",
                 __FUNCTION__, sinceBootTimeNanos, currentTimeNanos, locationTimeNanos);
-        if (currentTimeNanos >= locationTimeNanos) {
-            int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
-            LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
-            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
-                out.elapsedRealtime.timeUncertaintyNs = 1000000;
-                LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
+            if (currentTimeNanos >= locationTimeNanos) {
+                int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
+                LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
+                if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                    out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                    // time uncertainty is 1 ms since it is calculated from utc time that is in ms
+                    out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                    LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
                         __FUNCTION__, out.elapsedRealtime.timestampNs);
+                }
             }
+        } else {
+            LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
         }
-    } else {
-        LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
     }
 }
 

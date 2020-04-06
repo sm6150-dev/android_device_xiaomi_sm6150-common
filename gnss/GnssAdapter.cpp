@@ -273,6 +273,11 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
         out.flags |= LOCATION_HAS_SPOOF_MASK;
         out.spoofMask = ulpLocation.gpsLocation.spoof_mask;
     }
+    if (LOC_GPS_LOCATION_HAS_ELAPSED_REAL_TIME & ulpLocation.gpsLocation.flags) {
+        out.flags |= LOCATION_HAS_ELAPSED_REAL_TIME;
+        out.elapsedRealTime = ulpLocation.gpsLocation.elapsedRealTime;
+        out.elapsedRealTimeUnc = ulpLocation.gpsLocation.elapsedRealTimeUnc;
+    }
 }
 
 /* This is utility routine that computes number of SV used

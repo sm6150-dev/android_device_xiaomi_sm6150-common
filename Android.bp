@@ -18,8 +18,7 @@ GNSS_CFLAGS = [
 
 /* Activate the following for regression testing */
 GNSS_SANITIZE = {
-/*
-    address: true,
+/*  address: true,*/
     cfi: true,
     misc_undefined: [
         "alignment",
@@ -28,7 +27,6 @@ GNSS_SANITIZE = {
         "unreachable",
         "integer",
     ],
-*/
 }
 
 /* Activate the following for debug purposes only,

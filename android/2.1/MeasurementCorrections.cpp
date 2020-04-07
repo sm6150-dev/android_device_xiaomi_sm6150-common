@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,21 +27,16 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
-#define ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
+#define LOG_TAG "LocSvc_MeasurementCorrectionsInterface"
 
-#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrections.h>
-#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrectionsCallback.h>
-#include <hidl/MQDescriptor.h>
-#include <hidl/Status.h>
-
-#include <location_interface.h>
+#include <log_util.h>
+#include "MeasurementCorrections.h"
 
 namespace android {
 namespace hardware {
 namespace gnss {
 namespace measurement_corrections {
-namespace V1_0 {
+namespace V1_1 {
 namespace implementation {
 
 using ::android::hardware::hidl_array;
@@ -51,26 +46,44 @@ using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::sp;
-using ::android::hardware::gnss::V1_0::GnssLocation;
 using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrectionsCallback;
+using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections;
 
-struct MeasurementCorrections : public IMeasurementCorrections {
-    MeasurementCorrections();
-    ~MeasurementCorrections();
+static MeasurementCorrections* spMeasurementCorrections = nullptr;
 
-// Methods from ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections follow.
-Return<bool> setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& corrections) override;
+MeasurementCorrections::MeasurementCorrections(Gnss* gnss) : mGnss(gnss) {
+    spMeasurementCorrections = this;
+}
 
-Return<bool> setCallback(const sp<IMeasurementCorrectionsCallback>& callback) override;
+MeasurementCorrections::~MeasurementCorrections() {
+    spMeasurementCorrections = nullptr;
+}
 
-};
+Return<bool> MeasurementCorrections::setCorrections(
+        const MeasurementCorrectionsV1_0& corrections) {
+    return true;
+}
 
+Return<bool> MeasurementCorrections::setCorrections_1_1(
+        const MeasurementCorrectionsV1_1& corrections) {
+    return true;
+}
+
+Return<bool> MeasurementCorrections::setCallback(
+        const sp<V1_0::IMeasurementCorrectionsCallback>& callback) {
+
+    if (nullptr == mGnss || nullptr == mGnss->getGnssInterface()) {
+        LOC_LOGe("Null GNSS interface");
+        return false;
+    }
+    mMeasurementCorrectionsCbIface = callback;
+
+    return true;
+}
 
 }  // namespace implementation
-}  // namespace V1_0
+}  // namespace V1_1
 }  // namespace measurement_corrections
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
-
-#endif  // ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H

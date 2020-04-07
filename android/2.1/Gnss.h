@@ -32,6 +32,7 @@
 #include <GnssAntennaInfo.h>
 
 #include <android/hardware/gnss/2.1/IGnss.h>
+#include <android/hardware/gnss/measurement_corrections/1.1/IMeasurementCorrections.h>
 #include <MeasurementCorrections.h>
 #include <GnssVisibilityControl.h>
 #include <hidl/MQDescriptor.h>
@@ -53,8 +54,10 @@ using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::sp;
 using ::android::hardware::gnss::V1_0::GnssLocation;
-using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections;
-using ::android::hardware::gnss::measurement_corrections::V1_0::implementation::MeasurementCorrections;
+using IMeasurementCorrectionsV1_0 =
+        ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections;
+using IMeasurementCorrectionsV1_1 =
+        ::android::hardware::gnss::measurement_corrections::V1_1::IMeasurementCorrections;
 using ::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl;
 
 struct Gnss : public IGnss {
@@ -117,8 +120,8 @@ struct Gnss : public IGnss {
     Return<sp<V2_0::IAGnssRil>> getExtensionAGnssRil_2_0() override;
 
     Return<sp<V2_0::IGnssConfiguration>> getExtensionGnssConfiguration_2_0() override;
-    Return<sp<::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections>>
-            getExtensionMeasurementCorrections() override;
+    Return<sp<IMeasurementCorrectionsV1_0>> getExtensionMeasurementCorrections() override;
+    Return<sp<IMeasurementCorrectionsV1_1>> getExtensionMeasurementCorrections_1_1() override;
     Return<sp<V2_0::IGnssMeasurement>> getExtensionGnssMeasurement_2_0() override;
 
     Return<bool> injectBestLocation_2_0(
@@ -134,9 +137,6 @@ struct Gnss : public IGnss {
     Return<sp<V2_1::IGnssMeasurement>> getExtensionGnssMeasurement_2_1() override;
     Return<sp<V2_1::IGnssConfiguration>> getExtensionGnssConfiguration_2_1() override;
     Return<sp<V2_1::IGnssAntennaInfo>> getExtensionGnssAntennaInfo() override;
-
-
-
 
     // These methods are not part of the IGnss base class.
     GnssAPIClient* getApi();
@@ -174,7 +174,7 @@ struct Gnss : public IGnss {
     sp<V2_1::IGnssMeasurement> mGnssMeasurement = nullptr;
     sp<V2_1::IGnssConfiguration> mGnssConfig = nullptr;
     sp<V2_1::IGnssAntennaInfo> mGnssAntennaInfo = nullptr;
-    sp<IMeasurementCorrections> mGnssMeasCorr = nullptr;
+    sp<IMeasurementCorrectionsV1_1> mGnssMeasCorr = nullptr;
     sp<IGnssVisibilityControl> mVisibCtrl = nullptr;
 
     GnssAPIClient* mApi = nullptr;

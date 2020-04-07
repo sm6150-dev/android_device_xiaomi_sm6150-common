@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2012-2013, 2016-2019, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2013, 2016-2020, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -340,10 +340,14 @@ function configure_zram_parameters() {
     # Zram disk - 75% for Go devices.
     # For 512MB Go device, size = 384MB, set same for Non-Go.
     # For 1GB Go device, size = 768MB, set same for Non-Go.
-    # For >1GB and <=3GB Non-Go device, size = 1GB
-    # For >3GB and <=4GB Non-Go device, size = 2GB
-    # For >4GB Non-Go device, size = 4GB
+    # For >=2GB Non-Go devices, size = 50% of RAM size. Limit the size to 4GB.
     # And enable lz4 zram compression for Go targets.
+
+    RamSizeGB=`echo "($MemTotal / 1048576 ) + 1" | bc`
+    zRamSizeBytes=`echo "$RamSizeGB * 1024 * 1024 * 1024 / 2" | bc`
+    if [ $zRamSizeBytes -gt 4294967296 ]; then
+        zRamSizeBytes=4294967296
+    fi
 
     if [ "$low_ram" == "true" ]; then
         echo lz4 > /sys/block/zram0/comp_algorithm
@@ -357,12 +361,8 @@ function configure_zram_parameters() {
             echo 402653184 > /sys/block/zram0/disksize
         elif [ $MemTotal -le 1048576 ]; then
             echo 805306368 > /sys/block/zram0/disksize
-        elif [ $MemTotal -le 3145728 ]; then
-            echo 1073741824 > /sys/block/zram0/disksize
-        elif [ $MemTotal -le 4194304 ]; then
-            echo 2147483648 > /sys/block/zram0/disksize
         else
-            echo 4294967296 > /sys/block/zram0/disksize
+            echo $zRamSizeBytes > /sys/block/zram0/disksize
         fi
 
         # ZRAM may use more memory than it saves if SLAB_STORE_USER
@@ -3387,6 +3387,7 @@ case "$target" in
     echo 0 > /proc/sys/kernel/sched_coloc_busy_hyst_max_ms
 
     # disable unfiltering
+    echo 20000000 > /proc/sys/kernel/sched_task_unfilter_period
     echo 1 > /proc/sys/kernel/sched_task_unfilter_nr_windows
 
     # configure governor settings for silver cluster
@@ -3516,7 +3517,7 @@ case "$target" in
 	for memlat in $device/*qcom,devfreq-l3/*cpu*-lat/devfreq/*cpu*-lat
         do
             echo "mem_latency" > $memlat/governor
-            echo 10 > $memlat/polling_interval
+            echo 8 > $memlat/polling_interval
             echo 400 > $memlat/mem_latency/ratio_ceil
         done
 
@@ -3530,7 +3531,7 @@ case "$target" in
 	for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
 	do
 	    echo "mem_latency" > $memlat/governor
-	    echo 10 > $memlat/polling_interval
+	    echo 8 > $memlat/polling_interval
 	    echo 400 > $memlat/mem_latency/ratio_ceil
         done
 
@@ -3550,7 +3551,7 @@ case "$target" in
         for latfloor in $device/*cpu*-ddr-latfloor*/devfreq/*cpu-ddr-latfloor*
         do
             echo "compute" > $latfloor/governor
-            echo 10 > $latfloor/polling_interval
+            echo 8 > $latfloor/polling_interval
         done
     done
 

@@ -42,6 +42,8 @@ namespace V2_1 {
 namespace implementation {
 
 using ::android::hardware::gnss::visibility_control::V1_0::implementation::GnssVisibilityControl;
+using ::android::hardware::gnss::measurement_corrections::V1_1::
+        implementation::MeasurementCorrections;
 static sp<Gnss> sGnss;
 static std::string getVersionString() {
     static std::string version;
@@ -523,7 +525,7 @@ void Gnss::odcpiRequestCb(const OdcpiRequestInfo& request) {
         // For emergency mode, request DBH (Device based hybrid) location
         // Mark Independent from GNSS flag to false.
         if (ODCPI_REQUEST_TYPE_START == request.type) {
-            LOC_LOGd("gnssRequestLocationCb_2_0 isUserEmergency = %d", request.isEmergencyMode);
+            LOC_LOGd("gnssRequestLocationCb_2_1 isUserEmergency = %d", request.isEmergencyMode);
             auto r = mGnssCbIface_2_1->gnssRequestLocationCb_2_0(!request.isEmergencyMode,
                                                                  request.isEmergencyMode);
             if (!r.isOk()) {
@@ -650,11 +652,21 @@ Return<sp<V2_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_2_0() {
     return mGnssMeasurement;
 #endif
 }
-Return<sp<::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections>>
+
+Return<sp<IMeasurementCorrectionsV1_0>>
         Gnss::getExtensionMeasurementCorrections() {
-    // We do not support, so return nullptr to pass VTS
     return nullptr;
 }
+
+Return<sp<IMeasurementCorrectionsV1_1>>
+        Gnss::getExtensionMeasurementCorrections_1_1() {
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssMeasCorr == nullptr) {
+        mGnssMeasCorr = new MeasurementCorrections(this);
+    }
+    return mGnssMeasCorr;
+}
+
 Return<sp<::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl>>
         Gnss::getExtensionVisibilityControl() {
     ENTRY_LOG_CALLFLOW();
@@ -716,10 +728,12 @@ Return<bool> Gnss::setCallback_2_1(const sp<V2_1::IGnssCallback>& callback) {
         mGnssCbIface_1_1->unlinkToDeath(mGnssDeathRecipient);
         mGnssCbIface_1_1 = nullptr;
     }
-
     if (mGnssCbIface_2_0 != nullptr) {
         mGnssCbIface_2_0->unlinkToDeath(mGnssDeathRecipient);
         mGnssCbIface_2_0 = nullptr;
+    }
+    if (mGnssCbIface_2_1 != nullptr) {
+        mGnssCbIface_2_1->unlinkToDeath(mGnssDeathRecipient);
     }
     mGnssCbIface_2_1 = callback;
     if (mGnssCbIface_2_1 != nullptr) {
@@ -757,6 +771,7 @@ Return<sp<V2_1::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_2_1() {
     }
     return mGnssConfig;
 }
+
 Return<sp<V2_1::IGnssAntennaInfo>> Gnss::getExtensionGnssAntennaInfo() {
     ENTRY_LOG_CALLFLOW();
     if (mGnssAntennaInfo == nullptr) {

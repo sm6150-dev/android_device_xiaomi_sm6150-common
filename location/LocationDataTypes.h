@@ -229,6 +229,8 @@ typedef enum {
     LOCATION_CAPABILITIES_AGPM_BIT                          = (1<<11),
     // support location privacy
     LOCATION_CAPABILITIES_PRIVACY_BIT                       = (1<<12),
+    // support measurement corrections
+    LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT       = (1<<13),
 } LocationCapabilitiesBits;
 
 typedef enum {
@@ -461,6 +463,10 @@ typedef enum {
     GNSS_MEASUREMENTS_DATA_MULTIPATH_INDICATOR_BIT          = (1<<15),
     GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT        = (1<<16),
     GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT       = (1<<17),
+    GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_BIT                 = (1<<18),
+    GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_UNCERTAINTY_BIT     = (1<<19),
+    GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_BIT                = (1<<20),
+    GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_UNCERTAINTY_BIT    = (1<<21),
 } GnssMeasurementsDataFlagsBits;
 
 typedef uint32_t GnssMeasurementsStateMask;
@@ -484,6 +490,15 @@ typedef enum {
     GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT         = (1<<15),
     GNSS_MEASUREMENTS_STATE_2ND_CODE_LOCK_BIT         = (1<<16),
 } GnssMeasurementsStateBits;
+
+typedef uint16_t GnssSingleSatCorrectionMask;
+typedef enum {
+    GNSS_MC_UNKNOWN_BIT                     = 0,
+    GNSS_MC_HAS_SAT_IS_LOS_PROBABILITY_BIT  = (1 << 0),
+    GNSS_MC_HAS_EXCESS_PATH_LENGTH_BIT      = (1 << 1),
+    GNSS_MC_HAS_EXCESS_PATH_LENGTH_UNC_BIT  = (1 << 2),
+    GNSS_MC_HAS_REFLECTING_PLANE_BIT        = (1 << 3),
+} GnssSingleSatCorrectionBits;
 
 typedef enum {
     GNSS_MEASUREMENTS_MULTIPATH_INDICATOR_UNKNOWN = 0,
@@ -1106,6 +1121,7 @@ typedef struct {
     GnssSvOptionsMask gnssSvOptionsMask; // Bitwise OR of GnssSvOptionsBits
     float carrierFrequencyHz; // carrier frequency of the signal tracked
     GnssSignalTypeMask gnssSignalTypeMask; // Specifies GNSS signal type
+    double basebandCarrierToNoiseDbHz; // baseband signal strength
 } GnssSv;
 
 struct GnssConfigSetAssistanceServer {
@@ -1154,7 +1170,54 @@ typedef struct {
     double agcLevelDb;
     GnssMeasurementsCodeType codeType;
     char otherCodeTypeName[GNSS_MAX_NAME_LENGTH];
+    double basebandCarrierToNoiseDbHz;
+    GnssSignalTypeMask gnssSignalType;
+    double receiverInterSignalBiasNs;
+    double receiverInterSignalBiasUncertaintyNs;
+    double satelliteInterSignalBiasNs;
+    double satelliteInterSignalBiasUncertaintyNs;
 } GnssMeasurementsData;
+
+typedef struct {
+    GnssSvType svType;
+    float carrierFrequencyHz;
+    GnssMeasurementsCodeType codeType;
+    char otherCodeTypeName[GNSS_MAX_NAME_LENGTH];
+} GnssMeasurementsSignalType;
+
+typedef struct {
+    uint32_t size;                          // set to sizeof(GnssReflectingPlane)
+    double latitudeDegrees;
+    double longitudeDegrees;
+    double altitudeMeters;
+    double azimuthDegrees;
+} GnssReflectingPlane;
+
+typedef struct {
+    uint32_t size;                          // set to sizeof(GnssSingleSatCorrection)
+    GnssSingleSatCorrectionMask flags;
+    GnssSvType svType;
+    uint16_t svId;
+    float carrierFrequencyHz;
+    float probSatIsLos;
+    float excessPathLengthMeters;
+    float excessPathLengthUncertaintyMeters;
+    GnssReflectingPlane reflectingPlane;
+} GnssSingleSatCorrection;
+
+typedef struct {
+    uint32_t size;                          // set to sizeof(GnssMeasurementCorrections)
+    double latitudeDegrees;
+    double longitudeDegrees;
+    double altitudeMeters;
+    double horizontalPositionUncertaintyMeters;
+    double verticalPositionUncertaintyMeters;
+    uint64_t toaGpsNanosecondsOfWeek;
+    std::vector<GnssSingleSatCorrection> satCorrections;
+    bool hasEnvironmentBearing;
+    float environmentBearingDegrees;
+    float environmentBearingUncertaintyDegrees;
+} GnssMeasurementCorrections;
 
 typedef struct {
     uint32_t size;                          // set to sizeof(GnssMeasurementsClock)
@@ -1168,6 +1231,7 @@ typedef struct {
     double driftNsps;
     double driftUncertaintyNsps;
     uint32_t hwClockDiscontinuityCount;
+    GnssMeasurementsSignalType referenceSignalTypeForIsb;
 } GnssMeasurementsClock;
 
 typedef struct {
@@ -1665,4 +1729,23 @@ typedef struct {
     gnssSvPolynomialCallback gnssSvPolynomialCb;       // optional
 } LocationCallbacks;
 
+typedef struct {
+    uint32_t size;                        // set to sizeof
+    double x;
+    double xUncertainty;
+    double y;
+    double yUncertainty;
+    double z;
+    double zUncertainty;
+} GnssCoordinate;
+
+typedef struct {
+    uint32_t size;                        // set to sizeof
+    double carrierFrequencyMHz;
+    GnssCoordinate phaseCenterOffsetCoordinateMillimeters;
+    std::vector<std::vector<double>> phaseCenterVariationCorrectionMillimeters;
+    std::vector<std::vector<double>> phaseCenterVariationCorrectionUncertaintyMillimeters;
+    std::vector<std::vector<double>> signalGainCorrectionDbi;
+    std::vector<std::vector<double>> signalGainCorrectionUncertaintyDbi;
+} GnssAntennaInformation;
 #endif /* LOCATIONDATATYPES_H */

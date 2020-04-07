@@ -95,6 +95,10 @@ Return<void> GnssMeasurement::close()  {
         mGnssMeasurementCbIface_2_0->unlinkToDeath(mGnssMeasurementDeathRecipient);
         mGnssMeasurementCbIface_2_0 = nullptr;
     }
+    if (mGnssMeasurementCbIface_2_1 != nullptr) {
+        mGnssMeasurementCbIface_2_1->unlinkToDeath(mGnssMeasurementDeathRecipient);
+        mGnssMeasurementCbIface_2_1 = nullptr;
+    }
     mApi->measurementClose();
 
     return Void();

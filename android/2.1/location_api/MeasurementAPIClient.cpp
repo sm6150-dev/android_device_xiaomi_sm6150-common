@@ -601,18 +601,17 @@ static void convertGnssData_2_1(GnssMeasurementsNotification& in,
             out.measurements[i].flags |=
                 V2_1::IGnssMeasurementCallback::GnssMeasurementFlags::HAS_AUTOMATIC_GAIN_CONTROL;
         }
-        if (in.measurements[i].flags & GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_BIT) {
-            out.measurements[i].receiverInterSignalBiasNs =
-                    in.measurements[i].receiverInterSignalBiasNs;
+        if (in.measurements[i].flags & GNSS_MEASUREMENTS_DATA_FULL_ISB_BIT) {
+            out.measurements[i].fullInterSignalBiasNs = in.measurements[i].fullInterSignalBiasNs;
             out.measurements[i].flags |=
-                    V2_1::IGnssMeasurementCallback::GnssMeasurementFlags::HAS_RECEIVER_ISB;
+                    V2_1::IGnssMeasurementCallback::GnssMeasurementFlags::HAS_FULL_ISB;
         }
-        if (in.measurements[i].flags & GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_UNCERTAINTY_BIT) {
-            out.measurements[i].receiverInterSignalBiasUncertaintyNs =
-                    in.measurements[i].receiverInterSignalBiasUncertaintyNs;
+        if (in.measurements[i].flags & GNSS_MEASUREMENTS_DATA_FULL_ISB_UNCERTAINTY_BIT) {
+            out.measurements[i].fullInterSignalBiasUncertaintyNs =
+                    in.measurements[i].fullInterSignalBiasUncertaintyNs;
             out.measurements[i].flags |=
                     V2_1::IGnssMeasurementCallback::
-                            GnssMeasurementFlags::HAS_RECEIVER_ISB_UNCERTAINTY;
+                            GnssMeasurementFlags::HAS_FULL_ISB_UNCERTAINTY;
         }
         if (in.measurements[i].flags & GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_BIT) {
             out.measurements[i].satelliteInterSignalBiasNs =

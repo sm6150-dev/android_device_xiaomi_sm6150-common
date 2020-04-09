@@ -463,8 +463,8 @@ typedef enum {
     GNSS_MEASUREMENTS_DATA_MULTIPATH_INDICATOR_BIT          = (1<<15),
     GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT        = (1<<16),
     GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT       = (1<<17),
-    GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_BIT                 = (1<<18),
-    GNSS_MEASUREMENTS_DATA_RECEIVER_ISB_UNCERTAINTY_BIT     = (1<<19),
+    GNSS_MEASUREMENTS_DATA_FULL_ISB_BIT                     = (1<<18),
+    GNSS_MEASUREMENTS_DATA_FULL_ISB_UNCERTAINTY_BIT         = (1<<19),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_BIT                = (1<<20),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_UNCERTAINTY_BIT    = (1<<21),
 } GnssMeasurementsDataFlagsBits;
@@ -1172,8 +1172,8 @@ typedef struct {
     char otherCodeTypeName[GNSS_MAX_NAME_LENGTH];
     double basebandCarrierToNoiseDbHz;
     GnssSignalTypeMask gnssSignalType;
-    double receiverInterSignalBiasNs;
-    double receiverInterSignalBiasUncertaintyNs;
+    double fullInterSignalBiasNs;
+    double fullInterSignalBiasUncertaintyNs;
     double satelliteInterSignalBiasNs;
     double satelliteInterSignalBiasUncertaintyNs;
 } GnssMeasurementsData;

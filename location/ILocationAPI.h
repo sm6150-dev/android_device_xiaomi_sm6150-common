@@ -303,7 +303,7 @@ public:
     */
     virtual uint32_t configLeverArm(const LeverArmConfigInfo& configInfo) = 0;
 
-        /** @brief
+    /** @brief
         Configure the robust location setting.
 
         @param
@@ -338,6 +338,23 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
     virtual uint32_t configMinGpsWeek(uint16_t minGpsWeek) = 0;
+
+    /** @brief
+        Configure the vehicle body-to-Sensor mount parameters for
+        dead reckoning position engine.
+
+        @param
+        b2sParams: vehicle body-to-Sensor mount angles and
+        uncertainty.
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams) = 0;
 };
 
 #endif /* ILOCATIONAPI_H */

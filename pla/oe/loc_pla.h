@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2016, 2018, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -124,7 +124,7 @@ inline int property_get(const char* key, char* value, const char* default_value)
  *
  * @return Number of bytes copied.
  */
-inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
 {
     size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
     if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {

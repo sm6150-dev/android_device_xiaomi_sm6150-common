@@ -94,13 +94,15 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
-    xiaomiDisplayFeatureService->setFeature(0, 17, 1, 255);
+    xiaomiDisplayFeatureService->setFeature(0, 17, 2, 1);
+    xiaomiDisplayFeatureService->setFeature(0, 17, 1, 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     return Void();
 }
 
 Return<void> FingerprintInscreen::onHideFODView() {
     xiaomiDisplayFeatureService->setFeature(0, 17, 0, 255);
+    xiaomiDisplayFeatureService->setFeature(0, 17, 0, 1);
     return Void();
 }
 

@@ -1114,7 +1114,7 @@ typedef struct {
     //    - For GAL:     301 to 336
     //    - For NAVIC:   401 to 41
     uint16_t svId;
-    GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO)
+    GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO, NAVIC)
     float cN0Dbhz;     // signal strength
     float elevation;   // elevation of SV (in degrees)
     float azimuth;     // azimuth of SV (in degrees)
@@ -1376,6 +1376,10 @@ typedef struct {
 #define GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH 39
 #define GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID    183
     uint64_t sbasBlacklistSvMask;
+
+    //Navic - SV 401 maps to bit 0
+#define GNSS_SV_CONFIG_NAVIC_INITIAL_SV_ID 401
+    uint64_t navicBlacklistSvMask;
 } GnssSvIdConfig;
 
 struct GnssConfig{

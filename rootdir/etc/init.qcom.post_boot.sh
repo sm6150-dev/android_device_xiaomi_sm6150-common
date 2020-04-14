@@ -343,10 +343,13 @@ function configure_zram_parameters() {
     # For >=2GB Non-Go devices, size = 50% of RAM size. Limit the size to 4GB.
     # And enable lz4 zram compression for Go targets.
 
-    RamSizeGB=`echo "($MemTotal / 1048576 ) + 1" | bc`
-    zRamSizeBytes=`echo "$RamSizeGB * 1024 * 1024 * 1024 / 2" | bc`
-    if [ $zRamSizeBytes -gt 4294967296 ]; then
-        zRamSizeBytes=4294967296
+    let RamSizeGB="( $MemTotal / 1048576 ) + 1"
+    let zRamSizeMB="( $RamSizeGB * 1024 ) / 2"
+    diskSizeUnit=M
+
+    # use MB avoid 32 bit overflow
+    if [ $zRamSizeMB -gt 4096 ]; then
+        let zRamSizeMB=4096
     fi
 
     if [ "$low_ram" == "true" ]; then
@@ -362,7 +365,8 @@ function configure_zram_parameters() {
         elif [ $MemTotal -le 1048576 ]; then
             echo 805306368 > /sys/block/zram0/disksize
         else
-            echo $zRamSizeBytes > /sys/block/zram0/disksize
+            zramDiskSize=$zRamSizeMB$diskSizeUnit
+            echo $zramDiskSize > /sys/block/zram0/disksize
         fi
 
         # ZRAM may use more memory than it saves if SLAB_STORE_USER

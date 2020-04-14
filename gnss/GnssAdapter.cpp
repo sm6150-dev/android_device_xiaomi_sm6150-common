@@ -3762,9 +3762,9 @@ GnssAdapter::needReportForGnssClient(const UlpLocation& ulpLocation,
 bool
 GnssAdapter::needReportForFlpClient(enum loc_sess_status status,
                                     LocPosTechMask techMask) {
-    if ((status == LOC_SESS_INTERMEDIATE) &&
-        !(techMask & LOC_POS_TECH_MASK_SENSORS) &&
-        (!getAllowFlpNetworkFixes())) {
+    if (((LOC_SESS_INTERMEDIATE == status) && !(techMask & LOC_POS_TECH_MASK_SENSORS) &&
+        (!getAllowFlpNetworkFixes())) ||
+        (LOC_SESS_FAILURE == status)) {
         return false;
     } else {
         return true;
@@ -4137,6 +4137,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     }
 
     mGnssSvIdUsedInPosAvail = false;
+    mGnssMbSvIdUsedInPosAvail = false;
 }
 
 void

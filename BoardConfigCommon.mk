@@ -132,6 +132,7 @@ TARGET_USES_QTI_MAPPER_EXTENSIONS_1_1 := true
 # HIDL
 DEVICE_MANIFEST_FILE := $(COMMON_PATH)/manifest.xml
 DEVICE_MATRIX_FILE := $(COMMON_PATH)/compatibility_matrix.xml
+DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE := $(COMMON_PATH)/device_framework_matrix_product.xml
 
 # Media
 TARGET_DISABLED_UBWC := true

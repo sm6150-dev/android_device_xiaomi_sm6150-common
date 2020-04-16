@@ -419,7 +419,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
         uint16_t displaySvId = GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[i].type ?
                                svNotify.gnssSvs[i].svId + QZSS_SV_PRN_MIN - 1 :
                                svNotify.gnssSvs[i].svId;
-        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    %f    0x%02X",
+        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    %f    0x%02X 0x%2X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
@@ -429,7 +429,8 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
             svNotify.gnssSvs[i].elevation,
             svNotify.gnssSvs[i].azimuth,
             svNotify.gnssSvs[i].carrierFrequencyHz,
-            svNotify.gnssSvs[i].gnssSvOptionsMask);
+            svNotify.gnssSvs[i].gnssSvOptionsMask,
+            svNotify.gnssSvs[i].gnssSignalTypeMask);
     }
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
@@ -596,6 +597,11 @@ void LocApiBase::handleBatchStatusEvent(BatchingStatus batchStatus)
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportBatchStatusChangeEvent(batchStatus));
 }
 
+void LocApiBase::reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssConfigEvent(sessionId, gnssConfig));
+}
 
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
@@ -890,6 +896,19 @@ void LocApiBase::
     configRobustLocation(bool /*enabled*/,
                          bool /*enableForE911*/,
                          LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getRobustLocationConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    configMinGpsWeek(uint16_t minGpsWeek,
+                     LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getMinGpsWeek(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

@@ -406,6 +406,10 @@ typedef uint64_t GpsLocationExtendedFlags;
  /** GpsLocationExtended has the conformityIndex computed from
   *  robust location feature. */
 #define GPS_LOCATION_EXTENDED_HAS_CONFORMITY_INDEX             0x100000000000
+ /** GpsLocationExtended has the llaVRPased. */
+#define GPS_LOCATION_EXTENDED_HAS_LLA_VRP_BASED                0x200000000000
+/** GpsLocationExtended has the velocityVRPased. */
+#define GPS_LOCATION_EXTENDED_HAS_ENU_VELOCITY_LLA_VRP_BASED   0x400000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -624,6 +628,16 @@ typedef uint16_t GnssMeasUsageInfoValidityMask;
 #define GNSS_CARRIER_PHASE_RESIDUAL_VALID       ((GnssMeasUsageInfoValidityMask)0x00000004ul)
 #define GNSS_CARRIER_PHASE_AMBIGUITY_TYPE_VALID ((GnssMeasUsageInfoValidityMask)0x00000008ul)
 
+typedef uint16_t GnssSvPolyStatusMask;
+#define GNSS_SV_POLY_SRC_ALM_CORR_V02 ((GnssSvPolyStatusMask)0x01)
+#define GNSS_SV_POLY_GLO_STR4_V02 ((GnssSvPolyStatusMask)0x02)
+#define GNSS_SV_POLY_DELETE_V02 ((GnssSvPolyStatusMask)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_V02 ((GnssSvPolyStatusMask)0x08)
+typedef uint16_t GnssSvPolyStatusMaskValidity;
+#define GNSS_SV_POLY_SRC_ALM_CORR_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x01)
+#define GNSS_SV_POLY_GLO_STR4_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x02)
+#define GNSS_SV_POLY_DELETE_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x08)
 
 typedef struct {
     /** Specifies GNSS signal type
@@ -803,11 +817,16 @@ typedef struct {
     /**  If DGNSS is used, DGNSS data age in milli-seconds  */
     uint32_t dgnssDataAgeMsec;
 
-    /* When robust location is enabled, this field
+    /** When robust location is enabled, this field
      * will how well the various input data considered for
      * navigation solution conform to expectations.
      * Range: 0 (least conforming) to 1 (most conforming) */
     float conformityIndex;
+    GnssLocationPositionDynamicsExt bodyFrameDataExt;
+    /** VRR-based latitude/longitude/altitude */
+    LLAInfo llaVRPBased;
+    /** VRR-based east, north, and up velocity */
+    float enuVelocityVRPBased[3];
 } GpsLocationExtended;
 
 enum loc_sess_status {
@@ -1015,10 +1034,11 @@ typedef uint32_t LOC_GPS_LOCK_MASK;
 #define isGpsLockMT(lock) ((lock) & ((LOC_GPS_LOCK_MASK)2))
 #define isGpsLockAll(lock) (((lock) & ((LOC_GPS_LOCK_MASK)3)) == 3)
 
-/*++ ***********************************************
-**  Satellite Measurement Structure definitions
-**  ***********************************************
---*/
+/* ***********************************************
+**  Satellite Measurement and Satellite Polynomial
+**  structure definitions
+** ***********************************************
+*/
 /** Max number of GNSS SV measurement */
 #define GNSS_LOC_SV_MEAS_LIST_MAX_SIZE              128
 
@@ -1575,7 +1595,7 @@ typedef enum
 
    GNSS_SV_POLY_GLO_STR4                = 0x40
    /**< GLONASS String 4 has been received */
-}Gnss_SvPolyStatusMaskType;
+} Gnss_SvPolyStatusMaskType;
 
 typedef enum {
     GNSS_EPH_ACTION_UPDATE_SRC_UNKNOWN_V02 = 0, /**<Update ephemeris. Source of ephemeris is unknown  */
@@ -2176,6 +2196,13 @@ typedef enum {
     GNSS_MEAS_CORR_EXCESS_PATH_LENGTH  = 1 << 1,
     GNSS_MEAS_CORR_REFLECTING_PLANE    = 1 << 2,
 } GnssMeasurementCorrectionsCapabilities;
+
+/* Represents GNSS NMEA Report Rate Configuration */
+typedef enum {
+    GNSS_NMEA_REPORT_RATE_UNKNOWN  = 0,
+    GNSS_NMEA_REPORT_RATE_1HZ  = 1,
+    GNSS_NMEA_REPORT_RATE_NHZ  = 2
+} GnssNMEARptRate;
 
 /* ODCPI Request Info */
 enum OdcpiRequestType {

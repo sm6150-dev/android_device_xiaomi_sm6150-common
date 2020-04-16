@@ -55,6 +55,7 @@ typedef struct loc_gps_cfg_s
     char           XTRA_SERVER_3[LOC_MAX_PARAM_STRING];
     uint32_t       USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
     uint32_t       NMEA_PROVIDER;
+    char           NMEA_REPORT_RATE[LOC_MAX_PARAM_NAME];
     GnssConfigGpsLock   GPS_LOCK;
     uint32_t       A_GLONASS_POS_PROTOCOL_SELECT;
     uint32_t       AGPS_CERT_WRITABLE_MASK;
@@ -156,6 +157,7 @@ public:
     static uint64_t sSupportedMsgMask;
     static uint8_t sFeaturesSupported[MAX_FEATURE_LENGTH];
     static bool sGnssMeasurementSupported;
+    static GnssNMEARptRate sNmeaReportRate;
 
     void readConfig();
     static uint32_t getCarrierCapabilities();

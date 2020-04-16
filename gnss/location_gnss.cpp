@@ -88,6 +88,8 @@ static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
 static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
+static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
+static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams);
 
 static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb);
 static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr);
@@ -139,12 +141,14 @@ static const GnssInterface gGnssInterface = {
     gnssUpdateSvConfig,
     gnssResetSvConfig,
     configLeverArm,
-    configRobustLocation,
     measCorrInit,
     measCorrSetCorrections,
     measCorrClose,
     antennaInfoInit,
-    antennaInfoClose
+    antennaInfoClose,
+    configRobustLocation,
+    configMinGpsWeek,
+    configBodyToSensorMountParams,
 };
 
 #ifndef DEBUG_X86
@@ -469,14 +473,6 @@ static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo){
     }
 }
 
-static uint32_t configRobustLocation(bool enable, bool enableForE911) {
-    if (NULL != gGnssAdapter) {
-        return gGnssAdapter->configRobustLocationCommand(enable, enableForE911);
-    } else {
-        return 0;
-    }
-}
-
 static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb) {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->openMeasCorrCommand(setCapabilitiesCb);
@@ -510,5 +506,29 @@ static uint32_t antennaInfoInit(const antennaInfoCb antennaInfoCallback) {
 static void antennaInfoClose() {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->antennaInfoCloseCommand();
+	}
+}
+
+static uint32_t configRobustLocation(bool enable, bool enableForE911){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configRobustLocationCommand(enable, enableForE911);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t configMinGpsWeek(uint16_t minGpsWeek){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configMinGpsWeekCommand(minGpsWeek);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configBodyToSensorMountParamsCommand(b2sParams);
+    } else {
+        return 0;
     }
 }

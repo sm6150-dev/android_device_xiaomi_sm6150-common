@@ -1297,6 +1297,13 @@ kona_dcc_async_package()
     echo 0x06004FB0 0x0 > $DCC_PATH/config_write
 }
 
+# Function to send Flush command in TMC
+kona_dcc_tmc_flush()
+{
+    echo 0x06048FB0 0xc5acce55 > $DCC_PATH/config_write
+    echo 0x06048304 0x1053 > $DCC_PATH/config_write
+}
+
 # Function kona DCC configuration
 enable_kona_dcc_config()
 {
@@ -1340,6 +1347,7 @@ enable_kona_dcc_config()
     kona_dcc_async_package
     config_kona_dcc_lpm
     config_kona_dcc_sys_agnoc_error
+    kona_dcc_tmc_flush
 
     echo  1 > $DCC_PATH/enable
 }

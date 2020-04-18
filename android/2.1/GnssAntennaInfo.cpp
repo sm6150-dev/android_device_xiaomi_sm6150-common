@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,46 +26,33 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define LOG_TAG "LocSvc_GnssAntennaInfoInterface"
 
-#define LOG_TAG "LocSvc_MeasurementCorrectionsInterface"
-
-#include <log_util.h>
-#include "MeasurementCorrections.h"
+#include "Gnss.h"
+#include "GnssAntennaInfo.h"
+#include <android/hardware/gnss/1.0/types.h>
 
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace measurement_corrections {
-namespace V1_0 {
+namespace V2_1 {
 namespace implementation {
 
-using ::android::hardware::hidl_array;
-using ::android::hardware::hidl_memory;
-using ::android::hardware::hidl_string;
-using ::android::hardware::hidl_vec;
-using ::android::hardware::Return;
-using ::android::hardware::Void;
-using ::android::sp;
-using ::android::hardware::gnss::V1_0::GnssLocation;
 
-MeasurementCorrections::MeasurementCorrections() {
+GnssAntennaInfo::GnssAntennaInfo(Gnss* gnss) : mGnss(gnss) {
 }
 
-MeasurementCorrections::~MeasurementCorrections() {
+// Methods from ::android::hardware::gnss::V2_1::IGnssAntennaInfo follow.
+Return<IGnssAntennaInfo::GnssAntennaInfoStatus> GnssAntennaInfo::setCallback(
+        const sp<IGnssAntennaInfoCallback>& callback) {
+    return IGnssAntennaInfo::GnssAntennaInfoStatus::SUCCESS;
 }
-
-Return<bool> MeasurementCorrections::setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& /*corrections*/) {
-    return true;
-}
-
-Return<bool> MeasurementCorrections::setCallback(
-        const sp<V1_0::IMeasurementCorrectionsCallback>& /*callback*/) {
-    return true;
+Return<void> GnssAntennaInfo::close() {
+    return Void();
 }
 
 }  // namespace implementation
-}  // namespace V1_0
-}  // namespace measurement_corrections
+}  // namespace V2_1
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

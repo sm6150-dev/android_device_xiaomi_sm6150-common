@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -330,7 +330,7 @@ void LocApiBase::reportPosition(UlpLocation& location,
              "timestamp: %" PRId64 "\n"
              "Session status: %d\n Technology mask: %u\n "
              "SV used in fix (gps/glo/bds/gal/qzss) : \
-             (0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 ")",
+             (0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 "/0x%" PRIx64 ")",
              location.gpsLocation.flags, location.position_source,
              location.gpsLocation.latitude, location.gpsLocation.longitude,
              location.gpsLocation.altitude, location.gpsLocation.speed,
@@ -340,7 +340,8 @@ void LocApiBase::reportPosition(UlpLocation& location,
              locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask,
              locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask,
              locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask,
-             locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask);
+             locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask,
+             locationExtended.gnss_sv_used_ids.navic_sv_used_ids_mask);
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportPositionEvent(location, locationExtended,
@@ -409,7 +410,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
         "      sv: constellation svid         cN0"
         "    elevation    azimuth    flags",
         svNotify.count);
-    for (size_t i = 0; i < svNotify.count && i < LOC_GNSS_MAX_SVS; i++) {
+    for (size_t i = 0; i < svNotify.count && i < GNSS_SV_MAX; i++) {
         if (svNotify.gnssSvs[i].type >
             sizeof(constellationString) / sizeof(constellationString[0]) - 1) {
             svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
@@ -541,9 +542,10 @@ void LocApiBase::reportGnssSvIdConfig(const GnssSvIdConfig& config)
 {
     // Print the config
     LOC_LOGv("gloBlacklistSvMask: %" PRIu64 ", bdsBlacklistSvMask: %" PRIu64 ",\n"
-             "qzssBlacklistSvMask: %" PRIu64 ", galBlacklistSvMask: %" PRIu64,
+             "qzssBlacklistSvMask: %" PRIu64 ", galBlacklistSvMask: %" PRIu64 ",\n"
+              "navicBlacklistSvMask: %" PRIu64,
              config.gloBlacklistSvMask, config.bdsBlacklistSvMask,
-             config.qzssBlacklistSvMask, config.galBlacklistSvMask);
+             config.qzssBlacklistSvMask, config.galBlacklistSvMask, config.navicBlacklistSvMask);
 
     // Loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssSvIdConfigEvent(config));
@@ -877,6 +879,12 @@ void LocApiBase::addToCallQueue(LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 void LocApiBase::updateSystemPowerState(PowerStateType /*powerState*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    configRobustLocation(bool /*enabled*/,
+                         bool /*enableForE911*/,
+                         LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

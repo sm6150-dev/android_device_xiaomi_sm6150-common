@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -10,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -25,52 +24,36 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
-#define ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
+#ifndef LOCATION_UTIL_H
+#define LOCATION_UTIL_H
 
-#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrections.h>
-#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrectionsCallback.h>
-#include <hidl/MQDescriptor.h>
-#include <hidl/Status.h>
-
-#include <location_interface.h>
+#include <android/hardware/gnss/2.0/types.h>
+#include <LocationAPI.h>
+#include <GnssDebug.h>
 
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace measurement_corrections {
-namespace V1_0 {
+namespace V2_1 {
 namespace implementation {
 
-using ::android::hardware::hidl_array;
-using ::android::hardware::hidl_memory;
-using ::android::hardware::hidl_string;
-using ::android::hardware::hidl_vec;
-using ::android::hardware::Return;
-using ::android::hardware::Void;
-using ::android::sp;
-using ::android::hardware::gnss::V1_0::GnssLocation;
-using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrectionsCallback;
-
-struct MeasurementCorrections : public IMeasurementCorrections {
-    MeasurementCorrections();
-    ~MeasurementCorrections();
-
-// Methods from ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections follow.
-Return<bool> setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& corrections) override;
-
-Return<bool> setCallback(const sp<IMeasurementCorrectionsCallback>& callback) override;
-
-};
-
+void convertGnssLocation(Location& in, V1_0::GnssLocation& out);
+void convertGnssLocation(Location& in, V2_0::GnssLocation& out);
+void convertGnssLocation(const V1_0::GnssLocation& in, Location& out);
+void convertGnssLocation(const V2_0::GnssLocation& in, Location& out);
+void convertGnssConstellationType(GnssSvType& in, V1_0::GnssConstellationType& out);
+void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& out);
+void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
+void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
+void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
+bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
 
 }  // namespace implementation
-}  // namespace V1_0
-}  // namespace measurement_corrections
+}  // namespace V2_1
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
-
-#endif  // ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
+#endif // LOCATION_UTIL_H

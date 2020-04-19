@@ -10,6 +10,10 @@
 /data/vendor/thermal(/.*)?      u:object_r:thermal_data_file:s0
 /data/vendor/mac_addr(/.*)?     u:object_r:wifi_vendor_data_file:s0
 
+# DAP
+/dev/block/platform/soc/1d84000.ufshc/by-name/cust                              u:object_r:super_block_device:s0
+/dev/block/platform/soc/1d84000.ufshc/by-name/vendor                              u:object_r:super_block_device:s0
+
 # Executable
 /vendor/bin/init\.insmod\.sh    u:object_r:init-insmod-sh_exec:s0
 

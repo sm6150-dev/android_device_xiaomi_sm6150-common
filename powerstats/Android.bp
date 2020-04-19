@@ -12,34 +12,27 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 cc_binary {
-    name: "android.hardware.power@1.3-service.sm6150-libperfmgr",
+    name: "android.hardware.power.stats@1.0-service.xiaomi_sm6150",
     relative_install_path: "hw",
-    vintf_fragments: ["android.hardware.power@1.3-service.sm6150.xml"],
-    init_rc: ["android.hardware.power@1.3-service.sm6150-libperfmgr.rc"],
-    srcs: ["service.cpp", "Power.cpp", "InteractionHandler.cpp", "display-helper.cpp"],
+    init_rc: ["android.hardware.power.stats@1.0-service.xiaomi_sm6150.rc"],
+    srcs: ["service.cpp"],
     cflags: [
         "-Wall",
         "-Werror",
     ],
+    static_libs: [
+        "libpixelpowerstats",
+    ],
     shared_libs: [
         "libbase",
+        "libcutils",
+        "libfmq",
         "libhidlbase",
         "libhidltransport",
         "liblog",
         "libutils",
-        "libcutils",
-        "android.hardware.power@1.0",
-        "android.hardware.power@1.1",
-        "android.hardware.power@1.2",
-        "android.hardware.power@1.3",
-        "libperfmgr",
+        "android.hardware.power.stats@1.0",
     ],
-    header_libs: [
-        "libhardware_headers",
-        "generated_kernel_headers",
-    ],
-    required: ["powerhint.json"],
-    proprietary: true,
+    vendor: true,
 }

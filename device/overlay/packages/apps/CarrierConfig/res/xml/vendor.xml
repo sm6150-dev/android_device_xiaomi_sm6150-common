@@ -101,7 +101,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="carrier_supports_ss_over_ut_bool" value="true" />
 
         <!-- Config to allow hold in video calls -->
-        <boolean name="allow_holding_video_call" value="true"/>
+        <boolean name="allow_hold_video_call_bool" value="true"/>
         <!-- Config to allow accept one way for video calls -->
         <boolean name="allow_one_way_accept_video_call" value="true"/>
         <!-- Config for multi anchor conference support  -->
@@ -1393,7 +1393,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="support_video_conference_call_bool" value="false"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
@@ -1474,7 +1474,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="support_video_conference_call_bool" value="false"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
@@ -1508,7 +1508,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_auto_retry_cfu_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="config_common_callsettings_support_bool" value="true" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
@@ -1617,7 +1617,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="support_video_conference_call_bool" value="false"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
@@ -1667,7 +1667,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="support_video_conference_call_bool" value="false"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="hide_enabled_5g_bool" value="false" />
     </carrier_config>
@@ -1734,7 +1734,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_auto_retry_cfu_bool" value="true" />
         <boolean name="config_update_service_status" value="true"/>
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="config_common_callsettings_support_bool" value="true" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />
@@ -1765,7 +1765,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="ignore_reset_ut_capability_bool" value="true" />
         <boolean name="config_auto_retry_cfu_bool" value="true" />
         <boolean name="allow_add_call_during_video_call" value="false" />
-        <boolean name="allow_holding_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
         <boolean name="config_common_callsettings_support_bool" value="true" />
         <boolean name="vilte_data_is_metered_bool" value="false" />
         <boolean name="config_enable_video_crbt" value="true" />

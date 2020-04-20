@@ -73,7 +73,7 @@ extern "C" {
  *
  * @return Number of bytes copied.
  */
-inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
 {
     size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
     if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {

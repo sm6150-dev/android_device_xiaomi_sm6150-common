@@ -165,10 +165,6 @@ class GnssAdapter : public LocAdapterBase {
     bool mNHzNeeded;
     bool mSPEAlreadyRunningAtHighestInterval;
 
-    /* ==== CLIENT ========================================================================= */
-    typedef std::map<LocationAPI*, LocationCallbacks> ClientDataMap;
-    ClientDataMap mClientData;
-
     /* ==== TRACKING ======================================================================= */
     TrackingOptionsMap mTimeBasedTrackingSessions;
     LocationSessionMap mDistanceBasedTrackingSessions;

@@ -3666,6 +3666,9 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                         svUsedIdMask = mGnssSvIdUsedInPosition.glo_sv_used_ids_mask;
                     }
                 }
+                // map the svid to respective constellation range 1..xx
+                // then repective constellation svUsedIdMask map correctly to svid
+                gnssSvId = gnssSvId - GLO_SV_PRN_MIN + 1;
                 break;
             case GNSS_SV_TYPE_BEIDOU:
                 if (mGnssSvIdUsedInPosAvail) {
@@ -3691,6 +3694,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                         svUsedIdMask = mGnssSvIdUsedInPosition.bds_sv_used_ids_mask;
                     }
                 }
+                gnssSvId = gnssSvId - BDS_SV_PRN_MIN + 1;
                 break;
             case GNSS_SV_TYPE_GALILEO:
                 if (mGnssSvIdUsedInPosAvail) {
@@ -3710,6 +3714,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                         svUsedIdMask = mGnssSvIdUsedInPosition.gal_sv_used_ids_mask;
                     }
                 }
+                gnssSvId = gnssSvId - GAL_SV_PRN_MIN + 1;
                 break;
             case GNSS_SV_TYPE_QZSS:
                 if (mGnssSvIdUsedInPosAvail) {
@@ -3732,11 +3737,13 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                         svUsedIdMask = mGnssSvIdUsedInPosition.qzss_sv_used_ids_mask;
                     }
                 }
+                gnssSvId = gnssSvId - QZSS_SV_PRN_MIN + 1;
                 break;
             case GNSS_SV_TYPE_NAVIC:
                 if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.navic_sv_used_ids_mask;
                 }
+                gnssSvId = gnssSvId - NAVIC_SV_PRN_MIN + 1;
                 break;
             default:
                 svUsedIdMask = 0;

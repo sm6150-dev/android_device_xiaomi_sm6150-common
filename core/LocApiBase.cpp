@@ -416,14 +416,11 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
             svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
         }
         // Display what we report to clients
-        uint16_t displaySvId = GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[i].type ?
-                               svNotify.gnssSvs[i].svId + QZSS_SV_PRN_MIN - 1 :
-                               svNotify.gnssSvs[i].svId;
         LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    %f    0x%02X 0x%2X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
-            displaySvId,
+            svNotify.gnssSvs[i].svId,
             svNotify.gnssSvs[i].cN0Dbhz,
             svNotify.gnssSvs[i].basebandCarrierToNoiseDbHz,
             svNotify.gnssSvs[i].elevation,

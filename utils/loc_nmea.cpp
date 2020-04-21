@@ -731,7 +731,7 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
         return;
     }
 
-    if(GNSS_SV_TYPE_GLONASS == sv_meta_p->svType) {
+    if (GNSS_SV_TYPE_GLONASS == sv_meta_p->svType) {
         svIdOffset = 0;
     }
     svNumber = 1;
@@ -792,11 +792,6 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
             if (sv_meta_p->svType == svNotify.gnssSvs[svNumber - 1].type &&
                     sv_meta_p->signalId == convert_signalType_to_signalId(signalType))
             {
-                uint16_t svId = svNotify.gnssSvs[svNumber - 1].svId;
-                // For QZSS we adjusted SV id's in GnssAdapter, we need to re-adjust here
-                if (GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[svNumber - 1].type) {
-                    svId = svId - (QZSS_SV_PRN_MIN - 1);
-                }
                 length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
                         svNotify.gnssSvs[svNumber - 1].svId - svIdOffset,
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].elevation), //float to int

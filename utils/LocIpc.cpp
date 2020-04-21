@@ -360,6 +360,7 @@ void LocIpc::stopNonBlockingListening() {
         mRunnable->abort();
         mRunnable = nullptr;
     }
+    mThread.stop();
 }
 
 void LocIpc::stopBlockingListening(LocIpcRecver& ipcRecver) {

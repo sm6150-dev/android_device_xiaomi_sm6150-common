@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -158,6 +158,20 @@ typedef std::function<void(
 
 typedef void (*powerStateCallback)(bool on);
 
+typedef void* QDgnssListenerHDL;
+typedef std::function<void(
+    bool    sessionActive
+)> QDgnssSessionActiveCb;
+
+struct CdfwInterface {
+    QDgnssListenerHDL (*createUsableReporter)(
+            QDgnssSessionActiveCb sessionActiveCb);
+
+    void (*destroyUsableReporter)(QDgnssListenerHDL handle);
+
+    void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
+};
+
 class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
@@ -206,6 +220,13 @@ class GnssAdapter : public LocAdapterBase {
     measCorrSetCapabilitiesCb mMeasCorrSetCapabilitiesCb;
     bool initMeasCorr(bool bSendCbWhenNotSupported);
     bool mIsAntennaInfoInterfaceOpened;
+
+    /* ==== DGNSS Data Usable Report======================================================== */
+    QDgnssListenerHDL mQDgnssListenerHDL;
+    const CdfwInterface* mCdfwInterface;
+    bool mDGnssNeedReport;
+    bool mDGnssDataUsage;
+    void reportDGnssDataUsable(const GnssSvMeasurementSet &svMeasurementSet);
 
     /* ==== ODCPI ========================================================================== */
     OdcpiRequestCallback mOdcpiRequestCb;
@@ -405,6 +426,7 @@ public:
     virtual bool isInSession() { return !mTimeBasedTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
+    void initDGnssUsableReporter();
     void odcpiTimerExpireEvent();
 
     /* ==== REPORTS ======================================================================== */
@@ -482,8 +504,7 @@ public:
 
     void updateSystemPowerState(PowerStateType systemPowerState);
     void reportSvPolynomial(const GnssSvPolynomial &svPolynomial);
-    void requestSvPolyForClient(LocationAPI* client,
-                                const LocationCallbacks& callbacks);
+
 
     std::vector<double> parseDoublesString(char* dString);
     void reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallback);
@@ -542,6 +563,9 @@ public:
     void notifyClientOfCachedLocationSystemInfo(LocationAPI* client,
                                                 const LocationCallbacks& callbacks);
     void updateSystemPowerStateCommand(PowerStateType systemPowerState);
+
+    /*==== DGnss Usable Report Flag ====================================================*/
+    inline void setDGnssUsableFLag(bool dGnssNeedReport) { mDGnssNeedReport = dGnssNeedReport;}
 };
 
 #endif //GNSS_ADAPTER_H

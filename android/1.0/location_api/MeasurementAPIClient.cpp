@@ -163,38 +163,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_CARRIER_PHASE_UNCERTAINTY;
     if (in.flags & GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT)
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_AUTOMATIC_GAIN_CONTROL;
-    switch(in.svType){
-    case GNSS_SV_TYPE_GPS:
-        out.svid = in.svId;
-        break;
-    case GNSS_SV_TYPE_SBAS:
-        out.svid = in.svId;
-        break;
-    case GNSS_SV_TYPE_GLONASS:
-        if (in.svId != 255) { // OSN is known
-            out.svid = in.svId - GLO_SV_PRN_MIN + 1;
-        } else { // OSN is not known, report FCN
-            out.svid = in.gloFrequency + 92;
-        }
-        break;
-    case GNSS_SV_TYPE_QZSS:
-        out.svid = in.svId;
-        break;
-    case GNSS_SV_TYPE_BEIDOU:
-        out.svid = in.svId - BDS_SV_PRN_MIN + 1;
-        break;
-    case GNSS_SV_TYPE_GALILEO:
-        out.svid = in.svId - GAL_SV_PRN_MIN + 1;
-        break;
-    case GNSS_SV_TYPE_NAVIC:
-        /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
-          will update this once Android give Navic svid definiitons */
-        out.svid = in.svId - NAVIC_SV_PRN_MIN + 1;
-        break;
-    default:
-        out.svid = in.svId;
-        break;
-    }
+    convertGnssSvid(in, out.svid);
     convertGnssConstellationType(in.svType, out.constellation);
     out.timeOffsetNs = in.timeOffsetNs;
     if (in.stateMask & GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT)

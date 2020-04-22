@@ -131,7 +131,11 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT_V02, /**< Support constellation enablement */
     LOC_SUPPORTED_FEATURE_AGPM_V02, /**< Support AGPM feature */
     LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY, /**< Support XTRA integrity */
-    LOC_SUPPORTED_FEATURE_FDCL_2 /**< Support FDCL V2 */
+    LOC_SUPPORTED_FEATURE_FDCL_2, /**< Support FDCL V2 */
+    LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY, /**<  Support the location privacy feature */
+    LOC_SUPPORTED_FEATURE_NAVIC, /**<  Support the NavIC constellation */
+    LOC_SUPPORTED_FEATURE_ENV_AIDING, /**<  Support Environment Aiding */
+    LOC_SUPPORTED_FEATURE_ROBUST_LOCATION, /**<  Support Robust Location feature */
 } loc_supported_feature_enum;
 
 typedef struct {

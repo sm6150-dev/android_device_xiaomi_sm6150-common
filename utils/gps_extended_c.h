@@ -134,7 +134,8 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_FDCL_2, /**< Support FDCL V2 */
     LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY, /**< Support location privacy */
     LOC_SUPPORTED_FEATURE_NAVIC, /**< Support NAVIC constellation */
-    LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION /**< Support measurements correction */
+    LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION, /**< Support measurements correction */
+    LOC_SUPPORTED_FEATURE_ROBUST_LOCATION, /**<  Support Robust Location feature */
 } loc_supported_feature_enum;
 
 typedef struct {

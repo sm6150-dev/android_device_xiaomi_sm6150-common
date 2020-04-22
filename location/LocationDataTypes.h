@@ -269,6 +269,8 @@ typedef enum {
     LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT       = (1<<13),
     // support Robust Location
     LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT               = (1<<14),
+    // support precise location edgnss
+    LOCATION_CAPABILITIES_EDGNSS_BIT                        = (1<<15),
 } LocationCapabilitiesBits;
 
 typedef enum {
@@ -1811,4 +1813,15 @@ typedef struct {
     std::vector<std::vector<double>> signalGainCorrectionDbi;
     std::vector<std::vector<double>> signalGainCorrectionUncertaintyDbi;
 } GnssAntennaInformation;
+
+typedef struct {
+    uint32_t size;                        // set to sizeof
+    bool requiresNmeaLocation;
+    const char* hostNameOrIp;    // null terminated string
+    const char* mountPoint;      // null terminated string
+    const char* username;        // null terminated string
+    const char* password;        // null terminated string
+    uint32_t port;
+    bool useSSL;
+} GnssNtripConnectionParams;
 #endif /* LOCATIONDATATYPES_H */

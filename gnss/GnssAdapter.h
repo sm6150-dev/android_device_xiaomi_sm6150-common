@@ -165,6 +165,8 @@ typedef std::function<void(
 )> QDgnssSessionActiveCb;
 
 struct CdfwInterface {
+    void (*startDgnssApiService)();
+
     QDgnssListenerHDL (*createUsableReporter)(
             QDgnssSessionActiveCb sessionActiveCb);
 
@@ -172,6 +174,11 @@ struct CdfwInterface {
 
     void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
 };
+
+typedef uint16_t  DGnssStateBitMask;
+#define DGNSS_STATE_ENABLE_NTRIP_COMMAND      0X01
+#define DGNSS_STATE_NO_NMEA_PENDING           0X02
+#define DGNSS_STATE_NTRIP_SESSION_STARTED     0X04
 
 class GnssAdapter : public LocAdapterBase {
 
@@ -272,6 +279,14 @@ class GnssAdapter : public LocAdapterBase {
     inline void initOdcpi(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
     inline void injectOdcpi(const Location& location);
     static bool isFlpClient(LocationCallbacks& locationCallbacks);
+
+    /*==== DGnss Ntrip Source ==========================================================*/
+    StartDgnssNtripParams   mStartDgnssNtripParams;
+    bool    mSendNmeaConsent;
+    DGnssStateBitMask   mDgnssState;
+    void checkStartDgnssNtrip();
+    void stopDgnssNtrip();
+    void reportGGAtoNtirp(const char* nmea);
 
 protected:
 
@@ -431,7 +446,7 @@ public:
     virtual bool isInSession() { return !mTimeBasedTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
-    void initDGnssUsableReporter();
+    void initCDFWService();
     void odcpiTimerExpireEvent();
 
     /* ==== REPORTS ======================================================================== */
@@ -571,9 +586,15 @@ public:
     /*==== DGnss Usable Report Flag ====================================================*/
     inline void setDGnssUsableFLag(bool dGnssNeedReport) { mDGnssNeedReport = dGnssNeedReport;}
     inline bool isNMEAPrintEnabled() {
-       return (((mContext != NULL) && (0 != mContext->mGps_conf.ENABLE_NMEA_PRINT)) ?
-              (true) : (false));
+       return ((mContext != NULL) && (0 != mContext->mGps_conf.ENABLE_NMEA_PRINT));
     }
+
+    /*==== DGnss Ntrip Source ==========================================================*/
+    void updateNTRIPGGAConsentCommand(bool consentAccepted) { mSendNmeaConsent = consentAccepted; }
+    void enablePPENtripStreamCommand(const GnssNtripConnectionParams& params, bool enableRTKEngine);
+    void disablePPENtripStreamCommand();
+    void handleEnablePPENtrip(const GnssNtripConnectionParams& params);
+    void handleDisablePPENtrip();
 };
 
 #endif //GNSS_ADAPTER_H

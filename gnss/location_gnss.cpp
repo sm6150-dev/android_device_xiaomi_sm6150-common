@@ -50,7 +50,7 @@ static void gnssUpdateXtraThrottle(const bool enabled);
 static void setControlCallbacks(LocationControlCallbacks& controlCallbacks);
 static uint32_t enable(LocationTechnologyType techType);
 static void disable(uint32_t id);
-static uint32_t* gnssUpdateConfig(GnssConfig config);
+static uint32_t* gnssUpdateConfig(const GnssConfig& config);
 static uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
 
 static void gnssUpdateSvTypeConfig(GnssSvTypeConfig& config);
@@ -234,7 +234,7 @@ static void disable(uint32_t id)
     }
 }
 
-static uint32_t* gnssUpdateConfig(GnssConfig config)
+static uint32_t* gnssUpdateConfig(const GnssConfig& config)
 {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssUpdateConfigCommand(config);

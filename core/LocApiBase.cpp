@@ -770,4 +770,12 @@ void LocApiBase::
     getMinGpsWeek(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
+LocationError LocApiBase::
+    setParameterSync(const GnssConfig& gnssConfig)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+void LocApiBase::
+    getParameter(uint32_t sessionId, GnssConfigFlagsMask flags, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
 } // namespace loc_core

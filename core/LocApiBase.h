@@ -309,6 +309,10 @@ public:
     virtual void configMinGpsWeek(uint16_t minGpsWeek,
                                   LocApiResponse* adapterResponse=nullptr);
     virtual void getMinGpsWeek(uint32_t sessionId, LocApiResponse* adapterResponse);
+
+    virtual LocationError setParameterSync(const GnssConfig & gnssConfig);
+    virtual void getParameter(uint32_t sessionId, GnssConfigFlagsMask flags,
+                              LocApiResponse* adapterResponse=nullptr);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

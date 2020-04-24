@@ -313,9 +313,11 @@ enum LocationResponse {
     /** LocationClientApi call is successful. <br/>   */
     LOCATION_RESPONSE_SUCCESS = 0,
     /** LocationClientApi call has failed. <br/>   */
-    LOCATION_RESPONSE_UNKOWN_FAILURE,
+    LOCATION_RESPONSE_UNKOWN_FAILURE = 1,
     /** LocationClientApi call is not supported. <br/>   */
-    LOCATION_RESPONSE_NOT_SUPPORTED
+    LOCATION_RESPONSE_NOT_SUPPORTED = 2,
+    /** LocationClientApi call has invalid parameter. <br/>   */
+    LOCATION_RESPONSE_PARAM_INVALID = 3,
 };
 
 /** Specify the SV constellation type in GnssSv
@@ -1725,7 +1727,9 @@ struct GnssEnergyConsumedInfo {
     GnssEnergyConsumedInfoMask flags;
 
     /** Energy consumed by the modem GNSS engine since device first
-     *  ever bootup, in unit of 0.1 milli watt seconds. <br/>
+     *  ever bootup, in unit of 0.1 milli watt seconds.
+     *  A value of 0xffffffffffffffff indicates an invalid reading.
+     *  <br/>
      */
     uint64_t totalEnergyConsumedSinceFirstBoot;
 };

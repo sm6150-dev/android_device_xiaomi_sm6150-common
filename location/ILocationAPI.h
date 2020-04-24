@@ -179,7 +179,7 @@ public:
                 LOCATION_ERROR_SUCCESS if session was successful
                 LOCATION_ERROR_INVALID_PARAMETER if any other parameters are invalid
                 LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason */
-    virtual uint32_t* gnssUpdateConfig(GnssConfig config) = 0;
+    virtual uint32_t* gnssUpdateConfig(const GnssConfig& config) = 0;
 
     /** @brief Delete specific gnss aiding data for testing, which returns a session id
        that will be returned in responseCallback to match command with response.

@@ -236,7 +236,7 @@ public:
                 LOCATION_ERROR_SUCCESS if session was successful
                 LOCATION_ERROR_INVALID_PARAMETER if any other parameters are invalid
                 LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason */
-    virtual uint32_t* gnssUpdateConfig(GnssConfig config) override;
+    virtual uint32_t* gnssUpdateConfig(const GnssConfig& config) override;
 
     /* gnssGetConfig fetches the current constellation and SV configuration
        on the GNSS engine.

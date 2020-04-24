@@ -338,6 +338,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT               = (1<<10),
     GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<11),
     GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<12),
+    GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT                 = (1<<13),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -1314,6 +1315,7 @@ struct GnssConfig{
     std::vector<GnssSvIdSource> blacklistedSvIds;
     GnssConfigRobustLocation robustLocationConfig;
     uint16_t minGpsWeek;
+    uint8_t minSvElevation;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1329,7 +1331,8 @@ struct GnssConfig{
                 suplModeMask == config.suplModeMask  &&
                 blacklistedSvIds == config.blacklistedSvIds &&
                 robustLocationConfig.equals(config.robustLocationConfig) &&
-                minGpsWeek == config.minGpsWeek) {
+                minGpsWeek == config.minGpsWeek &&
+                minSvElevation == config.minSvElevation) {
             return true;
         }
         return false;

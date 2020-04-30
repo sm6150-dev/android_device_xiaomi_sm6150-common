@@ -5431,6 +5431,10 @@ uint32_t GnssAdapter::configRobustLocationCommand(
 
 void
 GnssAdapter::configMinGpsWeek(uint32_t sessionId, uint16_t minGpsWeek) {
+
+    // suspend all sessions for modem to take the min GPS week config
+    suspendSessions();
+
     LocApiResponse* locApiResponse = nullptr;
     if (sessionId != 0) {
         locApiResponse =
@@ -5442,6 +5446,10 @@ GnssAdapter::configMinGpsWeek(uint32_t sessionId, uint16_t minGpsWeek) {
         }
     }
     mLocApi->configMinGpsWeek(minGpsWeek, locApiResponse);
+
+    // resume all tracking sessions after the min GPS week config
+    // has been changed
+    restartSessions(false);
 }
 
 uint32_t GnssAdapter::configMinGpsWeekCommand(uint16_t minGpsWeek) {

@@ -268,23 +268,6 @@ EBTABLES += libebtc
 #FASTPOWERON
 FASTPOWERON := FastBoot
 
-#GPS
-GPS_HARDWARE := gps.conf
-GPS_HARDWARE += libgps.utils
-GPS_HARDWARE += libloc_api_v02
-GPS_HARDWARE += libgnsspps
-GPS_HARDWARE += libgnss
-GPS_HARDWARE += liblocation_api
-GPS_HARDWARE += libbatching
-GPS_HARDWARE += libgeofencing
-GPS_HARDWARE += libsynergy_loc_api
-GPS_HARDWARE += android.hardware.gnss@1.0-impl-qti
-GPS_HARDWARE += android.hardware.gnss@1.0-service-qti
-GPS_HARDWARE += android.hardware.gnss@1.1-impl-qti
-GPS_HARDWARE += android.hardware.gnss@1.1-service-qti
-GPS_HARDWARE += android.hardware.gnss@2.0-impl-qti
-GPS_HARDWARE += android.hardware.gnss@2.0-service-qti
-
 HIDL_WRAPPER := qti-telephony-hidl-wrapper
 HIDL_WRAPPER += qti_telephony_hidl_wrapper.xml
 
@@ -941,7 +924,6 @@ PRODUCT_PACKAGES += $(E2FSPROGS)
 PRODUCT_PACKAGES += $(EBTABLES)
 PRODUCT_PACKAGES += $(EXTENDEDMEDIA_EXT)
 PRODUCT_PACKAGES += $(FASTPOWERON)
-PRODUCT_PACKAGES += $(GPS_HARDWARE)
 PRODUCT_PACKAGES += $(HDMID)
 PRODUCT_PACKAGES += $(HOSTAPD)
 PRODUCT_PACKAGES += $(HIDL_WRAPPER)

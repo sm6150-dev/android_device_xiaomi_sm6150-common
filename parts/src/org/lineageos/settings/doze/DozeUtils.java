@@ -24,7 +24,8 @@ import android.hardware.display.AmbientDisplayConfiguration;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
-
+import android.os.PowerManager;
+import android.os.SystemClock;
 import androidx.preference.PreferenceManager;
 
 import static android.provider.Settings.Secure.DOZE_ALWAYS_ON;
@@ -87,6 +88,11 @@ public final class DozeUtils {
         if (DEBUG) Log.d(TAG, "Launch doze pulse");
         context.sendBroadcastAsUser(new Intent(DOZE_INTENT),
                 new UserHandle(UserHandle.USER_CURRENT));
+    }
+
+    public static void wakeupScreen(Context context) {
+      PowerManager powerManager = context.getSystemService(PowerManager.class);
+      powerManager.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_GESTURE, TAG);
     }
 
     protected static boolean enableAlwaysOn(Context context, boolean enable) {

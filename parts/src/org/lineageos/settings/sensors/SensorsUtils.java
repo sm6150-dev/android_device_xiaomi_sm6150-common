@@ -19,8 +19,21 @@ package org.lineageos.settings.sensors;
 
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.RemoteException;
+
+import vendor.xiaomi.hardware.touchfeature.V1_0.ITouchFeature;
 
 public final class SensorsUtils {
+    private static ITouchFeature mTouchFeature = null;
+
+    private SensorsUtils() {
+        try {
+            mTouchFeature = ITouchFeature.getService();
+        } catch (RemoteException e) {
+            // Do nothing
+        }
+    }
+
     public static Sensor getSensor(SensorManager sm, String type) {
         for (Sensor sensor : sm.getSensorList(Sensor.TYPE_ALL)) {
             if (type.equals(sensor.getStringType())) {
@@ -28,5 +41,15 @@ public final class SensorsUtils {
             }
         }
         return null;
+    }
+
+    public static int setTouchMode(int mode, int value) {
+        try {
+            return mTouchFeature.setTouchMode(mode, value);
+        } catch (RemoteException e) {
+            // Do nothing
+        }
+        return 0;
+
     }
 }

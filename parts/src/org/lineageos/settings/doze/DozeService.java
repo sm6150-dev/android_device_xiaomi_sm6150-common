@@ -25,6 +25,7 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 
+import org.lineageos.settings.sensors.GxzwSensor;
 import org.lineageos.settings.sensors.PickupSensor;
 import org.lineageos.settings.sensors.ProximitySensor;
 
@@ -34,6 +35,7 @@ public class DozeService extends Service {
 
     private ProximitySensor mProximitySensor;
     private PickupSensor mPickupSensor;
+    private GxzwSensor mGxzwSensor;
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -48,6 +50,7 @@ public class DozeService extends Service {
     @Override
     public void onCreate() {
         if (DEBUG) Log.d(TAG, "Creating service");
+        mGxzwSensor = new GxzwSensor(this);
         mProximitySensor = new ProximitySensor(this);
         mPickupSensor = new PickupSensor(this);
 
@@ -68,6 +71,7 @@ public class DozeService extends Service {
         if (DEBUG) Log.d(TAG, "Destroying service");
         super.onDestroy();
         this.unregisterReceiver(mScreenStateReceiver);
+        mGxzwSensor.disable();
         mProximitySensor.disable();
         mPickupSensor.disable();
     }
@@ -79,6 +83,7 @@ public class DozeService extends Service {
 
     private void onDisplayOn() {
         if (DEBUG) Log.d(TAG, "Display on");
+        mGxzwSensor.disable();
         if (DozeUtils.isPickUpEnabled(this)) {
             mPickupSensor.disable();
         }
@@ -90,6 +95,7 @@ public class DozeService extends Service {
 
     private void onDisplayOff() {
         if (DEBUG) Log.d(TAG, "Display off");
+        mGxzwSensor.enable();
         if (DozeUtils.isPickUpEnabled(this)) {
             mPickupSensor.enable();
         }

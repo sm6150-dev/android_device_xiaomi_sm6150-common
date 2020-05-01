@@ -45,7 +45,8 @@ typedef unordered_map<int64_t, string> NameValTbl;
 #define NAME_VAL(x) {x, "" #x ""}
 #define DECLARE_TBL(T) static const NameValTbl T##_tbl
 
-#define UNKNOWN_STR "UNKNOWN"
+extern const string gEmptyStr;
+extern const string gUnknownStr;
 
 #define CHECK_MASK(type, value, mask_var, mask) \
    (((mask_var) & (mask)) ? (type) (value) : (type) (-1))
@@ -67,7 +68,7 @@ typedef unordered_map<int64_t, string> NameValTbl;
                                                                 false)))
 #define FIELDVAL_ENUM(field, tbl) \
         loc_put_tag_val(#field, \
-                        loc_get_name_from_tbl(tbl, field, "bad enum"))
+                        loc_get_name_from_tbl(tbl, field, gUnknownStr))
 #define FIELDVAL_MASK(field, tbl) \
         loc_put_tag_val(#field, \
                         to_string_hex((uint64_t)field) + " " + \
@@ -78,13 +79,13 @@ typedef unordered_map<int64_t, string> NameValTbl;
    key - key to the matching entry
    defalt - default pointer in case of incorrect parameters
  */
-inline string loc_get_name_from_tbl(const NameValTbl& tbl, int64_t key,
-                                    const char* defalt = nullptr) {
+inline static const string& loc_get_name_from_tbl(const NameValTbl& tbl, int64_t key,
+                                    const string& defalt = gEmptyStr) {
     auto item = tbl.find(key);
     if (item != tbl.end()) {
         return item->second;
     } else {
-        return (nullptr == defalt) ? "" : defalt;
+        return defalt;
     }
 }
 
@@ -99,7 +100,7 @@ inline string loc_parenthesize(const string& str) {
 
 /* Get names from value */
 inline const char* loc_get_name_from_val(const NameValTbl& table, int64_t value) {
-    return loc_get_name_from_tbl(table, value, UNKNOWN_STR).c_str();
+    return loc_get_name_from_tbl(table, value, gUnknownStr).c_str();
 }
 
 inline const char* log_succ_fail_string(int is_succ) {

@@ -31,10 +31,12 @@ public class DozeService extends Service {
 
     private ProximitySensor mProximitySensor;
     private PickupSensor mPickupSensor;
+    private GxzwSensor mGxzwSensor;
 
     @Override
     public void onCreate() {
         if (DEBUG) Log.d(TAG, "Creating service");
+        mGxzwSensor = new GxzwSensor(this);
         mProximitySensor = new ProximitySensor(this);
         mPickupSensor = new PickupSensor(this);
 
@@ -55,6 +57,7 @@ public class DozeService extends Service {
         if (DEBUG) Log.d(TAG, "Destroying service");
         super.onDestroy();
         this.unregisterReceiver(mScreenStateReceiver);
+        mGxzwSensor.unregisterDozeSensor();
         mProximitySensor.disable();
         mPickupSensor.disable();
     }
@@ -84,6 +87,7 @@ public class DozeService extends Service {
                 DozeUtils.isPocketGestureEnabled(this)) {
             mProximitySensor.enable();
         }
+        mGxzwSensor.registerDozeSensor();
     }
 
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {

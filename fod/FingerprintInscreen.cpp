@@ -71,7 +71,6 @@ Return<void> FingerprintInscreen::onFinishEnroll() {
 }
 
 Return<void> FingerprintInscreen::onPress() {
-    TouchFeatureService->setTouchMode(10, 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 3);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_630_FOD);
@@ -79,13 +78,13 @@ Return<void> FingerprintInscreen::onPress() {
 }
 
 Return<void> FingerprintInscreen::onRelease() {
-    TouchFeatureService->setTouchMode(10, 0);
     xiaomiDisplayFeatureService->setFeature(0, 11, 0, 3);
     xiaomiFingerprintService->extCmd(COMMAND_NIT, PARAM_NIT_NONE);
     return Void();
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
+    TouchFeatureService->setTouchMode(10, 1);
     xiaomiDisplayFeatureService->setFeature(0, 17, 1, 1);
     xiaomiDisplayFeatureService->setFeature(0, 11, 1, 4);
     return Void();
@@ -93,6 +92,8 @@ Return<void> FingerprintInscreen::onShowFODView() {
 
 Return<void> FingerprintInscreen::onHideFODView() {
     xiaomiDisplayFeatureService->setFeature(0, 17, 0, 1);
+    TouchFeatureService->setTouchMode(10, 0);
+    xiaomiDisplayFeatureService->setFeature(0, 17, 0, 255);
     return Void();
 }
 

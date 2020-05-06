@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -154,4 +154,16 @@ uint64_t getQTimerTickCount()
 #endif
 
     return qTimerCount;
+}
+
+uint64_t getQTimerFreq()
+{
+#if __aarch64__
+    uint64_t val = 0;
+    asm volatile("mrs %0, cntfrq_el0" : "=r" (val));
+#else
+    uint32_t val = 0;
+    asm volatile("mrc p15, 0, %0, c14, c0, 0" : "=r" (val));
+#endif
+    return val;
 }

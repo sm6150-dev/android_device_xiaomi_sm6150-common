@@ -483,6 +483,13 @@ typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_AFLT ((LocPosTechMask)0x00000040)
 #define LOC_POS_TECH_MASK_HYBRID ((LocPosTechMask)0x00000080)
 
+/* Checking svIdOneBase can be set to the corresponding bit in mask */
+#define svFitsMask(mask, svIdOneBase)                 \
+    ((svIdOneBase) >= 1 && (svIdOneBase) <= (sizeof(mask) << 3))
+/* Setting svIdOneBase specific bit in the mask if the bit offset fits */
+#define setSvMask(mask, svIdOneBase)                  \
+    if (svFitsMask(mask, svIdOneBase)) mask |= (1ULL << ((svIdOneBase) - 1))
+
 typedef enum {
     LOC_RELIABILITY_NOT_SET = 0,
     LOC_RELIABILITY_VERY_LOW = 1,

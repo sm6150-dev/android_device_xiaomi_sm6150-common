@@ -54,6 +54,8 @@ const char EXIT_ERROR_TAG[]  = "Exiting with error";
 
 int build_type_prop = BUILD_TYPE_PROP_NA;
 
+const string gEmptyStr = "";
+const string gUnknownStr = "UNKNOWN";
 /* Logging Mechanism */
 loc_logger_s_type loc_logger;
 
@@ -135,7 +137,7 @@ const char *loc_get_target_name(unsigned int target)
 
     snprintf(ret, sizeof(ret), " %s with%s SSC",
              loc_get_name_from_val(target_name_tbl, getTargetGnssType(target)),
-             ((target & HAS_SSC) == HAS_SSC) ? "" : "out");
+             ((target & HAS_SSC) == HAS_SSC) ? gEmptyStr.c_str() : "out");
 
     return ret;
 }

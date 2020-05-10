@@ -404,6 +404,7 @@ PRODUCT_PACKAGES += \
     libwifi-hal-ctrl \
     libwifi-hal-qcom \
     libwpa_client \
+		readmac \
     wpa_supplicant \
     wpa_supplicant.conf
 

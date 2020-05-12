@@ -2142,6 +2142,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="carrier_volte_available_bool" value="true" />
         <boolean name="carrier_wfc_ims_available_bool" value="true" />
+        <string-array name="mmi_two_digit_number_pattern_string_array" num="3">
+        <item value="0"/>
+        <item value="00"/>
+        <item value="*2"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="312" mnc="670">
@@ -2169,6 +2174,30 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
         <boolean name="use_wfc_home_network_mode_in_roaming_network_bool" value="true" />
+        <string-array name="mmi_two_digit_number_pattern_string_array" num="22">
+        <item value="0"/>
+        <item value="00"/>
+        <item value="*0"/>
+        <item value="*1"/>
+        <item value="*2"/>
+        <item value="*3"/>
+        <item value="*4"/>
+        <item value="*5"/>
+        <item value="*6"/>
+        <item value="*7"/>
+        <item value="*8"/>
+        <item value="*9"/>
+        <item value="#0"/>
+        <item value="#1"/>
+        <item value="#2"/>
+        <item value="#3"/>
+        <item value="#4"/>
+        <item value="#5"/>
+        <item value="#6"/>
+        <item value="#7"/>
+        <item value="#8"/>
+        <item value="#9"/>
+        </string-array>
     </carrier_config>
 
     <carrier_config mcc="313" mnc="110">

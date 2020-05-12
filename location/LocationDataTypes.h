@@ -100,13 +100,24 @@ typedef enum {
 
 typedef uint32_t GnssLocationNavSolutionMask;
 typedef enum {
-    LOCATION_SBAS_CORRECTION_IONO_BIT  = (1<<0), // SBAS ionospheric correction is used
-    LOCATION_SBAS_CORRECTION_FAST_BIT  = (1<<1), // SBAS fast correction is used
-    LOCATION_SBAS_CORRECTION_LONG_BIT  = (1<<2), // SBAS long-tem correction is used
-    LOCATION_SBAS_INTEGRITY_BIT        = (1<<3), // SBAS integrity information is used
-    LOCATION_NAV_CORRECTION_DGNSS_BIT  = (1<<4), // Position Report is DGNSS corrected
-    LOCATION_NAV_CORRECTION_RTK_BIT    = (1<<5), // Position Report is RTK corrected
-    LOCATION_NAV_CORRECTION_PPP_BIT    = (1<<6) // Position Report is PPP corrected
+    // SBAS ionospheric correction is used
+    LOCATION_SBAS_CORRECTION_IONO_BIT  = (1<<0),
+    // SBAS fast correction is used
+    LOCATION_SBAS_CORRECTION_FAST_BIT  = (1<<1),
+    // SBAS long-tem correction is used
+    LOCATION_SBAS_CORRECTION_LONG_BIT  = (1<<2),
+    // SBAS integrity information is used
+    LOCATION_SBAS_INTEGRITY_BIT        = (1<<3),
+    // Position Report is DGNSS corrected
+    LOCATION_NAV_CORRECTION_DGNSS_BIT  = (1<<4),
+     // Position Report is RTK corrected
+    LOCATION_NAV_CORRECTION_RTK_BIT    = (1<<5),
+    // Position Report is PPP corrected
+    LOCATION_NAV_CORRECTION_PPP_BIT    = (1<<6),
+    // Posiiton Report is RTF fixed corrected
+    LOCATION_NAV_CORRECTION_RTK_FIXED_BIT  = (1<<7),
+    // Position report is computed with only SBAS corrected SVs.
+    LOCATION_NAV_CORRECTION_ONLY_SBAS_CORRECTED_SV_USED_BIT = (1<<8)
 } GnssLocationNavSolutionBits;
 
 typedef uint32_t GnssLocationPosTechMask;

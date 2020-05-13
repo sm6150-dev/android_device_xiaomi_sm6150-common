@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -72,9 +72,13 @@ public:
             LOC_LOGd("ping received");
 #ifdef USE_GLIB
         } else if (!STRNCMP(data, "connectBackhaul")) {
-            mSystemStatusObsrvr->connectBackhaul();
+            char clientName[30] = {0};
+            sscanf(data, "%*s %29s", clientName);
+            mSystemStatusObsrvr->connectBackhaul(string(clientName));
         } else if (!STRNCMP(data, "disconnectBackhaul")) {
-            mSystemStatusObsrvr->disconnectBackhaul();
+            char clientName[30] = {0};
+            sscanf(data, "%*s %29s", clientName);
+            mSystemStatusObsrvr->disconnectBackhaul(string(clientName));
 #endif
         } else if (!STRNCMP(data, "requestStatus")) {
             int32_t xtraStatusUpdated = 0;

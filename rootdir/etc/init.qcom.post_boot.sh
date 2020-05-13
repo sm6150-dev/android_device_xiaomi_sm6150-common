@@ -3549,48 +3549,11 @@ case "$target" in
                 echo 250 > $npullccbw/bw_hwmon/up_scale
                 echo 0 > /sys/devices/virtual/npu/msm_npu/pwr
             done
-
-            #Enable mem_latency governor for L3, LLCC, and DDR scaling
-            for memlat in $device/*qcom,devfreq-l3/*cpu*-lat/devfreq/*cpu*-lat
-                do
-                    echo "mem_latency" > $memlat/governor
-                    echo 8 > $memlat/polling_interval
-                    echo 400 > $memlat/mem_latency/ratio_ceil
-                done
-
-            #Enable cdspl3 governor for L3 cdsp nodes
-            for l3cdsp in $device/*qcom,devfreq-l3/*cdsp-l3-lat/devfreq/*cdsp-l3-lat
-            do
-                    echo "cdspl3" > $l3cdsp/governor
-            done
-
-            #Enable mem_latency governor for LLCC and DDR scaling
-            for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
-            do
-                echo "mem_latency" > $memlat/governor
-                echo 8 > $memlat/polling_interval
-                echo 400 > $memlat/mem_latency/ratio_ceil
-            done
-
-            #Gold L3 ratio ceil
-            for l3gold in $device/*qcom,devfreq-l3/*cpu6-cpu-l3-lat/devfreq/*cpu6-cpu-l3-lat
-            do
-                echo 4000 > $l3gold/mem_latency/ratio_ceil
-            done
-
-            #Prime L3 ratio ceil
-            for l3prime in $device/*qcom,devfreq-l3/*cpu7-cpu-l3-lat/devfreq/*cpu7-cpu-l3-lat
-            do
-                echo 4000 > $l3prime/mem_latency/ratio_ceil
-            done
-
-            #Enable compute governor for gold latfloor
-            for latfloor in $device/*cpu*-ddr-latfloor*/devfreq/*cpu-ddr-latfloor*
-            do
-                echo "compute" > $latfloor/governor
-                echo 8 > $latfloor/polling_interval
-            done
         done
+        # memlat specific settings are moved to seperate file under
+        # device/target specific folder
+        setprop vendor.dcvs.prop 0
+        setprop vendor.dcvs.prop 1
 
         # cpuset parameters
         echo 0-5 > /dev/cpuset/background/cpus

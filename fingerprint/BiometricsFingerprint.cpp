@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #define LOG_TAG "android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sm6150"
 #define LOG_VERBOSE "android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sm6150"
 
@@ -279,20 +280,15 @@ fingerprint_device_t* getDeviceForVendor(const char *class_name) {
 
 fingerprint_device_t* getFingerprintDevice() {
     fingerprint_device_t* fp_device;
+    std::string vendor_modules[] = {"fpc", "fpc_fod", "goodix", "goodix_fod", "syna"};
 
-    fp_device = getDeviceForVendor("fpc");
-    if (fp_device == nullptr) {
-        ALOGE("Failed to load fpc fingerprint module");
-    } else {
-        setFpVendorProp("fpc");
-        return fp_device;
-    }
+    for (const auto& vendor : vendor_modules) {
+        if ((fp_device = getDeviceForVendor(vendor.c_str())) == nullptr) {
+            ALOGE("Failed to load %s fingerprint module", vendor.c_str());
+            continue;
+        }
 
-    fp_device = getDeviceForVendor("goodix");
-    if (fp_device == nullptr) {
-        ALOGE("Failed to load goodix fingerprint module");
-    } else {
-        setFpVendorProp("goodix");
+        setFpVendorProp(vendor.c_str());
         return fp_device;
     }
 

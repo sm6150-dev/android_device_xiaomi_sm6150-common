@@ -343,7 +343,7 @@ bool GnssConfiguration::setBlacklistedSource(
         break;
     case GnssConstellationType::IRNSS:
         copyToSource.constellation = GNSS_SV_TYPE_NAVIC;
-        svIdOffset = 0;
+        svIdOffset = GNSS_SV_CONFIG_NAVIC_INITIAL_SV_ID - 1;
         break;
     default:
         copyToSource.constellation = GNSS_SV_TYPE_UNKNOWN;

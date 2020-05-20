@@ -144,13 +144,13 @@ static inline int loc_boot_kpi_marker(const char * pFmt, ...)
 {
     int result = 0;
     FILE *stream = NULL;
-    char data[MAX_COMMAND_STR_LEN];
-    char buf[MAX_COMMAND_STR_LEN];
+    char data[MAX_COMMAND_STR_LEN] = {};
+    char buf[MAX_COMMAND_STR_LEN] = {};
 
     va_list ap;
     va_start(ap, pFmt);
     vsnprintf(&buf[0], sizeof(buf), pFmt, ap);
-    snprintf(data, sizeof(data), "echo %s > %s", buf, BOOT_KPI_FILE);
+    snprintf(data, sizeof(data), "echo -n %s > %s", buf, BOOT_KPI_FILE);
     stream = popen(data, "w" );
     if (NULL == stream) {
         result = -1;

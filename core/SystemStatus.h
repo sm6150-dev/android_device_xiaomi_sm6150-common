@@ -551,6 +551,9 @@ public:
                     typeCount--;
                 }
             }
+            if (MAX_NETWORK_HANDLES == lastValidIndex) {
+                --lastValidIndex;
+            }
 
             if (MAX_NETWORK_HANDLES != deletedIndex) {
                 LOC_LOGD("deletedIndex:%u, lastValidIndex:%u, typeCount:%u",

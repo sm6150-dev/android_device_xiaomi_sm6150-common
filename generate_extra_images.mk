@@ -470,7 +470,7 @@ endif
 
 .PHONY: aboot
 ifeq ($(USESECIMAGETOOL), true)
-aboot: gensecimage_target gensecimage_install
+aboot: $(TARGET_SIGNED_BOOTLOADER) gensecimage_install
 else
 aboot: $(INSTALLED_BOOTLOADER_MODULE)
 endif

@@ -407,7 +407,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
 
     // print the SV info before delivering
     LOC_LOGV("num sv: %u\n"
-        "      sv: constellation svid         cN0"
+        "      sv: constellation svid         cN0  basebandCN0"
         "    elevation    azimuth    flags",
         svNotify.count);
     for (size_t i = 0; i < svNotify.count && i < GNSS_SV_MAX; i++) {
@@ -416,19 +416,18 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
             svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
         }
         // Display what we report to clients
-        uint16_t displaySvId = GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[i].type ?
-                               svNotify.gnssSvs[i].svId + QZSS_SV_PRN_MIN - 1 :
-                               svNotify.gnssSvs[i].svId;
-        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    0x%02X",
+        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    %f    0x%02X 0x%2X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
-            displaySvId,
+            svNotify.gnssSvs[i].svId,
             svNotify.gnssSvs[i].cN0Dbhz,
+            svNotify.gnssSvs[i].basebandCarrierToNoiseDbHz,
             svNotify.gnssSvs[i].elevation,
             svNotify.gnssSvs[i].azimuth,
             svNotify.gnssSvs[i].carrierFrequencyHz,
-            svNotify.gnssSvs[i].gnssSvOptionsMask);
+            svNotify.gnssSvs[i].gnssSvOptionsMask,
+            svNotify.gnssSvs[i].gnssSignalTypeMask);
     }
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
@@ -595,6 +594,11 @@ void LocApiBase::handleBatchStatusEvent(BatchingStatus batchStatus)
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportBatchStatusChangeEvent(batchStatus));
 }
 
+void LocApiBase::reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssConfigEvent(sessionId, gnssConfig));
+}
 
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
@@ -721,6 +725,10 @@ DEFAULT_IMPL(0)
 
 LocationError LocApiBase::setEmergencyExtensionWindowSync(
         const uint32_t /*emergencyExtensionSeconds*/)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+LocationError LocApiBase::setMeasurementCorrections(
+        const GnssMeasurementCorrections /*gnssMeasurementCorrections*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 void LocApiBase::
@@ -885,6 +893,19 @@ void LocApiBase::
     configRobustLocation(bool /*enabled*/,
                          bool /*enableForE911*/,
                          LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getRobustLocationConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    configMinGpsWeek(uint16_t minGpsWeek,
+                     LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getMinGpsWeek(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

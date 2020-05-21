@@ -110,7 +110,7 @@ const GnssInterface* Gnss::getGnssInterface() {
         if (nullptr == getter) {
             getGnssInterfaceFailed = true;
         } else {
-            mGnssInterface = (GnssInterface*)(*getter)();
+            mGnssInterface = (const GnssInterface*)(*getter)();
         }
     }
     return mGnssInterface;

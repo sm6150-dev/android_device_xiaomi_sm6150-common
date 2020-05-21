@@ -262,6 +262,7 @@ status_t batteryPropertiesListenerDeinit() {
 } // namespace android
 
 void loc_extn_battery_properties_listener_init(battery_status_change_fn_t fn) {
+    LOC_LOGv("loc_extn_battery_properties_listener_init entry");
     if (!sIsBatteryListened) {
         std::thread t1(android::batteryPropertiesListenerInit,
                 [=](bool charging) { fn(charging); });

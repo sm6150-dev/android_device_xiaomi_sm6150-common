@@ -75,6 +75,7 @@ typedef enum {
     LOCATION_HAS_SPEED_ACCURACY_BIT    = (1<<6), // location has valid speed accuracy
     LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7), // location has valid bearing accuracy
     LOCATION_HAS_SPOOF_MASK            = (1<<8), // location has valid spoof mask
+    LOCATION_HAS_ELAPSED_REAL_TIME     = (1<<9), // location has valid elapsed real time
 } LocationFlagsBits;
 
 typedef uint16_t LocationTechnologyMask;
@@ -144,6 +145,26 @@ typedef enum {
     LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9)
 } GnssLocationPosDataBits;
 
+typedef uint32_t GnssLocationPosDataMaskExt;
+typedef enum {
+    // Navigation data has pitch rate
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_BIT     = (1<<0),
+    // Navigation data has body pitch rate uncertainty
+    LOCATION_NAV_DATA_HAS_PITCH_RATE_UNC_BIT = (1<<1),
+    // Navigation data has body roll
+    LOCATION_NAV_DATA_HAS_ROLL_BIT           = (1<<2),
+    // Navigation data has body roll uncertainty
+    LOCATION_NAV_DATA_HAS_ROLL_UNC_BIT       = (1<<3),
+    // Navigation data has body rate roll
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_BIT      = (1<<4),
+    // Navigation data has body roll rate uncertainty
+    LOCATION_NAV_DATA_HAS_ROLL_RATE_UNC_BIT  = (1<<5),
+    // Navigation data has body yaw
+    LOCATION_NAV_DATA_HAS_YAW_BIT            = (1<<6),
+    // Navigation data has body roll uncertainty
+    LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<7)
+} GnssLocationPosDataBitsExt;
+
 typedef uint32_t GnssLocationInfoFlagMask;
 typedef enum {
     GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0), // valid altitude mean sea level
@@ -161,6 +182,7 @@ typedef enum {
     GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
     GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
     GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<12),// valid position dynamics data
+                                                                  // and Position Dynamics Ext
     GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<13),// valid gdop, tdop
     GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT                = (1<<14),// valid North standard deviation
     GNSS_LOCATION_INFO_EAST_STD_DEV_BIT                 = (1<<15),// valid East standard deviation
@@ -178,6 +200,8 @@ typedef enum {
     GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<27), // valid output engine type
     GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28), // valid output engine mask
     GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29), // valid conformity index
+    GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30), // valid VRP-based lat/long/alt
+    GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<31), // VRP-based east/north/up vel
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -321,6 +345,8 @@ typedef enum {
     GNSS_CONFIG_FLAGS_SUPL_MODE_BIT                        = (1<<9),
     GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT               = (1<<10),
     GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT      = (1<<11),
+    GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<12),
+    GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<13),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -493,11 +519,11 @@ typedef enum {
 
 typedef uint16_t GnssSingleSatCorrectionMask;
 typedef enum {
-    GNSS_MC_UNKNOWN_BIT                     = 0,
-    GNSS_MC_HAS_SAT_IS_LOS_PROBABILITY_BIT  = (1 << 0),
-    GNSS_MC_HAS_EXCESS_PATH_LENGTH_BIT      = (1 << 1),
-    GNSS_MC_HAS_EXCESS_PATH_LENGTH_UNC_BIT  = (1 << 2),
-    GNSS_MC_HAS_REFLECTING_PLANE_BIT        = (1 << 3),
+    GNSS_MEAS_CORR_UNKNOWN_BIT                     = 0,
+    GNSS_MEAS_CORR_HAS_SAT_IS_LOS_PROBABILITY_BIT  = (1 << 0),
+    GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_BIT      = (1 << 1),
+    GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_UNC_BIT  = (1 << 2),
+    GNSS_MEAS_CORR_HAS_REFLECTING_PLANE_BIT        = (1 << 3),
 } GnssSingleSatCorrectionBits;
 
 typedef enum {
@@ -517,6 +543,7 @@ typedef enum {
     GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_BIT                        = (1<<6),
     GNSS_MEASUREMENTS_CLOCK_FLAGS_DRIFT_UNCERTAINTY_BIT            = (1<<7),
     GNSS_MEASUREMENTS_CLOCK_FLAGS_HW_CLOCK_DISCONTINUITY_COUNT_BIT = (1<<8),
+    GNSS_MEASUREMENTS_CLOCK_FLAGS_ELAPSED_REAL_TIME_BIT            = (1<<9),
 } GnssMeasurementsClockFlagsBits;
 
 typedef uint32_t GnssAidingDataSvMask;
@@ -544,7 +571,9 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT   = (1<<3),
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
     GNSS_AIDING_DATA_SV_TYPE_NAVIC_BIT    = (1<<5),
+    GNSS_AIDING_DATA_SV_TYPE_MAX          = (1<<6),
 } GnssAidingDataSvTypeBits;
+#define GNSS_AIDING_DATA_SV_TYPE_MASK_ALL (GNSS_AIDING_DATA_SV_TYPE_MAX-1)
 
 /* Gnss constellation type mask */
 typedef uint16_t GnssConstellationTypeMask;
@@ -763,6 +792,8 @@ typedef struct {
     float bearingAccuracy;   // in degrees (0 to 359.999)
     LocationTechnologyMask techMask;
     LocationSpoofMask      spoofMask;
+    uint64_t elapsedRealTime;    // in ns
+    uint64_t elapsedRealTimeUnc; // in ns
 } Location;
 
 typedef enum {
@@ -925,6 +956,19 @@ typedef struct {
 } GnssLocationPositionDynamics;
 
 typedef struct {
+    GnssLocationPosDataMaskExt bodyFrameDataMask; // Contains Ext Body frame LocPosDataMask bits
+    float pitchRate;      // Body pitch rate (Radians/second)
+    float pitchRateUnc;   // Uncertainty of pitch rate (Radians/second)
+    float roll;           // Roll of body frame. Clockwise positive. (radian
+    float rollUnc;        // Uncertainty of Roll, 68% confidence level (radian)
+    float rollRate;       // Roll rate of body frame. Clockwise positive. (radian/second)
+    float rollRateUnc;    // Uncertainty of Roll rate, 68% confidence level (radian/second)
+    float yaw;            // Yaw of body frame. Clockwise positive (radian)
+    float yawUnc;         // Uncertainty of Yaw, 68% confidence level (radian)
+} GnssLocationPositionDynamicsExt;
+
+
+typedef struct {
     /** Validity mask for below fields */
     GnssSystemTimeStructTypeFlags validityMask;
     /** Extended week number at reference tick.
@@ -1014,6 +1058,12 @@ typedef struct {
 } GnssSystemTime;
 
 typedef struct {
+    double latitude;  // in degree
+    double longitude; // in degree
+    float altitude;  // altitude wrt to ellipsoid
+} LLAInfo;
+
+typedef struct {
     uint32_t size;                      // set to sizeof(GnssLocationInfo)
     Location location;                  // basic locaiton info, latitude, longitude, and etc
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
@@ -1060,11 +1110,16 @@ typedef struct {
     // when loc output eng type is set to fused, this field
     // indicates the set of engines contribute to the fix.
     PositioningEngineMask locOutputEngMask;
-    /* When robust location is enabled, this field
-     * will how well the various input data considered for
-     * navigation solution conform to expectations.
-     * Range: 0 (least conforming) to 1 (most conforming) */
+    // When robust location is enabled, this field
+    // will how well the various input data considered for
+    // navigation solution conform to expectations.
+    // Range: 0 (least conforming) to 1 (most conforming)
     float conformityIndex;
+    GnssLocationPositionDynamicsExt bodyFrameDataExt;   // Additional Body Frame Dynamics
+    // VRR-based latitude/longitude/altitude
+    LLAInfo llaVRPBased;
+    // VRR-based east, north, and up velocity
+    float enuVelocityVRPBased[3];
 } GnssLocationInfoNotification;
 
 typedef struct {
@@ -1110,9 +1165,9 @@ typedef struct {
     //    - For GLONASS: 65 to 96
     //    - For SBAS:    120 to 158 and 183 to 191
     //    - For QZSS:    193 to 197
-    //    - For BDS:     201 to 237
+    //    - For BDS:     201 to 263
     //    - For GAL:     301 to 336
-    //    - For NAVIC:   401 to 41
+    //    - For NAVIC:   401 to 414
     uint16_t svId;
     GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO, NAVIC)
     float cN0Dbhz;     // signal strength
@@ -1176,6 +1231,7 @@ typedef struct {
     double fullInterSignalBiasUncertaintyNs;
     double satelliteInterSignalBiasNs;
     double satelliteInterSignalBiasUncertaintyNs;
+    int16_t gloFrequency;
 } GnssMeasurementsData;
 
 typedef struct {
@@ -1232,6 +1288,8 @@ typedef struct {
     double driftUncertaintyNsps;
     uint32_t hwClockDiscontinuityCount;
     GnssMeasurementsSignalType referenceSignalTypeForIsb;
+    uint64_t elapsedRealTime;    // in ns
+    uint64_t elapsedRealTimeUnc; // in ns
 } GnssMeasurementsClock;
 
 typedef struct {
@@ -1261,80 +1319,6 @@ typedef struct {
     GnssMeasurementsData measurements[GNSS_MEASUREMENTS_MAX];
     GnssMeasurementsClock clock; // clock
 } GnssMeasurementsNotification;
-
-#define GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE         12
-#define GNSS_SV_POLY_XYZ_0_TH_ORDER_COEFF_MAX_SIZE  3
-#define GNSS_SV_POLY_XYZ_N_TH_ORDER_COEFF_MAX_SIZE  9
-#define GNSS_SV_POLY_SV_CLKBIAS_COEFF_MAX_SIZE      4
-
-typedef uint16_t GnssSvPolyStatusMask;
-#define GNSS_SV_POLY_SRC_ALM_CORR_V02 ((GnssSvPolyStatusMask)0x01)
-#define GNSS_SV_POLY_GLO_STR4_V02 ((GnssSvPolyStatusMask)0x02)
-#define GNSS_SV_POLY_DELETE_V02 ((GnssSvPolyStatusMask)0x04)
-#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_V02 ((GnssSvPolyStatusMask)0x08)
-typedef uint16_t GnssSvPolyStatusMaskValidity;
-#define GNSS_SV_POLY_SRC_ALM_CORR_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x01)
-#define GNSS_SV_POLY_GLO_STR4_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x02)
-#define GNSS_SV_POLY_DELETE_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x04)
-#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x08)
-
-typedef struct {
-    uint32_t      size;
-    uint16_t     gnssSvId;
-    /* GPS: 1-32, GLO: 65-96, 0: Invalid,
-       SBAS: 120-151, BDS:201-237,GAL:301 to 336
-       All others are reserved
-    */
-    int8_t      freqNum;
-    /* Freq index, only valid if u_SysInd is GLO */
-
-    GnssSvPolyStatusMaskValidity svPolyStatusMaskValidity;
-    GnssSvPolyStatusMask         svPolyStatusMask;
-
-    uint32_t    is_valid;
-
-    uint16_t     iode;
-    /* Ephemeris reference time
-       GPS:Issue of Data Ephemeris used [unitless].
-       GLO: Tb 7-bit, refer to ICD02
-    */
-    double      T0;
-    /* Reference time for polynominal calculations
-       GPS: Secs in week.
-       GLO: Full secs since Jan/01/96
-    */
-    double      polyCoeffXYZ0[GNSS_SV_POLY_XYZ_0_TH_ORDER_COEFF_MAX_SIZE];
-    /* C0X, C0Y, C0Z */
-    double      polyCoefXYZN[GNSS_SV_POLY_XYZ_N_TH_ORDER_COEFF_MAX_SIZE];
-    /* C1X, C2X ... C2Z, C3Z */
-    float       polyCoefOther[GNSS_SV_POLY_SV_CLKBIAS_COEFF_MAX_SIZE];
-    /* C0T, C1T, C2T, C3T */
-    float       svPosUnc;       /* SV position uncertainty [m]. */
-    float       ionoDelay;    /* Ionospheric delay at d_T0 [m]. */
-    float       ionoDot;      /* Iono delay rate [m/s].  */
-    float       sbasIonoDelay;/* SBAS Ionospheric delay at d_T0 [m]. */
-    float       sbasIonoDot;  /* SBAS Iono delay rate [m/s].  */
-    float       tropoDelay;   /* Tropospheric delay [m]. */
-    float       elevation;    /* Elevation [rad] at d_T0 */
-    float       elevationDot;      /* Elevation rate [rad/s] */
-    float       elevationUnc;      /* SV elevation [rad] uncertainty */
-    double      velCoef[GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE];
-    /* Coefficients of velocity poly */
-    uint32_t    enhancedIOD;    /*  Enhanced Reference Time */
-    float gpsIscL1ca;
-    float gpsIscL2c;
-    float gpsIscL5I5;
-    float gpsIscL5Q5;
-    float gpsTgd;
-    float gloTgdG1G2;
-    float bdsTgdB1;
-    float bdsTgdB2;
-    float bdsTgdB2a;
-    float bdsIscB2a;
-    float galBgdE1E5a;
-    float galBgdE1E5b;
-    float navicTgdL5;
-} GnssSvPolynomial;
 
 typedef uint32_t GnssSvId;
 
@@ -1382,6 +1366,45 @@ typedef struct {
     uint64_t navicBlacklistSvMask;
 } GnssSvIdConfig;
 
+// Specify the valid mask for robust location configure
+// defined in GnssConfigRobustLocation.
+enum GnssConfigRobustLocationValidMask {
+    // GnssConfigRobustLocation has valid enabled field.
+    GNSS_CONFIG_ROBUST_LOCATION_ENABLED_VALID_BIT          = (1<<0),
+    // GnssConfigRobustLocation has valid enabledForE911 field.
+    GNSS_CONFIG_ROBUST_LOCATION_ENABLED_FOR_E911_VALID_BIT = (1<<1),
+    // GnssConfigRobustLocation has valid version field.
+    GNSS_CONFIG_ROBUST_LOCATION_VERSION_VALID_BIT          = (1<<2),
+};
+
+struct GnssConfigRobustLocationVersion {
+    // Major version number
+    uint8_t major;
+    // Minor version number
+    uint16_t minor;
+    inline bool equals(const GnssConfigRobustLocationVersion& version) const {
+        return (version.major == major && version.minor == minor);
+    }
+};
+
+// specify the robust location configuration used by modem GNSS engine
+struct GnssConfigRobustLocation {
+   GnssConfigRobustLocationValidMask validMask;
+   bool enabled;
+   bool enabledForE911;
+   GnssConfigRobustLocationVersion version;
+
+   inline bool equals(const GnssConfigRobustLocation& config) const {
+        if (config.validMask == validMask &&
+            config.enabled == enabled &&
+            config.enabledForE911 == enabledForE911 &&
+            config.version.equals(version)) {
+            return true;
+        }
+        return false;
+    }
+};
+
 struct GnssConfig{
     uint32_t size;  // set to sizeof(GnssConfig)
     GnssConfigFlagsMask flags; // bitwise OR of GnssConfigFlagsBits to mark which params are valid
@@ -1397,6 +1420,8 @@ struct GnssConfig{
     GnssConfigSuplModeMask suplModeMask; //bitwise OR of GnssConfigSuplModeBits
     std::vector<GnssSvIdSource> blacklistedSvIds;
     uint32_t emergencyExtensionSeconds;
+    GnssConfigRobustLocation robustLocationConfig;
+    uint16_t minGpsWeek;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1411,7 +1436,9 @@ struct GnssConfig{
                 suplEmergencyServices == config.suplEmergencyServices &&
                 suplModeMask == config.suplModeMask  &&
                 blacklistedSvIds == config.blacklistedSvIds &&
-                emergencyExtensionSeconds == config.emergencyExtensionSeconds) {
+                emergencyExtensionSeconds == config.emergencyExtensionSeconds &&
+                robustLocationConfig.equals(config.robustLocationConfig) &&
+                minGpsWeek == config.minGpsWeek) {
             return true;
         }
         return false;
@@ -1518,7 +1545,7 @@ typedef enum {
     GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
     GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
     GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
-    GNSS_SV_TYPES_MASK_NAVIC_BIT  = (1<<4),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
 } GnssSvTypesMaskBits;
 
 /* This SV Type config is injected directly to GNSS Adapter
@@ -1569,6 +1596,28 @@ struct LeverArmConfigInfo {
     // Lever arm regarding GNSS Antenna w.r.t the origin at the IMU
     // (inertial measurement unit) for VEPP (vision enhanced precise position engine)
     LeverArmParams   veppImuToGnss;
+};
+
+// Specify vehicle body-to-Sensor mount parameters to be used
+// by dead reckoning positioning engine.
+struct BodyToSensorMountParams {
+    // The misalignment of the sensor board along the
+    // horizontal plane of the vehicle chassis measured looking
+    // from the vehicle to forward direction. In unit of degree.
+    float rollOffset;
+    // The misalignment along the horizontal plane of the vehicle
+    // chassis measured looking from the vehicle to the right
+    // side. Positive pitch indicates vehicle is inclined such
+    // that forward wheels are at higher elevation than rear
+    // wheels. In unit of degree.
+    float yawOffset;
+    // The angle between the vehicle forward direction and the
+    // sensor axis as seen from the top of the vehicle, and
+    // measured in counterclockwise direction. In unit of degree.
+    float pitchOffset;
+    // Single uncertainty number that may be the largest of the
+    // roll, pitch and yaw offset uncertainties.
+    float offsetUnc;
 };
 
 /* Provides the capabilities of the system
@@ -1682,17 +1731,10 @@ typedef std::function<void(
     GnssMeasurementsNotification gnssMeasurementsNotification
 )> gnssMeasurementsCallback;
 
-/* Gives GNSS SV poly information, optional can be NULL
-    gnssSvPolyCallback is called only during a tracking session
-    broadcasted to all clients that registers for the poly */
-typedef std::function<void(
-    GnssSvPolynomial gnssSvPolynomialNotification
-)> gnssSvPolynomialCallback;
-
-
 /* Provides the current GNSS configuration to the client */
 typedef std::function<void(
-    GnssConfig& config
+    uint32_t session_id,
+    const GnssConfig& config
 )> gnssConfigCallback;
 
 /* LocationSystemInfoCb is for receiving rare occuring location
@@ -1730,7 +1772,6 @@ typedef struct {
     batchingStatusCallback batchingStatusCb;         // optional
     locationSystemInfoCallback locationSystemInfoCb; // optional
     engineLocationsInfoCallback engineLocationsInfoCb;     // optional
-    gnssSvPolynomialCallback gnssSvPolynomialCb;       // optional
 } LocationCallbacks;
 
 typedef struct {

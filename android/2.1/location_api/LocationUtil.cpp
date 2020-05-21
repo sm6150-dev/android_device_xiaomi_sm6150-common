@@ -30,6 +30,7 @@
 #include <LocationUtil.h>
 #include <log_util.h>
 #include <inttypes.h>
+#include <loc_misc_utils.h>
 
 namespace android {
 namespace hardware {
@@ -41,6 +42,7 @@ using ::android::hardware::gnss::V2_0::GnssLocation;
 using ::android::hardware::gnss::V2_0::ElapsedRealtimeFlags;
 using ::android::hardware::gnss::V2_0::GnssConstellationType;
 using ::android::hardware::gnss::V1_0::GnssLocationFlags;
+using ::android::hardware::gnss::measurement_corrections::V1_0::GnssSingleSatCorrectionFlags;
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out)
 {
@@ -124,31 +126,38 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
 {
     memset(&out, 0, sizeof(V2_0::GnssLocation));
     convertGnssLocation(in, out.v1_0);
+    if (in.flags & LOCATION_HAS_ELAPSED_REAL_TIME) {
+        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+        uint64_t qtimerDiff = in.elapsedRealTime - getQTimerTickCount();
+        out.elapsedRealtime.timestampNs = qTimerTicksToNanos(double(qtimerDiff));
+        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+        out.elapsedRealtime.timeUncertaintyNs = in.elapsedRealTimeUnc;
+    } else {
+        struct timespec currentTime;
+        int64_t sinceBootTimeNanos;
 
-    struct timespec currentTime;
-    int64_t sinceBootTimeNanos;
-
-    if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
-        int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
-        int64_t locationTimeNanos = in.timestamp*1000000;
-        LOC_LOGD("%s]: sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+        if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
+            int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
+            int64_t locationTimeNanos = in.timestamp*1000000;
+            LOC_LOGD("%s]: sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
                 " locationTimeNanos:%" PRIi64 "",
                 __FUNCTION__, sinceBootTimeNanos, currentTimeNanos, locationTimeNanos);
-        if (currentTimeNanos >= locationTimeNanos) {
-            int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
-            LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
-            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
-                out.elapsedRealtime.timeUncertaintyNs = 1000000;
-                LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
+            if (currentTimeNanos >= locationTimeNanos) {
+                int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
+                LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
+                if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                    out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                    // time uncertainty is 1 ms since it is calculated from utc time that is in ms
+                    out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                    LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
                         __FUNCTION__, out.elapsedRealtime.timestampNs);
+                }
             }
+        } else {
+            LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
         }
-    } else {
-        LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
     }
 }
 
@@ -306,6 +315,76 @@ void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEph
         default:
             out = GnssDebug::SatelliteEphemerisHealth::UNKNOWN;
             break;
+    }
+}
+
+void convertSingleSatCorrections(const SingleSatCorrection& in, GnssSingleSatCorrection& out)
+{
+    out.flags = GNSS_MEAS_CORR_UNKNOWN_BIT;
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_SAT_IS_LOS_PROBABILITY)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_SAT_IS_LOS_PROBABILITY_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_EXCESS_PATH_LENGTH)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_EXCESS_PATH_LENGTH_UNC)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_EXCESS_PATH_LENGTH_UNC_BIT;
+    }
+    if (in.singleSatCorrectionFlags & (GnssSingleSatCorrectionFlags::HAS_REFLECTING_PLANE)) {
+        out.flags |= GNSS_MEAS_CORR_HAS_REFLECTING_PLANE_BIT;
+    }
+    switch (in.constellation) {
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GPS):
+        out.svType = GNSS_SV_TYPE_GPS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::SBAS):
+        out.svType = GNSS_SV_TYPE_SBAS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GLONASS):
+        out.svType = GNSS_SV_TYPE_GLONASS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::QZSS):
+        out.svType = GNSS_SV_TYPE_QZSS;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::BEIDOU):
+        out.svType = GNSS_SV_TYPE_BEIDOU;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::GALILEO):
+        out.svType = GNSS_SV_TYPE_GALILEO;
+        break;
+    case (::android::hardware::gnss::V1_0::GnssConstellationType::UNKNOWN):
+    default:
+        out.svType = GNSS_SV_TYPE_UNKNOWN;
+        break;
+    }
+    out.svId = in.svid;
+    out.carrierFrequencyHz = in.carrierFrequencyHz;
+    out.probSatIsLos = in.probSatIsLos;
+    out.excessPathLengthMeters = in.excessPathLengthMeters;
+    out.excessPathLengthUncertaintyMeters = in.excessPathLengthUncertaintyMeters;
+
+    out.reflectingPlane.latitudeDegrees = in.reflectingPlane.latitudeDegrees;
+    out.reflectingPlane.longitudeDegrees = in.reflectingPlane.longitudeDegrees;
+    out.reflectingPlane.altitudeMeters = in.reflectingPlane.altitudeMeters;
+    out.reflectingPlane.azimuthDegrees = in.reflectingPlane.azimuthDegrees;
+}
+
+void convertMeasurementCorrections(const MeasurementCorrectionsV1_0& in,
+                                   GnssMeasurementCorrections& out)
+{
+    memset(&out, 0, sizeof(GnssMeasurementCorrections));
+    out.latitudeDegrees = in.latitudeDegrees;
+    out.longitudeDegrees = in.longitudeDegrees;
+    out.altitudeMeters = in.altitudeMeters;
+    out.horizontalPositionUncertaintyMeters = in.horizontalPositionUncertaintyMeters;
+    out.verticalPositionUncertaintyMeters = in.verticalPositionUncertaintyMeters;
+    out.toaGpsNanosecondsOfWeek = in.toaGpsNanosecondsOfWeek;
+
+    for (int i = 0; i < in.satCorrections.size(); i++) {
+        GnssSingleSatCorrection gnssSingleSatCorrection;
+
+        convertSingleSatCorrections(in.satCorrections[i], gnssSingleSatCorrection);
+        out.satCorrections.push_back(gnssSingleSatCorrection);
     }
 }
 

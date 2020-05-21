@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2010, 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,8 @@ typedef uint16_t LocGpsLocationFlags;
 #define LOC_GPS_LOCATION_HAS_SPEED_ACCURACY   0x0100
 /** LocGpsLocation has valid bearing accuracy */
 #define LOC_GPS_LOCATION_HAS_BEARING_ACCURACY 0x0200
+/** LocGpsLocation has valid Real Time and Real Time Uncertainty */
+#define LOC_GPS_LOCATION_HAS_ELAPSED_REAL_TIME 0x0400
 
 /** Spoof mask in LocGpsLocation */
 typedef uint32_t LocGpsSpoofMask;
@@ -570,7 +572,11 @@ typedef struct {
     /** Represents the expected vertical uncertainity in meters*/
     float           vertUncertainity;
     /** Timestamp for the location fix. */
-    LocGpsUtcTime      timestamp;
+    LocGpsUtcTime   timestamp;
+    /** Elapsed RealTime in nanosends */
+    uint64_t        elapsedRealTime;
+    /** Elapsed Real Time Uncertainty in nanosends */
+    uint64_t        elapsedRealTimeUnc;
 } LocGpsLocation;
 
 /** Represents the status. */

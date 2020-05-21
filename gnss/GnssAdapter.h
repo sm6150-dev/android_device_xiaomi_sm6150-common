@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -158,6 +158,20 @@ typedef std::function<void(
 
 typedef void (*powerStateCallback)(bool on);
 
+typedef void* QDgnssListenerHDL;
+typedef std::function<void(
+    bool    sessionActive
+)> QDgnssSessionActiveCb;
+
+struct CdfwInterface {
+    QDgnssListenerHDL (*createUsableReporter)(
+            QDgnssSessionActiveCb sessionActiveCb);
+
+    void (*destroyUsableReporter)(QDgnssListenerHDL handle);
+
+    void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
+};
+
 class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
@@ -178,6 +192,7 @@ class GnssAdapter : public LocAdapterBase {
     LocationControlCallbacks mControlCallbacks;
     uint32_t mAfwControlId;
     uint32_t mNmeaMask;
+    uint64_t mPrevNmeaRptTimeNsec;
     GnssSvIdConfig mGnssSvIdConfig;
     GnssSvTypeConfig mGnssSvTypeConfig;
     GnssSvTypeConfigCallback mGnssSvTypeConfigCb;
@@ -199,6 +214,19 @@ class GnssAdapter : public LocAdapterBase {
         mNfwCb = (NfwStatusCb)cbInfo.visibilityControlCb;
         mIsE911Session = (IsInEmergencySession)cbInfo.isInEmergencySession;
     }
+
+    /* ==== Measurement Corrections========================================================= */
+    bool mIsMeasCorrInterfaceOpen;
+    measCorrSetCapabilitiesCb mMeasCorrSetCapabilitiesCb;
+    bool initMeasCorr(bool bSendCbWhenNotSupported);
+    bool mIsAntennaInfoInterfaceOpened;
+
+    /* ==== DGNSS Data Usable Report======================================================== */
+    QDgnssListenerHDL mQDgnssListenerHDL;
+    const CdfwInterface* mCdfwInterface;
+    bool mDGnssNeedReport;
+    bool mDGnssDataUsage;
+    void reportDGnssDataUsable(const GnssSvMeasurementSet &svMeasurementSet);
 
     /* ==== ODCPI ========================================================================== */
     OdcpiRequestCallback mOdcpiRequestCb;
@@ -257,6 +285,7 @@ public:
     /* ======== UTILITIES ================================================================== */
     void restartSessions(bool modemSSR = false);
     void checkAndRestartTimeBasedSession();
+    void checkAndRestartSPESession();
     void suspendSessions();
 
     /* ==== CLIENT ========================================================================= */
@@ -304,6 +333,7 @@ public:
     void resetSvConfig(uint32_t sessionId);
     void configLeverArm(uint32_t sessionId, const LeverArmConfigInfo& configInfo);
     void configRobustLocation(uint32_t sessionId, bool enable, bool enableForE911);
+    void configMinGpsWeek(uint32_t sessionId, uint16_t minGpsWeek);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -372,6 +402,13 @@ public:
     uint32_t gnssResetSvConfigCommand();
     uint32_t configLeverArmCommand(const LeverArmConfigInfo& configInfo);
     uint32_t configRobustLocationCommand(bool enable, bool enableForE911);
+    bool openMeasCorrCommand(const measCorrSetCapabilitiesCb setCapabilitiesCb);
+    bool measCorrSetCorrectionsCommand(const GnssMeasurementCorrections gnssMeasCorr);
+    inline void closeMeasCorrCommand() { mIsMeasCorrInterfaceOpen = false; }
+    uint32_t antennaInfoInitCommand(const antennaInfoCb antennaInfoCallback);
+    inline void antennaInfoCloseCommand() { mIsAntennaInfoInterfaceOpened = false; }
+    uint32_t configMinGpsWeekCommand(uint16_t minGpsWeek);
+    uint32_t configBodyToSensorMountParamsCommand(const BodyToSensorMountParams& b2sParams);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -389,6 +426,7 @@ public:
     virtual bool isInSession() { return !mTimeBasedTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
+    void initDGnssUsableReporter();
     void odcpiTimerExpireEvent();
 
     /* ==== REPORTS ======================================================================== */
@@ -414,6 +452,7 @@ public:
     virtual void reportSvEphemerisEvent(GnssSvEphemerisReport & svEphemeris);
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
+    virtual void reportGnssConfigEvent(uint32_t sessionId, const GnssConfig& gnssConfig);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
     virtual void reportLocationSystemInfoEvent(const LocationSystemInfo& locationSystemInfo);
 
@@ -430,6 +469,8 @@ public:
     bool needReportForGnssClient(const UlpLocation& ulpLocation,
             enum loc_sess_status status, LocPosTechMask techMask);
     bool needReportForFlpClient(enum loc_sess_status status, LocPosTechMask techMask);
+    bool needToGenerateNmeaReport(const uint32_t &gpsTimeOfWeekMs,
+        const struct timespec32_t &apTimeStamp);
     void reportPosition(const UlpLocation &ulpLocation,
                         const GpsLocationExtended &locationExtended,
                         enum loc_sess_status status,
@@ -444,6 +485,7 @@ public:
     void reportGnssMeasurementData(const GnssMeasurementsNotification& measurements);
     void reportGnssSvIdConfig(const GnssSvIdConfig& config);
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
+    void reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig);
     void requestOdcpi(const OdcpiRequestInfo& request);
     void invokeGnssEnergyConsumedCallback(uint64_t energyConsumedSinceFirstBoot);
     void saveGnssEnergyConsumedCallback(GnssEnergyConsumedCallback energyConsumedCb);
@@ -462,9 +504,10 @@ public:
 
     void updateSystemPowerState(PowerStateType systemPowerState);
     void reportSvPolynomial(const GnssSvPolynomial &svPolynomial);
-    void requestSvPolyForClient(LocationAPI* client,
-                                const LocationCallbacks& callbacks);
 
+
+    std::vector<double> parseDoublesString(char* dString);
+    void reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallback);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
@@ -520,6 +563,9 @@ public:
     void notifyClientOfCachedLocationSystemInfo(LocationAPI* client,
                                                 const LocationCallbacks& callbacks);
     void updateSystemPowerStateCommand(PowerStateType systemPowerState);
+
+    /*==== DGnss Usable Report Flag ====================================================*/
+    inline void setDGnssUsableFLag(bool dGnssNeedReport) { mDGnssNeedReport = dGnssNeedReport;}
 };
 
 #endif //GNSS_ADAPTER_H

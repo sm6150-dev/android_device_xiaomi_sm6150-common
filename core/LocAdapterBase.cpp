@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -185,6 +185,10 @@ DEFAULT_IMPL()
 void LocAdapterBase::reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& /*config*/)
 DEFAULT_IMPL()
 
+void LocAdapterBase::reportGnssConfigEvent(uint32_t,  /* session id*/
+            const GnssConfig& /*gnssConfig*/)
+DEFAULT_IMPL()
+
 bool LocAdapterBase::
     requestOdcpiEvent(OdcpiRequestInfo& /*request*/)
 DEFAULT_IMPL(false)
@@ -308,6 +312,9 @@ LocAdapterBase::getCapabilities()
         }
         if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY)) {
             mask |= LOCATION_CAPABILITIES_PRIVACY_BIT;
+        }
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
+            mask |= LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT;
         }
     } else {
         LOC_LOGE("%s]: attempt to get capabilities before they are known.", __func__);

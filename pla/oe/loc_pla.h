@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,6 +37,22 @@
 #include <sys/time.h>
 #include <time.h>
 
+#if defined(__GNUC__) && defined(__GNUC_PREREQ)
+#if __GNUC_PREREQ(6,0)
+    #pragma message "GNU C version is above 6"
+#else
+    #pragma message "GNU C version is less than 6"
+    #define NO_UNORDERED_SET_OR_MAP
+#endif
+#endif
+
+// use set/map instead of unordered_set/unordered_map for
+// older GCC versions
+#ifdef NO_UNORDERED_SET_OR_MAP
+#define unordered_set set
+#define unordered_map map
+#endif
+
 inline int64_t sysTimeMillis(int clock)
 {
     struct timespec ts;
@@ -61,6 +77,8 @@ extern "C" {
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
+#else
+#define set_sched_policy(a, b)
 #endif /* FEATURE_EXTERNAL_AP */
 #include <pthread.h>
 #include <sys/time.h>
@@ -89,6 +107,9 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/etc/quipc.conf"
+#define LOC_PATH_ANT_CORR_STR      "/etc/gnss_antenna_info.conf"
+#define LOC_PATH_SLIM_CONF_STR     "/etc/slim.conf"
+#define LOC_PATH_VPE_CONF_STR      "/etc/vpeglue.conf"
 
 #ifdef FEATURE_EXTERNAL_AP
 #define PROPERTY_VALUE_MAX 92
@@ -99,6 +120,27 @@ inline int property_get(const char* key, char* value, const char* default_value)
     return strlen(value);
 }
 #endif /* FEATURE_EXTERNAL_AP */
+
+/*!
+ * @brief Function for memory block copy
+ *
+ * @param[out] p_Dest     Destination buffer.
+ * @param[in]  q_DestSize Destination buffer size.
+ * @param[in]  p_Src      Source buffer.
+ * @param[in]  q_SrcSize  Source buffer size.
+ *
+ * @return Number of bytes copied.
+ */
+static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+{
+    size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
+    if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {
+        memcpy(p_Dest, p_Src, res);
+    } else {
+        res = 0;
+    }
+    return res;
+}
 
 #ifdef __cplusplus
 }

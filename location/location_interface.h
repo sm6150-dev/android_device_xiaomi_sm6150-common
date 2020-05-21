@@ -95,7 +95,14 @@ struct GnssInterface {
                                    const GnssSvIdConfig& svIdConfig);
     uint32_t (*gnssResetSvConfig)();
     uint32_t (*configLeverArm)(const LeverArmConfigInfo& configInfo);
+    bool (*measCorrInit)(const measCorrSetCapabilitiesCb setCapabilitiesCb);
+    bool (*measCorrSetCorrections)(const GnssMeasurementCorrections gnssMeasCorr);
+    void (*measCorrClose)();
+    uint32_t (*antennaInfoInit)(const antennaInfoCb antennaInfoCallback);
+    void (*antennaInfoClose) ();
     uint32_t (*configRobustLocation)(bool enable, bool enableForE911);
+    uint32_t (*configMinGpsWeek)(uint16_t minGpsWeek);
+    uint32_t (*configBodyToSensorMountParams)(const BodyToSensorMountParams& b2sParams);
 };
 
 struct BatchingInterface {

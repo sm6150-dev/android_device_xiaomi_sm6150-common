@@ -3410,6 +3410,7 @@ void  LocApiV02 :: reportSv (
         num_svs_max = std::min((uint32_t)QMI_LOC_MAX_SV_USED_LIST_LENGTH_V02,
                                 gnss_report_ptr->svList_len);
     }
+    num_svs_max = std::min(num_svs_max, GNSS_SV_MAX);
 
     SvNotify.size = sizeof(GnssSvNotification);
     if (gnss_report_ptr->gnssSignalTypeList_valid) {

@@ -841,7 +841,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
             out[i].v2_0.v1_0.svFlag |= IGnssCallback::GnssSvFlags::HAS_CARRIER_FREQUENCY;
 
         convertGnssConstellationType(in.gnssSvs[i].type, out[i].v2_0.constellation);
-        out[i].basebandCN0DbHz = in.gnssSvs[i].cN0Dbhz;
+        out[i].basebandCN0DbHz = in.gnssSvs[i].basebandCarrierToNoiseDbHz;
     }
 }
 

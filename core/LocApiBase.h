@@ -215,7 +215,8 @@ public:
     virtual void startFix(const LocPosMode& fixCriteria, LocApiResponse* adapterResponse);
     virtual void stopFix(LocApiResponse* adapterResponse);
     virtual void deleteAidingData(const GnssAidingData& data, LocApiResponse* adapterResponse);
-    virtual void injectPosition(double latitude, double longitude, float accuracy);
+    virtual void injectPosition(double latitude, double longitude, float accuracy,
+            bool onDemandCpi);
     virtual void injectPosition(const GnssLocationInfoNotification &locationInfo,
             bool onDemandCpi=false);
     virtual void injectPosition(const Location& location, bool onDemandCpi);

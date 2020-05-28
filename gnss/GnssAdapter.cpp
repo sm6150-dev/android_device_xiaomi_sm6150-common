@@ -47,6 +47,7 @@
 #include <SystemStatus.h>
 #include <vector>
 #include <loc_misc_utils.h>
+#include <gps_extended_c.h>
 
 #define RAD2DEG    (180.0 / M_PI)
 #define PROCESS_NAME_ENGINE_SERVICE "engine-service"
@@ -115,7 +116,8 @@ GnssAdapter::GnssAdapter() :
     mSupportNfwControl(true),
     mSystemPowerState(POWER_STATE_UNKNOWN),
     mIsMeasCorrInterfaceOpen(false),
-    mIsAntennaInfoInterfaceOpened(false)
+    mIsAntennaInfoInterfaceOpened(false),
+    mLastDeleteAidingDataTime(0)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2124,10 +2126,19 @@ void GnssAdapter::reportGnssSvTypeConfig(const GnssSvTypeConfig& config)
 }
 
 void GnssAdapter::deleteAidingData(const GnssAidingData &data, uint32_t sessionId) {
-    mLocApi->deleteAidingData(data, new LocApiResponse(*getContext(),
-            [this, sessionId] (LocationError err) {
-                reportResponse(err, sessionId);
-            }));
+    struct timespec bootDeleteAidingDataTime;
+    int64_t bootDeleteTimeMs;
+    if (clock_gettime(CLOCK_BOOTTIME, &bootDeleteAidingDataTime) == 0) {
+        bootDeleteTimeMs = bootDeleteAidingDataTime.tv_sec * 1000000;
+        int64_t diffTimeBFirSecDelete = bootDeleteTimeMs - mLastDeleteAidingDataTime;
+        if (diffTimeBFirSecDelete > DELETE_AIDING_DATA_EXPECTED_TIME_MS) {
+            mLocApi->deleteAidingData(data, new LocApiResponse(*getContext(),
+                    [this, sessionId] (LocationError err) {
+                        reportResponse(err, sessionId);
+                    }));
+            mLastDeleteAidingDataTime = bootDeleteTimeMs;
+       }
+   }
 }
 
 uint32_t
@@ -2935,7 +2946,6 @@ GnssAdapter::startTimeBasedTracking(LocationAPI* client, uint32_t sessionId,
     LOC_LOGd("minInterval %u minDistance %u mode %u powermode %u tbm %u",
             trackingOptions.minInterval, trackingOptions.minDistance,
             trackingOptions.mode, trackingOptions.powerMode, trackingOptions.tbm);
-
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, trackingOptions);
     // save position mode parameters

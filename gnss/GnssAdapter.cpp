@@ -2480,6 +2480,10 @@ GnssAdapter::restartSessions(bool modemSSR)
     // SPE will be restarted now, so set this variable to false.
     mSPEAlreadyRunningAtHighestInterval = false;
 
+    // inform engine hub that GNSS session is about to start
+    mEngHubProxy->gnssSetFixMode(mLocPositionMode);
+    mEngHubProxy->gnssStartFix();
+
     checkAndRestartSPESession();
 }
 
@@ -2885,10 +2889,10 @@ GnssAdapter::startTimeBasedTracking(LocationAPI* client, uint32_t sessionId,
 
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, trackingOptions);
-    //Update Position mode parameters
+    // save position mode parameters
     setLocPositionMode(locPosMode);
     // inform engine hub that GNSS session is about to start
-    mEngHubProxy->gnssSetFixMode(locPosMode);
+    mEngHubProxy->gnssSetFixMode(mLocPositionMode);
     mEngHubProxy->gnssStartFix();
 
     // want to run SPE session at a fixed min interval in some automotive scenarios
@@ -2917,9 +2921,11 @@ GnssAdapter::updateTracking(LocationAPI* client, uint32_t sessionId,
 {
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, updatedOptions);
+    // save position mode parameters
+    setLocPositionMode(locPosMode);
 
     // inform engine hub that GNSS session is about to start
-    mEngHubProxy->gnssSetFixMode(locPosMode);
+    mEngHubProxy->gnssSetFixMode(mLocPositionMode);
     mEngHubProxy->gnssStartFix();
 
     // want to run SPE session at a fixed min interval in some automotive scenarios

@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
+# Copyright (c) 2014-2017, 2020 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -36,6 +36,7 @@ source $HERE/init.qti.debug-kona.sh
 source $HERE/init.qti.debug-lito.sh
 source $HERE/init.qti.debug-trinket.sh
 source $HERE/init.qti.debug-atoll.sh
+source $HERE/init.qti.debug-lagoon.sh
 
 enable_tracing_events()
 {
@@ -2551,9 +2552,16 @@ case "$coresight_config" in
                 setprop ro.dbg.coresight.stm_cfg_done 1
             ;;
             "lito")
-                echo "Enabling DCC/STM/Debug events for lito"
-                enable_lito_debug
-                setprop ro.dbg.coresight.stm_cfg_done 1
+                soc_id=`cat /sys/devices/soc0/soc_id`
+                if [ "$soc_id" == "434" || "$soc_id" == "459" ]; then
+                    echo "Enabling DCC/STM/Debug events for lagoon"
+                    enable_lagoon_debug
+                    setprop ro.dbg.coresight.stm_cfg_done 1
+                else
+                    echo "Enabling DCC/STM/Debug events for lito"
+                    enable_lito_debug
+                    setprop ro.dbg.coresight.stm_cfg_done 1
+                fi
             ;;
             "trinket")
                 echo "Enabling DCC/STM/Debug events for trinket"

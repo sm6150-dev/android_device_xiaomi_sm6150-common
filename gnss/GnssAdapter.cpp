@@ -3324,11 +3324,12 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
     // this position is from QMI LOC API, then send report to engine hub
     // also, send out SPE fix promptly to the clients that have registered
     // with SPE report
-    LOC_LOGd("reportPositionEvent, eng type: %d, unpro %d, sess status %d",
-             locationExtended.locOutputEngType, ulpLocation.unpropagatedPosition, status);
+    LOC_LOGd("reportPositionEvent, eng type: %d, unpro %d, sess status %d msInWeek %d",
+             locationExtended.locOutputEngType,
+             ulpLocation.unpropagatedPosition, status, msInWeek);
 
     if (false == ulpLocation.unpropagatedPosition && pDataNotify != nullptr) {
-        reportDataEvent((GnssDataNotification&)pDataNotify, msInWeek);
+        reportDataEvent((GnssDataNotification&)(*pDataNotify), msInWeek);
     }
 
     if (true == initEngHubProxy()){
@@ -3853,7 +3854,7 @@ GnssAdapter::reportDataEvent(const GnssDataNotification& dataNotify,
             mMsInWeek(msInWeek) {
         }
         inline virtual void proc() const {
-            if (-1 != mMsInWeek) {
+            if (mMsInWeek >= 0) {
                 mAdapter.getDataInformation((GnssDataNotification&)mDataNotify,
                                             mMsInWeek);
             }

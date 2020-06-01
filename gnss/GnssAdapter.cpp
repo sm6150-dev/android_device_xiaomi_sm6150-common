@@ -256,6 +256,10 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
         out.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
         out.bearingAccuracy = locationExtended.bearing_unc;
     }
+    if (GPS_LOCATION_EXTENDED_HAS_CONFORMITY_INDEX & locationExtended.flags) {
+        out.flags |= LOCATION_HAS_CONFORMITY_INDEX_BIT;
+        out.conformityIndex = locationExtended.conformityIndex;
+    }
     out.timestamp = ulpLocation.gpsLocation.timestamp;
     if (LOC_POS_TECH_MASK_SATELLITE & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_GNSS_BIT;

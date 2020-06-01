@@ -34,7 +34,6 @@ LOCAL_CFLAGS += \
 
 ## Includes
 LOCAL_HEADER_LIBRARIES := \
-    libloc_loader_headers \
     libloc_core_headers \
     libgps.utils_headers \
     libloc_pla_headers \

@@ -29,12 +29,7 @@ LOCAL_CFLAGS += \
     -fno-short-enums \
     -D_ANDROID_
 
-## Includes
-LOCAL_C_INCLUDES := \
-
 LOCAL_HEADER_LIBRARIES := \
-    libloc_loader_headers \
-    libloc_api_qmi_headers \
     libloc_core_headers \
     libgps.utils_headers \
     libloc_pla_headers \

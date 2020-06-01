@@ -48,7 +48,7 @@
 #include <loc_cfg.h>
 #include <LocContext.h>
 
-#include "libloc_loader.h"
+#include <libloc_loader/libloc_loader.h>
 
 using namespace std;
 using namespace loc_core;

@@ -7,7 +7,7 @@
 #include "qmi_client.h"
 #include "qmi_idl_lib.h"
 #include "qmi_socket.h"
-#include "libloc_loader.h"
+#include <libloc_loader/libloc_loader.h>
 
 qmi_idl_type_table_object common_qmi_idl_type_table_object_v01;
 

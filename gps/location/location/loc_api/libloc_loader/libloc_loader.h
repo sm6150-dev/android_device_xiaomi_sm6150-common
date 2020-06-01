@@ -7,6 +7,10 @@
 #define LIBQMISERVICES "libqmiservices.so"
 #define LIBQSOCKET "libqsocket.so"
 
+__BEGIN_DECLS
+
 void load_proprietary_symbols();
+
+__END_DECLS
 
 #endif

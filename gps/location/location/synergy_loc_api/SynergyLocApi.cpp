@@ -46,9 +46,7 @@
 #include <LocContext.h>
 #include <SynergyLocApi.h>
 
-extern "C" {
 #include "libloc_loader.h"
-}
 
 using namespace std;
 using namespace loc_core;

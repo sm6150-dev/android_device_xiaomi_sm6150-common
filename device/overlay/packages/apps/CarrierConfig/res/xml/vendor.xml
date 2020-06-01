@@ -1478,6 +1478,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_disable_clir_over_ut" value="true" />
         <boolean name="hide_enabled_5g_bool" value="false" />
         <boolean name="call_barring_visibility_bool" value="false" />
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="02">
@@ -1624,6 +1626,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_disable_clir_over_ut" value="true" />
         <boolean name="hide_enabled_5g_bool" value="false" />
         <boolean name="call_barring_visibility_bool" value="false" />
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="07">
@@ -1753,6 +1757,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="config_disable_clir_over_ut" value="true" />
         <boolean name="hide_enabled_5g_bool" value="false" />
         <boolean name="call_barring_visibility_bool" value="false" />
+        <boolean name="allow_add_call_during_video_call" value="false" />
+        <boolean name="allow_hold_video_call_bool" value="false" />
     </carrier_config>
 
     <carrier_config mcc="460" mnc="10">

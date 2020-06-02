@@ -187,7 +187,7 @@ BatteryListenerImpl::~BatteryListenerImpl()
     {
         std::lock_guard<std::mutex> _l(mLock);
         if (mHealth != NULL)
-            mHealth->unlinkToDeath(this);
+            mHealth->unregisterCallback(this);
             auto r = mHealth->unlinkToDeath(this);
             if (!r.isOk() || r == false) {
                 LOC_LOGe("Transaction error in unregister to HealthHAL death: %s",
@@ -210,6 +210,8 @@ void BatteryListenerImpl::serviceDied(uint64_t cookie __unused,
         LOC_LOGi("health service died, reinit");
         mDone = true;
     }
+    mHealth = NULL;
+    mCond.notify_one();
     mThread->join();
     std::lock_guard<std::mutex> _l(mLock);
     init();

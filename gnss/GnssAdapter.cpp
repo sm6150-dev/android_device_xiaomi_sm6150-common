@@ -2198,35 +2198,38 @@ GnssAdapter::injectLocationCommand(double latitude, double longitude, float accu
         double mLatitude;
         double mLongitude;
         float mAccuracy;
+        bool mOnDemandCpi;
         inline MsgInjectLocation(LocApiBase& api,
                                  ContextBase& context,
                                  BlockCPIInfo& blockCPIInfo,
                                  double latitude,
                                  double longitude,
-                                 float accuracy) :
+                                 float accuracy,
+                                 bool onDemandCpi) :
             LocMsg(),
             mApi(api),
             mContext(context),
             mBlockCPI(blockCPIInfo),
             mLatitude(latitude),
             mLongitude(longitude),
-            mAccuracy(accuracy) {}
+            mAccuracy(accuracy),
+            mOnDemandCpi(onDemandCpi) {}
         inline virtual void proc() const {
             if ((uptimeMillis() <= mBlockCPI.blockedTillTsMs) &&
                 (fabs(mLatitude-mBlockCPI.latitude) <= mBlockCPI.latLonDiffThreshold) &&
                 (fabs(mLongitude-mBlockCPI.longitude) <= mBlockCPI.latLonDiffThreshold)) {
 
-                LOC_LOGD("%s]: positon injeciton blocked: lat: %f, lon: %f, accuracy: %f",
+                LOC_LOGD("%s]: positon injection blocked: lat: %f, lon: %f, accuracy: %f",
                          __func__, mLatitude, mLongitude, mAccuracy);
 
             } else {
-                mApi.injectPosition(mLatitude, mLongitude, mAccuracy);
+                mApi.injectPosition(mLatitude, mLongitude, mAccuracy, mOnDemandCpi);
             }
         }
     };
 
     sendMsg(new MsgInjectLocation(*mLocApi, *mContext, mBlockCPIInfo,
-                                  latitude, longitude, accuracy));
+                                  latitude, longitude, accuracy, mOdcpiRequestActive));
 }
 
 void

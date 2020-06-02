@@ -350,6 +350,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT      = (1<<11),
     GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<12),
     GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<13),
+    GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT                 = (1<<14),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -1426,6 +1427,7 @@ struct GnssConfig{
     uint32_t emergencyExtensionSeconds;
     GnssConfigRobustLocation robustLocationConfig;
     uint16_t minGpsWeek;
+    uint8_t minSvElevation;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1442,7 +1444,8 @@ struct GnssConfig{
                 blacklistedSvIds == config.blacklistedSvIds &&
                 emergencyExtensionSeconds == config.emergencyExtensionSeconds &&
                 robustLocationConfig.equals(config.robustLocationConfig) &&
-                minGpsWeek == config.minGpsWeek) {
+                minGpsWeek == config.minGpsWeek &&
+                minSvElevation == config.minSvElevation) {
             return true;
         }
         return false;

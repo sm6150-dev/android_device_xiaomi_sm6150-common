@@ -353,7 +353,7 @@ public:
     void readConfigCommand();
     void requestUlpCommand();
     void initEngHubProxyCommand();
-    uint32_t* gnssUpdateConfigCommand(GnssConfig config);
+    uint32_t* gnssUpdateConfigCommand(const GnssConfig& config);
     uint32_t* gnssGetConfigCommand(GnssConfigFlagsMask mask);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
     void deleteAidingData(const GnssAidingData &data, uint32_t sessionId);

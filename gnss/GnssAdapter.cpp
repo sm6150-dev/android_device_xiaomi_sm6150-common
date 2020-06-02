@@ -1199,11 +1199,23 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldM
         }
         index++;
     }
+
+    if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT) {
+        GnssConfig gnssConfig = {};
+        gnssConfig.flags = GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT;
+        gnssConfig.minSvElevation = gnssConfigRequested.minSvElevation;
+        err = mLocApi->setParameterSync(gnssConfig);
+        if (index < count) {
+            errsList[index] = err;
+        }
+        index++;
+    }
+
     return errsList;
 }
 
 uint32_t*
-GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
+GnssAdapter::gnssUpdateConfigCommand(const GnssConfig& config)
 {
     // count the number of bits set
     GnssConfigFlagsMask flagsCopy = config.flags;
@@ -1278,6 +1290,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             sessionIds.assign(mIds, mIds + mCount);
             std::vector<LocationError> errs(mCount, LOCATION_ERROR_SUCCESS);
             int index = 0;
+            bool needSuspendResume = false;
 
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
                 GnssConfigGpsLock newGpsLock = gnssConfigRequested.gpsLock;
@@ -1377,6 +1390,14 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                 index++;
             }
 
+            if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT) {
+                needSuspendResume = true;
+                index++;
+            }
+
+            if (needSuspendResume == true) {
+                mAdapter.suspendSessions();
+            }
             LocApiCollectiveResponse *configCollectiveResponse = new LocApiCollectiveResponse(
                     *adapter.getContext(),
                     [&adapter, sessionIds, countOfConfigs] (std::vector<LocationError> errs) {
@@ -1393,6 +1414,10 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
 
                 configCollectiveResponse->returnToSender(errsList);
             }));
+
+            if (needSuspendResume == true) {
+                mAdapter.restartSessions();
+            }
         }
     };
 
@@ -1610,7 +1635,7 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
             }
             if (mConfigMask & GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT) {
                 uint32_t sessionId = *(mIds+index);
-                 LocApiResponse* locApiResponse =
+                LocApiResponse* locApiResponse =
                         new LocApiResponse(*mAdapter.getContext(),
                                            [this, sessionId] (LocationError err) {
                                            mAdapter.reportResponse(err, sessionId);});
@@ -1633,6 +1658,21 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
                     mAdapter.reportResponse(LOCATION_ERROR_GENERAL_FAILURE, sessionId);
                 } else {
                    mApi.getMinGpsWeek(sessionId, locApiResponse);
+                }
+            }
+
+            if (mConfigMask & GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT) {
+                uint32_t sessionId = *(mIds+index);
+                LocApiResponse* locApiResponse =
+                        new LocApiResponse(*mAdapter.getContext(),
+                                           [this, sessionId] (LocationError err) {
+                                           mAdapter.reportResponse(err, sessionId);});
+                if (!locApiResponse) {
+                    LOC_LOGe("memory alloc failed");
+                    mAdapter.reportResponse(LOCATION_ERROR_GENERAL_FAILURE, sessionId);
+                } else {
+                    mApi.getParameter(sessionId, GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT,
+                                      locApiResponse);
                 }
             }
 
@@ -2484,9 +2524,11 @@ GnssAdapter::restartSessions(bool modemSSR)
     // SPE will be restarted now, so set this variable to false.
     mSPEAlreadyRunningAtHighestInterval = false;
 
-    // inform engine hub that GNSS session is about to start
-    mEngHubProxy->gnssSetFixMode(mLocPositionMode);
-    mEngHubProxy->gnssStartFix();
+    if (false == mTimeBasedTrackingSessions.empty()) {
+        // inform engine hub that GNSS session is about to start
+        mEngHubProxy->gnssSetFixMode(mLocPositionMode);
+        mEngHubProxy->gnssStartFix();
+    }
 
     checkAndRestartSPESession();
 }

@@ -62,7 +62,7 @@ struct GnssInterface {
     void (*setControlCallbacks)(LocationControlCallbacks& controlCallbacks);
     uint32_t (*enable)(LocationTechnologyType techType);
     void (*disable)(uint32_t id);
-    uint32_t* (*gnssUpdateConfig)(GnssConfig config);
+    uint32_t* (*gnssUpdateConfig)(const GnssConfig& config);
     uint32_t* (*gnssGetConfig)(GnssConfigFlagsMask config);
     void (*gnssUpdateSvTypeConfig)(GnssSvTypeConfig& config);
     void (*gnssGetSvTypeConfig)(GnssSvTypeConfigCallback& callback);

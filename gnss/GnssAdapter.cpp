@@ -1978,10 +1978,10 @@ GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
             mGnssSvIdConfig.sbasBlacklistSvMask, mGnssSvIdConfig.navicBlacklistSvMask);
 
     LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
-            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
+            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64 ", Navic 0x%" PRIx64,
             mGnssSvIdConfig.bdsBlacklistSvMask, mGnssSvIdConfig.gloBlacklistSvMask,
             mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask,
-            mGnssSvIdConfig.sbasBlacklistSvMask);
+            mGnssSvIdConfig.sbasBlacklistSvMask, mGnssSvIdConfig.navicBlacklistSvMask);
 
     if (mGnssSvTypeConfig.size == sizeof(mGnssSvTypeConfig)) {
 
@@ -2648,7 +2648,8 @@ GnssAdapter::hasCallbacksToStartTracking(LocationAPI* client)
     auto it = mClientData.find(client);
     if (it != mClientData.end()) {
         if (it->second.trackingCb || it->second.gnssLocationInfoCb ||
-            it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb) {
+                it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb ||
+                it->second.gnssDataCb || it->second.gnssSvCb || it->second.gnssNmeaCb) {
             allowed = true;
         } else {
             LOC_LOGi("missing right callback to start tracking")

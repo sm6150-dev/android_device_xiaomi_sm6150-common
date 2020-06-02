@@ -143,6 +143,24 @@ SIDE EFFECTS
 ===========================================================================*/
 uint64_t getQTimerTickCount();
 
+/*===========================================================================
+FUNCTION getQTimerFreq
+
+DESCRIPTION
+   This function is used to read the QTimer frequency in hz. This value is globally maintained and
+   must be the same across all processors on a target.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+    uint64_t QTimer frequency
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+uint64_t getQTimerFreq();
+
 #ifdef __cplusplus
 }
 #endif

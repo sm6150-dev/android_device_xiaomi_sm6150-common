@@ -85,6 +85,10 @@ extern "C" {
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#define MAX_COMMAND_STR_LEN (255)
+#define BOOT_KPI_FILE "/sys/kernel/debug/bootkpi/kpi_values"
 #ifndef OFF_TARGET
 #include <glib.h>
 #define strlcat g_strlcat
@@ -140,6 +144,28 @@ static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src
         res = 0;
     }
     return res;
+}
+
+/*API for boot kpi marker prints  */
+static inline int loc_boot_kpi_marker(const char * pFmt, ...)
+{
+    int result = 0;
+    FILE *stream = NULL;
+    char data[MAX_COMMAND_STR_LEN] = {};
+    char buf[MAX_COMMAND_STR_LEN] = {};
+
+    va_list ap;
+    va_start(ap, pFmt);
+    vsnprintf(&buf[0], sizeof(buf), pFmt, ap);
+    snprintf(data, sizeof(data), "echo -n %s > %s", buf, BOOT_KPI_FILE);
+    stream = popen(data, "w" );
+    if (NULL == stream) {
+        result = -1;
+    } else {
+        pclose(stream);
+    }
+    va_end(ap);
+    return result;
 }
 
 #ifdef __cplusplus

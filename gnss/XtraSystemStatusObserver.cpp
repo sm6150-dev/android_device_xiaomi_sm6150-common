@@ -72,9 +72,13 @@ public:
             LOC_LOGd("ping received");
 #ifdef USE_GLIB
         } else if (!STRNCMP(data, "connectBackhaul")) {
-            mSystemStatusObsrvr->connectBackhaul();
+            char clientName[30] = {0};
+            sscanf(data, "%*s %29s", clientName);
+            mSystemStatusObsrvr->connectBackhaul(string(clientName));
         } else if (!STRNCMP(data, "disconnectBackhaul")) {
-            mSystemStatusObsrvr->disconnectBackhaul();
+            char clientName[30] = {0};
+            sscanf(data, "%*s %29s", clientName);
+            mSystemStatusObsrvr->disconnectBackhaul(string(clientName));
 #endif
         } else if (!STRNCMP(data, "requestStatus")) {
             int32_t xtraStatusUpdated = 0;

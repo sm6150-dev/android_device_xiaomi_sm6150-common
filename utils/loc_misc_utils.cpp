@@ -149,9 +149,27 @@ uint64_t getQTimerTickCount()
     uint64_t qTimerCount = 0;
 #if __aarch64__
     asm volatile("mrs %0, cntvct_el0" : "=r" (qTimerCount));
+#elif defined (__i386__) || defined (__x86_64__)
+    /* Qtimer not supported in x86 architecture */
+    qTimerCount = 0;
 #else
     asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (qTimerCount));
 #endif
 
     return qTimerCount;
+}
+
+uint64_t getQTimerFreq()
+{
+#if __aarch64__
+    uint64_t val = 0;
+    asm volatile("mrs %0, cntfrq_el0" : "=r" (val));
+#elif defined (__i386__) || defined (__x86_64__)
+    /* Qtimer not supported in x86 architecture */
+    uint64_t val = 0;
+#else
+    uint32_t val = 0;
+    asm volatile("mrc p15, 0, %0, c14, c0, 0" : "=r" (val));
+#endif
+    return val;
 }

@@ -2078,7 +2078,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
     loc_sv_cache_info sv_cache_info = {};
 
     //Count GPS SVs for saparating GPS from GLONASS and throw others
-    for(uint32_t svOffset = 0; svOffset < svNotify.count; svOffset++) {
+    for (uint32_t svOffset = 0; svOffset < svNotify.count; svOffset++) {
         if (GNSS_SV_TYPE_GPS == svNotify.gnssSvs[svOffset].type)
         {
             // cache the used in fix mask, as it will be needed to send $GPGSA
@@ -2141,9 +2141,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                // For QZSS we adjusted SV id's in GnssAdapter, we need to re-adjust here
-                setSvMask(sv_cache_info.qzss_used_mask,
-                        svNotify.gnssSvs[svOffset].svId - (QZSS_SV_PRN_MIN - 1));
+                setSvMask(sv_cache_info.qzss_used_mask, svNotify.gnssSvs[svOffset].svId - 1);
             }
             if (GNSS_SIGNAL_QZSS_L5 == svNotify.gnssSvs[svOffset].gnssSignalTypeMask) {
                 sv_cache_info.qzss_l5_count++;

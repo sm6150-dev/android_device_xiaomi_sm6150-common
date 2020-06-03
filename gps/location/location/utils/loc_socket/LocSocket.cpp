@@ -35,8 +35,7 @@
 #ifdef USE_QSOCKET
 #include <sys/ioctl.h>
 #include <poll.h>
-#include <qsocket.h>
-#include <qsocket_ipcr.h>
+#include "qmi_socket.h"
 #else
 #include <endian.h>
 #include <linux/qrtr.h>

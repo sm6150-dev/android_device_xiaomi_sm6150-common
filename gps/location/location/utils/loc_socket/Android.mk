@@ -23,9 +23,6 @@ LOCAL_CFLAGS := \
     -D_ANDROID_
 
 ## Includes
-LOCAL_C_INCLUDES := \
-    $(TARGET_OUT_HEADERS)/qmi-framework/inc \
-    $(TARGET_OUT_HEADERS)/qmi/inc
 LOCAL_HEADER_LIBRARIES := \
     libloc_core_headers \
     libgps.utils_headers \
@@ -35,8 +32,13 @@ LOCAL_CFLAGS += $(GNSS_CFLAGS)
 
 ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
 LOCAL_CFLAGS += -DUSE_QSOCKET
-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qsocket/inc
-LOCAL_SHARED_LIBRARIES += libqsocket
+# Need libqsocket.so proprietary library, dlopened by libloc_loader
+LOCAL_HEADER_LIBRARIES += \
+    libloc_loader_headers \
+    libloc_api_qmi_headers \
+    device_kernel_headers
+LOCAL_SHARED_LIBRARIES += \
+    libloc_loader
 endif
 
 include $(BUILD_SHARED_LIBRARY)

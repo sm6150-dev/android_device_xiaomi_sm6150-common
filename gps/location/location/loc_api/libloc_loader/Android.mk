@@ -14,6 +14,11 @@ LOCAL_HEADER_LIBRARIES := \
     libcutils_headers \
     libutils_headers
 LOCAL_PROPRIETARY_MODULE := true
+ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
+LOCAL_CFLAGS += -DUSE_QSOCKET
+LOCAL_HEADER_LIBRARIES += \
+    device_kernel_headers
+endif
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

@@ -942,8 +942,6 @@ GnssAdapter::setConfig()
             mLocApi->setNMEATypesSync(mask);
         }
 
-        mLocApi->setXtraVersionCheckSync(gpsConf.XTRA_VERSION_CHECK);
-
         // load tunc configuration from config file on first boot-up,
         // e.g.: adapter.mLocConfigInfo.tuncConfigInfo.isValid is false
         if (mLocConfigInfo.tuncConfigInfo.isValid == false) {

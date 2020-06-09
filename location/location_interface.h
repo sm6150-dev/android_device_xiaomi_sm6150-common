@@ -103,6 +103,9 @@ struct GnssInterface {
     uint32_t (*configRobustLocation)(bool enable, bool enableForE911);
     uint32_t (*configMinGpsWeek)(uint16_t minGpsWeek);
     uint32_t (*configBodyToSensorMountParams)(const BodyToSensorMountParams& b2sParams);
+    void (*updateNTRIPGGAConsent)(bool consentAccepted);
+    void (*enablePPENtripStream)(const GnssNtripConnectionParams& params, bool enableRTKEngine);
+    void (*disablePPENtripStream)();
 };
 
 struct BatchingInterface {

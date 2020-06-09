@@ -91,6 +91,10 @@ static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
 static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams);
 
+static void updateNTRIPGGAConsent(bool consentAccepted);
+static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine);
+static void disablePPENtripStream();
+
 static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb);
 static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr);
 static void measCorrClose();
@@ -149,6 +153,9 @@ static const GnssInterface gGnssInterface = {
     configRobustLocation,
     configMinGpsWeek,
     configBodyToSensorMountParams,
+    updateNTRIPGGAConsent,
+    enablePPENtripStream,
+    disablePPENtripStream,
 };
 
 #ifndef DEBUG_X86
@@ -530,5 +537,26 @@ static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2s
         return gGnssAdapter->configBodyToSensorMountParamsCommand(b2sParams);
     } else {
         return 0;
+    }
+}
+
+static void updateNTRIPGGAConsent(bool consentAccepted){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->updateNTRIPGGAConsent(consentAccepted);
+    }
+}
+
+static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->enablePPENtripStream(params, enableRTKEngine);
+    }
+}
+
+static void disablePPENtripStream(){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->disablePPENtripStream();
     }
 }

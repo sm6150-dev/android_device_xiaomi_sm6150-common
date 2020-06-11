@@ -67,7 +67,6 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"NMEA_PROVIDER",                  &mGps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"NMEA_REPORT_RATE",               &mGps_conf.NMEA_REPORT_RATE,               NULL, 's'},
   {"CAPABILITIES",                   &mGps_conf.CAPABILITIES,                   NULL, 'n'},
-  {"XTRA_VERSION_CHECK",             &mGps_conf.XTRA_VERSION_CHECK,             NULL, 'n'},
   {"XTRA_SERVER_1",                  &mGps_conf.XTRA_SERVER_1,                  NULL, 's'},
   {"XTRA_SERVER_2",                  &mGps_conf.XTRA_SERVER_2,                  NULL, 's'},
   {"XTRA_SERVER_3",                  &mGps_conf.XTRA_SERVER_3,                  NULL, 's'},
@@ -136,8 +135,6 @@ void ContextBase::readConfig()
         mGps_conf.LPP_PROFILE = 0;
         /*By default no positioning protocol is selected on A-GLONASS system*/
         mGps_conf.A_GLONASS_POS_PROTOCOL_SELECT = 0;
-        /*XTRA version check is disabled by default*/
-        mGps_conf.XTRA_VERSION_CHECK=0;
         /*Use emergency PDN by default*/
         mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL = 1;
         /* By default no LPPe CP technology is enabled*/

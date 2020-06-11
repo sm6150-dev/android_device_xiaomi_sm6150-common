@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2017, 2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -49,7 +49,6 @@ typedef struct loc_gps_cfg_s
     uint32_t       SUPL_ES;
     uint32_t       CAPABILITIES;
     uint32_t       LPP_PROFILE;
-    uint32_t       XTRA_VERSION_CHECK;
     char           XTRA_SERVER_1[LOC_MAX_PARAM_STRING];
     char           XTRA_SERVER_2[LOC_MAX_PARAM_STRING];
     char           XTRA_SERVER_3[LOC_MAX_PARAM_STRING];

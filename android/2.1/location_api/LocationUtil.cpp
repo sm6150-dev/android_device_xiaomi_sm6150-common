@@ -386,7 +386,7 @@ void convertMeasurementCorrections(const MeasurementCorrectionsV1_0& in,
     out.toaGpsNanosecondsOfWeek = in.toaGpsNanosecondsOfWeek;
 
     for (int i = 0; i < in.satCorrections.size(); i++) {
-        GnssSingleSatCorrection gnssSingleSatCorrection;
+        GnssSingleSatCorrection gnssSingleSatCorrection = {};
 
         convertSingleSatCorrections(in.satCorrections[i], gnssSingleSatCorrection);
         out.satCorrections.push_back(gnssSingleSatCorrection);

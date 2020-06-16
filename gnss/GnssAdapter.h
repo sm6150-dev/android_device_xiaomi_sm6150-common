@@ -46,6 +46,7 @@
 #define LOC_NI_NO_RESPONSE_TIME 20
 #define LOC_GPS_NI_RESPONSE_IGNORE 4
 #define ODCPI_EXPECTED_INJECTION_TIME_MS 10000
+#define DELETE_AIDING_DATA_EXPECTED_TIME_MS 5000
 
 class GnssAdapter;
 
@@ -235,6 +236,9 @@ class GnssAdapter : public LocAdapterBase {
     OdcpiTimer mOdcpiTimer;
     OdcpiRequestInfo mOdcpiRequest;
     void odcpiTimerExpire();
+
+    /* ==== DELETEAIDINGDATA =============================================================== */
+    int64_t mLastDeleteAidingDataTime;
 
     /* === SystemStatus ===================================================================== */
     SystemStatus* mSystemStatus;

@@ -781,7 +781,7 @@ static void convertGnssSvStatus(GnssSvNotification& in, V1_0::IGnssCallback::Gns
         out.numSvs = static_cast<uint32_t>(V1_0::GnssMax::SVS_COUNT);
     }
     for (size_t i = 0; i < out.numSvs; i++) {
-        out.gnssSvList[i].svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out.gnssSvList[i].svid);
         convertGnssConstellationType(in.gnssSvs[i].type, out.gnssSvList[i].constellation);
         out.gnssSvList[i].cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out.gnssSvList[i].elevationDegrees = in.gnssSvs[i].elevation;
@@ -804,7 +804,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
 {
     out.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
-        out[i].v1_0.svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out[i].v1_0.svid);
         out[i].v1_0.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out[i].v1_0.elevationDegrees = in.gnssSvs[i].elevation;
         out[i].v1_0.azimuthDegrees = in.gnssSvs[i].azimuth;
@@ -828,7 +828,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
 {
     out.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
-        out[i].v2_0.v1_0.svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out[i].v2_0.v1_0.svid);
         out[i].v2_0.v1_0.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out[i].v2_0.v1_0.elevationDegrees = in.gnssSvs[i].elevation;
         out[i].v2_0.v1_0.azimuthDegrees = in.gnssSvs[i].azimuth;

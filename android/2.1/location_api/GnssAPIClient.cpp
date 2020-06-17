@@ -394,7 +394,17 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 
     if (gnssCbIface_2_1 != nullptr ||gnssCbIface_2_0 != nullptr || gnssCbIface != nullptr) {
 
-        uint32_t data = (uint32_t) V2_1::IGnssCallback::Capabilities::ANTENNA_INFO;
+        uint32_t antennaInfoVectorSize = 0;
+        uint32_t data = 0;
+        loc_param_s_type ant_info_vector_table[] =
+        {
+            { "ANTENNA_INFO_VECTOR_SIZE", &antennaInfoVectorSize, NULL, 'n' }
+        };
+        UTIL_READ_CONF(LOC_PATH_ANT_CORR, ant_info_vector_table);
+
+        if (0 != antennaInfoVectorSize) {
+            data |= V2_1::IGnssCallback::Capabilities::ANTENNA_INFO;
+        }
 
         if ((capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT) ||
                 (capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_BATCHING_BIT) ||

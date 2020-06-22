@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -799,7 +799,9 @@ void LocationAPIClientBase::locAPIResumeGeofences(
 void LocationAPIClientBase::locAPIRemoveAllGeofences()
 {
     std::vector<uint32_t> sessionsVec = mGeofenceBiDict.getAllSessions();
-    locAPIRemoveGeofences(sessionsVec.size(), &sessionsVec[0]);
+    if (sessionsVec.size() > 0) {
+        locAPIRemoveGeofences(sessionsVec.size(), &sessionsVec[0]);
+    }
 }
 
 void LocationAPIClientBase::locAPIGnssNiResponse(uint32_t id, GnssNiResponse response)

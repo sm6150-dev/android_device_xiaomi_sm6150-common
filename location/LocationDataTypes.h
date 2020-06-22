@@ -76,6 +76,7 @@ typedef enum {
     LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7), // location has valid bearing accuracy
     LOCATION_HAS_SPOOF_MASK            = (1<<8), // location has valid spoof mask
     LOCATION_HAS_ELAPSED_REAL_TIME     = (1<<9), // location has valid elapsed real time
+    LOCATION_HAS_CONFORMITY_INDEX_BIT  = (1<<10), // location has valid conformity index
 } LocationFlagsBits;
 
 typedef uint16_t LocationTechnologyMask;
@@ -103,13 +104,24 @@ typedef enum {
 
 typedef uint32_t GnssLocationNavSolutionMask;
 typedef enum {
-    LOCATION_SBAS_CORRECTION_IONO_BIT  = (1<<0), // SBAS ionospheric correction is used
-    LOCATION_SBAS_CORRECTION_FAST_BIT  = (1<<1), // SBAS fast correction is used
-    LOCATION_SBAS_CORRECTION_LONG_BIT  = (1<<2), // SBAS long-tem correction is used
-    LOCATION_SBAS_INTEGRITY_BIT        = (1<<3), // SBAS integrity information is used
-    LOCATION_NAV_CORRECTION_DGNSS_BIT  = (1<<4), // Position Report is DGNSS corrected
-    LOCATION_NAV_CORRECTION_RTK_BIT    = (1<<5), // Position Report is RTK corrected
-    LOCATION_NAV_CORRECTION_PPP_BIT    = (1<<6) // Position Report is PPP corrected
+    // SBAS ionospheric correction is used
+    LOCATION_SBAS_CORRECTION_IONO_BIT  = (1<<0),
+    // SBAS fast correction is used
+    LOCATION_SBAS_CORRECTION_FAST_BIT  = (1<<1),
+    // SBAS long-tem correction is used
+    LOCATION_SBAS_CORRECTION_LONG_BIT  = (1<<2),
+    // SBAS integrity information is used
+    LOCATION_SBAS_INTEGRITY_BIT        = (1<<3),
+    // Position Report is DGNSS corrected
+    LOCATION_NAV_CORRECTION_DGNSS_BIT  = (1<<4),
+     // Position Report is RTK corrected
+    LOCATION_NAV_CORRECTION_RTK_BIT    = (1<<5),
+    // Position Report is PPP corrected
+    LOCATION_NAV_CORRECTION_PPP_BIT    = (1<<6),
+    // Posiiton Report is RTF fixed corrected
+    LOCATION_NAV_CORRECTION_RTK_FIXED_BIT  = (1<<7),
+    // Position report is computed with only SBAS corrected SVs.
+    LOCATION_NAV_CORRECTION_ONLY_SBAS_CORRECTED_SV_USED_BIT = (1<<8)
 } GnssLocationNavSolutionBits;
 
 typedef uint32_t GnssLocationPosTechMask;
@@ -255,6 +267,10 @@ typedef enum {
     LOCATION_CAPABILITIES_PRIVACY_BIT                       = (1<<12),
     // support measurement corrections
     LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT       = (1<<13),
+    // support Robust Location
+    LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT               = (1<<14),
+    // support precise location edgnss
+    LOCATION_CAPABILITIES_EDGNSS_BIT                        = (1<<15),
 } LocationCapabilitiesBits;
 
 typedef enum {
@@ -347,6 +363,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT      = (1<<11),
     GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<12),
     GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<13),
+    GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT                 = (1<<14),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -790,6 +807,7 @@ typedef struct {
     float verticalAccuracy;  // in meters
     float speedAccuracy;     // in meters/second
     float bearingAccuracy;   // in degrees (0 to 359.999)
+    float conformityIndex;   // in range [0, 1]
     LocationTechnologyMask techMask;
     LocationSpoofMask      spoofMask;
     uint64_t elapsedRealTime;    // in ns
@@ -1422,6 +1440,7 @@ struct GnssConfig{
     uint32_t emergencyExtensionSeconds;
     GnssConfigRobustLocation robustLocationConfig;
     uint16_t minGpsWeek;
+    uint8_t minSvElevation;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1438,7 +1457,8 @@ struct GnssConfig{
                 blacklistedSvIds == config.blacklistedSvIds &&
                 emergencyExtensionSeconds == config.emergencyExtensionSeconds &&
                 robustLocationConfig.equals(config.robustLocationConfig) &&
-                minGpsWeek == config.minGpsWeek) {
+                minGpsWeek == config.minGpsWeek &&
+                minSvElevation == config.minSvElevation) {
             return true;
         }
         return false;
@@ -1793,4 +1813,15 @@ typedef struct {
     std::vector<std::vector<double>> signalGainCorrectionDbi;
     std::vector<std::vector<double>> signalGainCorrectionUncertaintyDbi;
 } GnssAntennaInformation;
+
+typedef struct {
+    uint32_t size;                        // set to sizeof
+    bool requiresNmeaLocation;
+    const char* hostNameOrIp;    // null terminated string
+    const char* mountPoint;      // null terminated string
+    const char* username;        // null terminated string
+    const char* password;        // null terminated string
+    uint32_t port;
+    bool useSSL;
+} GnssNtripConnectionParams;
 #endif /* LOCATIONDATATYPES_H */

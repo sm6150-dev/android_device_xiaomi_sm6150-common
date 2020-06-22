@@ -619,7 +619,8 @@ void LocApiBase::
 DEFAULT_IMPL()
 
 void LocApiBase::
-    injectPosition(double /*latitude*/, double /*longitude*/, float /*accuracy*/)
+    injectPosition(double /*latitude*/, double /*longitude*/, float /*accuracy*/,
+                   bool /*onDemandCpi*/)
 DEFAULT_IMPL()
 
 void LocApiBase::
@@ -906,6 +907,14 @@ DEFAULT_IMPL()
 
 void LocApiBase::
     getMinGpsWeek(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+LocationError LocApiBase::
+    setParameterSync(const GnssConfig& gnssConfig)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+void LocApiBase::
+    getParameter(uint32_t sessionId, GnssConfigFlagsMask flags, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

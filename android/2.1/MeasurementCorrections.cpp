@@ -142,7 +142,7 @@ Return<bool> MeasurementCorrections::setCorrections_1_1(
             corrections.environmentBearingUncertaintyDegrees;
 
     for (int i = 0; i < corrections.satCorrections.size(); i++) {
-        GnssSingleSatCorrection gnssSingleSatCorrection;
+        GnssSingleSatCorrection gnssSingleSatCorrection = {};
 
         V2_1::implementation::convertSingleSatCorrections(
                 corrections.satCorrections[i].v1_0, gnssSingleSatCorrection);

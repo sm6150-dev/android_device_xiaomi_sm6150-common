@@ -50,7 +50,7 @@ static void gnssUpdateXtraThrottle(const bool enabled);
 static void setControlCallbacks(LocationControlCallbacks& controlCallbacks);
 static uint32_t enable(LocationTechnologyType techType);
 static void disable(uint32_t id);
-static uint32_t* gnssUpdateConfig(GnssConfig config);
+static uint32_t* gnssUpdateConfig(const GnssConfig& config);
 static uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
 
 static void gnssUpdateSvTypeConfig(GnssSvTypeConfig& config);
@@ -73,7 +73,7 @@ static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
 static void getPowerStateChanges(void* powerStateCb);
 
-static void odcpiInit(const OdcpiRequestCallback& callback);
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
 static void odcpiInject(const Location& location);
 
 static void blockCPI(double latitude, double longitude, float accuracy,
@@ -90,6 +90,10 @@ static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
 static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams);
+
+static void updateNTRIPGGAConsent(bool consentAccepted);
+static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine);
+static void disablePPENtripStream();
 
 static bool measCorrInit(const measCorrSetCapabilitiesCb setCapabilitiesCb);
 static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr);
@@ -149,6 +153,9 @@ static const GnssInterface gGnssInterface = {
     configRobustLocation,
     configMinGpsWeek,
     configBodyToSensorMountParams,
+    updateNTRIPGGAConsent,
+    enablePPENtripStream,
+    disablePPENtripStream,
 };
 
 #ifndef DEBUG_X86
@@ -253,7 +260,7 @@ static void disable(uint32_t id)
     }
 }
 
-static uint32_t* gnssUpdateConfig(GnssConfig config)
+static uint32_t* gnssUpdateConfig(const GnssConfig& config)
 {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssUpdateConfigCommand(config);
@@ -364,10 +371,10 @@ static void updateConnectionStatus(bool connected, int8_t type,
     }
 }
 
-static void odcpiInit(const OdcpiRequestCallback& callback)
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority)
 {
     if (NULL != gGnssAdapter) {
-        gGnssAdapter->initOdcpiCommand(callback);
+        gGnssAdapter->initOdcpiCommand(callback, priority);
     }
 }
 
@@ -530,5 +537,26 @@ static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2s
         return gGnssAdapter->configBodyToSensorMountParamsCommand(b2sParams);
     } else {
         return 0;
+    }
+}
+
+static void updateNTRIPGGAConsent(bool consentAccepted){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->updateNTRIPGGAConsent(consentAccepted);
+    }
+}
+
+static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->enablePPENtripStream(params, enableRTKEngine);
+    }
+}
+
+static void disablePPENtripStream(){
+    if (NULL != gGnssAdapter) {
+        // Call will be enabled once GnssAdapter impl. is ready.
+        //gGnssAdapter->disablePPENtripStream();
     }
 }

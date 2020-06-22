@@ -96,6 +96,9 @@ static bool isGnssClient(LocationCallbacks& locationCallbacks)
             locationCallbacks.trackingCb != nullptr ||
             locationCallbacks.gnssLocationInfoCb != nullptr ||
             locationCallbacks.engineLocationsInfoCb != nullptr ||
+            locationCallbacks.gnssSvCb != nullptr ||
+            locationCallbacks.gnssNmeaCb != nullptr ||
+            locationCallbacks.gnssDataCb != nullptr ||
             locationCallbacks.gnssMeasurementsCb != nullptr ||
             locationCallbacks.locationSystemInfoCb != nullptr);
 }
@@ -683,7 +686,7 @@ LocationControlAPI::disable(uint32_t id)
 }
 
 uint32_t*
-LocationControlAPI::gnssUpdateConfig(GnssConfig config)
+LocationControlAPI::gnssUpdateConfig(const GnssConfig& config)
 {
     uint32_t* ids = NULL;
     pthread_mutex_lock(&gDataMutex);

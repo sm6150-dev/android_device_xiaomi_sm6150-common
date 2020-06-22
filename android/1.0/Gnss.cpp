@@ -175,7 +175,7 @@ Return<bool> Gnss::updateConfiguration(GnssConfig& gnssConfig) {
         }
         if (gnssConfig.flags & GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT) {
             mPendingConfig.flags |= GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-            mPendingConfig.lppProfile = gnssConfig.lppProfile;
+            mPendingConfig.lppProfileMask = gnssConfig.lppProfileMask;
         }
         if (gnssConfig.flags & GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT) {
             mPendingConfig.flags |= GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT;

@@ -2081,14 +2081,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
     for (uint32_t svOffset = 0; svOffset < svNotify.count; svOffset++) {
         if (GNSS_SV_TYPE_GPS == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $GPGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                    (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                      GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.gps_used_mask, svNotify.gnssSvs[svOffset].svId);
-            }
             if (GNSS_SIGNAL_GPS_L5 == svNotify.gnssSvs[svOffset].gnssSignalTypeMask) {
                 sv_cache_info.gps_l5_count++;
             } else {
@@ -2099,14 +2091,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_GLONASS == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $GNGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                    (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                      GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.glo_used_mask, svNotify.gnssSvs[svOffset].svId);
-            }
             if (GNSS_SIGNAL_GLONASS_G2 == svNotify.gnssSvs[svOffset].gnssSignalTypeMask){
                 sv_cache_info.glo_g2_count++;
             } else {
@@ -2117,14 +2101,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_GALILEO == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $GAGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                    (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                      GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.gal_used_mask, svNotify.gnssSvs[svOffset].svId);
-            }
             if(GNSS_SIGNAL_GALILEO_E5A == svNotify.gnssSvs[svOffset].gnssSignalTypeMask){
                 sv_cache_info.gal_e5_count++;
             } else {
@@ -2135,14 +2111,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $PQGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                  GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.qzss_used_mask, svNotify.gnssSvs[svOffset].svId - 1);
-            }
             if (GNSS_SIGNAL_QZSS_L5 == svNotify.gnssSvs[svOffset].gnssSignalTypeMask) {
                 sv_cache_info.qzss_l5_count++;
             } else {
@@ -2153,14 +2121,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_BEIDOU == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $PQGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                  GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.bds_used_mask, svNotify.gnssSvs[svOffset].svId);
-            }
             if ((GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svOffset].gnssSignalTypeMask) ||
                    (GNSS_SIGNAL_BEIDOU_B2AQ == svNotify.gnssSvs[svOffset].gnssSignalTypeMask)) {
                 sv_cache_info.bds_b2_count++;
@@ -2172,14 +2132,6 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_NAVIC == svNotify.gnssSvs[svOffset].type)
         {
-            // cache the used in fix mask, as it will be needed to send $PQGSA
-            // during the position report
-            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
-                (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
-                  GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
-            {
-                setSvMask(sv_cache_info.navic_used_mask, svNotify.gnssSvs[svOffset].svId);
-            }
             // GNSS_SIGNAL_NAVIC_L5 is the only signal type for NAVIC
             sv_cache_info.navic_l5_count++;
         }

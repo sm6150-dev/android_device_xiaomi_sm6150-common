@@ -528,7 +528,6 @@ public:
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertSuplVersion(const GnssConfigSuplVersion suplVersion);
-    static uint32_t convertLppProfile(const GnssConfigLppProfile lppProfile);
     static uint32_t convertEP4ES(const GnssConfigEmergencyPdnForEmergencySupl);
     static uint32_t convertSuplEs(const GnssConfigSuplEmergencyServices suplEmergencyServices);
     static uint32_t convertLppeCp(const GnssConfigLppeControlPlaneMask lppeControlPlaneMask);

@@ -295,12 +295,14 @@ typedef enum {
 } GnssConfigSuplVersion;
 
 // LTE Positioning Profile
+typedef uint16_t GnssConfigLppProfileMask;
 typedef enum {
-    GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE = 0,              // RRLP on LTE (Default)
-    GNSS_CONFIG_LPP_PROFILE_USER_PLANE,                   // LPP User Plane (UP) on LTE
-    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE,                // LPP_Control_Plane (CP)
-    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_AND_CONTROL_PLANE, // Both LPP UP and CP
-} GnssConfigLppProfile;
+    GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE = 0,                         // RRLP on LTE (Default)
+    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_BIT                 = (1<<0), // LPP User Plane (UP) on LTE
+    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_BIT              = (1<<1), // LPP_Control_Plane (CP)
+    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_OVER_NR5G_SA_BIT    = (1<<2), // LPP User Plane (UP) on LTE
+    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_OVER_NR5G_SA_BIT = (1<<3), // LPP_Control_Plane (CP)
+} GnssConfigLppProfileBits;
 
 // Technology for LPPe Control Plane
 typedef uint16_t GnssConfigLppeControlPlaneMask;
@@ -1431,7 +1433,7 @@ struct GnssConfig{
     GnssConfigGpsLock gpsLock;
     GnssConfigSuplVersion suplVersion;
     GnssConfigSetAssistanceServer assistanceServer;
-    GnssConfigLppProfile lppProfile;
+    GnssConfigLppProfileMask lppProfileMask;
     GnssConfigLppeControlPlaneMask lppeControlPlaneMask;
     GnssConfigLppeUserPlaneMask lppeUserPlaneMask;
     GnssConfigAGlonassPositionProtocolMask aGlonassPositionProtocolMask;
@@ -1449,7 +1451,7 @@ struct GnssConfig{
                 gpsLock == config.gpsLock &&
                 suplVersion == config.suplVersion &&
                 assistanceServer.equals(config.assistanceServer) &&
-                lppProfile == config.lppProfile &&
+                lppProfileMask == config.lppProfileMask &&
                 lppeControlPlaneMask == config.lppeControlPlaneMask &&
                 lppeUserPlaneMask == config.lppeUserPlaneMask &&
                 aGlonassPositionProtocolMask == config.aGlonassPositionProtocolMask &&

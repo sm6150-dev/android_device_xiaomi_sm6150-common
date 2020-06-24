@@ -223,7 +223,7 @@ public:
     virtual void informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
     virtual LocationError setSUPLVersionSync(GnssConfigSuplVersion version);
     virtual enum loc_api_adapter_err setNMEATypesSync(uint32_t typesMask);
-    virtual LocationError setLPPConfigSync(GnssConfigLppProfile profile);
+    virtual LocationError setLPPConfigSync(GnssConfigLppProfileMask profileMask);
     virtual enum loc_api_adapter_err setSensorPropertiesSync(
             bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
             bool accelBiasVarianceRandomWalk_valid, float accelBiasVarianceRandomWalk,
@@ -239,7 +239,6 @@ public:
     virtual LocationError setLPPeProtocolCpSync(GnssConfigLppeControlPlaneMask lppeCP);
     virtual LocationError setLPPeProtocolUpSync(GnssConfigLppeUserPlaneMask lppeUP);
     virtual GnssConfigSuplVersion convertSuplVersion(const uint32_t suplVersion);
-    virtual GnssConfigLppProfile convertLppProfile(const uint32_t lppProfile);
     virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
     virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
     virtual LocationError setEmergencyExtensionWindowSync(const uint32_t emergencyExtensionSeconds);

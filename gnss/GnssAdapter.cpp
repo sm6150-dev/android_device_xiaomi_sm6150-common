@@ -666,22 +666,6 @@ GnssAdapter::convertSuplVersion(const GnssConfigSuplVersion suplVersion)
     }
 }
 
-inline uint32_t
-GnssAdapter::convertLppProfile(const GnssConfigLppProfile lppProfile)
-{
-    switch (lppProfile) {
-        case GNSS_CONFIG_LPP_PROFILE_USER_PLANE:
-            return 1;
-        case GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE:
-            return 2;
-        case GNSS_CONFIG_LPP_PROFILE_USER_PLANE_AND_CONTROL_PLANE:
-            return 3;
-        case GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE:
-        default:
-            return 0;
-    }
-}
-
 uint32_t
 GnssAdapter::convertLppeCp(const GnssConfigLppeControlPlaneMask lppeControlPlaneMask)
 {
@@ -908,12 +892,9 @@ GnssAdapter::setConfig()
             GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
             GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
             GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-    gnssConfigRequested.suplVersion =
-            mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
-    gnssConfigRequested.lppProfile =
-            mLocApi->convertLppProfile(gpsConf.LPP_PROFILE);
-    gnssConfigRequested.aGlonassPositionProtocolMask =
-            gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
+    gnssConfigRequested.suplVersion = mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
+    gnssConfigRequested.lppProfileMask = gpsConf.LPP_PROFILE;
+    gnssConfigRequested.aGlonassPositionProtocolMask = gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
     if (gpsConf.LPPE_CP_TECHNOLOGY) {
         gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT;
         gnssConfigRequested.lppeControlPlaneMask =
@@ -1123,7 +1104,7 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldM
     if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT) {
         if (gnssConfigNeedEngineUpdate.flags &
                 GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT) {
-            err = mLocApi->setLPPConfigSync(gnssConfigRequested.lppProfile);
+            err = mLocApi->setLPPConfigSync(gnssConfigRequested.lppProfileMask);
             if (index < count) {
                 errsList[index] = err;
             }
@@ -1344,8 +1325,8 @@ GnssAdapter::gnssUpdateConfigCommand(const GnssConfig& config)
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT) {
-                uint32_t newLppProfile = mAdapter.convertLppProfile(gnssConfigRequested.lppProfile);
-                ContextBase::mGps_conf.LPP_PROFILE = newLppProfile;
+                uint32_t newLppProfileMask = gnssConfigRequested.lppProfileMask;
+                ContextBase::mGps_conf.LPP_PROFILE = newLppProfileMask;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT) {

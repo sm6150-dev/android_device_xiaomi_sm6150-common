@@ -510,6 +510,7 @@ typedef enum {
     GNSS_MEASUREMENTS_DATA_FULL_ISB_UNCERTAINTY_BIT         = (1<<19),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_BIT                = (1<<20),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_UNCERTAINTY_BIT    = (1<<21),
+    GNSS_MEASUREMENTS_DATA_CYCLE_SLIP_COUNT_BIT             = (1<<22),
 } GnssMeasurementsDataFlagsBits;
 
 typedef uint32_t GnssMeasurementsStateMask;
@@ -1250,6 +1251,7 @@ typedef struct {
     double satelliteInterSignalBiasNs;
     double satelliteInterSignalBiasUncertaintyNs;
     int16_t gloFrequency;
+    uint8_t cycleSlipCount;
 } GnssMeasurementsData;
 
 typedef struct {

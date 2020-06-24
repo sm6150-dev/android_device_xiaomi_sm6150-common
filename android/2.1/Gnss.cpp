@@ -657,7 +657,11 @@ Return<sp<V2_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_2_0() {
 
 Return<sp<IMeasurementCorrectionsV1_0>>
         Gnss::getExtensionMeasurementCorrections() {
-    return nullptr;
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssMeasCorr == nullptr) {
+        mGnssMeasCorr = new MeasurementCorrections(this);
+    }
+    return mGnssMeasCorr;
 }
 
 Return<sp<IMeasurementCorrectionsV1_1>>

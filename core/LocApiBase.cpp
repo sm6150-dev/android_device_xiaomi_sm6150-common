@@ -670,7 +670,7 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 LocationError LocApiBase::
-    setLPPConfigSync(GnssConfigLppProfile /*profile*/)
+    setLPPConfigSync(GnssConfigLppProfileMask /*profileMask*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 
@@ -714,9 +714,6 @@ DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 GnssConfigSuplVersion LocApiBase::convertSuplVersion(const uint32_t /*suplVersion*/)
 DEFAULT_IMPL(GNSS_CONFIG_SUPL_VERSION_1_0_0)
-
-GnssConfigLppProfile LocApiBase::convertLppProfile(const uint32_t /*lppProfile*/)
-DEFAULT_IMPL(GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE)
 
 GnssConfigLppeControlPlaneMask LocApiBase::convertLppeCp(const uint32_t /*lppeControlPlaneMask*/)
 DEFAULT_IMPL(0)

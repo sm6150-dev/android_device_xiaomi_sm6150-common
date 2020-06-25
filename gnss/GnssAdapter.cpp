@@ -3509,8 +3509,11 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
     // also, send out SPE fix promptly to the clients that have registered
     // with SPE report
     LOC_LOGd("reportPositionEvent, eng type: %d, unpro %d, sess status %d",
-             locationExtended.locOutputEngType, ulpLocation.unpropagatedPosition,
-             status);
+             locationExtended.locOutputEngType, ulpLocation.unpropagatedPosition, status);
+
+    if (false == ulpLocation.unpropagatedPosition && pDataNotify != nullptr) {
+        reportDataEvent((GnssDataNotification&)pDataNotify, msInWeek);
+    }
 
     if (true == initEngHubProxy()){
         // send the SPE fix to engine hub
@@ -3541,31 +3544,17 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
         const GpsLocationExtended mLocationExtended;
         loc_sess_status mStatus;
         LocPosTechMask mTechMask;
-        GnssDataNotification mDataNotify;
-        int mMsInWeek;
-        bool mbIsDataValid;
         inline MsgReportPosition(GnssAdapter& adapter,
                                  const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  loc_sess_status status,
-                                 LocPosTechMask techMask,
-                                 GnssDataNotification* pDataNotify,
-                                 int msInWeek) :
+                                 LocPosTechMask techMask) :
             LocMsg(),
             mAdapter(adapter),
             mUlpLocation(ulpLocation),
             mLocationExtended(locationExtended),
             mStatus(status),
-            mTechMask(techMask),
-            mMsInWeek(msInWeek) {
-                memset(&mDataNotify, 0, sizeof(mDataNotify));
-                if (pDataNotify != nullptr) {
-                    mDataNotify = *pDataNotify;
-                    mbIsDataValid = true;
-                } else {
-                    mbIsDataValid = false;
-                }
-        }
+            mTechMask(techMask) {}
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             SystemStatus* s = mAdapter.getSystemStatus();
@@ -3574,19 +3563,11 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
             mAdapter.reportPosition(mUlpLocation, mLocationExtended, mStatus, mTechMask);
-            if (true == mbIsDataValid) {
-                if (-1 != mMsInWeek) {
-                    mAdapter.getDataInformation((GnssDataNotification&)mDataNotify,
-                                                mMsInWeek);
-                }
-                mAdapter.reportData((GnssDataNotification&)mDataNotify);
-            }
         }
     };
 
     sendMsg(new MsgReportPosition(*this, ulpLocation, locationExtended,
-                                  status, techMask,
-                                  pDataNotify, msInWeek));
+                                  status, techMask));
 }
 
 void

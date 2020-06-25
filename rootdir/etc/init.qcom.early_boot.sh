@@ -340,6 +340,7 @@ case "$target" in
     "bengal")
         case "$soc_hwid" in
             441)
+                setprop vendor.fastrpc.disable.cdsprpcd.daemon 1
                 setprop vendor.gralloc.disable_ubwc 1
                 ;;
         esac

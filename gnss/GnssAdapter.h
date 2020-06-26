@@ -285,7 +285,6 @@ class GnssAdapter : public LocAdapterBase {
     DGnssStateBitMask   mDgnssState;
     void checkStartDgnssNtrip();
     void stopDgnssNtrip();
-    void reportGGAtoNtirp(const char* nmea);
 
 protected:
 
@@ -595,6 +594,7 @@ public:
     void disablePPENtripStreamCommand();
     void handleEnablePPENtrip(const GnssNtripConnectionParams& params);
     void handleDisablePPENtrip();
+    void reportGGAToNtrip(const char* nmea);
 };
 
 #endif //GNSS_ADAPTER_H

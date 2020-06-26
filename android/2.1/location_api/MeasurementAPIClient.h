@@ -83,8 +83,8 @@ private:
     sp<V1_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1;
     sp<V2_0::IGnssMeasurementCallback> mGnssMeasurementCbIface_2_0;
     sp<V2_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_2_1;
-
     bool mTracking;
+    void clearInterfaces();
 };
 
 }  // namespace implementation

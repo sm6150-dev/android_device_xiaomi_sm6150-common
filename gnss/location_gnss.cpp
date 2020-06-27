@@ -543,20 +543,20 @@ static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2s
 static void updateNTRIPGGAConsent(bool consentAccepted){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->updateNTRIPGGAConsent(consentAccepted);
+        gGnssAdapter->updateNTRIPGGAConsentCommand(consentAccepted);
     }
 }
 
 static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->enablePPENtripStream(params, enableRTKEngine);
+        gGnssAdapter->enablePPENtripStreamCommand(params, enableRTKEngine);
     }
 }
 
 static void disablePPENtripStream(){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->disablePPENtripStream();
+        gGnssAdapter->disablePPENtripStreamCommand();
     }
 }

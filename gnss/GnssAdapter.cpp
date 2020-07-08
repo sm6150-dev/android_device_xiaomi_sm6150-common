@@ -2677,15 +2677,15 @@ GnssAdapter::reportPowerStateIfChanged()
 }
 
 void
-GnssAdapter::getPowerStateChangesCommand(void* powerStateCb)
+GnssAdapter::getPowerStateChangesCommand(std::function<void(bool)> powerStateCb)
 {
     LOC_LOGD("%s]: ", __func__);
 
     struct MsgReportLocation : public LocMsg {
         GnssAdapter& mAdapter;
-        powerStateCallback mPowerStateCb;
+        std::function<void(bool)> mPowerStateCb;
         inline MsgReportLocation(GnssAdapter& adapter,
-                                 powerStateCallback powerStateCb) :
+                                 std::function<void(bool)> powerStateCb) :
             LocMsg(),
             mAdapter(adapter),
             mPowerStateCb(powerStateCb) {}
@@ -2695,7 +2695,7 @@ GnssAdapter::getPowerStateChangesCommand(void* powerStateCb)
         }
     };
 
-    sendMsg(new MsgReportLocation(*this, (powerStateCallback)powerStateCb));
+    sendMsg(new MsgReportLocation(*this, powerStateCb));
 }
 
 void

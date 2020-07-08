@@ -38,6 +38,7 @@
 #include <SystemStatus.h>
 #include <XtraSystemStatusObserver.h>
 #include <map>
+#include <functional>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -157,8 +158,6 @@ typedef std::function<void(
     uint64_t gnssEnergyConsumedFromFirstBoot
 )> GnssEnergyConsumedCallback;
 
-typedef void (*powerStateCallback)(bool on);
-
 typedef void* QDgnssListenerHDL;
 typedef std::function<void(
     bool    sessionActive
@@ -263,7 +262,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /* === Misc callback from QMI LOC API ============================================== */
     GnssEnergyConsumedCallback mGnssEnergyConsumedCb;
-    powerStateCallback mPowerStateCb;
+    std::function<void(bool)> mPowerStateCb;
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const TrackingOptions& trackingOptions);
@@ -569,10 +568,11 @@ public:
 
     /* ==== MISCELLANEOUS ================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
-    void getPowerStateChangesCommand(void* powerStateCb);
+    void getPowerStateChangesCommand(std::function<void(bool)> powerStateCb);
     /* ======== UTILITIES ================================================================== */
     void reportPowerStateIfChanged();
-    void savePowerStateCallback(powerStateCallback powerStateCb){ mPowerStateCb = powerStateCb; }
+    void savePowerStateCallback(std::function<void(bool)> powerStateCb){
+            mPowerStateCb = powerStateCb; }
     bool getPowerState() { return mPowerOn; }
     inline PowerStateType getSystemPowerState() { return mSystemPowerState; }
 

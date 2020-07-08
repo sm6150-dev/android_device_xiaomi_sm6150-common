@@ -71,7 +71,7 @@ static void updateConnectionStatus(bool connected, int8_t type, bool roaming = f
 static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
 static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
-static void getPowerStateChanges(void* powerStateCb);
+static void getPowerStateChanges(std::function<void(bool)> powerStateCb);
 
 static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
 static void odcpiInject(const Location& location);
@@ -411,7 +411,7 @@ static void nfwInit(const NfwCbInfo& cbInfo) {
     }
 }
 
-static void getPowerStateChanges(void* powerStateCb)
+static void getPowerStateChanges(std::function<void(bool)> powerStateCb)
 {
     if (NULL != gGnssAdapter) {
         gGnssAdapter->getPowerStateChangesCommand(powerStateCb);

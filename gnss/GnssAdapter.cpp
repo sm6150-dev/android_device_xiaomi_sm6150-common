@@ -55,6 +55,11 @@
 #define NMEA_MAX_THRESHOLD_MSEC (975)
 using namespace loc_core;
 
+static int loadEngHubForExternalEngine = 0;
+static loc_param_s_type izatConfParamTable[] = {
+    {"LOAD_ENGHUB_FOR_EXTERNAL_ENGINE", &loadEngHubForExternalEngine, nullptr,'n'}
+};
+
 /* Method to fetch status cb from loc_net_iface library */
 typedef AgpsCbInfo& (*LocAgpsGetAgpsCbInfo)(LocAgpsOpenResultCb openResultCb,
         LocAgpsCloseResultCb closeResultCb, void* userDataPtr);
@@ -271,6 +276,12 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
     }
     if (LOC_POS_TECH_MASK_PPE & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_PPE_BIT;
+    }
+    if (LOC_POS_TECH_MASK_VEH & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_VEH_BIT;
+    }
+    if (LOC_POS_TECH_MASK_VIS & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_VIS_BIT;
     }
 
     if (LOC_GPS_LOCATION_HAS_SPOOF_MASK & ulpLocation.gpsLocation.flags) {
@@ -5736,9 +5747,14 @@ GnssAdapter::initEngHubProxy() {
             }
         }
 
-        // no plugin daemon is enabled for this platform, no need to load eng hub .so
+        // no plugin daemon is enabled for this platform,
+        // check if external engine is present for which we need
+        // libloc_eng_hub.so to be loaded
         if (pluginDaemonEnabled == false) {
-            break;
+            UTIL_READ_CONF(LOC_PATH_IZAT_CONF, izatConfParamTable);
+            if (!loadEngHubForExternalEngine) {
+                break;
+            }
         }
 
         // load the engine hub .so, if the .so is not present

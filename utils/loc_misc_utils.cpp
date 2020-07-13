@@ -57,8 +57,10 @@ int loc_util_split_string(char *raw_string, char **split_strings_ptr,
             end_string=1;
         if((raw_string[raw_string_index] == delimiter) || end_string) {
             raw_string[raw_string_index] = '\0';
-            LOC_LOGD("%s:%d]: split string: %s\n",
-                     __func__, __LINE__, split_strings_ptr[num_split_strings]);
+            if (num_split_strings < max_num_substrings) {
+                LOC_LOGD("%s:%d]: split string: %s\n",
+                         __func__, __LINE__, split_strings_ptr[num_split_strings]);
+            }
             num_split_strings++;
             if(((raw_string_index + 1) < raw_string_length) &&
                (num_split_strings < max_num_substrings)) {

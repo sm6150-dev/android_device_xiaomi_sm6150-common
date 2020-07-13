@@ -79,13 +79,14 @@ static void blockCPI(double latitude, double longitude, float accuracy,
                      int blockDurationMsec, double latLonDiffThreshold);
 static void updateBatteryStatus(bool charging);
 static void updatePowerState(PowerStateType powerState);
-static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
-                                   const GnssSvIdConfig& svIdConfig);
-static uint32_t gnssResetSvConfig();
+static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& constellationEnablementConfig,
+                                   const GnssSvIdConfig& blacklistSvConfig);
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
 static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig);
+static uint32_t gnssUpdateSecondaryBandConfig(const GnssSvTypeConfig& secondaryBandConfig);
+static uint32_t gnssGetSecondaryBandConfig();
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -126,11 +127,12 @@ static const GnssInterface gGnssInterface = {
     setConstrainedTunc,
     setPositionAssistedClockEstimator,
     gnssUpdateSvConfig,
-    gnssResetSvConfig,
     configLeverArm,
     configRobustLocation,
     configMinGpsWeek,
     configDeadReckoningEngineParams,
+    gnssUpdateSecondaryBandConfig,
+    gnssGetSecondaryBandConfig,
 };
 
 #ifndef DEBUG_X86
@@ -407,19 +409,11 @@ static uint32_t setPositionAssistedClockEstimator(bool enable) {
 }
 
 static uint32_t gnssUpdateSvConfig(
-        const GnssSvTypeConfig& svTypeConfig,
-        const GnssSvIdConfig& svIdConfig) {
+        const GnssSvTypeConfig& constellationEnablementConfig,
+        const GnssSvIdConfig&   blacklistSvConfig) {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssUpdateSvConfigCommand(
-                svTypeConfig, svIdConfig);
-    } else {
-        return 0;
-    }
-}
-
-static uint32_t gnssResetSvConfig() {
-    if (NULL != gGnssAdapter) {
-        return gGnssAdapter->gnssResetSvConfigCommand();
+                constellationEnablementConfig, blacklistSvConfig);
     } else {
         return 0;
     }
@@ -452,6 +446,23 @@ static uint32_t configMinGpsWeek(uint16_t minGpsWeek){
 static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig){
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->configDeadReckoningEngineParamsCommand(dreConfig);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t gnssUpdateSecondaryBandConfig(
+        const GnssSvTypeConfig& secondaryBandConfig) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->gnssUpdateSecondaryBandConfigCommand(secondaryBandConfig);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t gnssGetSecondaryBandConfig(){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->gnssGetSecondaryBandConfigCommand();
     } else {
         return 0;
     }

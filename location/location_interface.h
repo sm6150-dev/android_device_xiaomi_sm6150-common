@@ -87,13 +87,14 @@ struct GnssInterface {
     void (*updatePowerState)(PowerStateType powerState);
     uint32_t (*setConstrainedTunc) (bool enable, float tuncConstraint, uint32_t energyBudget);
     uint32_t (*setPositionAssistedClockEstimator) (bool enable);
-    uint32_t (*gnssUpdateSvConfig)(const GnssSvTypeConfig& svTypeConfig,
-                                   const GnssSvIdConfig& svIdConfig);
-    uint32_t (*gnssResetSvConfig)();
+    uint32_t (*gnssUpdateSvConfig)(const GnssSvTypeConfig& constellationEnablementConfig,
+                                   const GnssSvIdConfig&   blacklistSvConfig);
     uint32_t (*configLeverArm)(const LeverArmConfigInfo& configInfo);
     uint32_t (*configRobustLocation)(bool enable, bool enableForE911);
     uint32_t (*configMinGpsWeek)(uint16_t minGpsWeek);
     uint32_t (*configDeadReckoningEngineParams)(const DeadReckoningEngineConfig& dreConfig);
+    uint32_t (*gnssUpdateSecondaryBandConfig)(const GnssSvTypeConfig& secondaryBandConfig);
+    uint32_t (*gnssGetSecondaryBandConfig)();
 };
 
 struct FlpInterface {

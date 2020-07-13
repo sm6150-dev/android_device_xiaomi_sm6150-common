@@ -561,6 +561,12 @@ void LocApiBase::reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConf
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssConfigEvent(sessionId, gnssConfig));
 }
 
+void LocApiBase::reportLatencyInfo(GnssLatencyInfo& gnssLatencyInfo)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportLatencyInfoEvent(gnssLatencyInfo));
+}
+
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)

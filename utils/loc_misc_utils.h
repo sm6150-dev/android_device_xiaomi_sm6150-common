@@ -261,4 +261,25 @@ SIDE EFFECTS
 void loc_convert_velocity_gnss_to_vrp(float enuVelocity[3], float rollPitchYaw[3],
                                       float rollPitchYawRate[3], float leverArm[3]);
 
+/*===========================================================================
+FUNCTION qTimerTicksToNanos
+
+DESCRIPTION
+Transform from ticks to nanoseconds, clock is 19.2 MHz
+so the formula would be qtimer(ns) = (ticks * 1000000000) / 19200000
+or simplified qtimer(ns) = (ticks * 10000) / 192.
+
+DEPENDENCIES
+N/A
+
+RETURN VALUE
+Qtimer value in nanoseconds
+
+SIDE EFFECTS
+N/A
+===========================================================================*/
+inline uint64_t qTimerTicksToNanos(double qTimer) {
+    return (uint64_t((qTimer * double(10000ull)) / (double)192ull));
+}
+
 #endif //_LOC_MISC_UTILS_H_

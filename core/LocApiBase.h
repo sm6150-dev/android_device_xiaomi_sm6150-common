@@ -190,6 +190,7 @@ public:
     void reportKlobucharIonoModel(GnssKlobucharIonoModel& ionoModel);
     void reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additionalSystemInfo);
     void reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig);
+    void reportLatencyInfo(GnssLatencyInfo& gnssLatencyInfo);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:

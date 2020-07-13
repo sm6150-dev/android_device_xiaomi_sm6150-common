@@ -209,4 +209,9 @@ DEFAULT_IMPL(false)
 bool LocAdapterBase::
     reportGnssAdditionalSystemInfoEvent(GnssAdditionalSystemInfo& /*additionalSystemInfo*/)
 DEFAULT_IMPL(false)
+
+void
+LocAdapterBase::reportLatencyInfoEvent(const GnssLatencyInfo& /*gnssLatencyInfo*/)
+DEFAULT_IMPL()
+
 } // namespace loc_core

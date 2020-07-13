@@ -198,6 +198,7 @@ public:
     virtual bool reportKlobucharIonoModelEvent(GnssKlobucharIonoModel& ionoModel);
     virtual bool reportGnssAdditionalSystemInfoEvent(
             GnssAdditionalSystemInfo& additionalSystemInfo);
+    virtual void reportLatencyInfoEvent(const GnssLatencyInfo& gnssLatencyInfo);
 };
 
 } // namespace loc_core

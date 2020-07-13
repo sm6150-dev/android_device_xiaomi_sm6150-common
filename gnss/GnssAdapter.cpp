@@ -71,6 +71,16 @@ static void agpsCloseResultCb (bool isSuccess, AGpsExtType agpsType, void* userD
 
 typedef const CdfwInterface* (*getCdfwInterface)();
 
+inline bool GnssReportLoggerUtil::isLogEnabled() {
+    return (mLogLatency != nullptr);
+}
+
+inline void GnssReportLoggerUtil::log(const GnssLatencyInfo& gnssLatencyMeasInfo) {
+    if (mLogLatency != nullptr) {
+        mLogLatency(gnssLatencyMeasInfo);
+    }
+}
+
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
                    LocDualContext::getLocFgContext(NULL,
@@ -110,7 +120,8 @@ GnssAdapter::GnssAdapter() :
     mLocSystemInfo{},
     mGnssMbSvIdUsedInPosition{},
     mGnssMbSvIdUsedInPosAvail(false),
-    mPowerState(POWER_STATE_UNKNOWN)
+    mPowerState(POWER_STATE_UNKNOWN),
+    mGnssLatencyInfo{}
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2389,7 +2400,9 @@ GnssAdapter::stopClientSessions(LocationAPI* client)
 void
 GnssAdapter::updateClientsEventMask()
 {
-    LOC_API_ADAPTER_EVENT_MASK_T mask = 0;
+    // need to register for leap second info
+    // for proper nmea generation
+    LOC_API_ADAPTER_EVENT_MASK_T mask = LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
         if (it->second.trackingCb != nullptr ||
             it->second.gnssLocationInfoCb != nullptr ||
@@ -2427,7 +2440,6 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
-        mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
         mask |= LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO;
 
         // Nhz measurement bit is set based on callback from loc eng hub
@@ -2448,9 +2460,13 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_REQUEST_WIFI;
     }
 
-    // need to register for leap second info
-    // for proper nmea generation
-    mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
+    // Enable the latency report
+    if (mask & LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT) {
+        if (mLogger.isLogEnabled()) {
+            mask |= LOC_API_ADAPTER_BIT_LATENCY_INFORMATION;
+        }
+    }
+
     updateEvtMask(mask, LOC_REGISTRATION_MASK_SET);
 }
 
@@ -3687,6 +3703,61 @@ bool GnssAdapter::needToGenerateNmeaReport(const uint32_t &gpsTimeOfWeekMs,
     return retVal;
 }
 
+void
+GnssAdapter::logLatencyInfo()
+{
+    if (0 != mGnssLatencyInfo.meQtimer2) {
+        mGnssLatencyInfo.hlosQtimer5 = getQTimerTickCount();
+
+        if (0 == mGnssLatencyInfo.hlosQtimer3) {
+            /* if SPE from engine hub is not reported then hlosQtimer3 = 0, set it
+            equal to hlosQtimer2 to make sense */
+            LOC_LOGv("hlosQtimer3 is 0, setting it to hlosQtimer2");
+            mGnssLatencyInfo.hlosQtimer3 = mGnssLatencyInfo.hlosQtimer2;
+        }
+        if (0 == mGnssLatencyInfo.hlosQtimer4) {
+            /* if PPE from engine hub is not reported then hlosQtimer4 = 0, set it
+            equal to hlosQtimer3 to make sense */
+            LOC_LOGv("hlosQtimer4 is 0, setting it to hlosQtimer3");
+            mGnssLatencyInfo.hlosQtimer4 = mGnssLatencyInfo.hlosQtimer3;
+        }
+        if (mGnssLatencyInfo.hlosQtimer4 < mGnssLatencyInfo.hlosQtimer3) {
+            /* hlosQtimer3 is timestamped when SPE from engine hub is reported,
+            and hlosQtimer4 is timestamped when PPE from engine hub is reported.
+            The order is random though, hence making sure the timestamps are sorted */
+            LOC_LOGv("hlosQtimer4 is < hlosQtimer3, swapping them");
+            std::swap(mGnssLatencyInfo.hlosQtimer3, mGnssLatencyInfo.hlosQtimer4);
+        }
+        LOC_LOGv("meQtimer1=%" PRIi64 " "
+            "meQtimer2=%" PRIi64 " "
+            "meQtimer3=%" PRIi64 " "
+            "peQtimer1=%" PRIi64 " "
+            "peQtimer2=%" PRIi64 " "
+            "peQtimer3=%" PRIi64 " "
+            "smQtimer1=%" PRIi64 " "
+            "smQtimer2=%" PRIi64 " "
+            "smQtimer3=%" PRIi64 " "
+            "locMwQtimer=%" PRIi64 " "
+            "hlosQtimer1=%" PRIi64 " "
+            "hlosQtimer2=%" PRIi64 " "
+            "hlosQtimer3=%" PRIi64 " "
+            "hlosQtimer4=%" PRIi64 " "
+            "hlosQtimer5=%" PRIi64 " ",
+            mGnssLatencyInfo.meQtimer1, mGnssLatencyInfo.meQtimer2,
+            mGnssLatencyInfo.meQtimer3, mGnssLatencyInfo.peQtimer1,
+            mGnssLatencyInfo.peQtimer2, mGnssLatencyInfo.peQtimer3,
+            mGnssLatencyInfo.smQtimer1, mGnssLatencyInfo.smQtimer2,
+            mGnssLatencyInfo.smQtimer3, mGnssLatencyInfo.locMwQtimer,
+            mGnssLatencyInfo.hlosQtimer1, mGnssLatencyInfo.hlosQtimer2,
+            mGnssLatencyInfo.hlosQtimer3, mGnssLatencyInfo.hlosQtimer4,
+            mGnssLatencyInfo.hlosQtimer5);
+        mLogger.log(mGnssLatencyInfo);
+        mGnssLatencyInfo.hlosQtimer3 = 0;
+        mGnssLatencyInfo.hlosQtimer4 = 0;
+        mGnssLatencyInfo.hlosQtimer5 = 0;
+    }
+}
+
 // only fused report (when engine hub is enabled) or
 // SPE report (when engine hub is disabled) will reach this function
 void
@@ -3715,7 +3786,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         GnssLocationInfoNotification locationInfo = {};
         convertLocationInfo(locationInfo, locationExtended);
         convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
-
+        logLatencyInfo();
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
             if ((nullptr != it->second.engineLocationsInfoCb) &&
                 (false == initEngHubProxy())) {
@@ -3773,6 +3844,34 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
 }
 
 void
+GnssAdapter::reportLatencyInfoEvent(const GnssLatencyInfo& gnssLatencyInfo)
+{
+    struct MsgReportLatencyInfo : public LocMsg {
+        GnssAdapter& mAdapter;
+        GnssLatencyInfo mGnssLatencyInfo;
+        inline MsgReportLatencyInfo(GnssAdapter& adapter,
+            const GnssLatencyInfo& gnssLatencyInfo) :
+            mGnssLatencyInfo(gnssLatencyInfo),
+            mAdapter(adapter) {}
+        inline virtual void proc() const {
+            mAdapter.mGnssLatencyInfo.meQtimer1 = mGnssLatencyInfo.meQtimer1;
+            mAdapter.mGnssLatencyInfo.meQtimer2 = mGnssLatencyInfo.meQtimer2;
+            mAdapter.mGnssLatencyInfo.meQtimer3 = mGnssLatencyInfo.meQtimer3;
+            mAdapter.mGnssLatencyInfo.peQtimer1 = mGnssLatencyInfo.peQtimer1;
+            mAdapter.mGnssLatencyInfo.peQtimer2 = mGnssLatencyInfo.peQtimer2;
+            mAdapter.mGnssLatencyInfo.peQtimer3 = mGnssLatencyInfo.peQtimer3;
+            mAdapter.mGnssLatencyInfo.smQtimer1 = mGnssLatencyInfo.smQtimer1;
+            mAdapter.mGnssLatencyInfo.smQtimer2 = mGnssLatencyInfo.smQtimer2;
+            mAdapter.mGnssLatencyInfo.smQtimer3 = mGnssLatencyInfo.smQtimer3;
+            mAdapter.mGnssLatencyInfo.locMwQtimer = mGnssLatencyInfo.locMwQtimer;
+            mAdapter.mGnssLatencyInfo.hlosQtimer1 = mGnssLatencyInfo.hlosQtimer1;
+            mAdapter.mGnssLatencyInfo.hlosQtimer2 = mGnssLatencyInfo.hlosQtimer2;
+        }
+    };
+    sendMsg(new MsgReportLatencyInfo(*this, gnssLatencyInfo));
+}
+
+void
 GnssAdapter::reportEnginePositions(unsigned int count,
                                    const EngineLocationInfo* locationArr)
 {
@@ -3805,6 +3904,19 @@ GnssAdapter::reportEnginePositions(unsigned int count,
         }
     }
 
+    const EngineLocationInfo* engLocation = locationArr;
+    LOC_LOGv("engLocation->locationExtended.locOutputEngType=%d",
+             engLocation->locationExtended.locOutputEngType);
+    if ((GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_TYPE & engLocation->locationExtended.flags) &&
+        (LOC_OUTPUT_ENGINE_SPE == engLocation->locationExtended.locOutputEngType)) {
+        mGnssLatencyInfo.hlosQtimer3 = getQTimerTickCount();
+        LOC_LOGv("SPE mGnssLatencyInfo.hlosQtimer3=%" PRIi64 " ", mGnssLatencyInfo.hlosQtimer3);
+    }
+    if ((GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_TYPE & engLocation->locationExtended.flags) &&
+        (LOC_OUTPUT_ENGINE_PPE == engLocation->locationExtended.locOutputEngType)) {
+        mGnssLatencyInfo.hlosQtimer4 = getQTimerTickCount();
+        LOC_LOGv("PPE mGnssLatencyInfo.hlosQtimer4=%" PRIi64 " ", mGnssLatencyInfo.hlosQtimer4);
+    }
     if (needReportEnginePositions) {
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
             if (nullptr != it->second.engineLocationsInfoCb) {

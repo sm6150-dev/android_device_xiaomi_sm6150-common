@@ -165,7 +165,7 @@ typedef enum {
     LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<7)
 } GnssLocationPosDataBitsExt;
 
-typedef uint32_t GnssLocationInfoFlagMask;
+typedef uint64_t GnssLocationInfoFlagMask;
 typedef enum {
     GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0),  // altitude mean sea level
     GNSS_LOCATION_INFO_DOP_BIT                          = (1<<1),  // pdop, hdop, and vdop
@@ -201,6 +201,7 @@ typedef enum {
     GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<28), // conformity index
     GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<29), // VRP-based lat/long/alt
     GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<30), // VRP-based east/north/up vel
+    GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT      = (1ULL<<31), // DR solution status
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -1012,6 +1013,10 @@ typedef struct {
     SystemTimeStructUnion u;
 } GnssSystemTime;
 
+typedef uint32_t DrSolutionStatusMask;
+#define VEHICLE_SENSOR_SPEED_INPUT_DETECTED (1<<0)
+#define VEHICLE_SENSOR_SPEED_INPUT_USED     (1<<1)
+
 typedef struct {
     double latitude;  // in degree
     double longitude; // in degree
@@ -1074,6 +1079,7 @@ typedef struct {
     LLAInfo llaVRPBased;
     // VRR-based east, north, and up velocity
     float enuVelocityVRPBased[3];
+    DrSolutionStatusMask drSolutionStatusMask;
 } GnssLocationInfoNotification;
 
 typedef struct {

@@ -56,14 +56,14 @@
 #define LOC_PROCESS_MAX_ARG_STR_LENGTH 32
 
 #define UTIL_UPDATE_CONF(conf_data, len, config_table) \
-    loc_update_conf((conf_data), (len), (config_table), \
+    loc_update_conf((conf_data), (len), (&config_table[0]), \
                     sizeof(config_table) / sizeof(config_table[0]))
 
 #define UTIL_READ_CONF_DEFAULT(filename) \
     loc_read_conf((filename), NULL, 0);
 
 #define UTIL_READ_CONF(filename, config_table) \
-    loc_read_conf((filename), (config_table), sizeof(config_table) / sizeof(config_table[0]))
+    loc_read_conf((filename), (&config_table[0]), sizeof(config_table) / sizeof(config_table[0]))
 
 /*=============================================================================
  *

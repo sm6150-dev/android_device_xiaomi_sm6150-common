@@ -81,11 +81,17 @@ typedef enum {
 } LocationFlagsBits;
 
 typedef uint16_t LocationTechnologyMask;
+// mask indicating location calculations including...
 typedef enum {
-    LOCATION_TECHNOLOGY_GNSS_BIT     = (1<<0), // location was calculated using GNSS
-    LOCATION_TECHNOLOGY_CELL_BIT     = (1<<1), // location was calculated using Cell
-    LOCATION_TECHNOLOGY_WIFI_BIT     = (1<<2), // location was calculated using WiFi
-    LOCATION_TECHNOLOGY_SENSORS_BIT  = (1<<3), // location was calculated using Sensors
+    LOCATION_TECHNOLOGY_GNSS_BIT                     = (1<<0), // using GNSS
+    LOCATION_TECHNOLOGY_CELL_BIT                     = (1<<1), // using Cell
+    LOCATION_TECHNOLOGY_WIFI_BIT                     = (1<<2), // using WiFi
+    LOCATION_TECHNOLOGY_SENSORS_BIT                  = (1<<3), // using Sensors
+    LOCATION_TECHNOLOGY_REFERENCE_LOCATION_BIT       = (1<<4), // using reference location
+    LOCATION_TECHNOLOGY_INJECTED_COARSE_POSITION_BIT = (1<<5), // using CPI
+    LOCATION_TECHNOLOGY_AFLT_BIT                     = (1<<6), // AFLT
+    LOCATION_TECHNOLOGY_HYBRID_BIT                   = (1<<7), // HYBRID
+    LOCATION_TECHNOLOGY_PPE_BIT                      = (1<<8)  // PPE
 } LocationTechnologyBits;
 
 typedef uint32_t LocationSpoofMask;
@@ -124,20 +130,6 @@ typedef enum {
     // Position report is computed with only SBAS corrected SVs.
     LOCATION_NAV_CORRECTION_ONLY_SBAS_CORRECTED_SV_USED_BIT = (1<<8)
 } GnssLocationNavSolutionBits;
-
-typedef uint32_t GnssLocationPosTechMask;
-typedef enum {
-    LOCATION_POS_TECH_DEFAULT_BIT                  = 0,
-    LOCATION_POS_TECH_SATELLITE_BIT                = (1<<0),
-    LOCATION_POS_TECH_CELLID_BIT                   = (1<<1),
-    LOCATION_POS_TECH_WIFI_BIT                     = (1<<2),
-    LOCATION_POS_TECH_SENSORS_BIT                  = (1<<3),
-    LOCATION_POS_TECH_REFERENCE_LOCATION_BIT       = (1<<4),
-    LOCATION_POS_TECH_INJECTED_COARSE_POSITION_BIT = (1<<5),
-    LOCATION_POS_TECH_AFLT_BIT                     = (1<<6),
-    LOCATION_POS_TECH_HYBRID_BIT                   = (1<<7),
-    LOCATION_POS_TECH_PPE_BIT                      = (1<<8)
-} GnssLocationPosTechBits;
 
 typedef uint32_t GnssLocationPosDataMask;
 typedef enum {
@@ -180,41 +172,40 @@ typedef enum {
 
 typedef uint32_t GnssLocationInfoFlagMask;
 typedef enum {
-    GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0), // valid altitude mean sea level
-    GNSS_LOCATION_INFO_DOP_BIT                          = (1<<1), // valid pdop, hdop, and vdop
-    GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT           = (1<<2), // valid magnetic deviation
-    GNSS_LOCATION_INFO_HOR_RELIABILITY_BIT              = (1<<3), // valid horizontal reliability
-    GNSS_LOCATION_INFO_VER_RELIABILITY_BIT              = (1<<4), // valid vertical reliability
-    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MAJOR_BIT = (1<<5), // valid elipsode semi major
-    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MINOR_BIT = (1<<6), // valid elipsode semi minor
-    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7), // valid accuracy elipsode azimuth
-    GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8), // valid svUsedInPosition,
-                                                                  //       numOfMeasReceived
-                                                                  //       and measUsageInfo
-    GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT            = (1<<9), // valid navSolutionMask
-    GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
-    GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
-    GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<12),// valid position dynamics data
-                                                                  // and Position Dynamics Ext
-    GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<13),// valid gdop, tdop
-    GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT                = (1<<14),// valid North standard deviation
-    GNSS_LOCATION_INFO_EAST_STD_DEV_BIT                 = (1<<15),// valid East standard deviation
-    GNSS_LOCATION_INFO_NORTH_VEL_BIT                    = (1<<16),// valid North Velocity
-    GNSS_LOCATION_INFO_EAST_VEL_BIT                     = (1<<17),// valid East Velocity
-    GNSS_LOCATION_INFO_UP_VEL_BIT                       = (1<<18),// valid Up Velocity
-    GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT                = (1<<19),// valid North Velocity Uncertainty
-    GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT                 = (1<<20),// valid East Velocity Uncertainty
-    GNSS_LOCATION_INFO_UP_VEL_UNC_BIT                   = (1<<21),// valid Up Velocity Uncertainty
-    GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<22),// valid leap seconds
-    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23),// valid time uncertainty
-    GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT      = (1<<24), // number of SV used in position
-    GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_BIT       = (1<<25), // valid sensor cal confidence
-    GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT           = (1<<26), // valid sensor cal status
-    GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<27), // valid output engine type
-    GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<28), // valid output engine mask
-    GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<29), // valid conformity index
-    GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<30), // valid VRP-based lat/long/alt
-    GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<31), // VRP-based east/north/up vel
+    GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0),  // altitude mean sea level
+    GNSS_LOCATION_INFO_DOP_BIT                          = (1<<1),  // pdop, hdop, and vdop
+    GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT           = (1<<2),  // magnetic deviation
+    GNSS_LOCATION_INFO_HOR_RELIABILITY_BIT              = (1<<3),  // horizontal reliability
+    GNSS_LOCATION_INFO_VER_RELIABILITY_BIT              = (1<<4),  // vertical reliability
+    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MAJOR_BIT = (1<<5),  // elipsode semi major
+    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MINOR_BIT = (1<<6),  // elipsode semi minor
+    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7),  // accuracy elipsode azimuth
+    GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8),  // svUsedInPosition,
+                                                                   //       numOfMeasReceived
+                                                                   //       and measUsageInfo
+    GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT            = (1<<9),  // navSolutionMask
+    GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<10), // LocSvInfoSource
+    GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<11), // position dynamics data &
+                                                                   //       Position Dynamics Ext
+    GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<12), // gdop, tdop
+    GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT                = (1<<13), // North standard deviation
+    GNSS_LOCATION_INFO_EAST_STD_DEV_BIT                 = (1<<14), // East standard deviation
+    GNSS_LOCATION_INFO_NORTH_VEL_BIT                    = (1<<15), // North Velocity
+    GNSS_LOCATION_INFO_EAST_VEL_BIT                     = (1<<16), // East Velocity
+    GNSS_LOCATION_INFO_UP_VEL_BIT                       = (1<<17), // Up Velocity
+    GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT                = (1<<18), // North Velocity Uncertainty
+    GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT                 = (1<<19), // East Velocity Uncertainty
+    GNSS_LOCATION_INFO_UP_VEL_UNC_BIT                   = (1<<20), // Up Velocity Uncertainty
+    GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<21), // leap seconds
+    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<22), // time uncertainty
+    GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT      = (1<<23), // number of SV used in position
+    GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_BIT       = (1<<24), // sensor cal confidence
+    GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT           = (1<<25), // sensor cal status
+    GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT              = (1<<26), // output engine type
+    GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT              = (1<<27), // output engine mask
+    GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<28), // conformity index
+    GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<29), // VRP-based lat/long/alt
+    GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<30), // VRP-based east/north/up vel
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -813,7 +804,7 @@ typedef struct {
     float bearingAccuracy;   // in degrees (0 to 359.999)
     float conformityIndex;   // in range [0, 1]
     LocationTechnologyMask techMask;
-    LocationSpoofMask      spoofMask;
+    LocationSpoofMask spoofMask;
     uint64_t elapsedRealTime;    // in ns
     uint64_t elapsedRealTimeUnc; // in ns
 } Location;
@@ -1112,7 +1103,6 @@ typedef struct {
     uint16_t numSvUsedInPosition;
     GnssLocationSvUsedInPosition svUsedInPosition;// Gnss sv used in position data
     GnssLocationNavSolutionMask navSolutionMask;  // Nav solution mask to indicate sbas corrections
-    GnssLocationPosTechMask posTechMask;          // Position technology used in computing this fix
     GnssLocationPositionDynamics bodyFrameData;   // Body Frame Dynamics: 4wayAcceleration and
                                                   // pitch set with validity
     GnssSystemTime gnssSystemTime;            // GNSS System Time

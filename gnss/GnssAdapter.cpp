@@ -276,6 +276,21 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
     if (LOC_POS_TECH_MASK_SENSORS & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_SENSORS_BIT;
     }
+    if (LOC_POS_TECH_MASK_REFERENCE_LOCATION & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_REFERENCE_LOCATION_BIT;
+    }
+    if (LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_INJECTED_COARSE_POSITION_BIT;
+    }
+    if (LOC_POS_TECH_MASK_AFLT & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_AFLT_BIT;
+    }
+    if (LOC_POS_TECH_MASK_HYBRID & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_HYBRID_BIT;
+    }
+    if (LOC_POS_TECH_MASK_PPE & techMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_PPE_BIT;
+    }
 
     if (LOC_GPS_LOCATION_HAS_SPOOF_MASK & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_SPOOF_MASK;
@@ -465,10 +480,6 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_NAV_SOLUTION_MASK & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT;
         out.navSolutionMask = locationExtended.navSolutionMask;
-    }
-    if (GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_POS_TECH_MASK_BIT;
-        out.posTechMask = locationExtended.tech_mask;
     }
     if (GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA & locationExtended.flags) {
         out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA;
@@ -818,7 +829,9 @@ GnssAdapter::setSuplHostServer(const char* server, int port, LocServerType type)
         } else if (length >= 0) {
             if (LOC_AGPS_SUPL_SERVER == type) {
                 getServerUrl().assign(serverUrl);
-                strlcpy(ContextBase::mGps_conf.SUPL_HOST, server, LOC_MAX_PARAM_STRING);
+                strlcpy(ContextBase::mGps_conf.SUPL_HOST,
+                        (nullptr == server) ? serverUrl : server,
+                        LOC_MAX_PARAM_STRING);
                 ContextBase::mGps_conf.SUPL_PORT = port;
             } else {
                 if (strncasecmp(getMoServerUrl().c_str(), serverUrl, sizeof(serverUrl)) != 0) {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,6 +36,7 @@
 
 #include "LocationUtil.h"
 #include "MeasurementAPIClient.h"
+#include <loc_misc_utils.h>
 
 namespace android {
 namespace hardware {
@@ -57,6 +58,8 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out);
 static void convertGnssMeasurementsCodeType(GnssMeasurementsCodeType& in,
         ::android::hardware::hidl_string& out);
+static void convertElapsedRealtimeNanos(GnssMeasurementsNotification& in,
+        ::android::hardware::gnss::V2_0::ElapsedRealtime& elapsedRealtimeNanos);
 
 MeasurementAPIClient::MeasurementAPIClient() :
     mGnssMeasurementCbIface(nullptr),
@@ -72,6 +75,13 @@ MeasurementAPIClient::~MeasurementAPIClient()
     LOC_LOGD("%s]: ()", __FUNCTION__);
 }
 
+void MeasurementAPIClient::clearInterfaces()
+{
+    mGnssMeasurementCbIface = nullptr;
+    mGnssMeasurementCbIface_1_1 = nullptr;
+    mGnssMeasurementCbIface_2_0 = nullptr;
+}
+
 // for GpsInterface
 Return<IGnssMeasurement::GnssMeasurementStatus>
 MeasurementAPIClient::measurementSetCallback(const sp<V1_0::IGnssMeasurementCallback>& callback)
@@ -79,6 +89,7 @@ MeasurementAPIClient::measurementSetCallback(const sp<V1_0::IGnssMeasurementCall
     LOC_LOGD("%s]: (%p)", __FUNCTION__, &callback);
 
     mMutex.lock();
+    clearInterfaces();
     mGnssMeasurementCbIface = callback;
     mMutex.unlock();
 
@@ -94,6 +105,7 @@ MeasurementAPIClient::measurementSetCallback_1_1(
             __FUNCTION__, &callback, (int)powerMode, timeBetweenMeasurement);
 
     mMutex.lock();
+    clearInterfaces();
     mGnssMeasurementCbIface_1_1 = callback;
     mMutex.unlock();
 
@@ -109,6 +121,7 @@ MeasurementAPIClient::measurementSetCallback_2_0(
         __FUNCTION__, &callback, (int)powerMode, timeBetweenMeasurement);
 
     mMutex.lock();
+    clearInterfaces();
     mGnssMeasurementCbIface_2_0 = callback;
     mMutex.unlock();
 
@@ -296,7 +309,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
 
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out)
 {
-    memset(&out, 0, sizeof(IGnssMeasurementCallback::GnssClock));
+    memset(&out, 0, sizeof(out));
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT)
         out.gnssClockFlags |= IGnssMeasurementCallback::GnssClockFlags::HAS_LEAP_SECOND;
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_UNCERTAINTY_BIT)
@@ -325,6 +338,7 @@ static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback
 static void convertGnssData(GnssMeasurementsNotification& in,
         V1_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurementCount = in.count;
     if (out.measurementCount > static_cast<uint32_t>(V1_0::GnssMax::SVS_COUNT)) {
         LOC_LOGW("%s]: Too many measurement %u. Clamps to %d.",
@@ -340,6 +354,7 @@ static void convertGnssData(GnssMeasurementsNotification& in,
 static void convertGnssData_1_1(GnssMeasurementsNotification& in,
         V1_1::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_0);
@@ -362,6 +377,7 @@ static void convertGnssData_1_1(GnssMeasurementsNotification& in,
 static void convertGnssData_2_0(GnssMeasurementsNotification& in,
         V2_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_1.v1_0);
@@ -415,46 +431,72 @@ static void convertGnssData_2_0(GnssMeasurementsNotification& in,
             out.measurements[i].state |= IGnssMeasurementCallback::GnssMeasurementState::STATE_2ND_CODE_LOCK;
     }
     convertGnssClock(in.clock, out.clock);
+    convertElapsedRealtimeNanos(in, out.elapsedRealtime);
+}
 
-    const uint32_t UTC_TO_GPS_SECONDS = 315964800;
+static void convertElapsedRealtimeNanos(GnssMeasurementsNotification& in,
+        ::android::hardware::gnss::V2_0::ElapsedRealtime& elapsedRealtime)
+{
     struct timespec currentTime;
     int64_t sinceBootTimeNanos;
 
-    if (getCurrentTime(currentTime, sinceBootTimeNanos) &&
-        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT &&
-        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT &&
-        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT &&
-        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT) {
-        int64_t currentTimeNanos = currentTime.tv_sec * 1000000000 + currentTime.tv_nsec;
-        int64_t measTimeNanos = (int64_t)in.clock.timeNs - (int64_t)in.clock.fullBiasNs
-                - (int64_t)in.clock.biasNs - (int64_t)in.clock.leapSecond * 1000000000
-                + (int64_t)UTC_TO_GPS_SECONDS * 1000000000;
+    if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
+        if (in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_ELAPSED_REAL_TIME_BIT) {
+            uint64_t qtimerDiff = 0;
+            uint64_t qTimerTickCount = getQTimerTickCount();
+            if (qTimerTickCount >= in.clock.elapsedRealTime) {
+                qtimerDiff = qTimerTickCount - in.clock.elapsedRealTime;
+            }
+            LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " in.clock.elapsedRealTime=%" PRIi64 ""
+                     " qTimerTickCount=%" PRIi64 " qtimerDiff=%" PRIi64 "",
+                     sinceBootTimeNanos, in.clock.elapsedRealTime, qTimerTickCount, qtimerDiff);
+            uint64_t qTimerDiffNanos = qTimerTicksToNanos(double(qtimerDiff));
+            if (sinceBootTimeNanos >= qTimerDiffNanos) {
+                elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                elapsedRealtime.timestampNs = sinceBootTimeNanos - qTimerDiffNanos;
+                elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                elapsedRealtime.timeUncertaintyNs = in.clock.elapsedRealTimeUnc;
+            }
+        } else {
+            const uint32_t UTC_TO_GPS_SECONDS = 315964800;
 
-        LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
-                 " measTimeNanos:%" PRIi64 "",
-                 sinceBootTimeNanos, currentTimeNanos, measTimeNanos);
-        if (currentTimeNanos >= measTimeNanos) {
-            int64_t ageTimeNanos = currentTimeNanos - measTimeNanos;
-            LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
-            // the max trusted propagation time 30s for ageTimeNanos to avoid user setting
-            //wrong time, it will affect elapsedRealtimeNanos
-            if (ageTimeNanos >= 0 && ageTimeNanos <= 30000000000) {
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
-                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms, to
-                //verify if user change the sys time
-                out.elapsedRealtime.timeUncertaintyNs =
-                        std::max((int64_t)abs(currentTimeNanos - measTimeNanos),
-                                (int64_t)100000000);
-                LOC_LOGd("timestampNs:%" PRIi64 ") timeUncertaintyNs:%" PRIi64 ")",
-                         out.elapsedRealtime.timestampNs,
-                         out.elapsedRealtime.timeUncertaintyNs);
+            if (in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT &&
+                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT &&
+                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT &&
+                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT) {
+                int64_t currentTimeNanos = currentTime.tv_sec * 1000000000 + currentTime.tv_nsec;
+                int64_t measTimeNanos = (int64_t)in.clock.timeNs - (int64_t)in.clock.fullBiasNs
+                        - (int64_t)in.clock.biasNs - (int64_t)in.clock.leapSecond * 1000000000
+                        + (int64_t)UTC_TO_GPS_SECONDS * 1000000000;
+
+                LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+                         " measTimeNanos:%" PRIi64 "",
+                         sinceBootTimeNanos, currentTimeNanos, measTimeNanos);
+                if (currentTimeNanos >= measTimeNanos) {
+                    int64_t ageTimeNanos = currentTimeNanos - measTimeNanos;
+                    LOC_LOGv("ageTimeNanos:%" PRIi64 ")", ageTimeNanos);
+                    // the max trusted propagation time 100ms for ageTimeNanos to avoid user
+                    // setting wrong time, it will affect elapsedRealtimeNanos
+                    if (ageTimeNanos <= 100000000) {
+                        elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                        elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                        elapsedRealtime.flags |=
+                                V2_0::ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                        // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms,
+                        // to verify if user change the sys time
+                        elapsedRealtime.timeUncertaintyNs =
+                                std::max(ageTimeNanos, (int64_t)100000000);
+                    }
+                }
+            } else {
+                LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
             }
         }
-    } else {
-        LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
     }
+    LOC_LOGv("elapsedRealtime.timestampNs=%" PRIi64 ""
+             " elapsedRealtime.timeUncertaintyNs=%" PRIi64 " elapsedRealtime.flags=0x%X",
+             elapsedRealtime.timestampNs,
+             elapsedRealtime.timeUncertaintyNs, elapsedRealtime.flags);
 }
 
 static void convertGnssMeasurementsCodeType(GnssMeasurementsCodeType& in,

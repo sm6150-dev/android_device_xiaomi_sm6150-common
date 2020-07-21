@@ -71,7 +71,7 @@ static void updateConnectionStatus(bool connected, int8_t type, bool roaming = f
 static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
 static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
-static void getPowerStateChanges(void* powerStateCb);
+static void getPowerStateChanges(std::function<void(bool)> powerStateCb);
 
 static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
 static void odcpiInject(const Location& location);
@@ -411,7 +411,7 @@ static void nfwInit(const NfwCbInfo& cbInfo) {
     }
 }
 
-static void getPowerStateChanges(void* powerStateCb)
+static void getPowerStateChanges(std::function<void(bool)> powerStateCb)
 {
     if (NULL != gGnssAdapter) {
         gGnssAdapter->getPowerStateChangesCommand(powerStateCb);
@@ -543,20 +543,20 @@ static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2s
 static void updateNTRIPGGAConsent(bool consentAccepted){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->updateNTRIPGGAConsent(consentAccepted);
+        gGnssAdapter->updateNTRIPGGAConsentCommand(consentAccepted);
     }
 }
 
 static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->enablePPENtripStream(params, enableRTKEngine);
+        gGnssAdapter->enablePPENtripStreamCommand(params, enableRTKEngine);
     }
 }
 
 static void disablePPENtripStream(){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
-        //gGnssAdapter->disablePPENtripStream();
+        gGnssAdapter->disablePPENtripStreamCommand();
     }
 }

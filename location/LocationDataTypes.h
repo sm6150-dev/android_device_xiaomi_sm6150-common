@@ -34,6 +34,7 @@
 #include <functional>
 #include <list>
 #include <string.h>
+#include <string>
 
 #define GNSS_NI_REQUESTOR_MAX  (256)
 #define GNSS_NI_MESSAGE_ID_MAX (2048)
@@ -295,12 +296,14 @@ typedef enum {
 } GnssConfigSuplVersion;
 
 // LTE Positioning Profile
+typedef uint16_t GnssConfigLppProfileMask;
 typedef enum {
-    GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE = 0,              // RRLP on LTE (Default)
-    GNSS_CONFIG_LPP_PROFILE_USER_PLANE,                   // LPP User Plane (UP) on LTE
-    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE,                // LPP_Control_Plane (CP)
-    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_AND_CONTROL_PLANE, // Both LPP UP and CP
-} GnssConfigLppProfile;
+    GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE = 0,                         // RRLP on LTE (Default)
+    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_BIT                 = (1<<0), // LPP User Plane (UP) on LTE
+    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_BIT              = (1<<1), // LPP_Control_Plane (CP)
+    GNSS_CONFIG_LPP_PROFILE_USER_PLANE_OVER_NR5G_SA_BIT    = (1<<2), // LPP User Plane (UP) on LTE
+    GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_OVER_NR5G_SA_BIT = (1<<3), // LPP_Control_Plane (CP)
+} GnssConfigLppProfileBits;
 
 // Technology for LPPe Control Plane
 typedef uint16_t GnssConfigLppeControlPlaneMask;
@@ -510,6 +513,7 @@ typedef enum {
     GNSS_MEASUREMENTS_DATA_FULL_ISB_UNCERTAINTY_BIT         = (1<<19),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_BIT                = (1<<20),
     GNSS_MEASUREMENTS_DATA_SATELLITE_ISB_UNCERTAINTY_BIT    = (1<<21),
+    GNSS_MEASUREMENTS_DATA_CYCLE_SLIP_COUNT_BIT             = (1<<22),
 } GnssMeasurementsDataFlagsBits;
 
 typedef uint32_t GnssMeasurementsStateMask;
@@ -1250,6 +1254,7 @@ typedef struct {
     double satelliteInterSignalBiasNs;
     double satelliteInterSignalBiasUncertaintyNs;
     int16_t gloFrequency;
+    uint8_t cycleSlipCount;
 } GnssMeasurementsData;
 
 typedef struct {
@@ -1429,7 +1434,7 @@ struct GnssConfig{
     GnssConfigGpsLock gpsLock;
     GnssConfigSuplVersion suplVersion;
     GnssConfigSetAssistanceServer assistanceServer;
-    GnssConfigLppProfile lppProfile;
+    GnssConfigLppProfileMask lppProfileMask;
     GnssConfigLppeControlPlaneMask lppeControlPlaneMask;
     GnssConfigLppeUserPlaneMask lppeUserPlaneMask;
     GnssConfigAGlonassPositionProtocolMask aGlonassPositionProtocolMask;
@@ -1447,7 +1452,7 @@ struct GnssConfig{
                 gpsLock == config.gpsLock &&
                 suplVersion == config.suplVersion &&
                 assistanceServer.equals(config.assistanceServer) &&
-                lppProfile == config.lppProfile &&
+                lppProfileMask == config.lppProfileMask &&
                 lppeControlPlaneMask == config.lppeControlPlaneMask &&
                 lppeUserPlaneMask == config.lppeUserPlaneMask &&
                 aGlonassPositionProtocolMask == config.aGlonassPositionProtocolMask &&
@@ -1817,10 +1822,10 @@ typedef struct {
 typedef struct {
     uint32_t size;                        // set to sizeof
     bool requiresNmeaLocation;
-    const char* hostNameOrIp;    // null terminated string
-    const char* mountPoint;      // null terminated string
-    const char* username;        // null terminated string
-    const char* password;        // null terminated string
+    std::string hostNameOrIp;    // null terminated string
+    std::string mountPoint;      // null terminated string
+    std::string username;        // null terminated string
+    std::string password;        // null terminated string
     uint32_t port;
     bool useSSL;
 } GnssNtripConnectionParams;

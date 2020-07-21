@@ -28,6 +28,9 @@
  */
 
 #include "LogBuffer.h"
+#ifdef USE_GLIB
+#include <execinfo.h>
+#endif
 
 #ifdef LOG_TAG
 #undef LOG_TAG
@@ -133,7 +136,7 @@ void LogBuffer::flush() {
 void LogBuffer::registerSignalHandler() {
     ALOGE("Singal handler registered");
     mNewSigAction.sa_sigaction = &LogBuffer::signalHandler;
-    mNewSigAction.sa_flags = SA_SIGINFO;
+    mNewSigAction.sa_flags = SA_SIGINFO | SA_RESTART;
     sigemptyset(&mNewSigAction.sa_mask);
 
     sigaction(SIGINT, &mNewSigAction, &mOriSigAction[SIGINT]);
@@ -147,6 +150,23 @@ void LogBuffer::registerSignalHandler() {
 void LogBuffer::signalHandler(const int code, siginfo_t *const si, void *const sc) {
     ALOGE("[Gnss Log buffer]Singal handler, signal ID: %d", code);
 
+#ifdef USE_GLIB
+    int nptrs;
+    void *buffer[100];
+    char **strings;
+
+    nptrs = backtrace(buffer, sizeof(buffer)/sizeof(*buffer));
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings != NULL) {
+        timespec tv;
+        clock_gettime(CLOCK_BOOTTIME, &tv);
+        uint64_t elapsedTime = (uint64_t)tv.tv_sec + (uint64_t)tv.tv_nsec/1000000000;
+        for (int i = 0; i < nptrs; i++) {
+            string s(strings[i]);
+            mInstance->append(s, 0, elapsedTime);
+        }
+    }
+#endif
     //Dump the log buffer to adb logcat
     mInstance->dumpToAdbLogcat();
 

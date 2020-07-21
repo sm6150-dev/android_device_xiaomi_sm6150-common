@@ -19,11 +19,14 @@ LOC_BOARD_PLATFORM_LIST += atoll
 LOC_BOARD_PLATFORM_LIST += lito
 LOC_BOARD_PLATFORM_LIST += bengal
 LOC_BOARD_PLATFORM_LIST += lahaina
+LOC_BOARD_PLATFORM_LIST += holi
 
 # Add product packages
 ifneq (,$(filter $(LOC_BOARD_PLATFORM_LIST),$(TARGET_BOARD_PLATFORM)))
 
 PRODUCT_PACKAGES += gps.conf
+PRODUCT_PACKAGES += flp.conf
+PRODUCT_PACKAGES += gnss_antenna_info.conf
 PRODUCT_PACKAGES += libloc_pla_headers
 PRODUCT_PACKAGES += liblocation_api_headers
 PRODUCT_PACKAGES += libgps.utils_headers

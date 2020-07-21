@@ -38,6 +38,7 @@
 #include <SystemStatus.h>
 #include <XtraSystemStatusObserver.h>
 #include <map>
+#include <functional>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -157,14 +158,14 @@ typedef std::function<void(
     uint64_t gnssEnergyConsumedFromFirstBoot
 )> GnssEnergyConsumedCallback;
 
-typedef void (*powerStateCallback)(bool on);
-
 typedef void* QDgnssListenerHDL;
 typedef std::function<void(
     bool    sessionActive
 )> QDgnssSessionActiveCb;
 
 struct CdfwInterface {
+    void (*startDgnssApiService)();
+
     QDgnssListenerHDL (*createUsableReporter)(
             QDgnssSessionActiveCb sessionActiveCb);
 
@@ -172,6 +173,11 @@ struct CdfwInterface {
 
     void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
 };
+
+typedef uint16_t  DGnssStateBitMask;
+#define DGNSS_STATE_ENABLE_NTRIP_COMMAND      0X01
+#define DGNSS_STATE_NO_NMEA_PENDING           0X02
+#define DGNSS_STATE_NTRIP_SESSION_STARTED     0X04
 
 class GnssAdapter : public LocAdapterBase {
 
@@ -256,7 +262,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /* === Misc callback from QMI LOC API ============================================== */
     GnssEnergyConsumedCallback mGnssEnergyConsumedCb;
-    powerStateCallback mPowerStateCb;
+    std::function<void(bool)> mPowerStateCb;
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const TrackingOptions& trackingOptions);
@@ -272,6 +278,13 @@ class GnssAdapter : public LocAdapterBase {
     inline void initOdcpi(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
     inline void injectOdcpi(const Location& location);
     static bool isFlpClient(LocationCallbacks& locationCallbacks);
+
+    /*==== DGnss Ntrip Source ==========================================================*/
+    StartDgnssNtripParams   mStartDgnssNtripParams;
+    bool    mSendNmeaConsent;
+    DGnssStateBitMask   mDgnssState;
+    void checkStartDgnssNtrip();
+    void stopDgnssNtrip();
 
 protected:
 
@@ -431,7 +444,7 @@ public:
     virtual bool isInSession() { return !mTimeBasedTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
-    void initDGnssUsableReporter();
+    void initCDFWService();
     void odcpiTimerExpireEvent();
 
     /* ==== REPORTS ======================================================================== */
@@ -528,7 +541,6 @@ public:
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertSuplVersion(const GnssConfigSuplVersion suplVersion);
-    static uint32_t convertLppProfile(const GnssConfigLppProfile lppProfile);
     static uint32_t convertEP4ES(const GnssConfigEmergencyPdnForEmergencySupl);
     static uint32_t convertSuplEs(const GnssConfigSuplEmergencyServices suplEmergencyServices);
     static uint32_t convertLppeCp(const GnssConfigLppeControlPlaneMask lppeControlPlaneMask);
@@ -555,10 +567,11 @@ public:
 
     /* ==== MISCELLANEOUS ================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
-    void getPowerStateChangesCommand(void* powerStateCb);
+    void getPowerStateChangesCommand(std::function<void(bool)> powerStateCb);
     /* ======== UTILITIES ================================================================== */
     void reportPowerStateIfChanged();
-    void savePowerStateCallback(powerStateCallback powerStateCb){ mPowerStateCb = powerStateCb; }
+    void savePowerStateCallback(std::function<void(bool)> powerStateCb){
+            mPowerStateCb = powerStateCb; }
     bool getPowerState() { return mPowerOn; }
     inline PowerStateType getSystemPowerState() { return mSystemPowerState; }
 
@@ -571,6 +584,17 @@ public:
 
     /*==== DGnss Usable Report Flag ====================================================*/
     inline void setDGnssUsableFLag(bool dGnssNeedReport) { mDGnssNeedReport = dGnssNeedReport;}
+    inline bool isNMEAPrintEnabled() {
+       return ((mContext != NULL) && (0 != mContext->mGps_conf.ENABLE_NMEA_PRINT));
+    }
+
+    /*==== DGnss Ntrip Source ==========================================================*/
+    void updateNTRIPGGAConsentCommand(bool consentAccepted) { mSendNmeaConsent = consentAccepted; }
+    void enablePPENtripStreamCommand(const GnssNtripConnectionParams& params, bool enableRTKEngine);
+    void disablePPENtripStreamCommand();
+    void handleEnablePPENtrip(const GnssNtripConnectionParams& params);
+    void handleDisablePPENtrip();
+    void reportGGAToNtrip(const char* nmea);
 };
 
 #endif //GNSS_ADAPTER_H

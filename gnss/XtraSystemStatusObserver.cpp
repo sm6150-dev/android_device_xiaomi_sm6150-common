@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -92,6 +92,8 @@ public:
                         mXSSO(xsso), mXtraStatusUpdated(xtraStatusUpdated) {}
                 inline void proc() const override {
                     mXSSO.onStatusRequested(mXtraStatusUpdated);
+                    /* SSR for DGnss Ntrip Source*/
+                    mXSSO.restartDgnssSource();
                 }
             };
             mMsgTask->sendMsg(new HandleStatusRequestMsg(mXSSO, xtraStatusUpdated));
@@ -233,6 +235,44 @@ inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdate
 
     string s = ss.str();
     return ( LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size()) );
+}
+
+void XtraSystemStatusObserver::startDgnssSource(const StartDgnssNtripParams& params) {
+    stringstream ss;
+    const GnssNtripConnectionParams* ntripParams = &(params.ntripParams);
+
+    ss <<  "startDgnssSource" << endl;
+    ss << ntripParams->useSSL << endl;
+    ss << ntripParams->hostNameOrIp.data() << endl;
+    ss << ntripParams->port << endl;
+    ss << ntripParams->mountPoint.data() << endl;
+    ss << ntripParams->username.data() << endl;
+    ss << ntripParams->password.data() << endl;
+    if (ntripParams->requiresNmeaLocation && !params.nmea.empty()) {
+        ss << params.nmea.data() << endl;
+    }
+    string s = ss.str();
+
+    LOC_LOGd("%s", s.data());
+    LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size());
+    // make a local copy of the string for SSR
+    mNtripParamsString.assign(std::move(s));
+}
+
+void XtraSystemStatusObserver::restartDgnssSource() {
+    if (!mNtripParamsString.empty()) {
+        LocIpc::send(*mSender,
+            (const uint8_t*)mNtripParamsString.data(), mNtripParamsString.size());
+        LOC_LOGv("Xtra SSR %s", mNtripParamsString.data());
+    }
+}
+
+void XtraSystemStatusObserver::stopDgnssSource() {
+    LOC_LOGv();
+    mNtripParamsString.clear();
+
+    const char s[] = "stopDgnssSource";
+    LocIpc::send(*mSender, (const uint8_t*)s, strlen(s));
 }
 
 void XtraSystemStatusObserver::subscribe(bool yes)

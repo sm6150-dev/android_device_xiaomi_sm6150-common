@@ -394,7 +394,17 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 
     if (gnssCbIface_2_1 != nullptr ||gnssCbIface_2_0 != nullptr || gnssCbIface != nullptr) {
 
-        uint32_t data = (uint32_t) V2_1::IGnssCallback::Capabilities::ANTENNA_INFO;
+        uint32_t antennaInfoVectorSize = 0;
+        uint32_t data = 0;
+        loc_param_s_type ant_info_vector_table[] =
+        {
+            { "ANTENNA_INFO_VECTOR_SIZE", &antennaInfoVectorSize, NULL, 'n' }
+        };
+        UTIL_READ_CONF(LOC_PATH_ANT_CORR, ant_info_vector_table);
+
+        if (0 != antennaInfoVectorSize) {
+            data |= V2_1::IGnssCallback::Capabilities::ANTENNA_INFO;
+        }
 
         if ((capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT) ||
                 (capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_BATCHING_BIT) ||
@@ -781,7 +791,7 @@ static void convertGnssSvStatus(GnssSvNotification& in, V1_0::IGnssCallback::Gns
         out.numSvs = static_cast<uint32_t>(V1_0::GnssMax::SVS_COUNT);
     }
     for (size_t i = 0; i < out.numSvs; i++) {
-        out.gnssSvList[i].svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out.gnssSvList[i].svid);
         convertGnssConstellationType(in.gnssSvs[i].type, out.gnssSvList[i].constellation);
         out.gnssSvList[i].cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out.gnssSvList[i].elevationDegrees = in.gnssSvs[i].elevation;
@@ -804,7 +814,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
 {
     out.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
-        out[i].v1_0.svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out[i].v1_0.svid);
         out[i].v1_0.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out[i].v1_0.elevationDegrees = in.gnssSvs[i].elevation;
         out[i].v1_0.azimuthDegrees = in.gnssSvs[i].azimuth;
@@ -828,7 +838,7 @@ static void convertGnssSvStatus(GnssSvNotification& in,
 {
     out.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
-        out[i].v2_0.v1_0.svid = in.gnssSvs[i].svId;
+        convertGnssSvid(in.gnssSvs[i], out[i].v2_0.v1_0.svid);
         out[i].v2_0.v1_0.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         out[i].v2_0.v1_0.elevationDegrees = in.gnssSvs[i].elevation;
         out[i].v2_0.v1_0.azimuthDegrees = in.gnssSvs[i].azimuth;

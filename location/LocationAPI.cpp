@@ -857,13 +857,13 @@ uint32_t LocationControlAPI::configMinGpsWeek(uint16_t minGpsWeek) {
     return id;
 }
 
-uint32_t LocationControlAPI::configBodyToSensorMountParams(
-        const BodyToSensorMountParams& b2sParams) {
+uint32_t LocationControlAPI::configDeadReckoningEngineParams(
+        const DeadReckoningEngineConfig& dreConfig) {
     uint32_t id = 0;
     pthread_mutex_lock(&gDataMutex);
 
     if (gData.gnssInterface != NULL) {
-        id = gData.gnssInterface->configBodyToSensorMountParams(b2sParams);
+        id = gData.gnssInterface->configDeadReckoningEngineParams(dreConfig);
     } else {
         LOC_LOGe("No gnss interface available for Location Control API");
     }

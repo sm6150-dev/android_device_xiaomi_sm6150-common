@@ -406,6 +406,9 @@ case "$target" in
                 ;;
         esac
         ;;
+    "holi")
+        setprop vendor.media.target_variant "_holi"
+        ;;
 esac
 
 baseband=`getprop ro.baseband`

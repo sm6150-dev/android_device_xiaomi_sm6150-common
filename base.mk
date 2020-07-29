@@ -55,12 +55,6 @@ endif
 #ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
 #PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 #endif
-ifneq ($(strip $(TARGET_DISABLE_PERF_OPTIMIATIONS)),true)
-# Preloading QPerformance jar to ensure faster perflocks in Boost Framework
-PRODUCT_BOOT_JARS += QPerformance
-# Preloading UxPerformance jar to ensure faster UX invoke in Boost Framework
-PRODUCT_BOOT_JARS += UxPerformance
-endif
 
 #skip boot jars check
 SKIP_BOOT_JARS_CHECK := true

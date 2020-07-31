@@ -79,13 +79,13 @@ typedef struct loc_gps_cfg_s
     uint32_t       ENABLE_NMEA_PRINT;
 } loc_gps_cfg_s_type;
 
-/* NOTE: the implementaiton of the parser casts number
+/* NOTE: the implementation of the parser casts number
    fields to 32 bit. To ensure all 'n' fields working,
    they must all be 32 bit fields. */
 /* Meanwhile, *_valid fields are 8 bit fields, and 'f'
    fields are double. Rigid as they are, it is the
    the status quo, until the parsing mechanism is
-   change, that is. */
+   changed, that is. */
 typedef struct
 {
     uint8_t        GYRO_BIAS_RANDOM_WALK_VALID;

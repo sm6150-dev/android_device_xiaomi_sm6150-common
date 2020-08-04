@@ -666,6 +666,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     }
     else if (strcmp(conf.feature_sap, "MODEM_DEFAULT") == 0) {
         LOC_LOGD("%s:%d]: Setting SAP to mode: MODEM_DEFAULT", __func__, __LINE__);
+        loc_service_mask |= LOC_FEATURE_MASK_SAP_BASIC;
     }
     else if (strcmp(conf.feature_sap, "DISABLED") == 0) {
 #ifdef USE_GLIB

@@ -179,6 +179,23 @@ SIDE EFFECTS
 ===========================================================================*/
 uint64_t getQTimerFreq();
 
+/*===========================================================================
+FUNCTION getBootTimeMilliSec
+
+DESCRIPTION
+   This function is used to get boot time in milliseconds.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+    uint64_t boot time in milliseconds
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+uint64_t getBootTimeMilliSec();
+
 #ifdef __cplusplus
 }
 #endif

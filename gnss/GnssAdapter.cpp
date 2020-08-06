@@ -2065,7 +2065,6 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
         inline virtual void proc() const {
             if ((mData.posEngineMask & STANDARD_POSITIONING_ENGINE) != 0) {
                 mAdapter.deleteAidingData(mData, mSessionId);
-
                 SystemStatus* s = mAdapter.getSystemStatus();
                 if ((nullptr != s) && (mData.deleteAll)) {
                     s->setDefaultGnssEngineStates();
@@ -5557,35 +5556,35 @@ uint32_t GnssAdapter::configMinGpsWeekCommand(uint16_t minGpsWeek) {
     return sessionId;
 }
 
-uint32_t GnssAdapter::configBodyToSensorMountParamsCommand(
-        const BodyToSensorMountParams& b2sParams) {
+uint32_t GnssAdapter::configDeadReckoningEngineParamsCommand(
+        const DeadReckoningEngineConfig& dreConfig) {
 
     // generated session id will be none-zero
     uint32_t sessionId = generateSessionId();
     LOC_LOGd("session id %u", sessionId);
 
-    struct MsgConfigB2sParams : public LocMsg {
-        GnssAdapter&       mAdapter;
-        uint32_t           mSessionId;
-        BodyToSensorMountParams mB2sParams;
+    struct MsgConfigDrEngine : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t     mSessionId;
+        DeadReckoningEngineConfig mDreConfig;
 
-        inline MsgConfigB2sParams(GnssAdapter& adapter,
+        inline MsgConfigDrEngine(GnssAdapter& adapter,
                                   uint32_t sessionId,
-                                  const BodyToSensorMountParams& b2sParams) :
+                                  const DeadReckoningEngineConfig& dreConfig) :
             LocMsg(),
             mAdapter(adapter),
             mSessionId(sessionId),
-            mB2sParams(b2sParams) {}
+            mDreConfig(dreConfig) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
-            if (true == mAdapter.mEngHubProxy->configBodyToSensorMountParams(mB2sParams)) {
+            if (true == mAdapter.mEngHubProxy->configDeadReckoningEngineParams(mDreConfig)) {
                 err = LOCATION_ERROR_SUCCESS;
             }
             mAdapter.reportResponse(err, mSessionId);
         }
     };
 
-    sendMsg(new MsgConfigB2sParams(*this, sessionId, b2sParams));
+    sendMsg(new MsgConfigDrEngine(*this, sessionId, dreConfig));
     return sessionId;
 }
 

@@ -85,7 +85,7 @@ static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
-static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams);
+static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -130,7 +130,7 @@ static const GnssInterface gGnssInterface = {
     configLeverArm,
     configRobustLocation,
     configMinGpsWeek,
-    configBodyToSensorMountParams,
+    configDeadReckoningEngineParams,
 };
 
 #ifndef DEBUG_X86
@@ -449,9 +449,9 @@ static uint32_t configMinGpsWeek(uint16_t minGpsWeek){
     }
 }
 
-static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams){
+static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig){
     if (NULL != gGnssAdapter) {
-        return gGnssAdapter->configBodyToSensorMountParamsCommand(b2sParams);
+        return gGnssAdapter->configDeadReckoningEngineParamsCommand(dreConfig);
     } else {
         return 0;
     }

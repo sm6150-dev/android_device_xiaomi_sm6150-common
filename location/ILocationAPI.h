@@ -340,12 +340,12 @@ public:
     virtual uint32_t configMinGpsWeek(uint16_t minGpsWeek) = 0;
 
     /** @brief
-        Configure the vehicle body-to-Sensor mount parameters for
-        dead reckoning position engine.
+        Configure the vehicle body-to-Sensor mount parameters and
+        other parameters for dead reckoning position engine.
 
         @param
-        b2sParams: vehicle body-to-Sensor mount angles and
-        uncertainty.
+        dreConfig: vehicle body-to-Sensor mount angles and other
+        parameters.
 
         @return
         A session id that will be returned in responseCallback to
@@ -354,7 +354,7 @@ public:
                 LOCATION_ERROR_SUCCESS if successful
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
-    virtual uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams) = 0;
+    virtual uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig)=0;
 };
 
 #endif /* ILOCATIONAPI_H */

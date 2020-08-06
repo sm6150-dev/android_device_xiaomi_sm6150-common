@@ -712,11 +712,17 @@ typedef struct {
     GnssAidingDataCommonMask mask; // bitwise OR of GnssAidingDataCommonBits
 } GnssAidingDataCommon;
 
+typedef uint32_t DrEngineAidingDataMask;
+typedef enum {
+    DR_ENGINE_AIDING_DATA_CALIBRATION_BIT = (1<<0), // Calibration data for DRE engine
+} DrEngineAidingDataBits;
+
 typedef struct {
     bool deleteAll;              // if true, delete all aiding data and ignore other params
     GnssAidingDataSv sv;         // SV specific aiding data
     GnssAidingDataCommon common; // common aiding data
-    PositioningEngineMask posEngineMask; // engines to perform the delete operation on.
+    DrEngineAidingDataMask dreAidingDataMask;// aiding data mask for dr engine
+    PositioningEngineMask posEngineMask;     // engines to perform the delete operation on.
 } GnssAidingData;
 
 typedef uint16_t DrCalibrationStatusMask;
@@ -1519,6 +1525,81 @@ struct BodyToSensorMountParams {
     // Single uncertainty number that may be the largest of the
     // roll, pitch and yaw offset uncertainties.
     float offsetUnc;
+};
+
+typedef uint64_t DeadReckoningEngineConfigValidMask;
+// Specify the valid mask for the configuration paramters of
+// dead reckoning position engine.
+enum DeadReckoningEngineConfigValidBit {
+    // DeadReckoningEngineConfig has valid
+    // DeadReckoningEngineConfig::DeadReckoningEngineConfig.
+    BODY_TO_SENSOR_MOUNT_PARAMS_BIT    = (1<<0),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::vehicleSpeedScaleFactor.
+    VEHICLE_SPEED_SCALE_FACTOR_BIT     = (1<<1),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::vehicleSpeedScaleFactorUnc.
+    VEHICLE_SPEED_SCALE_FACTOR_UNC_BIT = (1<<2),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::gyroScaleFactor.
+    GYRO_SCALE_FACTOR_BIT              = (1<<3),
+    // DeadReckoningEngineConfig has valid
+    // DeadReckoningEngineConfig::gyroScaleFactorUnc.
+    GYRO_SCALE_FACTOR_UNC_BIT          = (1<<4),
+};
+
+// Specify the configuration parameters for the dead reckoning
+//  position engine
+struct DeadReckoningEngineConfig{
+    // Specify the valid fields in the config.
+    DeadReckoningEngineConfigValidMask validMask;
+    // Body to sensor mount parameters for use by dead reckoning
+    //  positioning engine
+    BodyToSensorMountParams bodyToSensorMountParams;
+
+    // Vehicle Speed Scale Factor configuration input for the dead
+    // reckoning positioning engine. The multiplicative scale
+    // factor is applied to received Vehicle Speed value (in m/s)
+    // to obtain the true Vehicle Speed.
+    //
+    // Range is [0.9 to 1.1].
+    //
+    // Note: The scale factor is specific to a given vehicle
+    // make & model.
+    float vehicleSpeedScaleFactor;
+    // Vehicle Speed Scale Factor Uncertainty (68% confidence)
+    // configuration input for the dead reckoning positioning
+    // engine.
+    //
+    // Range is [0.0 to 0.1].
+    //
+    // Note: The scale factor unc is specific to a given vehicle
+    // make & model.
+    float vehicleSpeedScaleFactorUnc;
+
+    // Gyroscope Scale Factor configuration input for the dead
+    // reckoning positioning engine. The multiplicative scale
+    // factor is applied to received gyroscope value to obtain the
+    // true value.
+    //
+    // Range is [0.9 to 1.1].
+    //
+    // Note: The scale factor is specific to the Gyroscope sensor
+    // and typically derived from either sensor data-sheet or
+    // from actual calibration.
+    float gyroScaleFactor;
+
+    // Gyroscope Scale Factor uncertainty (68% confidence)
+    // configuration input for the dead reckoning positioning
+    // engine.
+    //
+    // Range is [0.0 to 0.1].
+    // engine.
+    //
+    // Note: The scale factor unc is specific to the make & model
+    // of Gyroscope sensor and typically derived from either
+    // sensor data-sheet or from actual calibration.
+    float gyroScaleFactorUnc;
 };
 
 /* Provides the capabilities of the system

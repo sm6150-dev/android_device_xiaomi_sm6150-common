@@ -107,9 +107,9 @@ public:
         return false;
     }
 
-    inline virtual bool configBodyToSensorMountParams(
-            const BodyToSensorMountParams& b2sParams) {
-        (void) b2sParams;
+    inline virtual bool configDeadReckoningEngineParams(
+            const DeadReckoningEngineConfig& dreConfig) {
+        (void) dreConfig;
         return false;
     }
 };

@@ -486,12 +486,7 @@ typedef uint32_t GnssAdditionalSystemInfoMask;
 #define setSvMask(mask, svIdOneBase)                  \
     if (svFitsMask(mask, svIdOneBase)) mask |= (1ULL << ((svIdOneBase) - 1))
 
-/* Checking svIdOneBase can be set to the corresponding bit in mask */
-#define svFitsMask(mask, svIdOneBase)                 \
-    ((svIdOneBase) >= 1 && (svIdOneBase) <= (sizeof(mask) << 3))
-/* Setting svIdOneBase specific bit in the mask if the bit offset fits */
-#define setSvMask(mask, svIdOneBase)                  \
-    if (svFitsMask(mask, svIdOneBase)) mask |= (1ULL << ((svIdOneBase) - 1))
+#define isValInRangeInclusive(val, min, max) ((val) >= (min) && (val) <= (max))
 
 typedef enum {
     LOC_RELIABILITY_NOT_SET = 0,

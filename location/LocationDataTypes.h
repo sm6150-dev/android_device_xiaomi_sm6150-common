@@ -342,6 +342,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<11),
     GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<12),
     GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT                 = (1<<13),
+    GNSS_CONFIG_FLAGS_CONSTELLATION_SECONDARY_BAND_BIT     = (1<<14),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -929,7 +930,6 @@ typedef struct {
     float yawUnc;         // Uncertainty of Yaw, 68% confidence level (radian)
 } GnssLocationPositionDynamicsExt;
 
-
 typedef struct {
     /** Validity mask for below fields */
     GnssSystemTimeStructTypeFlags validityMask;
@@ -1248,7 +1248,7 @@ inline bool operator ==(GnssSvIdSource const& left, GnssSvIdSource const& right)
 }
 
 #define GNSS_SV_CONFIG_ALL_BITS_ENABLED_MASK ((uint64_t)0xFFFFFFFFFFFFFFFF)
-typedef struct {
+struct GnssSvIdConfig {
     uint32_t size; // set to sizeof(GnssSvIdConfig)
 
     // GLONASS - SV 65 maps to bit 0
@@ -1277,7 +1277,21 @@ typedef struct {
     //Navic - SV 401 maps to bit 0
 #define GNSS_SV_CONFIG_NAVIC_INITIAL_SV_ID 401
     uint64_t navicBlacklistSvMask;
-} GnssSvIdConfig;
+
+    inline bool equals(const GnssSvIdConfig& inConfig) {
+        if ((inConfig.size == size) &&
+                (inConfig.gloBlacklistSvMask == gloBlacklistSvMask) &&
+                (inConfig.bdsBlacklistSvMask == bdsBlacklistSvMask) &&
+                (inConfig.qzssBlacklistSvMask == qzssBlacklistSvMask) &&
+                (inConfig.galBlacklistSvMask == galBlacklistSvMask) &&
+                (inConfig.sbasBlacklistSvMask == sbasBlacklistSvMask) &&
+                (inConfig.navicBlacklistSvMask == navicBlacklistSvMask)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
 
 // Specify the valid mask for robust location configure
 // defined in GnssConfigRobustLocation.
@@ -1318,6 +1332,37 @@ struct GnssConfigRobustLocation {
     }
 };
 
+/* Mask indicating enabled or disabled constellations and
+   secondary frequency.*/
+typedef uint64_t GnssSvTypesMask;
+typedef enum {
+    GNSS_SV_TYPES_MASK_GLO_BIT   = (1<<0),
+    GNSS_SV_TYPES_MASK_BDS_BIT   = (1<<1),
+    GNSS_SV_TYPES_MASK_QZSS_BIT  = (1<<2),
+    GNSS_SV_TYPES_MASK_GAL_BIT   = (1<<3),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
+    GNSS_SV_TYPES_MASK_GPS_BIT   = (1<<5),
+} GnssSvTypesMaskBits;
+#define GNSS_SV_TYPES_MASK_ALL \
+    (GNSS_SV_TYPES_MASK_GPS_BIT|GNSS_SV_TYPES_MASK_GLO_BIT|GNSS_SV_TYPES_MASK_BDS_BIT|\
+     GNSS_SV_TYPES_MASK_QZSS_BIT|GNSS_SV_TYPES_MASK_GAL_BIT|GNSS_SV_TYPES_MASK_NAVIC_BIT)
+
+/* This SV Type config is injected directly to GNSS Adapter
+ * bypassing Location API */
+struct GnssSvTypeConfig{
+    uint32_t size; // set to sizeof(GnssSvTypeConfig)
+    // Enabled Constellations
+    GnssSvTypesMask enabledSvTypesMask;
+    // Disabled Constellations
+    GnssSvTypesMask blacklistedSvTypesMask;
+
+    inline bool equals (const GnssSvTypeConfig& inConfig) const {
+        return ((inConfig.size == size) &&
+                (inConfig.enabledSvTypesMask == enabledSvTypesMask) &&
+                (inConfig.blacklistedSvTypesMask == blacklistedSvTypesMask));
+    }
+};
+
 struct GnssConfig{
     uint32_t size;  // set to sizeof(GnssConfig)
     GnssConfigFlagsMask flags; // bitwise OR of GnssConfigFlagsBits to mark which params are valid
@@ -1335,6 +1380,7 @@ struct GnssConfig{
     GnssConfigRobustLocation robustLocationConfig;
     uint16_t minGpsWeek;
     uint8_t minSvElevation;
+    GnssSvTypeConfig secondaryBandConfig;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1351,7 +1397,8 @@ struct GnssConfig{
                 blacklistedSvIds == config.blacklistedSvIds &&
                 robustLocationConfig.equals(config.robustLocationConfig) &&
                 minGpsWeek == config.minGpsWeek &&
-                minSvElevation == config.minSvElevation) {
+                minSvElevation == config.minSvElevation &&
+                secondaryBandConfig.equals(config.secondaryBandConfig)) {
             return true;
         }
         return false;
@@ -1450,26 +1497,6 @@ struct LocationSystemInfo {
     LocationSystemInfoMask systemInfoMask;
     LeapSecondSystemInfo   leapSecondSysInfo;
 };
-
-/* Mask indicating enabled or disabled constellations */
-typedef uint64_t GnssSvTypesMask;
-typedef enum {
-    GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
-    GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
-    GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
-    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
-    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
-} GnssSvTypesMaskBits;
-
-/* This SV Type config is injected directly to GNSS Adapter
- * bypassing Location API */
-typedef struct {
-    uint32_t size; // set to sizeof(GnssSvTypeConfig)
-    // Enabled Constellations
-    GnssSvTypesMask enabledSvTypesMask;
-    // Disabled Constellations
-    GnssSvTypesMask blacklistedSvTypesMask;
-} GnssSvTypeConfig;
 
 // Specify parameters related to lever arm
 struct LeverArmParams {

@@ -30,13 +30,13 @@
 #ifndef LOC_API_V02_LOG_H
 #define LOC_API_V02_LOG_H
 
+#include <loc_log.h>
+#include <loc_api_v02_client.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#include <loc_log.h>
-#include <loc_api_v02_client.h>
 
 const char* loc_get_v02_event_name(uint32_t event);
 const char* loc_get_v02_client_status_name(locClientStatusEnumType status);

@@ -34,6 +34,8 @@
 #include <functional>
 #include <memory>
 
+using std::string;
+
 namespace location_client
 {
 class Geofence;
@@ -341,7 +343,6 @@ enum GnssSvType {
     GNSS_SV_TYPE_NAVIC = 7,
 };
 
-
 /** Specify the valid fields in GnssLocation.
  *  <br/>
  *
@@ -588,6 +589,9 @@ struct GnssLocationSvUsedInPosition {
      *  Bit 0 to Bit 13 corresponds to BDS SV id 401 to 414.
      *  <br/> */
     uint64_t navicSvUsedIdsMask;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify the SV measurements that are used to calculate
@@ -602,6 +606,9 @@ struct GnssMeasUsageInfo {
     uint16_t gnssSvId;
     /** Specify the signal type mask of the SV.  <br/> */
     GnssSignalTypeMask gnssSignalType;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify device body frame parameters. <br/>   */
@@ -657,7 +664,15 @@ struct GnssLocationPositionDynamics {
     float yaw;
     /** Uncertainty of yaw, 68% confidence level, in unit of radian.
      *  <br/> */
-    float yawUnc;
+    float           yawUnc;
+    /** Heading rate, in unit of radians/second. <br/>   */
+    float           yawRate;
+    /** Uncertainty of heading rate, in unit of radians/second.
+     *  <br/> */
+    float           yawRateUnc;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify none-Glonass GNSS system time info. */
@@ -698,6 +713,9 @@ struct GnssSystemTimeStructType {
     /** Number of clock resets/discontinuities detected, which
      *  affects the local hardware counter value. <br/>   */
     uint32_t numClockResets;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify Glonass system time info. <br/>   */
@@ -732,6 +750,9 @@ struct GnssGloTimeStructType {
     /** Number of clock resets/discontinuities detected,
      *  affecting the local hardware counter value. <br/> */
     uint32_t numClockResets;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Union to hold GNSS system time from different
@@ -749,6 +770,9 @@ union SystemTimeStructUnion {
     GnssGloTimeStructType gloSystemTime;
     /** System time info from NAVIC constellation. <br/>   */
     GnssSystemTimeStructType navicSystemTime;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /**  GNSS system time in GnssLocation. <br/>
@@ -760,6 +784,9 @@ struct GnssSystemTime {
     /** Specify the GNSS system time corresponding to the source.
      *  <br/> */
     SystemTimeStructUnion u;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify the set of engines whose position reports are
@@ -767,7 +794,7 @@ struct GnssSystemTime {
     LocReqEngineTypeMask, const EngineReportCbs&,ResponseCb).
     <br/>
 */
-typedef enum {
+enum LocReqEngineTypeMask {
     /** Mask to indicate that client requests the fused/default
       position via registering location_client::EngineLocationsCb
       for the tracking session. <br/>
@@ -785,10 +812,10 @@ typedef enum {
       for the tracking session. <br/>
     */
     LOC_REQ_ENGINE_PPE_BIT   = (1<<2),
-} LocReqEngineTypeMask;
+};
 
 /** Specify the position engine type that produced GnssLocation. <br/> */
-typedef enum {
+enum LocOutputEngineType {
     /** This is the propagated/aggregated report from the fixes of
      *  all engines running on the system (e.g.: DR/SPE/PPE).
      *  <br/> */
@@ -800,19 +827,19 @@ typedef enum {
     LOC_OUTPUT_ENGINE_PPE   = 2,
     /** This is the entry count of this enum. <br/>   */
     LOC_OUTPUT_ENGINE_COUNT,
-} LocOutputEngineType;
+};
 
 
 /** Specify the set of position engines supported by
  *  LocationClientAPI. <br/>   */
-typedef enum {
+enum PositioningEngineMask {
     /** Mask for standard GNSS position engine. <br/>   */
     STANDARD_POSITIONING_ENGINE = (1 << 0),
     /** Mask for dead reckoning position engine. <br/>   */
     DEAD_RECKONING_ENGINE       = (1 << 1),
     /** Mask for precise position engine. <br/>   */
     PRECISE_POSITIONING_ENGINE  = (1 << 2)
-} PositioningEngineMask;
+};
 
 /** Specify the location info received by client via
  *  startPositionSession(uint32_t, uint32_t
@@ -847,6 +874,9 @@ struct Location {
     float bearingAccuracy;
     /** Sets of technology that contributed to the fix. <br/>   */
     LocationTechnologyMask techMask;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify latitude, longitude and altitude info of location.
@@ -995,6 +1025,9 @@ struct GnssLocation : public Location {
             conformityIndex(0.0f),
             llaVRPBased({}) {
     }
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** GNSS SV report that comes when clients registers for
@@ -1037,14 +1070,17 @@ struct GnssSv {
      *  This field is valid if gnssSvOptionsMask has
      *  GNSS_SV_OPTIONS_HAS_GNSS_SIGNAL_TYPE_BIT. <br/> */
     GnssSignalTypeMask gnssSignalTypeMask;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify the GNSS signal type and RF band for jammer info and
- *  automatic gain control metric in GnssData. <br/>
- *  To find out the jammer info and automatic gain control
- *  metric for a particular GNSS signal type, refer to the array
- *  element with index set to the signal type. <br/>
- */
+- *  automatic gain control metric in GnssData. <br/>
+- *  To find out the jammer info and automatic gain control
+- *  metric for a particular GNSS signal type, refer to the array
+- *  element with index set to the signal type. <br/>
+- */
 enum GnssSignalTypes {
     /**  GNSS signal is of GPS L1CA RF band.  <br/>   */
     GNSS_SIGNAL_TYPE_GPS_L1CA = 0,
@@ -1126,6 +1162,9 @@ struct GnssData {
     double        jammerInd[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
     /** Automatic gain control metric, in unit of dB.  <br/>   */
     double        agc[GNSS_MAX_NUMBER_OF_SIGNAL_TYPES];
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify valid fields in
@@ -1347,6 +1386,9 @@ struct GnssMeasurementsData {
     double signalToNoiseRatioDb;
     /** Automatic gain control level, in unit of dB <br/> */
     double agcLevelDb;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify GNSS measurements clock. <br/>
@@ -1380,6 +1422,9 @@ struct GnssMeasurementsClock {
     /** HW clock discontinuity count - incremented
      *  for each discontinuity in HW clock. <br/>   */
     uint32_t hwClockDiscontinuityCount;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify GNSS measurements clock and data. <br/>   */
@@ -1388,6 +1433,9 @@ struct GnssMeasurements {
     GnssMeasurementsClock clock;
     /** GNSS measurements data. <br/>   */
     std::vector<GnssMeasurementsData> measurements;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify the valid fields in LeapSecondSystemInfo. <br/> */
@@ -1422,6 +1470,9 @@ struct LeapSecondChangeInfo {
      *  <br/>
      *  In unit of seconds. <br/> */
     uint8_t leapSecondsAfterChange;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify leap second system info, including current leap
@@ -1454,15 +1505,18 @@ struct LeapSecondSystemInfo {
         to choose leapSecondBefore or leapSecondAfter as current
         leap second. <br/> */
     LeapSecondChangeInfo  leapSecondChangeInfo;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 /** Specify the set of valid fields in
  *  LocationSystemInfo. <br/>   */
-typedef enum {
+enum LocationSystemInfoMask {
     /** LocationSystemInfo has valid
      *  LocationSystemInfo::leapSecondSysInfo. <br/>   */
     LOC_SYS_INFO_LEAP_SECOND = (1ULL << 0),
-} LocationSystemInfoMask;
+};
 
 /** Specify the location system info that can be received via
  *  LocationSystemInfoCb. <br/>
@@ -1478,6 +1532,9 @@ struct LocationSystemInfo {
     LocationSystemInfoMask systemInfoMask;
     /** Current leap second and leap second info. <br/>   */
     LeapSecondSystemInfo   leapSecondSysInfo;
+    /** Method to print the struct to human readable form, for logging.
+     *  <br/> */
+    string toString();
 };
 
 enum BatchingStatus {

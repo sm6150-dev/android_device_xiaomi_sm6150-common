@@ -29,7 +29,7 @@
 #include <loc_api_v02_log.h>
 #include <location_service_v02.h>
 
-static const loc_name_val_s_type loc_v02_event_name[] =
+DECLARE_TBL(loc_v02_event_name) =
 {
     NAME_VAL(QMI_LOC_GET_SUPPORTED_MSGS_REQ_V02),
     NAME_VAL(QMI_LOC_GET_SUPPORTED_FIELDS_REQ_V02),
@@ -222,14 +222,12 @@ static const loc_name_val_s_type loc_v02_event_name[] =
     NAME_VAL(QMI_LOC_GET_ROBUST_LOCATION_CONFIG_REQ_V02),
 };
 
-static const int loc_v02_event_num = sizeof(loc_v02_event_name) / sizeof(loc_name_val_s_type);
-
 const char* loc_get_v02_event_name(uint32_t event)
 {
-    return loc_get_name_from_val(loc_v02_event_name, loc_v02_event_num, (long) event);
+    return loc_get_name_from_val(loc_v02_event_name_tbl, (int64_t) event);
 }
 
-static const loc_name_val_s_type loc_v02_client_status_name[] =
+DECLARE_TBL(loc_v02_client_status_name) =
 {
     NAME_VAL(eLOC_CLIENT_SUCCESS),
     NAME_VAL(eLOC_CLIENT_FAILURE_GENERAL),
@@ -247,15 +245,14 @@ static const loc_name_val_s_type loc_v02_client_status_name[] =
     NAME_VAL(eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY),
     NAME_VAL(eLOC_CLIENT_FAILURE_INVALID_MESSAGE_ID),
 };
-static const int loc_v02_client_status_num = sizeof(loc_v02_client_status_name) / sizeof(loc_name_val_s_type);
 
 const char* loc_get_v02_client_status_name(locClientStatusEnumType status)
 {
-    return loc_get_name_from_val(loc_v02_client_status_name, loc_v02_client_status_num, (long) status);
+    return loc_get_name_from_val(loc_v02_client_status_name_tbl, (int64_t) status);
 }
 
 
-static const loc_name_val_s_type loc_v02_qmi_status_name[] =
+DECLARE_TBL(loc_v02_qmi_status_name) =
 {
     NAME_VAL(eQMI_LOC_SUCCESS_V02),
     NAME_VAL(eQMI_LOC_GENERAL_FAILURE_V02),
@@ -270,24 +267,22 @@ static const loc_name_val_s_type loc_v02_qmi_status_name[] =
     NAME_VAL(eQMI_LOC_XTRA_VERSION_CHECK_FAILURE_V02),
     NAME_VAL(eQMI_LOC_GNSS_DISABLED_V02),
 };
-static const int loc_v02_qmi_status_num = sizeof(loc_v02_qmi_status_name) / sizeof(loc_name_val_s_type);
 
 const char* loc_get_v02_qmi_status_name(qmiLocStatusEnumT_v02 status)
 {
-    return loc_get_name_from_val(loc_v02_qmi_status_name, loc_v02_qmi_status_num, (long) status);
+    return loc_get_name_from_val(loc_v02_qmi_status_name_tbl, (int64_t) status);
 }
 
 
-static const loc_name_val_s_type loc_v02_qmi_reg_mk_status_name[] =
+DECLARE_TBL(loc_v02_qmi_reg_mk_status_name) =
 {
     NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_SUCCESS_V02),
     NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_INVALID_KEY_V02),
     NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_ALREADY_HAVE_MASTER_CLIENT_V02),
     NAME_VAL(eQMI_LOC_REGISTER_MASTER_CLIENT_INTERNAL_FAILURE_V02),
 };
-static const int loc_v02_qmi_reg_mk_status_num = sizeof(loc_v02_qmi_reg_mk_status_name) / sizeof(loc_name_val_s_type);
 
 const char* loc_get_v02_qmi_reg_mk_status_name(qmiLocRegisterMasterClientStatusEnumT_v02 status)
 {
-    return loc_get_name_from_val(loc_v02_qmi_reg_mk_status_name, loc_v02_qmi_reg_mk_status_num, (long)status);
+    return loc_get_name_from_val(loc_v02_qmi_reg_mk_status_name_tbl, (int64_t)status);
 }

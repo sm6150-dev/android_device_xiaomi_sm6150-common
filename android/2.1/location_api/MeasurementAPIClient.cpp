@@ -637,6 +637,18 @@ static void convertElapsedRealtimeNanos(GnssMeasurementsNotification& in,
                      " qTimerTickCount=%" PRIi64 " qtimerDiff=%" PRIi64 "",
                      sinceBootTimeNanos, in.clock.elapsedRealTime, qTimerTickCount, qtimerDiff);
             uint64_t qTimerDiffNanos = qTimerTicksToNanos(double(qtimerDiff));
+
+            /* If the time difference between Qtimer on modem side and Qtimer on AP side
+               is greater than one second we assume this is a dual-SoC device such as
+               Kona and will try to get Qtimer on modem side and on AP side and
+               will adjust our difference accordingly */
+            if (qTimerDiffNanos > 1000000000) {
+                uint64_t qtimerDelta = getQTimerDeltaNanos();
+                if (qTimerDiffNanos >= qtimerDelta) {
+                    qTimerDiffNanos -= qtimerDelta;
+                }
+            }
+
             if (sinceBootTimeNanos >= qTimerDiffNanos) {
                 elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
                 elapsedRealtime.timestampNs = sinceBootTimeNanos - qTimerDiffNanos;

@@ -1326,6 +1326,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_video_call_in_low_battery" value="false" />
         <boolean name="config_carrier_cs_retry_available" value="true" />
         <boolean name="support_add_conference_participants_bool" value="true" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="450" mnc="06">
@@ -1333,12 +1334,14 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_video_call_in_low_battery" value="false" />
         <boolean name="support_adhoc_conference_calls_bool" value="true" />
         <boolean name="support_add_conference_participants_bool" value="true" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="450" mnc="08">
         <boolean name="carrier_vt_available_bool" value="true" />
         <boolean name="allow_video_call_in_low_battery" value="false" />
         <boolean name="config_carrier_cs_retry_available" value="true" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="454" mnc="00">
@@ -1881,6 +1884,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="allow_emergency_video_calls_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="true" />
         <boolean name="carrier_call_composer_supported_bool" value="true"/>
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="01">
@@ -1921,6 +1925,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="080">
@@ -1959,6 +1964,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="170">
@@ -1972,6 +1978,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="280">
@@ -1998,6 +2005,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="410">
@@ -2011,6 +2019,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="560">
@@ -2024,6 +2033,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="680">
@@ -2038,6 +2048,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="980">
@@ -2046,6 +2057,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="rtt_downgrade_supported_bool" value="true"/>
         <boolean name="rtt_auto_upgrade_bool" value="true" />
         <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="310" mnc="260">
@@ -2198,6 +2210,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="support_downgrade_vt_to_audio_bool" value="true" />
         <boolean name="support_emergency_sms_over_ims_bool" value="true" />
         <boolean name="carrier_call_composer_supported_bool" value="true"/>
+        <boolean name="carrier_allow_turnoff_ims_bool" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="312" mnc="530">

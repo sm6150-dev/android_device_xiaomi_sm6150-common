@@ -55,12 +55,6 @@ endif
 #ifeq ($(strip $(TARGET_USES_QTIC_EXTENSION)),true)
 #PRODUCT_BOOT_JARS += com.qualcomm.qti.camera
 #endif
-ifneq ($(strip $(TARGET_DISABLE_PERF_OPTIMIATIONS)),true)
-# Preloading QPerformance jar to ensure faster perflocks in Boost Framework
-PRODUCT_BOOT_JARS += QPerformance
-# Preloading UxPerformance jar to ensure faster UX invoke in Boost Framework
-PRODUCT_BOOT_JARS += UxPerformance
-endif
 
 #skip boot jars check
 SKIP_BOOT_JARS_CHECK := true
@@ -739,6 +733,7 @@ RF4CE += rf4ce
 SENSORS_HARDWARE := sensors.msm7630_surf
 SENSORS_HARDWARE += sensors.msm7630_fusion
 SENSORS_HARDWARE += sensors.msm8996_auto
+SENSORS_HARDWARE += sensors.msmnile.asm_auto
 
 #SOFTAP
 SOFTAP := libQWiFiSoftApCfg
@@ -1213,3 +1208,8 @@ PRODUCT_PACKAGES += libvndfwk_detect_jni.qti
 PRODUCT_PACKAGES += libqti_vndfwk_detect
 PRODUCT_PACKAGES += libvndfwk_detect_jni.qti.vendor
 PRODUCT_PACKAGES += libqti_vndfwk_detect.vendor
+
+#soong namespace for qssi vs vendor differentiation
+SOONG_CONFIG_NAMESPACES += qssi_vs_vendor
+SOONG_CONFIG_qssi_vs_vendor += qssi_or_vendor
+SOONG_CONFIG_qssi_vs_vendor_qssi_or_vendor := vendor

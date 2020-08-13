@@ -418,7 +418,13 @@ pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>>
     typedef pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>> (*creator_t)(const shared_ptr<ILocIpcListener>&, int);
     static void* sLibEmuHandle = nullptr;
     static creator_t creator = (creator_t)dlGetSymFromLib(sLibEmuHandle, "libloc_emu.so",
-            "_ZN13QmiLocService41createLocIpcQmiLocServiceSenderRecverPairERKNSt3__110shared_ptrIN8loc_util15ILocIpcListenerEEEi");
+#ifdef USE_GLIB
+            "_ZN13QmiLocService41createLocIpcQmiLocServiceSenderRecverPair"\
+            "ERKSt10shared_ptrIN8loc_util15ILocIpcListenerEEi");
+#else
+            "_ZN13QmiLocService41createLocIpcQmiLocServiceSenderRecverPair"\
+            "ERKNSt3__110shared_ptrIN8loc_util15ILocIpcListenerEEEi");
+#endif
     return (nullptr == creator) ?
             make_pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>>(nullptr, nullptr) :
             creator(listener, instance);

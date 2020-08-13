@@ -50,7 +50,6 @@ class MeasurementAPIClient : public LocationAPIClientBase
 {
 public:
     MeasurementAPIClient();
-    virtual ~MeasurementAPIClient();
     MeasurementAPIClient(const MeasurementAPIClient&) = delete;
     MeasurementAPIClient& operator=(const MeasurementAPIClient&) = delete;
 
@@ -78,6 +77,8 @@ public:
     void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification) final;
 
 private:
+    virtual ~MeasurementAPIClient();
+
     std::mutex mMutex;
     sp<V1_0::IGnssMeasurementCallback> mGnssMeasurementCbIface;
     sp<V1_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1;

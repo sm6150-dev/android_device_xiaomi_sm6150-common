@@ -50,7 +50,6 @@ public:
     GnssAPIClient(const sp<V1_0::IGnssCallback>& gpsCb,
             const sp<V1_0::IGnssNiCallback>& niCb);
     GnssAPIClient(const sp<V2_0::IGnssCallback>& gpsCb);
-    virtual ~GnssAPIClient();
     GnssAPIClient(const GnssAPIClient&) = delete;
     GnssAPIClient& operator=(const GnssAPIClient&) = delete;
 
@@ -93,6 +92,8 @@ public:
     void onStopTrackingCb(LocationError error) final;
 
 private:
+    virtual ~GnssAPIClient();
+
     void setCallbacks();
     void initLocationOptions();
     sp<V1_0::IGnssCallback> mGnssCbIface;

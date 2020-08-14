@@ -160,7 +160,7 @@ LocApiBase::LocApiBase(LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
 
     android_atomic_inc(&mMsgTaskRefCount);
     if (nullptr == mMsgTask) {
-        mMsgTask = new MsgTask("LocApiMsgTask", false);
+        mMsgTask = new MsgTask("LocApiMsgTask");
     }
 }
 

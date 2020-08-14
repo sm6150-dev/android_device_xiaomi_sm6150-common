@@ -74,10 +74,7 @@ typedef const CdfwInterface* (*getCdfwInterface)();
 
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
-                   LocContext::getLocContext(NULL,
-                                             NULL,
-                                             LocContext::mLocationHalName,
-                                             false),
+                   LocContext::getLocContext(LocContext::mLocationHalName),
                    true, nullptr, true),
     mEngHubProxy(new EngineHubProxyBase()),
     mQDgnssListenerHDL(nullptr),
@@ -6406,7 +6403,7 @@ void GnssAdapter::initCDFWService()
             QDgnssSessionActiveCb qDgnssSessionActiveCb = [this] (bool sessionActive) {
                 mDGnssNeedReport = sessionActive;
             };
-            mCdfwInterface->startDgnssApiService();
+            mCdfwInterface->startDgnssApiService(*mMsgTask);
             mQDgnssListenerHDL = mCdfwInterface->createUsableReporter(qDgnssSessionActiveCb);
         }
     }

@@ -309,8 +309,8 @@ PRODUCT_COPY_FILES += \
 
 # Ramdisk
 PRODUCT_PACKAGES += \
-    fstab.persist \
-    fstab.qcom \
+    fstab.default \
+    fstab.emmc \
     init.insmod.sh \
     init.msm.usb.configfs.rc \
     init.power.rc \

@@ -21,4 +21,6 @@
     <dimen name="navigation_side_padding">85dp</dimen>
 
     <dimen name="rounded_corner_content_padding">10dp</dimen>
+
+    <dimen name="keyguard_carrier_text_margin">18dp</dimen>
 </resources>

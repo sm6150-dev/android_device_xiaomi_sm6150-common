@@ -176,13 +176,18 @@ void Light::setLightNotification(Type type, const LightState& state) {
 }
 
 void Light::applyNotificationState(const LightState& state) {
-    uint32_t red_brightness = RgbaToBrightness(state.color, max_led_brightness_);
+    std::map<std::string, int> colorValues;
+    colorValues["red"] = colorValues["green"] = colorValues["blue"] = colorValues["white"] =
+            RgbaToBrightness(state.color, max_led_brightness_);
+
+    auto makeLedPath = [](const std::string& led, const std::string& op) -> std::string {
+        return "/sys/class/leds/" + led + "/" + op;
+    };
 
     // Turn off the leds (initially)
-    WriteToFile(BLUE_ATTR(breath), 0);
-    WriteToFile(GREEN_ATTR(breath), 0);
-    WriteToFile(RED_ATTR(breath), 0);
-    WriteToFile(WHITE_ATTR(breath), 0);
+    for (const auto& entry : colorValues) {
+        WriteToFile(makeLedPath(entry.first, "breath"), 0);
+    }
 
     if (state.flashMode == Flash::TIMED && state.flashOnMs > 0 && state.flashOffMs > 0) {
         /*
@@ -199,37 +204,19 @@ void Light::applyNotificationState(const LightState& state) {
 
         LOG(DEBUG) << __func__ << ": color=" << std::hex << state.color << std::dec
                    << " onMs=" << state.flashOnMs << " offMs=" << state.flashOffMs;
-        // BLUE
-        WriteToFile(BLUE_ATTR(lo_idx), 0);
-        WriteToFile(BLUE_ATTR(delay_off), static_cast<uint32_t>(pause_hi));
-        WriteToFile(BLUE_ATTR(delay_on), static_cast<uint32_t>(state.flashOffMs));
-        WriteToFile(BLUE_ATTR(lut_pattern), GetScaledDutyPcts(red_brightness));
-        WriteToFile(BLUE_ATTR(step_ms), static_cast<uint32_t>(step_duration));
-        WriteToFile(BLUE_ATTR(breath), 1);
-
-        // GREEN
-        WriteToFile(GREEN_ATTR(lo_idx), 0);
-        WriteToFile(GREEN_ATTR(delay_off), static_cast<uint32_t>(pause_hi));
-        WriteToFile(GREEN_ATTR(delay_on), static_cast<uint32_t>(state.flashOffMs));
-        WriteToFile(GREEN_ATTR(lut_pattern), GetScaledDutyPcts(red_brightness));
-        WriteToFile(GREEN_ATTR(step_ms), static_cast<uint32_t>(step_duration));
-        WriteToFile(GREEN_ATTR(breath), 1);
-
-        // Red
-        WriteToFile(RED_ATTR(lo_idx), 0);
-        WriteToFile(RED_ATTR(delay_off), static_cast<uint32_t>(pause_hi));
-        WriteToFile(RED_ATTR(delay_on), static_cast<uint32_t>(state.flashOffMs));
-        WriteToFile(RED_ATTR(lut_pattern), GetScaledDutyPcts(red_brightness));
-        WriteToFile(RED_ATTR(step_ms), static_cast<uint32_t>(step_duration));
-        WriteToFile(RED_ATTR(breath), 1);
-
-        // White
-        WriteToFile(WHITE_ATTR(breath), 1);
+        for (const auto& entry : colorValues) {
+            WriteToFile(makeLedPath(entry.first, "lo_idx"), 0);
+            WriteToFile(makeLedPath(entry.first, "delay_off"), static_cast<uint32_t>(pause_hi));
+            WriteToFile(makeLedPath(entry.first, "delay_on"),
+                        static_cast<uint32_t>(state.flashOffMs));
+            WriteToFile(makeLedPath(entry.first, "lut_pattern"), GetScaledDutyPcts(entry.second));
+            WriteToFile(makeLedPath(entry.first, "step_ms"), static_cast<uint32_t>(step_duration));
+            WriteToFile(makeLedPath(entry.first, "breath"), 1);
+        }
     } else {
-        WriteToFile(BLUE_ATTR(brightness), red_brightness);
-        WriteToFile(GREEN_ATTR(brightness), red_brightness);
-        WriteToFile(RED_ATTR(brightness), red_brightness);
-        WriteToFile(WHITE_ATTR(brightness), red_brightness);
+        for (const auto& entry : colorValues) {
+            WriteToFile(makeLedPath(entry.first, "brightness"), entry.second);
+        }
     }
 }
 

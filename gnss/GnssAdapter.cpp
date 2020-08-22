@@ -2100,7 +2100,17 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
                 }
             }
 
-            mAdapter.mEngHubProxy->gnssDeleteAidingData(mData);
+            bool retVal = mAdapter.mEngHubProxy->gnssDeleteAidingData(mData);
+            // When SPE engine is invoked, responseCb will be invoked
+            // from QMI Loc API call.
+            // When SPE engine is not invoked, we also need to deliver responseCb
+            if ((mData.posEngineMask & STANDARD_POSITIONING_ENGINE) == 0) {
+                LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
+                if (retVal == true) {
+                    err = LOCATION_ERROR_SUCCESS;
+                }
+                mAdapter.reportResponse(err, mSessionId);
+            }
         }
     };
 

@@ -318,16 +318,24 @@ void LocationAPIClientBase::destroy()
 
     mGeofenceBreachCallback = nullptr;
 
-    if (mLocationAPI) {
-        mLocationAPI->destroy([this]() {onLocationApiDestroyCompleteCb();});
-        mLocationAPI = nullptr;
-    }
-
     for (int i = 0; i < REQUEST_MAX; i++) {
         mRequestQueues[i].reset((uint32_t)0);
     }
 
+    LocationAPI* localHandle = nullptr;
+    if (nullptr != mLocationAPI) {
+        localHandle = mLocationAPI;
+        mLocationAPI = nullptr;
+    }
+
     pthread_mutex_unlock(&mMutex);
+
+    // Invoking destroy has the possibility of destroy complete callback
+    // being invoked right away in the same context, hence no instance
+    // member must be accessed after the destroy call.
+    if (nullptr != localHandle) {
+        localHandle->destroy([this]() {onLocationApiDestroyCompleteCb();});
+    }
 }
 
 LocationAPIClientBase::~LocationAPIClientBase()

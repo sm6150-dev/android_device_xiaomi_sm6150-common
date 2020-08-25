@@ -15,9 +15,8 @@
 /vendor/bin/init\.insmod\.sh    u:object_r:init-insmod-sh_exec:s0
 
 # Elliptic
-/dev/elliptic0                  u:object_r:sensors_device:s0
-/dev/elliptic1                  u:object_r:sensors_device:s0
-/dev/mius(.*)?                  u:object_r:sound_device:s0
+/dev/elliptic[0-9]              u:object_r:ultrasound_device:s0
+/dev/mius(.*)?                  u:object_r:ultrasound_device:s0
 
 # Fingerprint devices
 /dev/goodix_fp                  u:object_r:fingerprint_device:s0

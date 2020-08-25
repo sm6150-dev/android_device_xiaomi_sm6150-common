@@ -201,6 +201,7 @@ class GnssAdapter : public LocAdapterBase {
     uint32_t mNmeaMask;
     uint64_t mPrevNmeaRptTimeNsec;
     GnssSvIdConfig mGnssSvIdConfig;
+    GnssSvTypeConfig mGnssSeconaryBandConfig;
     GnssSvTypeConfig mGnssSvTypeConfig;
     GnssSvTypeConfigCallback mGnssSvTypeConfigCb;
     bool mSupportNfwControl;
@@ -346,8 +347,13 @@ public:
     void setConstrainedTunc(bool enable, float tuncConstraint,
                             uint32_t energyBudget, uint32_t sessionId);
     void setPositionAssistedClockEstimator(bool enable, uint32_t sessionId);
-    void updateSvConfig(uint32_t sessionId, const GnssSvTypeConfig& svTypeConfig,
-                        const GnssSvIdConfig& svIdConfig);
+    void gnssUpdateSvConfig(uint32_t sessionId,
+                        const GnssSvTypeConfig& constellationEnablementConfig,
+                        const GnssSvIdConfig& blacklistSvConfig);
+
+    void gnssUpdateSecondaryBandConfig(
+        uint32_t sessionId, const GnssSvTypeConfig& secondaryBandConfig);
+    void gnssGetSecondaryBandConfig(uint32_t sessionId);
     void resetSvConfig(uint32_t sessionId);
     void configLeverArm(uint32_t sessionId, const LeverArmConfigInfo& configInfo);
     void configRobustLocation(uint32_t sessionId, bool enable, bool enableForE911);
@@ -400,6 +406,7 @@ public:
     inline GnssSvTypeConfigCallback gnssGetSvTypeConfigCallback()
     { return mGnssSvTypeConfigCb; }
     void setConfig();
+    void gnssSecondaryBandConfigUpdate(LocApiResponse* locApiResponse= nullptr);
 
     /* ========= AGPS ====================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -415,9 +422,11 @@ public:
     uint32_t setConstrainedTuncCommand (bool enable, float tuncConstraint,
                                         uint32_t energyBudget);
     uint32_t setPositionAssistedClockEstimatorCommand (bool enable);
-    uint32_t gnssUpdateSvConfigCommand(const GnssSvTypeConfig& svTypeConfig,
-                                       const GnssSvIdConfig& svIdConfig);
-    uint32_t gnssResetSvConfigCommand();
+    uint32_t gnssUpdateSvConfigCommand(const GnssSvTypeConfig& constellationEnablementConfig,
+                                       const GnssSvIdConfig& blacklistSvConfig);
+    uint32_t gnssUpdateSecondaryBandConfigCommand(
+                                       const GnssSvTypeConfig& secondaryBandConfig);
+    uint32_t gnssGetSecondaryBandConfigCommand();
     uint32_t configLeverArmCommand(const LeverArmConfigInfo& configInfo);
     uint32_t configRobustLocationCommand(bool enable, bool enableForE911);
     bool openMeasCorrCommand(const measCorrSetCapabilitiesCb setCapabilitiesCb);
@@ -426,7 +435,7 @@ public:
     uint32_t antennaInfoInitCommand(const antennaInfoCb antennaInfoCallback);
     inline void antennaInfoCloseCommand() { mIsAntennaInfoInterfaceOpened = false; }
     uint32_t configMinGpsWeekCommand(uint16_t minGpsWeek);
-    uint32_t configBodyToSensorMountParamsCommand(const BodyToSensorMountParams& b2sParams);
+    uint32_t configDeadReckoningEngineParamsCommand(const DeadReckoningEngineConfig& dreConfig);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

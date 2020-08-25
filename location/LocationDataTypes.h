@@ -170,7 +170,7 @@ typedef enum {
     LOCATION_NAV_DATA_HAS_YAW_UNC_BIT        = (1<<7)
 } GnssLocationPosDataBitsExt;
 
-typedef uint32_t GnssLocationInfoFlagMask;
+typedef uint64_t GnssLocationInfoFlagMask;
 typedef enum {
     GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0),  // altitude mean sea level
     GNSS_LOCATION_INFO_DOP_BIT                          = (1<<1),  // pdop, hdop, and vdop
@@ -206,6 +206,7 @@ typedef enum {
     GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<28), // conformity index
     GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<29), // VRP-based lat/long/alt
     GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<30), // VRP-based east/north/up vel
+    GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT      = (1ULL<<31), // DR solution status
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -358,6 +359,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT                  = (1<<12),
     GNSS_CONFIG_FLAGS_MIN_GPS_WEEK_BIT                     = (1<<13),
     GNSS_CONFIG_FLAGS_MIN_SV_ELEVATION_BIT                 = (1<<14),
+    GNSS_CONFIG_FLAGS_CONSTELLATION_SECONDARY_BAND_BIT     = (1<<15),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -768,11 +770,17 @@ typedef struct {
     GnssAidingDataCommonMask mask; // bitwise OR of GnssAidingDataCommonBits
 } GnssAidingDataCommon;
 
+typedef uint32_t DrEngineAidingDataMask;
+typedef enum {
+    DR_ENGINE_AIDING_DATA_CALIBRATION_BIT = (1<<0), // Calibration data for DRE engine
+} DrEngineAidingDataBits;
+
 typedef struct {
     bool deleteAll;              // if true, delete all aiding data and ignore other params
     GnssAidingDataSv sv;         // SV specific aiding data
     GnssAidingDataCommon common; // common aiding data
-    PositioningEngineMask posEngineMask; // engines to perform the delete operation on.
+    DrEngineAidingDataMask dreAidingDataMask;// aiding data mask for dr engine
+    PositioningEngineMask posEngineMask;     // engines to perform the delete operation on.
 } GnssAidingData;
 
 typedef uint16_t DrCalibrationStatusMask;
@@ -980,7 +988,6 @@ typedef struct {
     float yawUnc;         // Uncertainty of Yaw, 68% confidence level (radian)
 } GnssLocationPositionDynamicsExt;
 
-
 typedef struct {
     /** Validity mask for below fields */
     GnssSystemTimeStructTypeFlags validityMask;
@@ -1070,6 +1077,10 @@ typedef struct {
     SystemTimeStructUnion u;
 } GnssSystemTime;
 
+typedef uint32_t DrSolutionStatusMask;
+#define VEHICLE_SENSOR_SPEED_INPUT_DETECTED (1<<0)
+#define VEHICLE_SENSOR_SPEED_INPUT_USED     (1<<1)
+
 typedef struct {
     double latitude;  // in degree
     double longitude; // in degree
@@ -1132,6 +1143,7 @@ typedef struct {
     LLAInfo llaVRPBased;
     // VRR-based east, north, and up velocity
     float enuVelocityVRPBased[3];
+    DrSolutionStatusMask drSolutionStatusMask;
 } GnssLocationInfoNotification;
 
 typedef struct {
@@ -1348,7 +1360,7 @@ inline bool operator ==(GnssSvIdSource const& left, GnssSvIdSource const& right)
 }
 
 #define GNSS_SV_CONFIG_ALL_BITS_ENABLED_MASK ((uint64_t)0xFFFFFFFFFFFFFFFF)
-typedef struct {
+struct GnssSvIdConfig {
     uint32_t size; // set to sizeof(GnssSvIdConfig)
 
     // GLONASS - SV 65 maps to bit 0
@@ -1377,7 +1389,21 @@ typedef struct {
     //Navic - SV 401 maps to bit 0
 #define GNSS_SV_CONFIG_NAVIC_INITIAL_SV_ID 401
     uint64_t navicBlacklistSvMask;
-} GnssSvIdConfig;
+
+    inline bool equals(const GnssSvIdConfig& inConfig) {
+        if ((inConfig.size == size) &&
+                (inConfig.gloBlacklistSvMask == gloBlacklistSvMask) &&
+                (inConfig.bdsBlacklistSvMask == bdsBlacklistSvMask) &&
+                (inConfig.qzssBlacklistSvMask == qzssBlacklistSvMask) &&
+                (inConfig.galBlacklistSvMask == galBlacklistSvMask) &&
+                (inConfig.sbasBlacklistSvMask == sbasBlacklistSvMask) &&
+                (inConfig.navicBlacklistSvMask == navicBlacklistSvMask)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
 
 // Specify the valid mask for robust location configure
 // defined in GnssConfigRobustLocation.
@@ -1418,6 +1444,37 @@ struct GnssConfigRobustLocation {
     }
 };
 
+/* Mask indicating enabled or disabled constellations and
+   secondary frequency.*/
+typedef uint64_t GnssSvTypesMask;
+typedef enum {
+    GNSS_SV_TYPES_MASK_GLO_BIT   = (1<<0),
+    GNSS_SV_TYPES_MASK_BDS_BIT   = (1<<1),
+    GNSS_SV_TYPES_MASK_QZSS_BIT  = (1<<2),
+    GNSS_SV_TYPES_MASK_GAL_BIT   = (1<<3),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
+    GNSS_SV_TYPES_MASK_GPS_BIT   = (1<<5),
+} GnssSvTypesMaskBits;
+#define GNSS_SV_TYPES_MASK_ALL \
+    (GNSS_SV_TYPES_MASK_GPS_BIT|GNSS_SV_TYPES_MASK_GLO_BIT|GNSS_SV_TYPES_MASK_BDS_BIT|\
+     GNSS_SV_TYPES_MASK_QZSS_BIT|GNSS_SV_TYPES_MASK_GAL_BIT|GNSS_SV_TYPES_MASK_NAVIC_BIT)
+
+/* This SV Type config is injected directly to GNSS Adapter
+ * bypassing Location API */
+struct GnssSvTypeConfig{
+    uint32_t size; // set to sizeof(GnssSvTypeConfig)
+    // Enabled Constellations
+    GnssSvTypesMask enabledSvTypesMask;
+    // Disabled Constellations
+    GnssSvTypesMask blacklistedSvTypesMask;
+
+    inline bool equals (const GnssSvTypeConfig& inConfig) const {
+        return ((inConfig.size == size) &&
+                (inConfig.enabledSvTypesMask == enabledSvTypesMask) &&
+                (inConfig.blacklistedSvTypesMask == blacklistedSvTypesMask));
+    }
+};
+
 struct GnssConfig{
     uint32_t size;  // set to sizeof(GnssConfig)
     GnssConfigFlagsMask flags; // bitwise OR of GnssConfigFlagsBits to mark which params are valid
@@ -1436,6 +1493,7 @@ struct GnssConfig{
     GnssConfigRobustLocation robustLocationConfig;
     uint16_t minGpsWeek;
     uint8_t minSvElevation;
+    GnssSvTypeConfig secondaryBandConfig;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1453,7 +1511,8 @@ struct GnssConfig{
                 emergencyExtensionSeconds == config.emergencyExtensionSeconds &&
                 robustLocationConfig.equals(config.robustLocationConfig) &&
                 minGpsWeek == config.minGpsWeek &&
-                minSvElevation == config.minSvElevation) {
+                minSvElevation == config.minSvElevation &&
+                secondaryBandConfig.equals(config.secondaryBandConfig)) {
             return true;
         }
         return false;
@@ -1553,26 +1612,6 @@ struct LocationSystemInfo {
     LeapSecondSystemInfo   leapSecondSysInfo;
 };
 
-/* Mask indicating enabled or disabled constellations */
-typedef uint64_t GnssSvTypesMask;
-typedef enum {
-    GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
-    GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
-    GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
-    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
-    GNSS_SV_TYPES_MASK_NAVIC_BIT = (1<<4),
-} GnssSvTypesMaskBits;
-
-/* This SV Type config is injected directly to GNSS Adapter
- * bypassing Location API */
-typedef struct {
-    uint32_t size; // set to sizeof(GnssSvTypeConfig)
-    // Enabled Constellations
-    GnssSvTypesMask enabledSvTypesMask;
-    // Disabled Constellations
-    GnssSvTypesMask blacklistedSvTypesMask;
-} GnssSvTypeConfig;
-
 // Specify parameters related to lever arm
 struct LeverArmParams {
     // Offset along the vehicle forward axis
@@ -1633,6 +1672,81 @@ struct BodyToSensorMountParams {
     // Single uncertainty number that may be the largest of the
     // roll, pitch and yaw offset uncertainties.
     float offsetUnc;
+};
+
+typedef uint64_t DeadReckoningEngineConfigValidMask;
+// Specify the valid mask for the configuration paramters of
+// dead reckoning position engine.
+enum DeadReckoningEngineConfigValidBit {
+    // DeadReckoningEngineConfig has valid
+    // DeadReckoningEngineConfig::DeadReckoningEngineConfig.
+    BODY_TO_SENSOR_MOUNT_PARAMS_BIT    = (1<<0),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::vehicleSpeedScaleFactor.
+    VEHICLE_SPEED_SCALE_FACTOR_BIT     = (1<<1),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::vehicleSpeedScaleFactorUnc.
+    VEHICLE_SPEED_SCALE_FACTOR_UNC_BIT = (1<<2),
+    // DeadReckoningEngineConfig has valid
+    //  DeadReckoningEngineConfig::gyroScaleFactor.
+    GYRO_SCALE_FACTOR_BIT              = (1<<3),
+    // DeadReckoningEngineConfig has valid
+    // DeadReckoningEngineConfig::gyroScaleFactorUnc.
+    GYRO_SCALE_FACTOR_UNC_BIT          = (1<<4),
+};
+
+// Specify the configuration parameters for the dead reckoning
+//  position engine
+struct DeadReckoningEngineConfig{
+    // Specify the valid fields in the config.
+    DeadReckoningEngineConfigValidMask validMask;
+    // Body to sensor mount parameters for use by dead reckoning
+    //  positioning engine
+    BodyToSensorMountParams bodyToSensorMountParams;
+
+    // Vehicle Speed Scale Factor configuration input for the dead
+    // reckoning positioning engine. The multiplicative scale
+    // factor is applied to received Vehicle Speed value (in m/s)
+    // to obtain the true Vehicle Speed.
+    //
+    // Range is [0.9 to 1.1].
+    //
+    // Note: The scale factor is specific to a given vehicle
+    // make & model.
+    float vehicleSpeedScaleFactor;
+    // Vehicle Speed Scale Factor Uncertainty (68% confidence)
+    // configuration input for the dead reckoning positioning
+    // engine.
+    //
+    // Range is [0.0 to 0.1].
+    //
+    // Note: The scale factor unc is specific to a given vehicle
+    // make & model.
+    float vehicleSpeedScaleFactorUnc;
+
+    // Gyroscope Scale Factor configuration input for the dead
+    // reckoning positioning engine. The multiplicative scale
+    // factor is applied to received gyroscope value to obtain the
+    // true value.
+    //
+    // Range is [0.9 to 1.1].
+    //
+    // Note: The scale factor is specific to the Gyroscope sensor
+    // and typically derived from either sensor data-sheet or
+    // from actual calibration.
+    float gyroScaleFactor;
+
+    // Gyroscope Scale Factor uncertainty (68% confidence)
+    // configuration input for the dead reckoning positioning
+    // engine.
+    //
+    // Range is [0.0 to 0.1].
+    // engine.
+    //
+    // Note: The scale factor unc is specific to the make & model
+    // of Gyroscope sensor and typically derived from either
+    // sensor data-sheet or from actual calibration.
+    float gyroScaleFactorUnc;
 };
 
 /* Provides the capabilities of the system

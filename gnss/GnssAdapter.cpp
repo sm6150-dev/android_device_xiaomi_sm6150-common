@@ -90,6 +90,7 @@ GnssAdapter::GnssAdapter() :
     mAfwControlId(0),
     mNmeaMask(0),
     mGnssSvIdConfig(),
+    mGnssSeconaryBandConfig(),
     mGnssSvTypeConfig(),
     mGnssSvTypeConfigCb(nullptr),
     mLocConfigInfo{},
@@ -657,6 +658,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.enuVelocityVRPBased[0] = locationExtended.enuVelocityVRPBased[0];
         out.enuVelocityVRPBased[1] = locationExtended.enuVelocityVRPBased[1];
         out.enuVelocityVRPBased[2] = locationExtended.enuVelocityVRPBased[2];
+    }
+
+    if (GPS_LOCATION_EXTENDED_HAS_DR_SOLUTION_STATUS_MASK & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT;
+        out.drSolutionStatusMask = locationExtended.drSolutionStatusMask;
     }
 }
 
@@ -1480,6 +1486,19 @@ GnssAdapter::gnssSvIdConfigUpdateSync()
     return mLocApi->setBlacklistSvSync(mGnssSvIdConfig);
 }
 
+void
+GnssAdapter::gnssSecondaryBandConfigUpdate(LocApiResponse* locApiResponse)
+{
+    LOC_LOGd("secondary band config, size %d, enabled constellation 0x%" PRIx64 ","
+             "disabled constellation 0x%" PRIx64 "", mGnssSeconaryBandConfig.size,
+             mGnssSeconaryBandConfig.enabledSvTypesMask,
+             mGnssSeconaryBandConfig.blacklistedSvTypesMask);
+    if (mGnssSeconaryBandConfig.size == sizeof(mGnssSeconaryBandConfig)) {
+        // Now set required secondary band config
+        mLocApi->configConstellationMultiBand(mGnssSeconaryBandConfig, locApiResponse);
+    }
+}
+
 uint32_t*
 GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
 
@@ -1729,18 +1748,17 @@ GnssAdapter::convertToGnssSvIdConfig(
                 // SBAS does not support enable/disable whole constellation
                 // so do not set up svTypeMask for SBAS
                 svMaskPtr = &config.sbasBlacklistSvMask;
-                // SBAS currently has two ranges
-                // range of SV id: 120 to 158 and 183 to 191
+                // SBAS currently has two ranges, [120, 158] and [183, 191]
                 if (0 == source.svId) {
                     LOC_LOGd("blacklist all SBAS SV");
                 } else if (source.svId >= GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID) {
-                    // handle SV id in range of 183 to 191
+                    // handle SV id in range [183, 191]
                     initialSvId = GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID;
                     svIndexOffset = GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH;
                 } else if ((source.svId >= GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID) &&
                            (source.svId < (GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID +
                                            GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH))){
-                        // handle SV id in range of 120 to 158
+                        // handle SV id in range of [120, 158]
                         initialSvId = GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID;
                     } else {
                         LOC_LOGe("invalid SBAS sv id %d", source.svId);
@@ -1784,8 +1802,8 @@ GnssAdapter::convertToGnssSvIdConfig(
 
     LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
             ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64 ", navic 0x%" PRIx64,
-            config.bdsBlacklistSvMask, config.gloBlacklistSvMask,
-            config.qzssBlacklistSvMask, config.galBlacklistSvMask,
+             config.bdsBlacklistSvMask, config.gloBlacklistSvMask,
+             config.qzssBlacklistSvMask, config.galBlacklistSvMask,
             config.sbasBlacklistSvMask, config.navicBlacklistSvMask);
 
     return retVal;
@@ -1816,16 +1834,27 @@ void GnssAdapter::convertFromGnssSvIdConfig(
                 GNSS_SV_CONFIG_QZSS_INITIAL_SV_ID, GNSS_SV_TYPE_QZSS);
     }
     if (svConfig.sbasBlacklistSvMask) {
+        // SBAS - SV 120 to 158, maps to 0 to 38
+        //        SV 183 to 191, maps to 39 to 47
+        uint64_t sbasBlacklistSvMask = svConfig.sbasBlacklistSvMask;
+        // operate on 120 and 158 first
+        sbasBlacklistSvMask <<= (64 - GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH);
+        sbasBlacklistSvMask >>= (64 - GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH);
         convertGnssSvIdMaskToList(
-                svConfig.sbasBlacklistSvMask, blacklistedSvIds,
+                sbasBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID, GNSS_SV_TYPE_SBAS);
+        // operate on the second range
+        sbasBlacklistSvMask = svConfig.sbasBlacklistSvMask;
+        sbasBlacklistSvMask >>= GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH;
+        convertGnssSvIdMaskToList(
+                sbasBlacklistSvMask, blacklistedSvIds,
+                GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID, GNSS_SV_TYPE_SBAS);
     }
     if (svConfig.navicBlacklistSvMask) {
         convertGnssSvIdMaskToList(
                 svConfig.navicBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_NAVIC_INITIAL_SV_ID, GNSS_SV_TYPE_NAVIC);
     }
-
 }
 
 void GnssAdapter::convertGnssSvIdMaskToList(
@@ -2154,7 +2183,6 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
         inline virtual void proc() const {
             if ((mData.posEngineMask & STANDARD_POSITIONING_ENGINE) != 0) {
                 mAdapter.deleteAidingData(mData, mSessionId);
-
                 SystemStatus* s = mAdapter.getSystemStatus();
                 if ((nullptr != s) && (mData.deleteAll)) {
                     s->setDefaultGnssEngineStates();
@@ -2505,6 +2533,7 @@ GnssAdapter::handleEngineUpEvent()
             mAdapter.gnssSvIdConfigUpdate();
             mAdapter.gnssSvTypeConfigUpdate();
             mAdapter.updateSystemPowerState(mAdapter.getSystemPowerState());
+            mAdapter.gnssSecondaryBandConfigUpdate();
             // start CDFW service
             mAdapter.initCDFWService();
             // restart sessions
@@ -5606,42 +5635,54 @@ GnssAdapter::setPositionAssistedClockEstimatorCommand(bool enable) {
     return sessionId;
 }
 
-void
-GnssAdapter::updateSvConfig(uint32_t         sessionId,
-                            const GnssSvTypeConfig& svTypeConfig,
-                            const GnssSvIdConfig&   svIdConfig) {
+void GnssAdapter::gnssUpdateSvConfig(
+        uint32_t sessionId, const GnssSvTypeConfig& constellationEnablementConfig,
+        const GnssSvIdConfig&   blacklistSvConfig) {
 
-    // check whether if any constellation is removed from the new config
-    GnssSvTypesMask enabledRemoved = mGnssSvTypeConfig.enabledSvTypesMask &
-            (mGnssSvTypeConfig.enabledSvTypesMask ^ svTypeConfig.enabledSvTypesMask);
-    // Send reset if any constellation is removed from the enabled list
-    if (enabledRemoved != 0) {
+    // suspend all tracking sessions to apply the constellation config
+    suspendSessions();
+    if (constellationEnablementConfig.size == sizeof(constellationEnablementConfig)) {
+        // check whether if any constellation is removed from the new config
+        GnssSvTypesMask currentEnabledMask = mGnssSvTypeConfig.enabledSvTypesMask;
+        GnssSvTypesMask newEnabledMask = constellationEnablementConfig.enabledSvTypesMask;
+        GnssSvTypesMask enabledRemoved = currentEnabledMask & (currentEnabledMask ^ newEnabledMask);
+        // Send reset if any constellation is removed from the enabled list
+        if (enabledRemoved != 0) {
+            mLocApi->resetConstellationControl();
+        }
+
+        // if the constellation config is valid, issue request to modem
+        // to enable/disable constellation
+        mLocApi->setConstellationControl(mGnssSvTypeConfig);
+    } else if (constellationEnablementConfig.size == 0) {
+        // when the size is not set, meaning reset to modem default
         mLocApi->resetConstellationControl();
     }
+    // save the constellation settings to be used for modem SSR
+    mGnssSvTypeConfig = constellationEnablementConfig;
 
-    mGnssSvTypeConfig = svTypeConfig;
-    mGnssSvIdConfig   = svIdConfig;
+    // handle blacklisted SV settings
+    mGnssSvIdConfig   = blacklistSvConfig;
+    // process blacklist svs info
     mBlacklistedSvIds.clear();
-    convertFromGnssSvIdConfig(svIdConfig, mBlacklistedSvIds);
-
-    // Send blacklist info
-    mLocApi->setBlacklistSv(mGnssSvIdConfig);
-
-    // Send only enabled constellation config
-    GnssSvTypeConfig svTypeConfigCopy = {sizeof(GnssSvTypeConfig), 0, 0};
-    svTypeConfigCopy.enabledSvTypesMask = mGnssSvTypeConfig.enabledSvTypesMask;
+    // need to save the balcklisted sv info into mBlacklistedSvIds as well
+    convertFromGnssSvIdConfig(blacklistSvConfig, mBlacklistedSvIds);
     LocApiResponse* locApiResponse = new LocApiResponse(*getContext(),
             [this, sessionId] (LocationError err) {
             reportResponse(err, sessionId);});
     if (!locApiResponse) {
         LOC_LOGe("memory alloc failed");
     }
-    mLocApi->setConstellationControl(svTypeConfigCopy, locApiResponse);
+    mLocApi->setBlacklistSv(mGnssSvIdConfig, locApiResponse);
+
+    // resume all tracking sessions after the constellation config has been applied
+    restartSessions(false);
 }
 
-uint32_t GnssAdapter::gnssUpdateSvConfigCommand(
-        const GnssSvTypeConfig& svTypeConfig,
-        const GnssSvIdConfig& svIdConfig) {
+uint32_t
+GnssAdapter::gnssUpdateSvConfigCommand(
+        const GnssSvTypeConfig& constellationEnablementConfig,
+        const GnssSvIdConfig& blacklistSvConfig) {
 
     // generated session id will be none-zero
     uint32_t sessionId = generateSessionId();
@@ -5650,78 +5691,115 @@ uint32_t GnssAdapter::gnssUpdateSvConfigCommand(
     struct MsgUpdateSvConfig : public LocMsg {
         GnssAdapter&     mAdapter;
         uint32_t         mSessionId;
-        GnssSvTypeConfig mSvTypeConfig;
-        GnssSvIdConfig   mSvIdConfig;
+        GnssSvTypeConfig mConstellationEnablementConfig;
+        GnssSvIdConfig   mBlacklistSvIdConfig;
 
         inline MsgUpdateSvConfig(GnssAdapter& adapter,
                                  uint32_t sessionId,
-                                 const GnssSvTypeConfig& svTypeConfig,
-                                 const GnssSvIdConfig& svIdConfig) :
+                                 const GnssSvTypeConfig& constellationEnablementConfig,
+                                 const GnssSvIdConfig& blacklistSvConfig) :
             LocMsg(),
             mAdapter(adapter),
             mSessionId(sessionId),
-            mSvTypeConfig(svTypeConfig),
-            mSvIdConfig(svIdConfig) {}
+            mConstellationEnablementConfig(constellationEnablementConfig),
+            mBlacklistSvIdConfig(blacklistSvConfig) {}
         inline virtual void proc() const {
-            mAdapter.updateSvConfig(mSessionId, mSvTypeConfig, mSvIdConfig);
+            mAdapter.gnssUpdateSvConfig(mSessionId, mConstellationEnablementConfig,
+                                        mBlacklistSvIdConfig);
         }
     };
 
     if (sessionId != 0) {
-        sendMsg(new MsgUpdateSvConfig(*this, sessionId,
-                                       svTypeConfig, svIdConfig));
+        sendMsg(new MsgUpdateSvConfig(*this, sessionId, constellationEnablementConfig,
+                                      blacklistSvConfig));
     }
     return sessionId;
 }
 
-void
-GnssAdapter::resetSvConfig(uint32_t sessionId) {
+void GnssAdapter::gnssUpdateSecondaryBandConfig(
+        uint32_t sessionId, const GnssSvTypeConfig& secondaryBandConfig) {
 
-    // Clear blacklisting
-    memset(&mGnssSvIdConfig, 0, sizeof(GnssSvIdConfig));
-    mGnssSvIdConfig.size = sizeof(mGnssSvIdConfig);
-    mBlacklistedSvIds.clear();
-    gnssSvIdConfigUpdate();
-
-    // Reset constellation config, including mGnssSvTypeConfig
-    // when size is set to 0, upon subsequent modem restart, sv type
-    // config will not be sent down to modem
-    gnssSetSvTypeConfig({sizeof(GnssSvTypeConfig), 0, 0});
-
-    LocApiResponse* locApiResponse = nullptr;
-    if (sessionId != 0) {
-        locApiResponse =
-                new LocApiResponse(*getContext(),
-                                   [this, sessionId] (LocationError err) {
-                                   reportResponse(err, sessionId);});
-        if (!locApiResponse) {
-            LOC_LOGe("memory alloc failed");
-        }
+    LocApiResponse* locApiResponse = new LocApiResponse(*getContext(),
+            [this, sessionId] (LocationError err) {
+            reportResponse(err, sessionId);});
+    if (!locApiResponse) {
+        LOC_LOGe("memory alloc failed");
     }
-    mLocApi->resetConstellationControl(locApiResponse);
+
+    // handle secondary band info
+    mGnssSeconaryBandConfig = secondaryBandConfig;
+    gnssSecondaryBandConfigUpdate(locApiResponse);
 }
 
-uint32_t GnssAdapter::gnssResetSvConfigCommand() {
+uint32_t
+GnssAdapter::gnssUpdateSecondaryBandConfigCommand(
+        const GnssSvTypeConfig& secondaryBandConfig) {
 
     // generated session id will be none-zero
     uint32_t sessionId = generateSessionId();
     LOC_LOGd("session id %u", sessionId);
 
-    struct MsgResetSvConfig : public LocMsg {
+    struct MsgUpdateSecondaryBandConfig : public LocMsg {
         GnssAdapter&     mAdapter;
         uint32_t         mSessionId;
+        GnssSvTypeConfig mSecondaryBandConfig;
 
-        inline MsgResetSvConfig(GnssAdapter& adapter,
-                                uint32_t sessionId) :
+        inline MsgUpdateSecondaryBandConfig(GnssAdapter& adapter,
+                                 uint32_t sessionId,
+                                 const GnssSvTypeConfig& secondaryBandConfig) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mSecondaryBandConfig(secondaryBandConfig) {}
+        inline virtual void proc() const {
+            mAdapter.gnssUpdateSecondaryBandConfig(mSessionId,  mSecondaryBandConfig);
+        }
+    };
+
+    if (sessionId != 0) {
+        sendMsg(new MsgUpdateSecondaryBandConfig(*this, sessionId, secondaryBandConfig));
+    }
+    return sessionId;
+}
+
+// This function currently retrieves secondary band configuration
+// for constellation enablement/disablement.
+void
+GnssAdapter::gnssGetSecondaryBandConfig(uint32_t sessionId) {
+
+    LocApiResponse* locApiResponse = new LocApiResponse(*getContext(),
+            [this, sessionId] (LocationError err) {
+            reportResponse(err, sessionId);});
+    if (!locApiResponse) {
+        LOC_LOGe("memory alloc failed");
+    }
+
+    mLocApi->getConstellationMultiBandConfig(sessionId, locApiResponse);
+}
+
+uint32_t
+GnssAdapter::gnssGetSecondaryBandConfigCommand() {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGd("session id %u", sessionId);
+
+    struct MsgGetSecondaryBandConfig : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t     mSessionId;
+        inline MsgGetSecondaryBandConfig(GnssAdapter& adapter,
+                              uint32_t sessionId) :
             LocMsg(),
             mAdapter(adapter),
             mSessionId(sessionId) {}
         inline virtual void proc() const {
-            mAdapter.resetSvConfig(mSessionId);
+            mAdapter.gnssGetSecondaryBandConfig(mSessionId);
         }
     };
 
-    sendMsg(new MsgResetSvConfig(*this, sessionId));
+    if (sessionId != 0) {
+        sendMsg(new MsgGetSecondaryBandConfig(*this, sessionId));
+    }
     return sessionId;
 }
 
@@ -5972,35 +6050,35 @@ uint32_t GnssAdapter::configMinGpsWeekCommand(uint16_t minGpsWeek) {
     return sessionId;
 }
 
-uint32_t GnssAdapter::configBodyToSensorMountParamsCommand(
-        const BodyToSensorMountParams& b2sParams) {
+uint32_t GnssAdapter::configDeadReckoningEngineParamsCommand(
+        const DeadReckoningEngineConfig& dreConfig) {
 
     // generated session id will be none-zero
     uint32_t sessionId = generateSessionId();
     LOC_LOGd("session id %u", sessionId);
 
-    struct MsgConfigB2sParams : public LocMsg {
-        GnssAdapter&       mAdapter;
-        uint32_t           mSessionId;
-        BodyToSensorMountParams mB2sParams;
+    struct MsgConfigDrEngine : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t     mSessionId;
+        DeadReckoningEngineConfig mDreConfig;
 
-        inline MsgConfigB2sParams(GnssAdapter& adapter,
+        inline MsgConfigDrEngine(GnssAdapter& adapter,
                                   uint32_t sessionId,
-                                  const BodyToSensorMountParams& b2sParams) :
+                                  const DeadReckoningEngineConfig& dreConfig) :
             LocMsg(),
             mAdapter(adapter),
             mSessionId(sessionId),
-            mB2sParams(b2sParams) {}
+            mDreConfig(dreConfig) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
-            if (true == mAdapter.mEngHubProxy->configBodyToSensorMountParams(mB2sParams)) {
+            if (true == mAdapter.mEngHubProxy->configDeadReckoningEngineParams(mDreConfig)) {
                 err = LOCATION_ERROR_SUCCESS;
             }
             mAdapter.reportResponse(err, mSessionId);
         }
     };
 
-    sendMsg(new MsgConfigB2sParams(*this, sessionId, b2sParams));
+    sendMsg(new MsgConfigDrEngine(*this, sessionId, dreConfig));
     return sessionId;
 }
 

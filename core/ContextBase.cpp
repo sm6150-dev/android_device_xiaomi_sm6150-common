@@ -338,7 +338,7 @@ void ContextBase::setEngineCapabilities(uint64_t supportedMsgMask,
             static uint8_t isSapModeKnown = 0;
 
             if (!isSapModeKnown) {
-                /* Check if SAP is PREMIUM_ENV_AIDING in sap.conf */
+                /* Check if SAP is PREMIUM_ENV_AIDING in izat.conf */
                 char conf_feature_sap[LOC_MAX_PARAM_STRING];
                 loc_param_s_type izat_conf_feature_table[] =
                 {
@@ -352,8 +352,9 @@ void ContextBase::setEngineCapabilities(uint64_t supportedMsgMask,
                     uint8_t bitPos = LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION & 7;
 
                     if (arrayIndex < MAX_FEATURE_LENGTH) {
-                        ContextBase::sFeaturesSupported[arrayIndex] &=
-                            ~(ContextBase::sFeaturesSupported[arrayIndex] >> bitPos);
+                        /* To disable the feature we need to reset the bit on the "bitPos"
+                           position, so shift a "1" to the left by "bitPos" */
+                        ContextBase::sFeaturesSupported[arrayIndex] &= ~(1 << bitPos);
                     }
                 }
             }

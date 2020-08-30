@@ -284,8 +284,9 @@ class GnssAdapter : public LocAdapterBase {
     StartDgnssNtripParams   mStartDgnssNtripParams;
     bool    mSendNmeaConsent;
     DGnssStateBitMask   mDgnssState;
-    void checkStartDgnssNtrip();
+    void checkUpdateDgnssNtrip(bool isLocationValid);
     void stopDgnssNtrip();
+    uint64_t   mDgnssLastNmeaBootTimeMilli;
 
 protected:
 
@@ -604,6 +605,8 @@ public:
     void handleEnablePPENtrip(const GnssNtripConnectionParams& params);
     void handleDisablePPENtrip();
     void reportGGAToNtrip(const char* nmea);
+    inline bool isDgnssNmeaRequired() { return mSendNmeaConsent &&
+            mStartDgnssNtripParams.ntripParams.requiresNmeaLocation;}
 };
 
 #endif //GNSS_ADAPTER_H

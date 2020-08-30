@@ -57,6 +57,8 @@
 #define NMEA_MIN_THRESHOLD_MSEC (99)
 #define NMEA_MAX_THRESHOLD_MSEC (975)
 
+#define DGNSS_RANGE_UPDATE_TIME_10MIN_IN_MILLI  600000
+
 using namespace loc_core;
 
 /* Method to fetch status cb from loc_net_iface library */
@@ -68,6 +70,7 @@ static void agpsOpenResultCb (bool isSuccess, AGpsExtType agpsType, const char* 
 static void agpsCloseResultCb (bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
 typedef const CdfwInterface* (*getCdfwInterface)();
+
 
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
@@ -120,7 +123,8 @@ GnssAdapter::GnssAdapter() :
     mIsAntennaInfoInterfaceOpened(false),
     mLastDeleteAidingDataTime(0),
     mDgnssState(0),
-    mSendNmeaConsent(false)
+    mSendNmeaConsent(false),
+    mDgnssLastNmeaBootTimeMilli(0)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2752,7 +2756,7 @@ GnssAdapter::saveTrackingSession(LocationAPI* client, uint32_t sessionId,
         mTimeBasedTrackingSessions[key] = options;
     }
     reportPowerStateIfChanged();
-    checkStartDgnssNtrip();
+    checkUpdateDgnssNtrip(false);
 }
 
 void
@@ -3810,11 +3814,12 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         reportNmea(s.c_str(), s.length());
 
         /* DgnssNtrip */
-        if (0 == (mDgnssState & DGNSS_STATE_NO_NMEA_PENDING) &&
-                -1 != indexOfGGA) {
+        if (-1 != indexOfGGA && isDgnssNmeaRequired()) {
             mDgnssState |= DGNSS_STATE_NO_NMEA_PENDING;
             mStartDgnssNtripParams.nmea = std::move(nmeaArraystr[indexOfGGA]);
-            checkStartDgnssNtrip();
+            bool isLocationValid = (0 != ulpLocation.gpsLocation.latitude) ||
+                    (0 != ulpLocation.gpsLocation.longitude);
+            checkUpdateDgnssNtrip(isLocationValid);
         }
     }
 }
@@ -6459,10 +6464,11 @@ void GnssAdapter::handleEnablePPENtrip(const GnssNtripConnectionParams& params) 
     mStartDgnssNtripParams.nmea.clear();
     if (mSendNmeaConsent && pNtripParams->requiresNmeaLocation) {
         mDgnssState &= ~DGNSS_STATE_NO_NMEA_PENDING;
+        mDgnssLastNmeaBootTimeMilli = 0;
         return;
     }
 
-    checkStartDgnssNtrip();
+    checkUpdateDgnssNtrip(false);
 }
 
 void GnssAdapter::disablePPENtripStreamCommand() {
@@ -6486,11 +6492,21 @@ void GnssAdapter::handleDisablePPENtrip() {
     stopDgnssNtrip();
 }
 
-void GnssAdapter::checkStartDgnssNtrip() {
-    if (mDgnssState == (DGNSS_STATE_ENABLE_NTRIP_COMMAND | DGNSS_STATE_NO_NMEA_PENDING) &&
-            isInSession()) {
-        mDgnssState |= DGNSS_STATE_NTRIP_SESSION_STARTED;
-        mXtraObserver.startDgnssSource(mStartDgnssNtripParams);
+void GnssAdapter::checkUpdateDgnssNtrip(bool isLocationValid) {
+    if (isInSession()) {
+        uint64_t curBootTime = getBootTimeMilliSec();
+        if (mDgnssState == (DGNSS_STATE_ENABLE_NTRIP_COMMAND | DGNSS_STATE_NO_NMEA_PENDING)) {
+            mDgnssState |= DGNSS_STATE_NTRIP_SESSION_STARTED;
+            mXtraObserver.startDgnssSource(mStartDgnssNtripParams);
+            if (isDgnssNmeaRequired()) {
+                mDgnssLastNmeaBootTimeMilli = curBootTime;
+            }
+        } else if ((mDgnssState & DGNSS_STATE_NTRIP_SESSION_STARTED) && isLocationValid &&
+            isDgnssNmeaRequired() &&
+            curBootTime - mDgnssLastNmeaBootTimeMilli > DGNSS_RANGE_UPDATE_TIME_10MIN_IN_MILLI ) {
+            mXtraObserver.updateNmeaToDgnssServer(mStartDgnssNtripParams.nmea);
+            mDgnssLastNmeaBootTimeMilli = curBootTime;
+        }
     }
 }
 
@@ -6509,7 +6525,7 @@ void GnssAdapter::reportGGAToNtrip(const char* nmea) {
 #define POS_OF_GGA (3)  //start position of "GGA"
 #define COMMAS_BEFORE_VALID (6) //"$GPGGA,,,,,,0,,,,,,,,*hh"
 
-    if (mDgnssState & DGNSS_STATE_NO_NMEA_PENDING) {
+    if (!isDgnssNmeaRequired()) {
         return;
     }
 
@@ -6543,10 +6559,9 @@ void GnssAdapter::reportGGAToNtrip(const char* nmea) {
         if (COMMAS_BEFORE_VALID == foundNth && GGAString.at(foundPos-1) != '0') {
             mDgnssState |= DGNSS_STATE_NO_NMEA_PENDING;
             mStartDgnssNtripParams.nmea = std::move(GGAString);
-            checkStartDgnssNtrip();
+            checkUpdateDgnssNtrip(true);
         }
     }
 
     return;
 }
-

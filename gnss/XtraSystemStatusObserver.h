@@ -82,6 +82,7 @@ public :
     void startDgnssSource(const StartDgnssNtripParams& params);
     void restartDgnssSource();
     void stopDgnssSource();
+    void updateNmeaToDgnssServer(const string& nmea);
 
 private:
     IOsObserver*    mSystemStatusObsrvr;

@@ -251,6 +251,14 @@ typedef enum {
     LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT      = (1<<10),
     // support agpm
     LOCATION_CAPABILITIES_AGPM_BIT                          = (1<<11),
+    // support location privacy
+    LOCATION_CAPABILITIES_PRIVACY_BIT                       = (1<<12),
+    //support measurement corrections
+    LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT       = (1<<13),
+    // support Robust Location
+    LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT              = (1<<14),
+    // support precise location edgnss
+    LOCATION_CAPABILITIES_EDGNSS_BIT                        = (1<<15),
 } LocationCapabilitiesBits;
 
 typedef enum {

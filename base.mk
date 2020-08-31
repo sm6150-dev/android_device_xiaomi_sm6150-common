@@ -330,9 +330,11 @@ IPROUTE2 := ip
 IPROUTE2 += libiprouteutil
 
 #IPACM
+ifneq ($(TARGET_HAS_LOW_RAM),true)
 IPACM += ipacm
 IPACM += IPACM_cfg.xml
 IPACM += ipacm-diag
+endif
 
 #IPTABLES
 IPTABLES := libiptc

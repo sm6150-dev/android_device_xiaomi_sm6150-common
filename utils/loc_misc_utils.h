@@ -222,4 +222,43 @@ static string loc_prim_arr_to_string(T* arr, uint32_t size, bool decIfTrue = tru
     return ss.str();
 }
 
+/*===========================================================================
+FUNCTION loc_convert_lla_gnss_to_vrp
+
+DESCRIPTION
+   This function converts lat/long/altitude from GNSS antenna based
+   to vehicle reference point based.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+    The converted lat/long/altitude will be stored in the parameter of llaInfo.
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+void loc_convert_lla_gnss_to_vrp(double lla[3], float rollPitchYaw[3],
+                                 float leverArm[3]);
+
+/*===========================================================================
+FUNCTION loc_convert_velocity_gnss_to_vrp
+
+DESCRIPTION
+   This function converts east/north/up velocity from GNSS antenna based
+   to vehicle reference point based.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+    The converted east/north/up velocity will be stored in the parameter of
+    enuVelocity.
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+void loc_convert_velocity_gnss_to_vrp(float enuVelocity[3], float rollPitchYaw[3],
+                                      float rollPitchYawRate[3], float leverArm[3]);
+
 #endif //_LOC_MISC_UTILS_H_

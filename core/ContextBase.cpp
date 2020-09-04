@@ -92,6 +92,7 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"GNSS_DEPLOYMENT",  &mGps_conf.GNSS_DEPLOYMENT, NULL, 'n'},
   {"CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED",
            &mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED, NULL, 'n'},
+  {"NMEA_TAG_BLOCK_GROUPING_ENABLED", &mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED, NULL, 'n'},
   {"NI_SUPL_DENY_ON_NFW_LOCKED",  &mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED, NULL, 'n'},
   {"ENABLE_NMEA_PRINT",  &mGps_conf.ENABLE_NMEA_PRINT, NULL, 'n'}
 };
@@ -191,6 +192,8 @@ void ContextBase::readConfig()
         /* default configuration QTI GNSS H/W */
         mGps_conf.GNSS_DEPLOYMENT = 0;
         mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED = 0;
+        /* default NMEA Tag Block Grouping is disabled */
+        mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED = 0;
         /* default configuration for NI_SUPL_DENY_ON_NFW_LOCKED */
         mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED = 1;
         /* By default NMEA Printing is disabled */

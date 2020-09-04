@@ -841,6 +841,9 @@ GnssAdapter::setConfig()
     uint32_t mask = 0;
     if (NMEA_PROVIDER_MP == ContextBase::mGps_conf.NMEA_PROVIDER) {
         mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
+        if (ContextBase::mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED) {
+            mask |= LOC_NMEA_MASK_TAGBLOCK_V02;
+        }
     }
     if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
         mask |= LOC_NMEA_MASK_DEBUG_V02;
@@ -920,6 +923,9 @@ GnssAdapter::setConfig()
         uint32_t mask = 0;
         if (NMEA_PROVIDER_MP == gpsConf.NMEA_PROVIDER) {
             mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
+            if (gpsConf.NMEA_TAG_BLOCK_GROUPING_ENABLED) {
+                mask |= LOC_NMEA_MASK_TAGBLOCK_V02;
+            }
         }
         if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
             mask |= LOC_NMEA_MASK_DEBUG_V02;
@@ -3889,10 +3895,12 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                           (LOC_RELIABILITY_NOT_SET == locationExtended.horizontal_reliability));
         uint8_t generate_nmea = (reportToGnssClient && status != LOC_SESS_FAILURE && !blank_fix);
         bool custom_nmea_gga = (1 == ContextBase::mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED);
+        bool isTagBlockGroupingEnabled =
+                (1 == ContextBase::mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED);
         std::vector<std::string> nmeaArraystr;
         int indexOfGGA = -1;
-        loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo,
-                              generate_nmea, custom_nmea_gga, nmeaArraystr, indexOfGGA);
+        loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo, generate_nmea,
+                custom_nmea_gga, nmeaArraystr, indexOfGGA, isTagBlockGroupingEnabled);
         stringstream ss;
         for (auto itor = nmeaArraystr.begin(); itor != nmeaArraystr.end(); ++itor) {
             ss << *itor;

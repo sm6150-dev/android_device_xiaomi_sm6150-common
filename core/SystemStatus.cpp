@@ -1287,6 +1287,14 @@ void SystemStatus::destroyInstance()
     mInstance = NULL;
 }
 
+void SystemStatus::resetNetworkInfo() {
+    for (int i=0; i<mCache.mNetworkInfo.size(); ++i) {
+        // Reset all the cached NetworkInfo Items as disconnected
+        eventConnectionStatus(false, mCache.mNetworkInfo[i].mType, mCache.mNetworkInfo[i].mRoaming,
+                mCache.mNetworkInfo[i].mNetworkHandle);
+    }
+}
+
 IOsObserver* SystemStatus::getOsObserver()
 {
     return &mSysStatusObsvr;

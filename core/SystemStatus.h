@@ -910,6 +910,7 @@ public:
     bool eventConnectionStatus(bool connected, int8_t type,
                                bool roaming, NetworkHandle networkHandle);
     bool updatePowerConnectState(bool charging);
+    void resetNetworkInfo();
 };
 
 } // namespace loc_core

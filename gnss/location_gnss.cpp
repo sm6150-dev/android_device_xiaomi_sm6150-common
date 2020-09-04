@@ -92,6 +92,7 @@ static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
 static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig);
 static uint32_t gnssUpdateSecondaryBandConfig(const GnssSvTypeConfig& secondaryBandConfig);
 static uint32_t gnssGetSecondaryBandConfig();
+static void resetNetworkInfo();
 
 static void updateNTRIPGGAConsent(bool consentAccepted);
 static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine);
@@ -159,6 +160,7 @@ static const GnssInterface gGnssInterface = {
     disablePPENtripStream,
     gnssUpdateSecondaryBandConfig,
     gnssGetSecondaryBandConfig,
+    resetNetworkInfo
 };
 
 #ifndef DEBUG_X86
@@ -431,6 +433,12 @@ static void injectLocationExt(const GnssLocationInfoNotification &locationInfo)
 static void updateBatteryStatus(bool charging) {
     if (NULL != gGnssAdapter) {
         gGnssAdapter->getSystemStatus()->updatePowerConnectState(charging);
+    }
+}
+
+static void resetNetworkInfo() {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->getSystemStatus()->resetNetworkInfo();
     }
 }
 

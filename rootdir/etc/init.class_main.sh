@@ -33,6 +33,7 @@
 baseband=`getprop ro.baseband`
 sgltecsfb=`getprop persist.vendor.radio.sglte_csfb`
 datamode=`getprop persist.vendor.data.mode`
+low_ram=`getprop ro.config.low_ram`
 qcrild_status=true
 
 case "$baseband" in
@@ -129,11 +130,15 @@ case "$baseband" in
     case "$datamode" in
         "tethered")
             start vendor.dataqti
-            start vendor.dataadpl
+            if [ "$low_ram" != "true" ]; then
+              start vendor.dataadpl
+            fi
             ;;
         "concurrent")
             start vendor.dataqti
-            start vendor.dataadpl
+            if [ "$low_ram" != "true" ]; then
+              start vendor.dataadpl
+            fi
             ;;
         *)
             ;;

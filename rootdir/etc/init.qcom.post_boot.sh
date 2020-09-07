@@ -3447,7 +3447,7 @@ case "$target" in
     fi
 
     case "$soc_id" in
-        "400" | "440" )
+        "400" | "440" | "476" )
         # Core control parameters on silver
         echo 0 0 0 0 1 1 > /sys/devices/system/cpu/cpu0/core_ctl/not_preferred
         echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus

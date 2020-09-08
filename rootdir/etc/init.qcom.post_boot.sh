@@ -5162,13 +5162,7 @@ case "$target" in
 
 	#Setting the min supported frequencies
 	echo 1113600 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-	echo 1113600 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-	echo 1113600 > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-        echo 1113600 > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
         echo 1171200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu7/cpufreq/scaling_min_freq
 	echo 940800000  > /sys/class/devfreq/soc\:qcom,cpu0-cpu-l3-lat/min_freq
 	echo 940800000  > /sys/class/devfreq/soc\:qcom,cpu4-cpu-l3-lat/min_freq
 	echo 1651200000 > /sys/class/devfreq/soc\:qcom,cpu0-cpu-l3-lat/max_freq
@@ -5176,14 +5170,19 @@ case "$target" in
         #setting min gpu freq to 392  MHz
         echo 4 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel
         if [ $feature_id == 0 ]; then
-                echo "feature_id is 0 for SA8185P"
+                echo "feature_id is 0 for SA8195AA"
 
+                #setting max cpu freq to 2.496GHz
+                echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
                 #setting max gpu freq to 530 MHz
                 echo 3 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel
                 echo {class:ddr, res:capped, val: 1804} > /sys/kernel/debug/aop_send_message
-        elif [ $feature_id == 1 ]; then
-                echo "feature_id is 1 for SA8195P"
+        elif [ $feature_id == 1 ] || [ $feature_id == 2 ]; then
+                echo "feature_id is 1 for external SA8195AB"
+                echo "feature_id is 2 for internal SA8195AB"
 
+                #setting max cpu freq to 2.496GHz
+                echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
                 #setting max gpu freq to 670 MHz
                 echo 0 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel
                 echo {class:ddr, res:capped, val: 2092} > /sys/kernel/debug/aop_send_message

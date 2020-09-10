@@ -758,7 +758,8 @@ DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 LocationError LocApiBase::setBlacklistSvSync(const GnssSvIdConfig& /*config*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-void LocApiBase::setBlacklistSv(const GnssSvIdConfig& /*config*/)
+void LocApiBase::setBlacklistSv(const GnssSvIdConfig& /*config*/,
+                                LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 void LocApiBase::getBlacklistSv()
@@ -914,4 +915,12 @@ void LocApiBase::
     getParameter(uint32_t sessionId, GnssConfigFlagsMask flags, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
+void LocApiBase::
+    configConstellationMultiBand(const GnssSvTypeConfig& secondaryBandConfig,
+                                 LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getConstellationMultiBandConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
 } // namespace loc_core

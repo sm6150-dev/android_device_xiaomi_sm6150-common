@@ -83,13 +83,15 @@ static void updateSystemPowerState(PowerStateType systemPowerState);
 static uint32_t setConstrainedTunc (bool enable, float tuncConstraint,
                                     uint32_t energyBudget);
 static uint32_t setPositionAssistedClockEstimator(bool enable);
-static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
-                                   const GnssSvIdConfig& svIdConfig);
+static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& constellationEnablementConfig,
+                                   const GnssSvIdConfig& blacklistSvConfig);
 static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
 static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
-static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams);
+static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig);
+static uint32_t gnssUpdateSecondaryBandConfig(const GnssSvTypeConfig& secondaryBandConfig);
+static uint32_t gnssGetSecondaryBandConfig();
 
 static void updateNTRIPGGAConsent(bool consentAccepted);
 static void enablePPENtripStream(const GnssNtripConnectionParams& params, bool enableRTKEngine);
@@ -143,7 +145,6 @@ static const GnssInterface gGnssInterface = {
     setConstrainedTunc,
     setPositionAssistedClockEstimator,
     gnssUpdateSvConfig,
-    gnssResetSvConfig,
     configLeverArm,
     measCorrInit,
     measCorrSetCorrections,
@@ -152,10 +153,12 @@ static const GnssInterface gGnssInterface = {
     antennaInfoClose,
     configRobustLocation,
     configMinGpsWeek,
-    configBodyToSensorMountParams,
+    configDeadReckoningEngineParams,
     updateNTRIPGGAConsent,
     enablePPENtripStream,
     disablePPENtripStream,
+    gnssUpdateSecondaryBandConfig,
+    gnssGetSecondaryBandConfig,
 };
 
 #ifndef DEBUG_X86
@@ -454,19 +457,11 @@ static uint32_t setPositionAssistedClockEstimator(bool enable) {
 }
 
 static uint32_t gnssUpdateSvConfig(
-        const GnssSvTypeConfig& svTypeConfig,
-        const GnssSvIdConfig& svIdConfig) {
+        const GnssSvTypeConfig& constellationEnablementConfig,
+        const GnssSvIdConfig&   blacklistSvConfig) {
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssUpdateSvConfigCommand(
-                svTypeConfig, svIdConfig);
-    } else {
-        return 0;
-    }
-}
-
-static uint32_t gnssResetSvConfig() {
-    if (NULL != gGnssAdapter) {
-        return gGnssAdapter->gnssResetSvConfigCommand();
+                constellationEnablementConfig, blacklistSvConfig);
     } else {
         return 0;
     }
@@ -532,9 +527,26 @@ static uint32_t configMinGpsWeek(uint16_t minGpsWeek){
     }
 }
 
-static uint32_t configBodyToSensorMountParams(const BodyToSensorMountParams& b2sParams){
+static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig){
     if (NULL != gGnssAdapter) {
-        return gGnssAdapter->configBodyToSensorMountParamsCommand(b2sParams);
+        return gGnssAdapter->configDeadReckoningEngineParamsCommand(dreConfig);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t gnssUpdateSecondaryBandConfig(
+        const GnssSvTypeConfig& secondaryBandConfig) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->gnssUpdateSecondaryBandConfigCommand(secondaryBandConfig);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t gnssGetSecondaryBandConfig(){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->gnssGetSecondaryBandConfigCommand();
     } else {
         return 0;
     }

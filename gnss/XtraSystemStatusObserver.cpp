@@ -275,6 +275,17 @@ void XtraSystemStatusObserver::stopDgnssSource() {
     LocIpc::send(*mSender, (const uint8_t*)s, strlen(s));
 }
 
+void XtraSystemStatusObserver::updateNmeaToDgnssServer(const string& nmea)
+{
+    stringstream ss;
+    ss <<  "updateDgnssServerNmea" << endl;
+    ss << nmea.data() << endl;
+
+    string s = ss.str();
+    LOC_LOGd("%s", s.data());
+    LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size());
+}
+
 void XtraSystemStatusObserver::subscribe(bool yes)
 {
     // Subscription data list

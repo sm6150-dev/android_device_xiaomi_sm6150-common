@@ -92,9 +92,8 @@ struct GnssInterface {
     void (*updateSystemPowerState)(PowerStateType systemPowerState);
     uint32_t (*setConstrainedTunc) (bool enable, float tuncConstraint, uint32_t energyBudget);
     uint32_t (*setPositionAssistedClockEstimator) (bool enable);
-    uint32_t (*gnssUpdateSvConfig)(const GnssSvTypeConfig& svTypeConfig,
-                                   const GnssSvIdConfig& svIdConfig);
-    uint32_t (*gnssResetSvConfig)();
+    uint32_t (*gnssUpdateSvConfig)(const GnssSvTypeConfig& constellationEnablementConfig,
+                                   const GnssSvIdConfig&   blacklistSvConfig);
     uint32_t (*configLeverArm)(const LeverArmConfigInfo& configInfo);
     bool (*measCorrInit)(const measCorrSetCapabilitiesCb setCapabilitiesCb);
     bool (*measCorrSetCorrections)(const GnssMeasurementCorrections gnssMeasCorr);
@@ -103,10 +102,12 @@ struct GnssInterface {
     void (*antennaInfoClose) ();
     uint32_t (*configRobustLocation)(bool enable, bool enableForE911);
     uint32_t (*configMinGpsWeek)(uint16_t minGpsWeek);
-    uint32_t (*configBodyToSensorMountParams)(const BodyToSensorMountParams& b2sParams);
+    uint32_t (*configDeadReckoningEngineParams)(const DeadReckoningEngineConfig& dreConfig);
     void (*updateNTRIPGGAConsent)(bool consentAccepted);
     void (*enablePPENtripStream)(const GnssNtripConnectionParams& params, bool enableRTKEngine);
     void (*disablePPENtripStream)();
+    uint32_t (*gnssUpdateSecondaryBandConfig)(const GnssSvTypeConfig& secondaryBandConfig);
+    uint32_t (*gnssGetSecondaryBandConfig)();
 };
 
 struct BatchingInterface {

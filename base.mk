@@ -319,6 +319,8 @@ INIT += enable_swap.sh
 INIT += init.mdm.sh
 INIT += fstab.qcom
 INIT += fstab.qti
+INIT += fstab.default
+INIT += fstab.emmc
 INIT += init.qcom.sensors.sh
 INIT += init.qcom.crashdata.sh
 INIT += init.qcom.vendor.rc
@@ -330,9 +332,11 @@ IPROUTE2 := ip
 IPROUTE2 += libiprouteutil
 
 #IPACM
+ifneq ($(TARGET_HAS_LOW_RAM),true)
 IPACM += ipacm
 IPACM += IPACM_cfg.xml
 IPACM += ipacm-diag
+endif
 
 #IPTABLES
 IPTABLES := libiptc

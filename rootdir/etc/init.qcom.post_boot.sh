@@ -3764,7 +3764,6 @@ case "$target" in
             do
                 echo 1 > /sys/devices/virtual/npu/msm_npu/pwr
                 echo "bw_hwmon" > $npullccbw/governor
-                echo 40 > $npullccbw/polling_interval
                 echo "2288 4577 7110 9155 12298 14236 16265" > $npullccbw/bw_hwmon/mbps_zones
                 echo 4 > $npullccbw/bw_hwmon/sample_ms
                 echo 100 > $npullccbw/bw_hwmon/io_percent
@@ -3773,6 +3772,7 @@ case "$target" in
                 echo 30 > $npullccbw/bw_hwmon/down_thres
                 echo 0 > $npullccbw/bw_hwmon/guard_band_mbps
                 echo 250 > $npullccbw/bw_hwmon/up_scale
+                echo 40 > $npullccbw/polling_interval
                 echo 0 > /sys/devices/virtual/npu/msm_npu/pwr
             done
         done

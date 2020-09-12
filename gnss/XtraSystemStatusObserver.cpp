@@ -188,6 +188,24 @@ bool XtraSystemStatusObserver::updateXtraThrottle(const bool enabled) {
     return ( LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size()) );
 }
 
+bool XtraSystemStatusObserver::updatePowerState(const PowerStateType powerState) {
+    mPowerState = powerState;
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
+    // Just send if power state shutdown since Xtra Client only needs that for now
+    if (POWER_STATE_SHUTDOWN == powerState) {
+        stringstream ss;
+        ss <<  "powershutdown";
+        string s = ss.str();
+        return ( LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size()) );
+    } else {
+        return true;
+    }
+}
+
 inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdated) {
     mReqStatusReceived = true;
 

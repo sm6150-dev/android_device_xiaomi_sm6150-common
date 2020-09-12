@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -58,6 +58,7 @@ public :
     bool updateTac(const string& tac);
     bool updateMccMnc(const string& mccmnc);
     bool updateXtraThrottle(const bool enabled);
+    bool updatePowerState(const PowerStateType powerState);
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     void subscribe(bool yes);
     bool onStatusRequested(int32_t xtraStatusUpdated);
@@ -71,6 +72,7 @@ private:
     string mTac;
     string mMccmnc;
     bool mXtraThrottle;
+    PowerStateType mPowerState;
     bool mReqStatusReceived;
     bool mIsConnectivityStatusKnown;
     shared_ptr<LocIpcSender> mSender;

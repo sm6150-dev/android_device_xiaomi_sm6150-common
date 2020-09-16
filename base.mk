@@ -1213,6 +1213,9 @@ PRODUCT_PACKAGES += libqti_vndfwk_detect
 PRODUCT_PACKAGES += libvndfwk_detect_jni.qti.vendor
 PRODUCT_PACKAGES += libqti_vndfwk_detect.vendor
 
+PRODUCT_PACKAGES += android.hardware.drm@1.3-service.widevine
+PRODUCT_PACKAGES += android.hardware.drm@1.3-service.clearkey
+
 #soong namespace for qssi vs vendor differentiation
 SOONG_CONFIG_NAMESPACES += qssi_vs_vendor
 SOONG_CONFIG_qssi_vs_vendor += qssi_or_vendor

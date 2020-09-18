@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2020 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +21,8 @@
 #include <hardware/hardware.h>
 #include <hardware/lights.h>
 #include <map>
+#include <mutex>
+#include <sstream>
 
 namespace aidl {
 namespace android {
@@ -27,15 +30,32 @@ namespace hardware {
 namespace light {
 
 class Lights : public BnLights {
-    public:
-      Lights();
-      ndk::ScopedAStatus setLightState(int id, const HwLightState& state) override;
-      ndk::ScopedAStatus getLights(std::vector<HwLight>* types) override;
+  public:
+    Lights();
+    ndk::ScopedAStatus setLightState(int id, const HwLightState& state) override;
+    ndk::ScopedAStatus getLights(std::vector<HwLight>* types) override;
 
-    private:
-      std::map<int, light_device_t*> mLights;
-      std::vector<HwLight> mAvailableLights;
-      int maxLights;
+  private:
+    void setLightNotification(LightType type, const HwLightState& state);
+    void applyNotificationState(const HwLightState& state);
+
+    uint32_t max_led_brightness_;
+
+    std::vector<HwLight> availableLights;
+    std::mutex globalLock;
+
+    std::map<LightType, std::function<void(LightType type, const HwLightState&)>> lights_{
+            {LightType::BACKLIGHT, {}},
+            {LightType::BATTERY, [this](auto&&... args) { setLightNotification(args...); }},
+            {LightType::NOTIFICATIONS, [this](auto&&... args) { setLightNotification(args...); }},
+            {LightType::ATTENTION, [this](auto&&... args) { setLightNotification(args...); }}};
+
+    // Keep sorted in the order of importance.
+    std::array<std::pair<LightType, HwLightState>, 3> notif_states_ = {{
+            {LightType::ATTENTION, {}},
+            {LightType::NOTIFICATIONS, {}},
+            {LightType::BATTERY, {}},
+    }};
 };
 
 }  // namespace light

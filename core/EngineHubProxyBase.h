@@ -28,6 +28,11 @@
  */
 #ifndef ENGINE_HUB_PROXY_BASE_H
 #define ENGINE_HUB_PROXY_BASE_H
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <map>
+#else
+    #include <unordered_map>
+#endif
 
 namespace loc_core {
 
@@ -134,6 +139,9 @@ typedef std::function<void(const GnssAidingDataSvMask& svDataMask)>
 typedef std::function<void(bool nHzNeeded, bool nHzMeasNeeded)>
         GnssAdapterUpdateNHzRequirementCb;
 
+typedef std::function<void(const std::unordered_map<LocationQwesFeatureType, bool> &featureMap)>
+        GnssAdapterUpdateQwesFeatureStatusCb;
+
 // potential parameters: message queue: MsgTask * msgTask;
 // callback function to report back dr and ppe position and sv report
 typedef EngineHubProxyBase* (getEngHubProxyFn)(
@@ -142,7 +150,8 @@ typedef EngineHubProxyBase* (getEngHubProxyFn)(
         GnssAdapterReportEnginePositionsEventCb positionEventCb,
         GnssAdapterReportSvEventCb svEventCb,
         GnssAdapterReqAidingDataCb reqAidingDataCb,
-        GnssAdapterUpdateNHzRequirementCb updateNHzRequirementCb);
+        GnssAdapterUpdateNHzRequirementCb updateNHzRequirementCb,
+        GnssAdapterUpdateQwesFeatureStatusCb updateQwesFeatureStatusCb);
 
 } // namespace loc_core
 

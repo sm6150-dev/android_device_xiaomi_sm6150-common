@@ -228,7 +228,8 @@ typedef enum {
     GEOFENCE_STATUS_AVAILABILE_YES,
 } GeofenceStatusAvailable;
 
-typedef uint32_t LocationCapabilitiesMask;
+// Set of masks for Modem and QWES capabilities.
+typedef uint64_t LocationCapabilitiesMask;
 typedef enum {
     // supports startTracking API with minInterval param
     LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT           = (1<<0),
@@ -262,7 +263,85 @@ typedef enum {
     LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT              = (1<<14),
     // support precise location edgnss
     LOCATION_CAPABILITIES_EDGNSS_BIT                        = (1<<15),
+    // Modem supports Carrier Phase for Precise Positioning
+    // Measurement Engine (PPME).
+    LOCATION_CAPABILITIES_QWES_CARRIER_PHASE_BIT            = (1<<16),
+    // Modem supports SV Polynomial for tightly coupled external
+    // DR support. This is a Standalone Feature.
+    LOCATION_CAPABILITIES_QWES_SV_POLYNOMIAL_BIT            = (1<<17),
+    // Modem supports SV Ephemeris for tightly coupled external
+    // PPE engines. This is a Standalone Feature.
+    LOCATION_CAPABILITIES_QWES_SV_EPHEMERIS_BIT            = (1<<18),
+    // Modem supports GNSS Single Frequency feature. This is a
+    // Standalone Feature.
+    LOCATION_CAPABILITIES_QWES_GNSS_SINGLE_FREQUENCY        = (1<<19),
+    // Modem supports GNSS Multi Frequency feature. Multi Frequency
+    // enables Single frequency also.
+    LOCATION_CAPABILITIES_QWES_GNSS_MULTI_FREQUENCY         = (1<<20),
+    // This mask indicates VPe license bundle is enabled. VEPP
+    // bundle include Carrier Phase and SV Polynomial features.
+    LOCATION_CAPABILITIES_QWES_VPE                          = (1<<21),
+    // This mask indicates support for CV2X Location basic features.
+    // This bundle includes features for GTS Time & Freq, C-TUNC
+    // (Constrained Time uncertainity.
+    LOCATION_CAPABILITIES_QWES_CV2X_LOCATION_BASIC          = (1<<22),
+    // This mask indicates support for CV2X Location premium features.
+    // This bundle includes features for CV2X Location Basic features,
+    // QDR3 feature, and PACE. (Position Assisted Clock Estimator.
+    LOCATION_CAPABILITIES_QWES_CV2X_LOCATION_PREMIUM         = (1<<23),
+    // This mask indicates that PPE (Precise Positioning Engine)
+    // library is enabled or Precise Positioning Framework (PPF)
+    // is available. This bundle includes features for Carrier
+    // Phase and SV Ephermeris.
+    LOCATION_CAPABILITIES_QWES_PPE                          = (1<<24),
+    // This mask indicates QDR2_C license bundle is enabled. This
+    // bundle includes features for SV Polynomial.
+    LOCATION_CAPABILITIES_QWES_QDR2                         = (1<<25),
+    // This mask indicates QDR3_C license bundle is enabled. This
+    // bundle includes features for SV Polynomial.
+    LOCATION_CAPABILITIES_QWES_QDR3                         = (1<<26),
 } LocationCapabilitiesBits;
+
+typedef uint8_t LocationQwesFeatureType;
+typedef enum {
+    // Modem supports Carrier Phase for Precise Positioning
+    // Measurement Engine (PPME).
+    LOCATION_QWES_FEATURE_TYPE_CARRIER_PHASE                 = 1,
+    // Modem supports SV Polynomial for tightly coupled external
+    // DR support. This is a Standalone Feature.
+    LOCATION_QWES_FEATURE_TYPE_SV_POLYNOMIAL,
+    // Modem supports SV Ephemeris for tightly coupled external
+    // PPE support. This is a Standalone Feature.
+    LOCATION_QWES_FEATURE_TYPE_SV_EPH,
+    // Modem supports GNSS Single Frequency feature. This is a
+    // Standalone Feature.
+    LOCATION_QWES_FEATURE_TYPE_GNSS_SINGLE_FREQUENCY,
+    // Modem supports GNSS Multi Frequency feature. Multi Frequency
+    // enables Single frequency also.
+    LOCATION_QWES_FEATURE_TYPE_GNSS_MULTI_FREQUENCY,
+    // This indicates Time and Frequency status.
+    LOCATION_QWES_FEATURE_TYPE_TIME_FREQUENCY,
+    // This indicates Time Uncertainty  status.
+    LOCATION_QWES_FEATURE_TYPE_TIME_UNCERTAINTY,
+    // This indicates Clock Estimate status.
+    LOCATION_QWES_FEATURE_TYPE_CLOCK_ESTIMATE,
+    // This mask indicates that PPE (Precise Positioning Engine)
+    // library is enabled or Precise Positioning Framework (PPF)
+    // is available. This bundle includes features for Carrier
+    // Phase and SV Ephermeris.
+    LOCATION_QWES_FEATURE_TYPE_PPE,
+    // This indicates QDR2_C license bundle is enabled. This
+    // bundle includes features for SV Polynomial.
+    LOCATION_QWES_FEATURE_TYPE_QDR2,
+    // This indicates QDR3_C license bundle is enabled. This
+    // bundle includes features for SV Polynomial.
+    LOCATION_QWES_FEATURE_TYPE_QDR3,
+    // This indicates VEPP license bundle is enabled. VEPP
+    // bundle include Carrier Phase and SV Polynomial features.
+    LOCATION_QWES_FEATURE_TYPE_VPE,
+    // Max value
+    LOCATION_QWES_FEATURE_TYPE_MAX
+} LocationQwesFeatureTypes;
 
 typedef enum {
     LOCATION_TECHNOLOGY_TYPE_GNSS = 0,

@@ -2403,7 +2403,8 @@ GnssAdapter::updateClientsEventMask()
 {
     // need to register for leap second info
     // for proper nmea generation
-    LOC_API_ADAPTER_EVENT_MASK_T mask = LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
+    LOC_API_ADAPTER_EVENT_MASK_T mask = LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO |
+            LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
         if (it->second.trackingCb != nullptr ||
             it->second.gnssLocationInfoCb != nullptr ||
@@ -2441,7 +2442,6 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
-        mask |= LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO;
 
         // Nhz measurement bit is set based on callback from loc eng hub
         // for Nhz engines.
@@ -2639,18 +2639,8 @@ GnssAdapter::getCapabilities()
     if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_AGPM_V02)) {
         mask |= LOCATION_CAPABILITIES_AGPM_BIT;
     }
-    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY)) {
-        mask |= LOCATION_CAPABILITIES_PRIVACY_BIT;
-    }
-    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
-        mask |= LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT;
-    }
-    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_ROBUST_LOCATION)) {
-        mask |= LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT;
-    }
-    if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_EDGNSS)) {
-        mask |= LOCATION_CAPABILITIES_EDGNSS_BIT;
-    }
+    //Get QWES feature status mask
+    mask |= ContextBase::getQwesFeatureStatus();
     return mask;
 }
 
@@ -4582,6 +4572,31 @@ bool GnssAdapter::reportGnssAdditionalSystemInfoEvent(
     return true;
 }
 
+bool GnssAdapter::reportQwesCapabilities(
+        const std::unordered_map<LocationQwesFeatureType, bool> &featureMap)
+{
+    struct MsgReportQwesFeatureStatus : public LocMsg {
+        GnssAdapter& mAdapter;
+        const std::unordered_map<LocationQwesFeatureType, bool> mFeatureMap;
+        inline MsgReportQwesFeatureStatus(GnssAdapter& adapter,
+                const std::unordered_map<LocationQwesFeatureType, bool> &featureMap) :
+            LocMsg(),
+            mAdapter(adapter),
+            mFeatureMap(std::move(featureMap)) {}
+        inline virtual void proc() const {
+            LOC_LOGi("ReportQwesFeatureStatus before caps %" PRIx64 " ",
+                mAdapter.getCapabilities());
+            ContextBase::setQwesFeatureStatus(mFeatureMap);
+            LOC_LOGi("ReportQwesFeatureStatus After caps %" PRIx64 " ",
+                mAdapter.getCapabilities());
+            mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
+        }
+    };
+
+    sendMsg(new MsgReportQwesFeatureStatus(*this, featureMap));
+    return true;
+}
+
 void GnssAdapter::initOdcpiCommand(const OdcpiRequestCallback& callback)
 {
     struct MsgInitOdcpi : public LocMsg {
@@ -6049,14 +6064,20 @@ GnssAdapter::initEngHubProxy() {
                 mNHzNeeded = nHzNeeded;
                 checkAndRestartSPESession();
             }
-       };
+        };
+
+        GnssAdapterUpdateQwesFeatureStatusCb updateQwesFeatureStatusCb =
+            [this] (const std::unordered_map<LocationQwesFeatureType, bool> &featureMap) {
+            reportQwesCapabilities(featureMap);
+        };
 
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
         if(getter != nullptr) {
             EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, mSystemStatus->getOsObserver(),
-                                                      reportPositionEventCb,
-                                                      reportSvEventCb, reqAidingDataCb,
-                                                      updateNHzRequirementCb);
+                      reportPositionEventCb,
+                      reportSvEventCb, reqAidingDataCb,
+                      updateNHzRequirementCb,
+                      updateQwesFeatureStatusCb);
             if (hubProxy != nullptr) {
                 mEngHubProxy = hubProxy;
                 engHubLoadSuccessful = true;

@@ -1222,3 +1222,11 @@ PRODUCT_PACKAGES += libqti_vndfwk_detect.vendor
 SOONG_CONFIG_NAMESPACES += qssi_vs_vendor
 SOONG_CONFIG_qssi_vs_vendor += qssi_or_vendor
 SOONG_CONFIG_qssi_vs_vendor_qssi_or_vendor := vendor
+
+SOONG_CONFIG_NAMESPACES += aosp_vs_qva
+SOONG_CONFIG_aosp_vs_qva += aosp_or_qva
+ifeq ($(TARGET_FWK_SUPPORTS_FULL_VALUEADDS),true)
+SOONG_CONFIG_aosp_vs_qva_aosp_or_qva := qva
+else
+SOONG_CONFIG_aosp_vs_qva_aosp_or_qva := aosp
+endif

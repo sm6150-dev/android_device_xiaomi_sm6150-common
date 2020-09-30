@@ -504,12 +504,11 @@ public:
         mType = (int32_t)itemBase.getType();
     }
     inline bool equals(const SystemStatusNetworkInfo& peer) {
-        for (uint8_t i = 0; i < MAX_NETWORK_HANDLES; ++i) {
-             if (!(mAllNetworkHandles[i] == peer.mAllNetworkHandles[i])) {
-                 return false;
-             }
-         }
-        return true;
+        bool rtv = (peer.mConnected == mConnected);
+        for (uint8_t i = 0; rtv && i < MAX_NETWORK_HANDLES; ++i) {
+            rtv &= (mAllNetworkHandles[i] == peer.mAllNetworkHandles[i]);
+        }
+        return rtv;
     }
     inline virtual SystemStatusItemBase& collate(SystemStatusItemBase& curInfo) {
         uint64_t allTypes = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mAllTypes;

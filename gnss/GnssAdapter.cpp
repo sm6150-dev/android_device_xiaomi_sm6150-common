@@ -1195,7 +1195,8 @@ GnssAdapter::gnssUpdateConfigCommand(const GnssConfig& config)
             mAdapter(adapter),
             mApi(api),
             mConfig(config),
-            mCount(count) {
+            mCount(count),
+            mIds(nullptr) {
                 if (mCount > 0) {
                     mIds = new uint32_t[count];
                     if (mIds) {
@@ -1490,7 +1491,8 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
             mAdapter(adapter),
             mApi(api),
             mConfigMask(configMask),
-            mCount(count) {
+            mCount(count),
+            mIds(nullptr) {
                 if (mCount > 0) {
                     mIds = new uint32_t[count];
                     if (mIds) {

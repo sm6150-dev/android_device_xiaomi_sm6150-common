@@ -112,6 +112,13 @@ public:
         (void) dreConfig;
         return false;
     }
+
+    inline virtual bool configEngineRunState(
+            PositioningEngineMask engType, LocEngineRunState engState) {
+        (void) engType;
+        (void) engState;
+        return false;
+    }
 };
 
 typedef std::function<void(int count, EngineLocationInfo* locationArr)>

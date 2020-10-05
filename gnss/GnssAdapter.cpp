@@ -117,6 +117,7 @@ GnssAdapter::GnssAdapter() :
     mServerUrl(":"),
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask),
     mBlockCPIInfo{},
+    mDreIntEnabled(false),
     mLocSystemInfo{},
     mGnssMbSvIdUsedInPosition{},
     mGnssMbSvIdUsedInPosAvail(false),
@@ -5726,7 +5727,7 @@ GnssAdapter::configLeverArmCommand(const LeverArmConfigInfo& configInfo) {
             mSessionId(sessionId),
             mConfigInfo(configInfo) {}
         inline virtual void proc() const {
-            // save the lever ARM config info for translate position from GNSS antenna based
+            // save the lever ARM config info for translating position from GNSS antenna based
             // to VRP based
             if (mConfigInfo.leverArmValidMask & LEVER_ARM_TYPE_GNSS_TO_VRP_BIT) {
                 mAdapter.mLocConfigInfo.leverArmConfigInfo.leverArmValidMask |=
@@ -5874,6 +5875,47 @@ uint32_t GnssAdapter::configDeadReckoningEngineParamsCommand(
     return sessionId;
 }
 
+uint32_t GnssAdapter::configEngineRunStateCommand(
+        PositioningEngineMask engType, LocEngineRunState engState) {
+
+    // generated session id will be none-zero
+    uint32_t sessionId = generateSessionId();
+    LOC_LOGe("session id %u, eng type 0x%x, eng state %d, dre enabled %d",
+             sessionId, engType, engState, mDreIntEnabled);
+
+    struct MsgConfigEngineRunState : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t     mSessionId;
+        PositioningEngineMask mEngType;
+        LocEngineRunState mEngState;
+
+        inline MsgConfigEngineRunState(GnssAdapter& adapter,
+                                       uint32_t sessionId,
+                                       PositioningEngineMask engType,
+                                       LocEngineRunState engState) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mEngType(engType),
+            mEngState(engState) {}
+        inline virtual void proc() const {
+            LocationError err = LOCATION_ERROR_NOT_SUPPORTED;
+            // Currently, only DR engine supports pause/resume request
+            if ((mEngType == DEAD_RECKONING_ENGINE) &&
+                (mAdapter.mDreIntEnabled == true)) {
+                if (true == mAdapter.mEngHubProxy->configEngineRunState(mEngType, mEngState)) {
+                    err = LOCATION_ERROR_SUCCESS;
+                }
+            }
+            mAdapter.reportResponse(err, mSessionId);
+        }
+    };
+
+    sendMsg(new MsgConfigEngineRunState(*this, sessionId, engType, engState));
+
+    return sessionId;
+}
+
 void GnssAdapter::reportGnssConfigEvent(uint32_t sessionId, const GnssConfig& gnssConfig)
 {
     struct MsgReportGnssConfig : public LocMsg {
@@ -5948,7 +5990,12 @@ GnssAdapter::initEngHubProxy() {
                          strlen(PROCESS_NAME_ENGINE_SERVICE)) == 0) &&
                 (processInfoList[i].proc_status == ENABLED)) {
                 pluginDaemonEnabled = true;
-                break;
+                // check if this is DRE-INT engine
+                if ((processInfoList[i].args[1]!= nullptr) &&
+                    (strncmp(processInfoList[i].args[1], "DRE-INT", sizeof("DRE-INT")) == 0)) {
+                    mDreIntEnabled = true;
+                    break;
+                }
             }
         }
 

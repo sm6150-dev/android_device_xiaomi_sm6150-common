@@ -679,6 +679,16 @@ typedef enum {
         (STANDARD_POSITIONING_ENGINE|DEAD_RECKONING_ENGINE| \
         PRECISE_POSITIONING_ENGINE|VP_POSITIONING_ENGINE)
 
+/** Specify the position engine running state. <br/> */
+enum LocEngineRunState {
+    /** Request the position engine to be put into resume state.
+     *  <br/> */
+    LOC_ENGINE_RUN_STATE_PAUSE   = 1,
+    /** Request the position engine to be put into resume state.
+     *  <br/> */
+    LOC_ENGINE_RUN_STATE_RESUME   = 2,
+};
+
 typedef uint64_t GnssDataMask;
 typedef enum {
     // Jammer Indicator is available

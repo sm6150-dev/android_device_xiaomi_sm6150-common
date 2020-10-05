@@ -95,6 +95,8 @@ struct GnssInterface {
     uint32_t (*configDeadReckoningEngineParams)(const DeadReckoningEngineConfig& dreConfig);
     uint32_t (*gnssUpdateSecondaryBandConfig)(const GnssSvTypeConfig& secondaryBandConfig);
     uint32_t (*gnssGetSecondaryBandConfig)();
+    uint32_t (*configEngineRunState)(PositioningEngineMask engType,
+                                     LocEngineRunState engState);
 };
 
 struct FlpInterface {

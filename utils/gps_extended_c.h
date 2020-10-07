@@ -411,8 +411,12 @@ typedef uint64_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_LLA_VRP_BASED                0x200000000000
 /** GpsLocationExtended has the velocityVRPased. */
 #define GPS_LOCATION_EXTENDED_HAS_ENU_VELOCITY_LLA_VRP_BASED   0x400000000000
+/** GpsLocationExtended has upperTriangleFullCovMatrix. */
 #define GPS_LOCATION_EXTENDED_HAS_UPPER_TRIANGLE_FULL_COV_MATRIX 0x800000000000
+/** GpsLocationExtended has drSolutionStatusMask. */
 #define GPS_LOCATION_EXTENDED_HAS_DR_SOLUTION_STATUS_MASK        0x1000000000000
+/** GpsLocationExtended has altitudeAssumed. */
+#define GPS_LOCATION_EXTENDED_HAS_ALTITUDE_ASSUMED               0x2000000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -856,6 +860,12 @@ typedef struct {
     */
     float upperTriangleFullCovMatrix[COV_MATRIX_SIZE];
     DrSolutionStatusMask drSolutionStatusMask;
+    /** When this field is valid, it will indicates whether altitude
+     *  is assumed or calculated.
+     *  false: Altitude is calculated.
+     *  true:  Altitude is assumed; there may not be enough
+     *         satellites to determine the precise altitude. */
+    bool altitudeAssumed;
 } GpsLocationExtended;
 
 enum loc_sess_status {

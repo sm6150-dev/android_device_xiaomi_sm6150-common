@@ -25,6 +25,16 @@
    <bool translatable="false" name="config_wifi_softap_sae_supported">true</bool>
    <!-- Enable 80211ac for Wifi hotspot (SAP) -->
    <bool translatable="false" name="config_wifi_softap_ieee80211ac_supported">true</bool>
+   <!-- Wifi driver supports IEEE80211AX for softap -->
+   <bool translatable="false" name="config_wifiSoftapIeee80211axSupported">true</bool>
+   <!-- Wifi driver supports IEEE80211AX single user beamformer for softap -->
+   <bool translatable="false" name="config_wifiSoftapHeSuBeamformerSupported">true</bool>
+   <!-- Wifi driver supports IEEE80211AX single user beamformee for softap -->
+   <bool translatable="false" name="config_wifiSoftapHeSuBeamformeeSupported">true</bool>
+   <!-- Wifi driver supports IEEE80211AX multiple user beamformer for softap -->
+   <bool translatable="false" name="config_wifiSoftapHeMuBeamformerSupported">true</bool>
+   <!-- Wifi driver supports IEEE80211AX TWT (Target Wake Time) for softap -->
+   <bool translatable="false" name="config_wifiSoftapHeTwtSupported">true</bool>
 
 </resources>
 

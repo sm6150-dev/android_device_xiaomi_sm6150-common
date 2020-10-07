@@ -474,22 +474,48 @@ function sdm660_sched_interactive_dcvs() {
 
 function sdm660_sched_schedutil_dcvs() {
 
-    # configure governor settings for little cluster
-    echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us
-    echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us
-    echo 1401600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
+    if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 19 ]; then
+        # configure governor settings for little cluster
+        echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us
+        echo 1401600 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_freq
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/pl
+        echo 633600 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
+        echo 902400 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rtg_boost_freq
 
-    # configure governor settings for big cluster
-    echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-    echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us
-    echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us
-    echo 1401600 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
+        # configure governor settings for big cluster
+        echo "schedutil" > /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/up_rate_limit_us
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us
+        echo 1401600 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/hispeed_freq
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/pl
+        echo 1113600 > /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq
+        echo 0 > /sys/devices/system/cpu/cpufreq/policy4/schedutil/rtg_boost_freq
+    else
+        # configure governor settings for little cluster
+        echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+        echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us
+        echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us
+        echo 1401600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq
+
+        # configure governor settings for big cluster
+        echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+        echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us
+        echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us
+        echo 1401600 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
+    fi
 
     echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
 
-    echo "0:1401600" > /sys/module/cpu_boost/parameters/input_boost_freq
-    echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
+    #if the kernel version >=4.19,set input_boost_freq accordingly
+    if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 19 ]; then
+        echo "0:1401600" > /sys/devices/system/cpu/cpu_boost/input_boost_freq
+        echo 40 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
+    else
+        echo "0:1401600" > /sys/module/cpu_boost/parameters/input_boost_freq
+        echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
+    fi
 
     # sched_load_boost as -6 is equivalent to target load as 85. It is per cpu tunable.
     echo -6 >  /sys/devices/system/cpu/cpu0/sched_load_boost
@@ -524,23 +550,36 @@ function sdm660_sched_schedutil_dcvs() {
             echo 1600 > $cpubw/bw_hwmon/idle_mbps
         done
 
-        for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
-        do
-            echo "mem_latency" > $memlat/governor
-            echo 10 > $memlat/polling_interval
-            echo 400 > $memlat/mem_latency/ratio_ceil
-        done
+        if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -le 14 ]; then
+            for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
+            do
+                echo "mem_latency" > $memlat/governor
+                echo 10 > $memlat/polling_interval
+                echo 400 > $memlat/mem_latency/ratio_ceil
+            done
 
-        for latfloor in $device/*cpu*-ddr-latfloor*/devfreq/*cpu-ddr-latfloor*
-        do
-            echo "compute" > $latfloor/governor
-            echo 10 > $latfloor/polling_interval
-        done
-
+            for latfloor in $device/*cpu*-ddr-latfloor*/devfreq/*cpu-ddr-latfloor*
+            do
+                echo "compute" > $latfloor/governor
+                echo 10 > $latfloor/polling_interval
+            done
+        fi
     done
+
+    if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 19 ]; then
+        # memlat specific settings are moved to seperate file under
+        # device/target specific folder
+        setprop vendor.dcvs.prop 1
+    fi
+
 }
 
 target=`getprop ro.board.platform`
+
+KernelVersionStr=`cat /proc/sys/kernel/osrelease`
+KernelVersionS=${KernelVersionStr:2:2}
+KernelVersionA=${KernelVersionStr:0:1}
+KernelVersionB=${KernelVersionS%.*}
 
 function configure_zram_parameters() {
     MemTotalStr=`cat /proc/meminfo | grep MemTotal`
@@ -551,12 +590,17 @@ function configure_zram_parameters() {
     # Zram disk - 75% for Go devices.
     # For 512MB Go device, size = 384MB, set same for Non-Go.
     # For 1GB Go device, size = 768MB, set same for Non-Go.
-    # For >=2GB Non-Go devices, size = 50% of RAM size. Limit the size to 4GB.
+    # For 2GB Go device, size = 1536MB, set same for Non-Go.
+    # For >2GB Non-Go devices, size = 50% of RAM size. Limit the size to 4GB.
     # And enable lz4 zram compression for Go targets.
 
     let RamSizeGB="( $MemTotal / 1048576 ) + 1"
-    let zRamSizeMB="( $RamSizeGB * 1024 ) / 2"
     diskSizeUnit=M
+    if [ $RamSizeGB -le 2 ]; then
+        let zRamSizeMB="( $RamSizeGB * 1024 ) * 3 / 4"
+    else
+        let zRamSizeMB="( $RamSizeGB * 1024 ) / 2"
+    fi
 
     # use MB avoid 32 bit overflow
     if [ $zRamSizeMB -gt 4096 ]; then
@@ -571,14 +615,7 @@ function configure_zram_parameters() {
         if [ -f /sys/block/zram0/use_dedup ]; then
             echo 1 > /sys/block/zram0/use_dedup
         fi
-        if [ $MemTotal -le 524288 ]; then
-            echo 402653184 > /sys/block/zram0/disksize
-        elif [ $MemTotal -le 1048576 ]; then
-            echo 805306368 > /sys/block/zram0/disksize
-        else
-            zramDiskSize=$zRamSizeMB$diskSizeUnit
-            echo $zramDiskSize > /sys/block/zram0/disksize
-        fi
+        echo "$zRamSizeMB""$diskSizeUnit" > /sys/block/zram0/disksize
 
         # ZRAM may use more memory than it saves if SLAB_STORE_USER
         # debug option is enabled.
@@ -678,11 +715,9 @@ if [ "$ProductName" == "msmnile" ] || [ "$ProductName" == "kona" ] || [ "$Produc
       echo 100 > /proc/sys/vm/swappiness
 else
     arch_type=`uname -m`
-    MemTotalStr=`cat /proc/meminfo | grep MemTotal`
-    MemTotal=${MemTotalStr:16:8}
 
     # Set parameters for 32-bit Go targets.
-    if [ $MemTotal -le 1048576 ] && [ "$low_ram" == "true" ]; then
+    if [ "$low_ram" == "true" ]; then
         # Disable KLMK, ALMK, PPR & Core Control for Go devices
         echo 0 > /sys/module/lowmemorykiller/parameters/enable_lmk
         echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
@@ -2114,10 +2149,6 @@ case "$target" in
                 done
 
                 #if the kernel version >=4.9,use the schedutil governor
-                KernelVersionStr=`cat /proc/sys/kernel/osrelease`
-                KernelVersionS=${KernelVersionStr:2:2}
-                KernelVersionA=${KernelVersionStr:0:1}
-                KernelVersionB=${KernelVersionS%.*}
                 if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 9 ]; then
                     8953_sched_dcvs_eas
                 else
@@ -2400,10 +2431,6 @@ case "$target" in
                 # disable thermal core_control to update interactive gov settings
                 echo 0 > /sys/module/msm_thermal/core_control/enabled
 
-                KernelVersionStr=`cat /proc/sys/kernel/osrelease`
-                KernelVersionS=${KernelVersionStr:2:2}
-                KernelVersionA=${KernelVersionStr:0:1}
-                KernelVersionB=${KernelVersionS%.*}
                 if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 9 ]; then
                     8917_sched_dcvs_eas
                 else
@@ -2485,10 +2512,6 @@ case "$target" in
                 # disable thermal core_control to update interactive gov and core_ctl settings
                 echo 0 > /sys/module/msm_thermal/core_control/enabled
 
-                KernelVersionStr=`cat /proc/sys/kernel/osrelease`
-                KernelVersionS=${KernelVersionStr:2:2}
-                KernelVersionA=${KernelVersionStr:0:1}
-                KernelVersionB=${KernelVersionS%.*}
                 if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 9 ]; then
                     8937_sched_dcvs_eas
                 else
@@ -2723,12 +2746,14 @@ case "$target" in
             panel=${panel:2:4}
         fi
 
-        if [ $panel -gt 1080 ]; then
-            echo 2 > /proc/sys/kernel/sched_window_stats_policy
-            echo 5 > /proc/sys/kernel/sched_ravg_hist_size
-        else
-            echo 3 > /proc/sys/kernel/sched_window_stats_policy
-            echo 3 > /proc/sys/kernel/sched_ravg_hist_size
+        if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -le 14 ]; then
+            if [ $panel -gt 1080 ]; then
+                echo 2 > /proc/sys/kernel/sched_window_stats_policy
+                echo 5 > /proc/sys/kernel/sched_ravg_hist_size
+            else
+                echo 3 > /proc/sys/kernel/sched_window_stats_policy
+                echo 3 > /proc/sys/kernel/sched_ravg_hist_size
+            fi
         fi
         #Apply settings for sdm660, sdm636,sda636
         case "$soc_id" in
@@ -2752,10 +2777,6 @@ case "$target" in
             echo 0-3 > /dev/cpuset/system-background/cpus
 
             #if the kernel version >=4.14,use the schedutil governor
-            KernelVersionStr=`cat /proc/sys/kernel/osrelease`
-            KernelVersionS=${KernelVersionStr:2:2}
-            KernelVersionA=${KernelVersionStr:0:1}
-            KernelVersionB=${KernelVersionS%.*}
             if [ $KernelVersionA -ge 4 ] && [ $KernelVersionB -ge 14 ]; then
                 sdm660_sched_schedutil_dcvs
             else
@@ -3457,7 +3478,7 @@ case "$target" in
     fi
 
     case "$soc_id" in
-        "400" | "440" )
+        "400" | "440" | "476" )
         # Core control parameters on silver
         echo 0 0 0 0 1 1 > /sys/devices/system/cpu/cpu0/core_ctl/not_preferred
         echo 4 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
@@ -3743,7 +3764,6 @@ case "$target" in
             do
                 echo 1 > /sys/devices/virtual/npu/msm_npu/pwr
                 echo "bw_hwmon" > $npullccbw/governor
-                echo 40 > $npullccbw/polling_interval
                 echo "2288 4577 7110 9155 12298 14236 16265" > $npullccbw/bw_hwmon/mbps_zones
                 echo 4 > $npullccbw/bw_hwmon/sample_ms
                 echo 100 > $npullccbw/bw_hwmon/io_percent
@@ -3752,6 +3772,7 @@ case "$target" in
                 echo 30 > $npullccbw/bw_hwmon/down_thres
                 echo 0 > $npullccbw/bw_hwmon/guard_band_mbps
                 echo 250 > $npullccbw/bw_hwmon/up_scale
+                echo 40 > $npullccbw/polling_interval
                 echo 0 > /sys/devices/virtual/npu/msm_npu/pwr
             done
         done
@@ -5141,13 +5162,7 @@ case "$target" in
 
 	#Setting the min supported frequencies
 	echo 1113600 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-	echo 1113600 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-	echo 1113600 > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-        echo 1113600 > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
         echo 1171200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu5/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_min_freq
-        echo 1171200 > /sys/devices/system/cpu/cpu7/cpufreq/scaling_min_freq
 	echo 940800000  > /sys/class/devfreq/soc\:qcom,cpu0-cpu-l3-lat/min_freq
 	echo 940800000  > /sys/class/devfreq/soc\:qcom,cpu4-cpu-l3-lat/min_freq
 	echo 1651200000 > /sys/class/devfreq/soc\:qcom,cpu0-cpu-l3-lat/max_freq
@@ -5155,17 +5170,24 @@ case "$target" in
         #setting min gpu freq to 392  MHz
         echo 4 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel
         if [ $feature_id == 0 ]; then
-                echo "feature_id is 0 for SA8185P"
+                echo "feature_id is 0 for SA8195AA"
 
+                #setting max cpu freq to 2.496GHz
+                echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
                 #setting max gpu freq to 530 MHz
                 echo 3 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel
                 echo {class:ddr, res:capped, val: 1804} > /sys/kernel/debug/aop_send_message
-        elif [ $feature_id == 1 ]; then
-                echo "feature_id is 1 for SA8195P"
+        elif [ $feature_id == 1 ] || [ $feature_id == 2 ]; then
+                echo "feature_id is 1 for external SA8195AB"
+                echo "feature_id is 2 for internal SA8195AB"
 
+                #setting max cpu freq to 2.496GHz
+                echo 2496000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
                 #setting max gpu freq to 670 MHz
                 echo 0 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel
                 echo {class:ddr, res:capped, val: 2092} > /sys/kernel/debug/aop_send_message
+        elif [ $feature_id == 3 ]; then
+                echo "feature_id is 3 for external SA8195AC"
         else
                 echo "unknown feature_id value" $feature_id
         fi

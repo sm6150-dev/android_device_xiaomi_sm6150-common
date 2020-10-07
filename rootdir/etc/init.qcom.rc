@@ -25,7 +25,6 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import /vendor/etc/init/hw/init.qti.ufs.rc
 import /vendor/etc/init/hw/init.qcom.usb.rc
 import /vendor/etc/init/hw/init.qcom.test.rc
 import /vendor/etc/init/hw/init.target.rc
@@ -55,6 +54,9 @@ on early-init
     # Change ownership of sw_sync node
     chown system graphics /sys/kernel/debug/sync/sw_sync
     chmod 0666 /sys/kernel/debug/sync/sw_sync
+
+    #Disable UFS clock scaling
+    write /sys/bus/platform/devices/1d84000.ufshc/clkscale_enable 0
 
     chown root system /dev/kmsg
     chmod 0620 /dev/kmsg
@@ -146,9 +148,6 @@ on boot
     setprop wifi.interface wlan0
 
     setprop ro.telephony.call_ring.multiple false
-
-    #enable camera read sensors data
-    setprop persist.camera.gyro.disable 0
 
     #Remove SUID bit for iproute2 ip tool
     chmod 0755 /system/bin/ip
@@ -457,6 +456,8 @@ on property:persist.vendor.sys.rawdump_copy=0
 
 on property:sys.boot_completed=1
     write /dev/kmsg "Boot completed "
+    #Enable UFS clock scaling back
+    write /sys/bus/platform/devices/1d84000.ufshc/clkscale_enable 1
     #Reset read ahead for dm-0 and dm-1 to 512kb
     write /sys/block/dm-0/queue/read_ahead_kb 512
     write /sys/block/dm-1/queue/read_ahead_kb 512
@@ -754,14 +755,6 @@ service hostapd_fst /vendor/bin/hw/hostapd -dd -g /data/vendor/wifi/hostapd/glob
     disabled
     oneshot
 
-service ims_regmanager /system/vendor/bin/exe-ims-regmanagerprocessnative
-    class late_start
-    group net_bt_admin inet radio wifi
-    disabled
-
-on property:persist.ims.regmanager.mode=1
-    start ims_regmanager
-
 on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
     write /proc/sys/net/ipv4/tcp_adv_win_scale  2
@@ -803,32 +796,6 @@ service vendor.ssr_diag /system/vendor/bin/ssr_diag
     user system
     group system
     disabled
-
-service hvdcp /system/bin/hvdcp
-    class core
-    user root
-    disabled
-
-on property:persist.usb.hvdcp.detect=true
-    start hvdcp
-
-on property:persist.usb.hvdcp.detect=false
-    stop hvdcp
-
-service charger_monitor /system/bin/charger_monitor
-    user root
-    group root
-    disabled
-
-service qbcharger /charger -m 1
-    disabled
-    oneshot
-
-on property:sys.qbcharger.enable=true
-    start qbcharger
-
-on property:sys.qbcharger.enable=false
-    stop qbcharger
 
 service diag_mdlog_start /system/vendor/bin/diag_mdlog
     class late_start

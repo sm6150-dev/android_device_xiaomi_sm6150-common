@@ -141,9 +141,7 @@ void GnssAPIClient::setCallbacks()
     locationCallbacks.gnssNiCb = nullptr;
     if (mGnssNiCbIface != nullptr) {
         loc_core::ContextBase* context =
-                loc_core::LocContext::getLocContext(
-                        NULL, NULL,
-                        loc_core::LocContext::mLocationHalName, false);
+                loc_core::LocContext::getLocContext(loc_core::LocContext::mLocationHalName);
         if (!context->hasAgpsExtendedCapabilities()) {
             LOC_LOGD("Registering NI CB");
             locationCallbacks.gnssNiCb = [this](uint32_t id, GnssNiNotification gnssNiNotify) {

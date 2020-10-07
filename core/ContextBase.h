@@ -110,6 +110,8 @@ typedef struct
     double         VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY;
 } loc_sap_cfg_s_type;
 
+using namespace loc_util;
+
 namespace loc_core {
 
 class LocAdapterBase;

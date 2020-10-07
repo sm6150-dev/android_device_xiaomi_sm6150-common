@@ -160,7 +160,7 @@ LocApiBase::LocApiBase(LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
 
     android_atomic_inc(&mMsgTaskRefCount);
     if (nullptr == mMsgTask) {
-        mMsgTask = new MsgTask("LocApiMsgTask", false);
+        mMsgTask = new MsgTask("LocApiMsgTask");
     }
 }
 
@@ -635,10 +635,6 @@ void LocApiBase::
     setTime(LocGpsUtcTime /*time*/, int64_t /*timeReference*/, int /*uncertainty*/)
 DEFAULT_IMPL()
 
-enum loc_api_adapter_err LocApiBase::
-    setXtraData(char* /*data*/, int /*length*/)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
-
 void LocApiBase::
    atlOpenStatus(int /*handle*/, int /*is_succ*/, char* /*apn*/, uint32_t /*apnLen*/,
                  AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/,
@@ -725,9 +721,9 @@ LocationError LocApiBase::setEmergencyExtensionWindowSync(
         const uint32_t /*emergencyExtensionSeconds*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-LocationError LocApiBase::setMeasurementCorrections(
-        const GnssMeasurementCorrections /*gnssMeasurementCorrections*/)
-DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+void LocApiBase::setMeasurementCorrections(
+        const GnssMeasurementCorrections& /*gnssMeasurementCorrections*/)
+DEFAULT_IMPL()
 
 void LocApiBase::
    getWwanZppFix()
@@ -743,12 +739,6 @@ DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 void LocApiBase::
     requestForAidingData(GnssAidingDataSvMask /*svDataMask*/)
-DEFAULT_IMPL()
-
-void LocApiBase::
-    installAGpsCert(const LocDerEncodedCertificate* /*pData*/,
-                    size_t /*length*/,
-                    uint32_t /*slotBitMask*/)
 DEFAULT_IMPL()
 
 LocationError LocApiBase::
@@ -787,8 +777,8 @@ void LocApiBase::
                                           LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
-LocationError LocApiBase::getGnssEnergyConsumed()
-DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+void LocApiBase::getGnssEnergyConsumed()
+DEFAULT_IMPL()
 
 
 void LocApiBase::addGeofence(uint32_t /*clientId*/, const GeofenceOption& /*options*/,

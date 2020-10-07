@@ -37,6 +37,8 @@
 #include <LocSharedLock.h>
 #include <log_util.h>
 
+using namespace loc_util;
+
 namespace loc_core {
 
 class ContextBase;
@@ -120,7 +122,7 @@ protected:
     inline virtual ~LocApiBase() {
         android_atomic_dec(&mMsgTaskRefCount);
         if (nullptr != mMsgTask && 0 == mMsgTaskRefCount) {
-            mMsgTask->destroy();
+            delete mMsgTask;
             mMsgTask = nullptr;
         }
     }
@@ -216,7 +218,6 @@ public:
             bool onDemandCpi=false);
     virtual void injectPosition(const Location& location, bool onDemandCpi);
     virtual void setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
-    virtual enum loc_api_adapter_err setXtraData(char* data, int length);
     virtual void atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen,
             AGpsBearerType bear, LocAGpsType agpsType, LocApnTypeMask mask);
     virtual void atlCloseStatus(int handle, int is_succ);
@@ -244,13 +245,11 @@ public:
     virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
     virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
     virtual LocationError setEmergencyExtensionWindowSync(const uint32_t emergencyExtensionSeconds);
-    virtual LocationError setMeasurementCorrections(
-            const GnssMeasurementCorrections gnssMeasurementCorrections);
+    virtual void setMeasurementCorrections(
+            const GnssMeasurementCorrections& gnssMeasurementCorrections);
 
     virtual void getWwanZppFix();
     virtual void getBestAvailableZppFix();
-    virtual void installAGpsCert(const LocDerEncodedCertificate* pData, size_t length,
-            uint32_t slotBitMask);
     virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
     virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
     virtual LocationError setXtraVersionCheckSync(uint32_t check);
@@ -270,7 +269,7 @@ public:
                                         LocApiResponse* adapterResponse=nullptr);
     virtual void setPositionAssistedClockEstimatorMode(bool enabled,
                                                        LocApiResponse* adapterResponse=nullptr);
-    virtual LocationError getGnssEnergyConsumed();
+    virtual void getGnssEnergyConsumed();
 
     virtual void addGeofence(uint32_t clientId, const GeofenceOption& options,
             const GeofenceInfo& info, LocApiResponseData<LocApiGeofenceData>* adapterResponseData);

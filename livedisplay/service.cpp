@@ -20,6 +20,7 @@
 #include <binder/ProcessState.h>
 #include <hidl/HidlTransportSupport.h>
 
+#include "DisplayModes.h"
 #include "SunlightEnhancement.h"
 #include "livedisplay/sdm/SDMController.h"
 
@@ -27,13 +28,16 @@ using android::OK;
 using android::sp;
 using android::status_t;
 
+using ::vendor::lineage::livedisplay::V2_0::IDisplayModes;
 using ::vendor::lineage::livedisplay::V2_0::ISunlightEnhancement;
+using ::vendor::lineage::livedisplay::V2_0::implementation::DisplayModes;
 using ::vendor::lineage::livedisplay::V2_0::implementation::SunlightEnhancement;
 using ::vendor::lineage::livedisplay::V2_0::sdm::SDMController;
 
 int main() {
     status_t status = OK;
     std::shared_ptr<SDMController> controller = std::make_shared<SDMController>();
+    sp<IDisplayModes> dm = new DisplayModes();
     sp<SunlightEnhancement> se = new SunlightEnhancement();
     android::hardware::configureRpcThreadpool(1, true /*callerWillJoin*/);
 
@@ -41,6 +45,14 @@ int main() {
     status = se->registerAsService();
     if (status != OK) {
         LOG(ERROR) << "Could not register service for LiveDisplay HAL SunlightEnhancement Iface ("
+                   << status << ")";
+        return 1;
+    }
+
+    // DisplayMode service
+    status = dm->registerAsService();
+    if (status != OK) {
+        LOG(ERROR) << "Could not register service for LiveDisplay HAL DisplayMode Iface ("
                    << status << ")";
         return 1;
     }

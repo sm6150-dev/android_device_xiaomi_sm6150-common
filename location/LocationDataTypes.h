@@ -91,7 +91,9 @@ typedef enum {
     LOCATION_TECHNOLOGY_INJECTED_COARSE_POSITION_BIT = (1<<5), // using CPI
     LOCATION_TECHNOLOGY_AFLT_BIT                     = (1<<6), // AFLT
     LOCATION_TECHNOLOGY_HYBRID_BIT                   = (1<<7), // HYBRID
-    LOCATION_TECHNOLOGY_PPE_BIT                      = (1<<8)  // PPE
+    LOCATION_TECHNOLOGY_PPE_BIT                      = (1<<8), // PPE
+    LOCATION_TECHNOLOGY_VEH_BIT                      = (1<<9), // using vehicular data
+    LOCATION_TECHNOLOGY_VIS_BIT                      = (1<<10) // using visual data
 } LocationTechnologyBits;
 
 typedef uint32_t LocationSpoofMask;
@@ -717,10 +719,12 @@ typedef uint32_t PositioningEngineMask;
 typedef enum {
     STANDARD_POSITIONING_ENGINE = (1 << 0),
     DEAD_RECKONING_ENGINE       = (1 << 1),
-    PRECISE_POSITIONING_ENGINE  = (1 << 2)
+    PRECISE_POSITIONING_ENGINE  = (1 << 2),
+    VP_POSITIONING_ENGINE  = (1 << 3)
 } PositioningEngineBits;
 #define POSITION_ENGINE_MASK_ALL \
-        (STANDARD_POSITIONING_ENGINE|DEAD_RECKONING_ENGINE|PRECISE_POSITIONING_ENGINE)
+        (STANDARD_POSITIONING_ENGINE|DEAD_RECKONING_ENGINE| \
+        PRECISE_POSITIONING_ENGINE|VP_POSITIONING_ENGINE)
 
 typedef uint64_t GnssDataMask;
 typedef enum {
@@ -821,6 +825,7 @@ typedef enum {
     LOC_REQ_ENGINE_FUSED_BIT = (1<<0),
     LOC_REQ_ENGINE_SPE_BIT   = (1<<1),
     LOC_REQ_ENGINE_PPE_BIT   = (1<<2),
+    LOC_REQ_ENGINE_VPE_BIT   = (1<<3)
 } LocReqEngineTypeMask;
 
 typedef enum {
@@ -829,6 +834,7 @@ typedef enum {
     LOC_OUTPUT_ENGINE_SPE     = 1,
     /** This is the GNSS fix with correction PPP/RTK correction */
     LOC_OUTPUT_ENGINE_PPE     = 2,
+    LOC_OUTPUT_ENGINE_VPE = 3,
     LOC_OUTPUT_ENGINE_COUNT,
 } LocOutputEngineType;
 
@@ -1127,7 +1133,7 @@ typedef struct {
     // location engine type. When the fix. when the type is set to
     // LOC_ENGINE_SRC_FUSED, the fix is the propagated/aggregated
     // reports from all engines running on the system (e.g.:
-    // DR/SPE/PPE). To check which location engine contributes to
+    // DR/SPE/PPE/VPE). To check which location engine contributes to
     // the fused output, check for locOutputEngMask.
     LocOutputEngineType locOutputEngType;
     // when loc output eng type is set to fused, this field

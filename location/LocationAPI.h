@@ -235,7 +235,10 @@ public:
         collectiveResponseCallback returns:
                 LOCATION_ERROR_SUCCESS if session was successful
                 LOCATION_ERROR_INVALID_PARAMETER if any other parameters are invalid
-                LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason */
+                LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason
+
+      PLEASE NOTE: It is caller's resposibility to FREE the memory of the return value.
+                   The memory must be freed by delete [].*/
     virtual uint32_t* gnssUpdateConfig(const GnssConfig& config) override;
 
     /* gnssGetConfig fetches the current constellation and SV configuration
@@ -250,7 +253,10 @@ public:
            LOCATION_ERROR_CALLBACK_MISSING If no gnssConfigCallback
                                            was passed in createInstance
            LOCATION_ERROR_NOT_SUPPORTED If read of requested configuration
-                                        is not supported */
+                                        is not supported
+
+      PLEASE NOTE: It is caller's resposibility to FREE the memory of the return value.
+                   The memory must be freed by delete [].*/
     uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
 
     /* delete specific gnss aiding data for testing, which returns a session id

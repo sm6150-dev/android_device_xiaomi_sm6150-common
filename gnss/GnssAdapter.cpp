@@ -624,6 +624,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT;
         out.drSolutionStatusMask = locationExtended.drSolutionStatusMask;
     }
+
+    if (GPS_LOCATION_EXTENDED_HAS_ALTITUDE_ASSUMED & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_ALTITUDE_ASSUMED_BIT;
+        out.altitudeAssumed = locationExtended.altitudeAssumed;
+    }
 }
 
 inline uint32_t

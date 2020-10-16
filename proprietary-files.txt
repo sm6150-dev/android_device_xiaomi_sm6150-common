@@ -502,7 +502,7 @@ vendor/lib64/vendor.display.color@1.3.so
 vendor/lib64/vendor.display.postproc@1.0.so
 
 # Power-off charging daemon
--bin/charger:bin/chargeonlymode
+bin/charger:bin/chargeonlymode
 
 # Qualcomm MSM Interface
 system_ext/etc/permissions/qti_libpermissions.xml

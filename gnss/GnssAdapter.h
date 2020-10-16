@@ -38,6 +38,7 @@
 #include <SystemStatus.h>
 #include <XtraSystemStatusObserver.h>
 #include <loc_misc_utils.h>
+#include <queue>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -251,7 +252,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /* === Misc ===================================================================== */
     BlockCPIInfo mBlockCPIInfo;
-    GnssLatencyInfo mGnssLatencyInfo;
+    std::queue<GnssLatencyInfo> mGnssLatencyInfoQueue;
     GnssReportLoggerUtil mLogger;
 
     /* === Misc callback from QMI LOC API ============================================== */

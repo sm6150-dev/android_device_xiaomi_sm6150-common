@@ -477,6 +477,7 @@ vendor/lib/vendor.qti.hardware.vpp@1.3.so|e2953631885c8956489549d16b3077ee9cfedc
 # Mlipay
 vendor/bin/mlipayd@1.1
 vendor/etc/init/vendor.xiaomi.hardware.mlipay@1.1-service.rc
+-vendor/etc/vintf/manifest/manifest_vendor.xiaomi.hardware.mlipay.xml
 vendor/lib64/libmlipay@1.1.so
 vendor/lib64/libmlipay.so
 vendor/lib64/vendor.xiaomi.hardware.mlipay@1.0.so

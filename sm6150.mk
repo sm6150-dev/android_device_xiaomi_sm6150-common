@@ -188,6 +188,7 @@ PRODUCT_PACKAGES += \
     vendor.qti.hardware.display.mapper@2.0.vendor \
     vendor.qti.hardware.display.mapper@3.0 \
     vendor.qti.hardware.display.mapper@4.0.vendor \
+    vendor.xiaomi.hardware.displayfeature@1.0.vendor
 
 # DRM
 PRODUCT_PACKAGES += \

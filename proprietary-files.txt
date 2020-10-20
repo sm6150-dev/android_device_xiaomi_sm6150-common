@@ -371,6 +371,18 @@ vendor/lib/libhdr_tm.so
 vendor/lib64/librs_adreno.so
 vendor/lib/librs_adreno.so
 
+# Graphics (Xiaomi)
+vendor/lib64/hw/hwcomposer.sm6150.so
+vendor/lib64/libclient2slpi.notifier.so
+vendor/lib64/libsdmcore.so
+vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.0.so
+vendor/lib64/vendor.xiaomi.hardware.citsensorservice@1.1.so
+vendor/lib/hw/hwcomposer.sm6150.so
+vendor/lib/libclient2slpi.notifier.so
+vendor/lib/libsdmcore.so
+vendor/lib/vendor.xiaomi.hardware.citsensorservice@1.0.so
+vendor/lib/vendor.xiaomi.hardware.citsensorservice@1.1.so
+
 # Graphics (SDM)
 vendor/lib64/libqseed3.so
 vendor/lib64/libsdm-color.so

@@ -108,7 +108,6 @@ struct GnssInterface {
     void (*disablePPENtripStream)();
     uint32_t (*gnssUpdateSecondaryBandConfig)(const GnssSvTypeConfig& secondaryBandConfig);
     uint32_t (*gnssGetSecondaryBandConfig)();
-    void (*resetNetworkInfo)();
 };
 
 struct BatchingInterface {

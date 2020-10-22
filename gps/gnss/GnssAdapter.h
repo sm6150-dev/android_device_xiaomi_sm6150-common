@@ -164,10 +164,13 @@ typedef std::function<void(
 )> QDgnssSessionActiveCb;
 
 struct CdfwInterface {
-    void (*startDgnssApiService)(const MsgTask& msgTask);
+    void (*startDgnssApiService)();
+
     QDgnssListenerHDL (*createUsableReporter)(
             QDgnssSessionActiveCb sessionActiveCb);
+
     void (*destroyUsableReporter)(QDgnssListenerHDL handle);
+
     void (*reportUsable)(QDgnssListenerHDL handle, bool usable);
 };
 

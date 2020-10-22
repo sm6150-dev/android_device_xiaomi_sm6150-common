@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -50,24 +50,35 @@ const char* LocContext::mLBSLibName = "liblbs_core.so.1";
 
 pthread_mutex_t LocContext::mGetLocContextMutex = PTHREAD_MUTEX_INITIALIZER;
 
-const MsgTask* LocContext::getMsgTask(const char* name)
+const MsgTask* LocContext::getMsgTask(LocThread::tCreate tCreator,
+                                          const char* name, bool joinable)
 {
     if (NULL == mMsgTask) {
-        mMsgTask = new MsgTask(name);
+        mMsgTask = new MsgTask(tCreator, name, joinable);
     }
     return mMsgTask;
 }
 
-ContextBase* LocContext::getLocContext(const char* name)
+inline
+const MsgTask* LocContext::getMsgTask(const char* name, bool joinable) {
+    return getMsgTask((LocThread::tCreate)NULL, name, joinable);
+}
+
+ContextBase* LocContext::getLocContext(LocThread::tCreate tCreator,
+            LocMsg* firstMsg, const char* name, bool joinable)
 {
     pthread_mutex_lock(&LocContext::mGetLocContextMutex);
     LOC_LOGD("%s:%d]: querying ContextBase with tCreator", __func__, __LINE__);
     if (NULL == mContext) {
         LOC_LOGD("%s:%d]: creating msgTask with tCreator", __func__, __LINE__);
-        const MsgTask* msgTask = getMsgTask(name);
+        const MsgTask* msgTask = getMsgTask(tCreator, name, joinable);
         mContext = new LocContext(msgTask);
     }
     pthread_mutex_unlock(&LocContext::mGetLocContextMutex);
+
+    if (firstMsg) {
+        mContext->sendMsg(firstMsg);
+    }
 
     return mContext;
 }

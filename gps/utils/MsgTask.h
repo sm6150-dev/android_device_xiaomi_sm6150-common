@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, 2015, 2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013,2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +29,7 @@
 #ifndef __MSG_TASK__
 #define __MSG_TASK__
 
-#include <functional>
 #include <LocThread.h>
-
-namespace loc_util {
 
 struct LocMsg {
     inline LocMsg() {}
@@ -41,16 +38,30 @@ struct LocMsg {
     inline virtual void log() const {}
 };
 
-class MsgTask {
+class MsgTask : public LocRunnable {
     const void* mQ;
-    LocThread mThread;
+    LocThread* mThread;
+    friend class LocThreadDelegate;
+protected:
+    virtual ~MsgTask();
 public:
-    ~MsgTask() = default;
-    MsgTask(const char* threadName = NULL);
+    MsgTask(LocThread::tCreate tCreator, const char* threadName = NULL, bool joinable = true);
+    MsgTask(const char* threadName = NULL, bool joinable = true);
+    // this obj will be deleted once thread is deleted
+    void destroy();
     void sendMsg(const LocMsg* msg) const;
-    void sendMsg(const std::function<void()> runnable) const;
-};
+    // Overrides of LocRunnable methods
+    // This method will be repeated called until it returns false; or
+    // until thread is stopped.
+    virtual bool run();
 
-} //
+    // The method to be run before thread loop (conditionally repeatedly)
+    // calls run()
+    virtual void prerun();
+
+    // The method to be run after thread loop (conditionally repeatedly)
+    // calls run()
+    inline virtual void postrun() {}
+};
 
 #endif //__MSG_TASK__

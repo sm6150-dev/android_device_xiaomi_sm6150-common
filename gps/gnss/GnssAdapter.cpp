@@ -74,7 +74,10 @@ typedef const CdfwInterface* (*getCdfwInterface)();
 
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
-                   LocContext::getLocContext(LocContext::mLocationHalName),
+                   LocContext::getLocContext(NULL,
+                                             NULL,
+                                             LocContext::mLocationHalName,
+                                             false),
                    true, nullptr, true),
     mEngHubProxy(new EngineHubProxyBase()),
     mQDgnssListenerHDL(nullptr),
@@ -6262,9 +6265,6 @@ GnssAdapter::parseDoublesString(char* dString) {
 void
 GnssAdapter::reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallback)
 {
-#define MAX_TEXT_WIDTH      50
-#define MAX_COLUMN_WIDTH    20
-
     /* parse antenna_corrections file and fill in
     a vector of GnssAntennaInformation data structure */
 
@@ -6336,11 +6336,9 @@ GnssAdapter::reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallbac
         gnssAntennaInfo.phaseCenterOffsetCoordinateMillimeters.z = pcOffset[4];
         gnssAntennaInfo.phaseCenterOffsetCoordinateMillimeters.zUncertainty = pcOffset[5];
 
-        uint16_t array_size = MAX_TEXT_WIDTH + MAX_COLUMN_WIDTH*numberOfColumns;
-        uint16_t array_size_SGC = MAX_TEXT_WIDTH + MAX_COLUMN_WIDTH*numberOfColumnsSGC;
         for (uint32_t j = 0; j < numberOfRows; j++) {
-            char pcVarCorrStr[array_size];
-            char pcVarCorrUncStr[array_size];
+            char pcVarCorrStr[LOC_MAX_PARAM_STRING];
+            char pcVarCorrUncStr[LOC_MAX_PARAM_STRING];
 
             string s1 = "PC_VARIATION_CORRECTION_" + to_string(i) + "_ROW_";
             s1 += to_string(j);
@@ -6352,7 +6350,7 @@ GnssAdapter::reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallbac
                 { s1.c_str(), &pcVarCorrStr, NULL, 's' },
                 { s2.c_str(), &pcVarCorrUncStr, NULL, 's' },
             };
-            UTIL_READ_CONF_LONG(LOC_PATH_ANT_CORR, ant_row_table, array_size);
+            UTIL_READ_CONF(LOC_PATH_ANT_CORR, ant_row_table);
 
             gnssAntennaInfo.phaseCenterVariationCorrectionMillimeters.push_back(
                     parseDoublesString(pcVarCorrStr));
@@ -6360,8 +6358,8 @@ GnssAdapter::reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallbac
                     parseDoublesString(pcVarCorrUncStr));
         }
         for (uint32_t j = 0; j < numberOfRowsSGC; j++) {
-            char sigGainCorrStr[array_size_SGC];
-            char sigGainCorrUncStr[array_size_SGC];
+            char sigGainCorrStr[LOC_MAX_PARAM_STRING];
+            char sigGainCorrUncStr[LOC_MAX_PARAM_STRING];
 
             string s3 = "SIGNAL_GAIN_CORRECTION_" + to_string(i) + "_ROW_";
             s3 += to_string(j);
@@ -6373,7 +6371,7 @@ GnssAdapter::reportGnssAntennaInformation(const antennaInfoCb antennaInfoCallbac
                 { s3.c_str(), &sigGainCorrStr, NULL, 's' },
                 { s4.c_str(), &sigGainCorrUncStr, NULL, 's' },
             };
-            UTIL_READ_CONF_LONG(LOC_PATH_ANT_CORR, ant_row_table, array_size_SGC);
+            UTIL_READ_CONF(LOC_PATH_ANT_CORR, ant_row_table);
 
             gnssAntennaInfo.signalGainCorrectionDbi.push_back(
                     parseDoublesString(sigGainCorrStr));
@@ -6408,7 +6406,7 @@ void GnssAdapter::initCDFWService()
             QDgnssSessionActiveCb qDgnssSessionActiveCb = [this] (bool sessionActive) {
                 mDGnssNeedReport = sessionActive;
             };
-            mCdfwInterface->startDgnssApiService(*mMsgTask);
+            mCdfwInterface->startDgnssApiService();
             mQDgnssListenerHDL = mCdfwInterface->createUsableReporter(qDgnssSessionActiveCb);
         }
     }

@@ -45,6 +45,7 @@ namespace loc_util {
 
 class LocIpcRecver;
 class LocIpcSender;
+class LocIpcRunnable;
 
 class ILocIpcListener {
 protected:
@@ -88,7 +89,7 @@ public:
 
 class LocIpc {
 public:
-    inline LocIpc() = default;
+    inline LocIpc() : mRunnable(nullptr) {}
     inline virtual ~LocIpc() {
         stopNonBlockingListening();
     }
@@ -150,6 +151,7 @@ public:
 
 private:
     LocThread mThread;
+    LocIpcRunnable *mRunnable;
 };
 
 /* this is only when client needs to implement Sender / Recver that are not already provided by

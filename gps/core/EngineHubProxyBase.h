@@ -31,8 +31,6 @@
 
 namespace loc_core {
 
-using namespace loc_util;
-
 class EngineHubProxyBase {
 public:
     inline EngineHubProxyBase() {

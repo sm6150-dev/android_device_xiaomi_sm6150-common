@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, 2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,18 +30,14 @@
 #define __LOC_THREAD__
 
 #include <stddef.h>
-#include <memory>
-
-using std::shared_ptr;
-
-namespace loc_util {
+#include <pthread.h>
 
 // abstract class to be implemented by client to provide a runnable class
 // which gets scheduled by LocThread
 class LocRunnable {
 public:
-    inline LocRunnable() = default;
-    inline virtual ~LocRunnable() = default;
+    inline LocRunnable() {}
+    inline virtual ~LocRunnable() {}
 
     // The method to be implemented by thread clients
     // and be scheduled by LocThread
@@ -56,10 +52,6 @@ public:
     // The method to be run after thread loop (conditionally repeatedly)
     // calls run()
     inline virtual void postrun() {}
-
-    // The method to wake up the potential blocking thread
-    // no op if not applicable
-    inline virtual void interrupt() = 0;
 };
 
 // opaque class to provide service implementation.
@@ -71,11 +63,12 @@ class LocThread {
     LocThreadDelegate* mThread;
 public:
     inline LocThread() : mThread(NULL) {}
-    inline virtual ~LocThread() { stop(); }
+    virtual ~LocThread();
 
+    typedef pthread_t (*tCreate)(const char* name, void* (*start)(void*), void* arg);
     // client starts thread with a runnable, which implements
     // the logics to fun in the created thread context.
-    // The thread is always detached.
+    // The thread could be either joinable or detached.
     // runnable is an obj managed by client. Client creates and
     //          frees it (but must be after stop() is called, or
     //          this LocThread obj is deleted).
@@ -83,13 +76,17 @@ public:
     //          returns true. Else it is client's responsibility
     //          to delete the object
     // Returns 0 if success; false if failure.
-    bool start(const char* threadName, shared_ptr<LocRunnable> runnable);
+    bool start(tCreate creator, const char* threadName, LocRunnable* runnable, bool joinable = true);
+    inline bool start(const char* threadName, LocRunnable* runnable, bool joinable = true) {
+        return start(NULL, threadName, runnable, joinable);
+    }
 
+    // NOTE: if this is a joinable thread, this stop may block
+    // for a while until the thread is joined.
     void stop();
 
     // thread status check
     inline bool isRunning() { return NULL != mThread; }
 };
 
-} // loc_util
 #endif //__LOC_THREAD__

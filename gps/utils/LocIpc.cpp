@@ -313,7 +313,7 @@ public:
             mAbortCalled(false),
             mLocIpc(locIpc),
             mIpcRecver(move(ipcRecver)) {}
-    inline virtual bool run() override {
+    inline bool run() override {
         if (mIpcRecver != nullptr) {
             mLocIpc.startBlockingListening(*(mIpcRecver.get()));
             if (!mAbortCalled) {
@@ -323,7 +323,7 @@ public:
         // return false so the calling thread exits while loop
         return false;
     }
-    inline virtual void interrupt() override {
+    inline void abort() {
         mAbortCalled = true;
         if (mIpcRecver != nullptr) {
             mIpcRecver->abort();
@@ -335,7 +335,8 @@ bool LocIpc::startNonBlockingListening(unique_ptr<LocIpcRecver>& ipcRecver) {
     if (ipcRecver != nullptr && ipcRecver->isRecvable()) {
         std::string threadName("LocIpc-");
         threadName.append(ipcRecver->getName());
-        return mThread.start(threadName.c_str(), make_shared<LocIpcRunnable>(*this, ipcRecver));
+        mRunnable = new LocIpcRunnable(*this, ipcRecver);
+        return mThread.start(threadName.c_str(), mRunnable);
     } else {
         LOC_LOGe("ipcRecver is null OR ipcRecver->recvable() is fasle");
         return false;
@@ -355,6 +356,10 @@ bool LocIpc::startBlockingListening(LocIpcRecver& ipcRecver) {
 }
 
 void LocIpc::stopNonBlockingListening() {
+    if (mRunnable) {
+        mRunnable->abort();
+        mRunnable = nullptr;
+    }
     mThread.stop();
 }
 

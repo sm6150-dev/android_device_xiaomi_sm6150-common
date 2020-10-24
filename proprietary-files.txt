@@ -504,6 +504,8 @@ vendor/lib/vendor.qti.hardware.vpp@1.3.so
 # Media (C2)
 vendor/bin/hw/vendor.qti.media.c2@1.0-service
 vendor/etc/init/vendor.qti.media.c2@1.0-service.rc
+vendor/etc/seccomp_policy/codec2.vendor.base.policy
+vendor/etc/seccomp_policy/codec2.vendor.ext.policy
 vendor/lib/libqcodec2.so
 
 # Mlipay

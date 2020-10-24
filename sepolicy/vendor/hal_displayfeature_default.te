@@ -33,4 +33,4 @@ allow hal_displayfeature_default qdisplay_service:service_manager find;
 
 binder_call(hal_displayfeature_default, hal_graphics_composer_default)
 
-allow hal_displayfeature_default sensors:unix_stream_socket connectto;
+allow hal_displayfeature_default vendor_sensors:unix_stream_socket connectto;

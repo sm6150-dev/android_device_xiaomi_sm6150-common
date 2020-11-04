@@ -87,6 +87,7 @@ static uint32_t configMinGpsWeek(uint16_t minGpsWeek);
 static uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig);
 static uint32_t gnssUpdateSecondaryBandConfig(const GnssSvTypeConfig& secondaryBandConfig);
 static uint32_t gnssGetSecondaryBandConfig();
+static uint32_t configEngineRunState(PositioningEngineMask engType, LocEngineRunState engState);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -133,6 +134,7 @@ static const GnssInterface gGnssInterface = {
     configDeadReckoningEngineParams,
     gnssUpdateSecondaryBandConfig,
     gnssGetSecondaryBandConfig,
+    configEngineRunState,
 };
 
 #ifndef DEBUG_X86
@@ -463,6 +465,14 @@ static uint32_t gnssUpdateSecondaryBandConfig(
 static uint32_t gnssGetSecondaryBandConfig(){
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssGetSecondaryBandConfigCommand();
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t configEngineRunState(PositioningEngineMask engType, LocEngineRunState engState) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configEngineRunStateCommand(engType, engState);
     } else {
         return 0;
     }

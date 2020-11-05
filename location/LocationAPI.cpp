@@ -39,6 +39,8 @@
 typedef const GnssInterface* (getGnssInterface)();
 typedef const GeofenceInterface* (getGeofenceInterface)();
 typedef const BatchingInterface* (getBatchingInterface)();
+typedef void (createOSFramework)();
+typedef void (destroyOSFramework)();
 
 typedef struct {
     // bit mask of the adpaters that we need to wait for the removeClientCompleteCallback
@@ -68,6 +70,7 @@ static pthread_mutex_t gDataMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool gGnssLoadFailed = false;
 static bool gBatchingLoadFailed = false;
 static bool gGeofenceLoadFailed = false;
+static uint32_t gOSFrameworkRefCount = 0;
 
 template <typename T1, typename T2>
 static const T1* loadLocationInterface(const char* library, const char* name) {
@@ -77,6 +80,28 @@ static const T1* loadLocationInterface(const char* library, const char* name) {
         return (const T1*) getter;
     }else {
         return (*getter)();
+    }
+}
+
+static void createOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    createOSFramework* getter = (createOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "createOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+static void destroyOSFrameworkInstance() {
+    void* libHandle = nullptr;
+    destroyOSFramework* getter = (destroyOSFramework*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "destroyOSFramework");
+    if (getter != nullptr) {
+        (*getter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
     }
 }
 
@@ -170,6 +195,11 @@ LocationAPI::createInstance (LocationCallbacks& locationCallbacks)
     bool requestedCapabilities = false;
 
     pthread_mutex_lock(&gDataMutex);
+
+    gOSFrameworkRefCount++;
+    if (1 == gOSFrameworkRefCount) {
+        createOSFrameworkInstance();
+    }
 
     if (isGnssClient(locationCallbacks)) {
         if (NULL == gData.gnssInterface && !gGnssLoadFailed) {
@@ -295,6 +325,11 @@ LocationAPI::destroy(locationApiDestroyCompleteCallback destroyCompleteCb)
         LOC_LOGE("%s:%d]: Location API client %p not found in client data",
                  __func__, __LINE__, this);
     }
+
+    if (1 == gOSFrameworkRefCount) {
+        destroyOSFrameworkInstance();
+    }
+    gOSFrameworkRefCount--;
 
     pthread_mutex_unlock(&gDataMutex);
     if (invokeDestroyCb) {

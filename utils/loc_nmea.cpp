@@ -1083,17 +1083,6 @@ static void loc_nmea_get_fix_quality(const UlpLocation & location,
     memset(gnsModeIndicator, 'N', 6); // N means no fix
     gnsModeIndicator[6] = '\0';
     do {
-        // GGA fix quality is defined in NMEA spec as below:
-        // https://www.trimble.com/OEM_ReceiverHelp/V4.44/en/NMEA-0183messages_GGA.html
-        // Fix quality: 0 = invalid
-        //              1 = GPS fix (SPS)
-        //              2 = DGPS fix
-        //              3 = PPS fix
-        //              4 = Real Time Kinematic
-        //              5 = Float RTK
-        //              6 = estimated (dead reckoning) (2.3 feature)
-        //              7 = Manual input mode
-        //              8 = Simulation mode
         if (!(location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG)){
             break;
         }

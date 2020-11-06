@@ -138,7 +138,7 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
             if (qTimerTickCount >= in.elapsedRealTime) {
                 qtimerDiff = qTimerTickCount - in.elapsedRealTime;
             }
-            LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " in.elapsedRealTime=%" PRIi64 ""
+            LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " in.elapsedRealTime=%" PRIi64 ""
                      " qTimerTickCount=%" PRIi64 " qtimerDiff=%" PRIi64 "",
                      sinceBootTimeNanos, in.elapsedRealTime, qTimerTickCount, qtimerDiff);
             uint64_t qTimerDiffNanos = qTimerTicksToNanos(double(qtimerDiff));
@@ -163,12 +163,12 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
         } else {
             int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
             int64_t locationTimeNanos = in.timestamp*1000000;
-            LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+            LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
                      " locationTimeNanos:%" PRIi64 "",
                      sinceBootTimeNanos, currentTimeNanos, locationTimeNanos);
             if (currentTimeNanos >= locationTimeNanos) {
                 int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
-                LOC_LOGv("ageTimeNanos:%" PRIi64 ")", ageTimeNanos);
+                LOC_LOGd("ageTimeNanos:%" PRIi64 ")", ageTimeNanos);
                 // the max trusted propagation time 100ms for ageTimeNanos to avoid user setting
                 // wrong time, it will affect elapsedRealtimeNanos
                 if (ageTimeNanos <= 100000000) {
@@ -183,7 +183,7 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
             }
         }
     }
-    LOC_LOGv("out.elapsedRealtime.timestampNs=%" PRIi64 ""
+    LOC_LOGd("out.elapsedRealtime.timestampNs=%" PRIi64 ""
              " out.elapsedRealtime.timeUncertaintyNs=%" PRIi64 ""
              " out.elapsedRealtime.flags=0x%X",
              out.elapsedRealtime.timestampNs,

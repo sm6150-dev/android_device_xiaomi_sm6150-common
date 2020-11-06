@@ -146,6 +146,7 @@ typedef struct {
     TuncConfigInfo tuncConfigInfo;
     PaceConfigInfo paceConfigInfo;
     RobustLocationConfigInfo robustLocationConfigInfo;
+    LeverArmConfigInfo  leverArmConfigInfo;
 } LocIntegrationConfigInfo;
 
 using namespace loc_core;
@@ -564,6 +565,8 @@ public:
     static void convertGnssSvIdMaskToList(
             uint64_t svIdMask, std::vector<GnssSvIdSource>& svIds,
             GnssSvId initialSvId, GnssSvType svType);
+    static void computeVRPBasedLla(const UlpLocation& loc, GpsLocationExtended& locExt,
+                                   const LeverArmConfigInfo& leverArmConfigInfo);
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
     void injectLocationExtCommand(const GnssLocationInfoNotification &locationInfo);

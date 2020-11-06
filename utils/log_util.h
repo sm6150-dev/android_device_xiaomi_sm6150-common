@@ -53,7 +53,7 @@
 #endif /* LOG_TAG */
 
 // LE targets with no logcat support
-#ifdef FEATURE_EXTERNAL_AP
+#if defined(FEATURE_EXTERNAL_AP) || defined(USE_SYSLOG_LOGGING)
 #include <syslog.h>
 #define ALOGE(...) syslog(LOG_ERR,     "LOC_LOGE: " __VA_ARGS__);
 #define ALOGW(...) syslog(LOG_WARNING, "LOC_LOGW: " __VA_ARGS__);

@@ -41,6 +41,8 @@
 #else
     #include <unordered_map>
 #endif
+#include <inttypes.h>
+#include <functional>
 
 using namespace loc_util;
 
@@ -342,6 +344,27 @@ public:
                                               LocApiResponse* adapterResponse=nullptr);
     virtual void getConstellationMultiBandConfig(uint32_t sessionId,
                                         LocApiResponse* adapterResponse=nullptr);
+};
+
+class ElapsedRealtimeEstimator {
+private:
+    int64_t mCurrentClockDiff;
+    int64_t mPrevUtcTimeNanos;
+    int64_t mPrevBootTimeNanos;
+    int64_t mFixTimeStablizationThreshold;
+    int64_t mInitialTravelTime;
+    int64_t mPrevDataTimeNanos;
+public:
+
+    ElapsedRealtimeEstimator(int64_t travelTimeNanosEstimate):
+            mInitialTravelTime(travelTimeNanosEstimate) {reset();}
+    int64_t getElapsedRealtimeEstimateNanos(int64_t curDataTimeNanos,
+            bool isCurDataTimeTrustable, uint32_t tbf);
+    inline int64_t getElapsedRealtimeUncNanos() { return 5000000;}
+    void reset();
+
+    static int64_t getElapsedRealtimeQtimer(int64_t qtimerTicksAtOrigin);
+    static bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

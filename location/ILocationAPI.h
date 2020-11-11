@@ -380,9 +380,9 @@ public:
         is made to pause/resume none-DRE engine. <br/>
 
         Request to pause/resume DRE engine can be made with or
-        without an on-going session. With Qualcomm DR engine, on
-        resume, GNSS position & heading re-acquisition is needed for
-        DR to engage. If DRE engine is already in the requested
+        without an on-going session. With QDR engine, on resume,
+        GNSS position & heading re-acquisition is needed for DR
+        engine to engage. If DR engine is already in the requested
         state, the request will be no-op.  <br/>
 
         @param

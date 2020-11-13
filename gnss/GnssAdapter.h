@@ -265,7 +265,8 @@ class GnssAdapter : public LocAdapterBase {
                                 const GpsLocationExtended& locationExtended,
                                 const LocPosTechMask techMask);
     static void convertLocationInfo(GnssLocationInfoNotification& out,
-                                    const GpsLocationExtended& locationExtended);
+                                    const GpsLocationExtended& locationExtended,
+                                    loc_sess_status status);
     static uint16_t getNumSvUsed(uint64_t svUsedIdsMask,
                                  int totalSvCntInThisConstellation);
 

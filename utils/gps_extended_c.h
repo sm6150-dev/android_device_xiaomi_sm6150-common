@@ -868,12 +868,6 @@ typedef struct {
     bool altitudeAssumed;
 } GpsLocationExtended;
 
-enum loc_sess_status {
-    LOC_SESS_SUCCESS,
-    LOC_SESS_INTERMEDIATE,
-    LOC_SESS_FAILURE
-};
-
 // struct that contains complete position info from engine
 typedef struct {
     UlpLocation location;

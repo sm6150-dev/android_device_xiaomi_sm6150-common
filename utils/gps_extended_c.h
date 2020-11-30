@@ -915,6 +915,7 @@ typedef uint32_t NmeaSentenceTypesMask;
 #define LOC_NMEA_MASK_GQGSV_V02 ((NmeaSentenceTypesMask)0x10000000) /**<  Enable GQGSV type  */
 #define LOC_NMEA_MASK_GIGSV_V02 ((NmeaSentenceTypesMask)0x20000000) /**<  Enable GIGSV type  */
 #define LOC_NMEA_MASK_GNDTM_V02 ((NmeaSentenceTypesMask)0x40000000) /**<  Enable GNDTM type  */
+#define LOC_NMEA_MASK_TAGBLOCK_V02 ((NmeaSentenceTypesMask)0x80000000) /**< Enable TAGBLOCK type */
 
 
 // all bitmasks of general supported NMEA sentenses - debug is not part of this

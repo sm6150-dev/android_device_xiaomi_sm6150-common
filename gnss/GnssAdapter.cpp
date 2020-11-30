@@ -229,8 +229,7 @@ GnssAdapter::checkAndSetSPEToRunforNHz(TrackingOptions & out) {
 
 void
 GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
-                             const GpsLocationExtended& locationExtended,
-                             const LocPosTechMask techMask)
+                             const GpsLocationExtended& locationExtended)
 {
     memset(&out, 0, sizeof(Location));
     out.size = sizeof(Location);
@@ -272,38 +271,41 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
         out.conformityIndex = locationExtended.conformityIndex;
     }
     out.timestamp = ulpLocation.gpsLocation.timestamp;
-    if (LOC_POS_TECH_MASK_SATELLITE & techMask) {
+    if (LOC_POS_TECH_MASK_SATELLITE & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_GNSS_BIT;
     }
-    if (LOC_POS_TECH_MASK_CELLID & techMask) {
+    if (LOC_POS_TECH_MASK_CELLID & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_CELL_BIT;
     }
-    if (LOC_POS_TECH_MASK_WIFI & techMask) {
+    if (LOC_POS_TECH_MASK_WIFI & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_WIFI_BIT;
     }
-    if (LOC_POS_TECH_MASK_SENSORS & techMask) {
+    if (LOC_POS_TECH_MASK_SENSORS & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_SENSORS_BIT;
     }
-    if (LOC_POS_TECH_MASK_REFERENCE_LOCATION & techMask) {
+    if (LOC_POS_TECH_MASK_REFERENCE_LOCATION & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_REFERENCE_LOCATION_BIT;
     }
-    if (LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION & techMask) {
+    if (LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_INJECTED_COARSE_POSITION_BIT;
     }
-    if (LOC_POS_TECH_MASK_AFLT & techMask) {
+    if (LOC_POS_TECH_MASK_AFLT & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_AFLT_BIT;
     }
-    if (LOC_POS_TECH_MASK_HYBRID & techMask) {
+    if (LOC_POS_TECH_MASK_HYBRID & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_HYBRID_BIT;
     }
-    if (LOC_POS_TECH_MASK_PPE & techMask) {
+    if (LOC_POS_TECH_MASK_PPE & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_PPE_BIT;
     }
-    if (LOC_POS_TECH_MASK_VEH & techMask) {
+    if (LOC_POS_TECH_MASK_VEH & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_VEH_BIT;
     }
-    if (LOC_POS_TECH_MASK_VIS & techMask) {
+    if (LOC_POS_TECH_MASK_VIS & locationExtended.tech_mask) {
         out.techMask |= LOCATION_TECHNOLOGY_VIS_BIT;
+    }
+    if (LOC_NAV_MASK_DGNSS_CORRECTION & locationExtended.navSolutionMask) {
+        out.techMask |= LOCATION_TECHNOLOGY_DGNSS_BIT;
     }
 
     if (LOC_GPS_LOCATION_HAS_SPOOF_MASK & ulpLocation.gpsLocation.flags) {
@@ -839,6 +841,9 @@ GnssAdapter::setConfig()
     uint32_t mask = 0;
     if (NMEA_PROVIDER_MP == ContextBase::mGps_conf.NMEA_PROVIDER) {
         mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
+        if (ContextBase::mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED) {
+            mask |= LOC_NMEA_MASK_TAGBLOCK_V02;
+        }
     }
     if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
         mask |= LOC_NMEA_MASK_DEBUG_V02;
@@ -918,6 +923,9 @@ GnssAdapter::setConfig()
         uint32_t mask = 0;
         if (NMEA_PROVIDER_MP == gpsConf.NMEA_PROVIDER) {
             mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
+            if (gpsConf.NMEA_TAG_BLOCK_GROUPING_ENABLED) {
+                mask |= LOC_NMEA_MASK_TAGBLOCK_V02;
+            }
         }
         if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
             mask |= LOC_NMEA_MASK_DEBUG_V02;
@@ -3760,9 +3768,9 @@ GnssAdapter::needReportForGnssClient(const UlpLocation& ulpLocation,
 bool
 GnssAdapter::needReportForFlpClient(enum loc_sess_status status,
                                     LocPosTechMask techMask) {
-    if ((status == LOC_SESS_INTERMEDIATE) &&
-        !(techMask & LOC_POS_TECH_MASK_SENSORS) &&
-        (!getAllowFlpNetworkFixes())) {
+    if (((LOC_SESS_INTERMEDIATE == status) && !(techMask & LOC_POS_TECH_MASK_SENSORS) &&
+        (!getAllowFlpNetworkFixes())) ||
+        (LOC_SESS_FAILURE == status)) {
         return false;
     } else {
         return true;
@@ -3826,7 +3834,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
     if (reportToGnssClient || reportToFlpClient) {
         GnssLocationInfoNotification locationInfo = {};
         convertLocationInfo(locationInfo, locationExtended);
-        convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
+        convertLocation(locationInfo.location, ulpLocation, locationExtended);
 
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
             if ((reportToFlpClient && isFlpClient(it->second)) ||
@@ -3887,10 +3895,12 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                           (LOC_RELIABILITY_NOT_SET == locationExtended.horizontal_reliability));
         uint8_t generate_nmea = (reportToGnssClient && status != LOC_SESS_FAILURE && !blank_fix);
         bool custom_nmea_gga = (1 == ContextBase::mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED);
+        bool isTagBlockGroupingEnabled =
+                (1 == ContextBase::mGps_conf.NMEA_TAG_BLOCK_GROUPING_ENABLED);
         std::vector<std::string> nmeaArraystr;
         int indexOfGGA = -1;
-        loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo,
-                              generate_nmea, custom_nmea_gga, nmeaArraystr, indexOfGGA);
+        loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo, generate_nmea,
+                custom_nmea_gga, nmeaArraystr, indexOfGGA, isTagBlockGroupingEnabled);
         stringstream ss;
         for (auto itor = nmeaArraystr.begin(); itor != nmeaArraystr.end(); ++itor) {
             ss << *itor;
@@ -3937,8 +3947,7 @@ GnssAdapter::reportEnginePositions(unsigned int count,
             convertLocationInfo(locationInfo[i], engLocation->locationExtended);
             convertLocation(locationInfo[i].location,
                             engLocation->location,
-                            engLocation->locationExtended,
-                            engLocation->location.tech_mask);
+                            engLocation->locationExtended);
         }
     }
 
@@ -4136,6 +4145,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     }
 
     mGnssSvIdUsedInPosAvail = false;
+    mGnssMbSvIdUsedInPosAvail = false;
 }
 
 void

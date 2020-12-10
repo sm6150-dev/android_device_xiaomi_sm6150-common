@@ -72,6 +72,9 @@ namespace implementation {
 FingerprintInscreen::FingerprintInscreen() {
     TouchFeatureService = ITouchFeature::getService();
     xiaomiFingerprintService = IXiaomiFingerprint::getService();
+}
+
+Return<void> FingerprintInscreen::SetFingerprintExtCmd() {
     std::thread([this]() {
         int fd = open(FOD_UI_PATH, O_RDONLY);
         if (fd < 0) {
@@ -96,6 +99,7 @@ FingerprintInscreen::FingerprintInscreen() {
                                              readBool(fd) ? PARAM_NIT_630_FOD : PARAM_NIT_NONE);
         }
     }).detach();
+    return Void();
 }
 
 Return<int32_t> FingerprintInscreen::getPositionX() {
@@ -130,6 +134,7 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
+    SetFingerprintExtCmd();
     TouchFeatureService->setTouchMode(Touch_Fod_Enable, 1);
     return Void();
 }

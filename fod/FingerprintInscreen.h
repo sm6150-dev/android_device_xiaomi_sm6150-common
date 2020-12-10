@@ -61,6 +61,7 @@ class FingerprintInscreen : public IFingerprintInscreen {
 
     std::mutex mCallbackLock;
     sp<IFingerprintInscreenCallback> mCallback;
+    Return<void> SetFingerprintExtCmd();
 };
 
 }  // namespace implementation

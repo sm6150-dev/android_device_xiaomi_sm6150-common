@@ -20,10 +20,10 @@
 
 #include <android-base/logging.h>
 #include <fcntl.h>
-#include <fstream>
 #include <hardware_legacy/power.h>
 #include <poll.h>
 #include <sys/stat.h>
+#include <fstream>
 #include <thread>
 
 #define FINGERPRINT_ACQUIRED_VENDOR 6
@@ -60,7 +60,7 @@ static bool readBool(int fd) {
 
     return c != '0';
 }
-}
+}  // namespace
 namespace vendor {
 namespace lineage {
 namespace biometrics {
@@ -80,9 +80,9 @@ FingerprintInscreen::FingerprintInscreen() {
         }
 
         struct pollfd fodUiPoll = {
-            .fd = fd,
-            .events = POLLERR | POLLPRI,
-            .revents = 0,
+                .fd = fd,
+                .events = POLLERR | POLLPRI,
+                .revents = 0,
         };
 
         while (true) {
@@ -93,7 +93,7 @@ FingerprintInscreen::FingerprintInscreen() {
             }
 
             xiaomiFingerprintService->extCmd(COMMAND_NIT,
-                    readBool(fd) ? PARAM_NIT_630_FOD : PARAM_NIT_NONE);
+                                             readBool(fd) ? PARAM_NIT_630_FOD : PARAM_NIT_NONE);
         }
     }).detach();
 }

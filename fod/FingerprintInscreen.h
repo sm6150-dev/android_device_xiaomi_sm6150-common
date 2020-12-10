@@ -36,7 +36,7 @@ using ::vendor::xiaomi::hardware::fingerprintextension::V1_0::IXiaomiFingerprint
 using ::vendor::xiaomi::hardware::touchfeature::V1_0::ITouchFeature;
 
 class FingerprintInscreen : public IFingerprintInscreen {
-public:
+  public:
     FingerprintInscreen();
     Return<int32_t> getPositionX() override;
     Return<int32_t> getPositionY() override;
@@ -52,9 +52,10 @@ public:
     Return<void> setLongPressEnabled(bool enabled) override;
     Return<int32_t> getDimAmount(int32_t brightness) override;
     Return<bool> shouldBoostBrightness() override;
-    Return<void> setCallback(const sp<::vendor::lineage::biometrics::fingerprint::inscreen::V1_0::IFingerprintInscreenCallback>& callback) override;
+    Return<void> setCallback(const sp<::vendor::lineage::biometrics::fingerprint::inscreen::V1_0::
+                                              IFingerprintInscreenCallback>& callback) override;
 
-private:
+  private:
     sp<ITouchFeature> TouchFeatureService;
     sp<IXiaomiFingerprint> xiaomiFingerprintService;
 

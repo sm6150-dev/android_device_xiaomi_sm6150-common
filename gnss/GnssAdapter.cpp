@@ -2606,6 +2606,7 @@ GnssAdapter::restartSessions(bool modemSSR)
         // inform engine hub that GNSS session is about to start
         mEngHubProxy->gnssSetFixMode(mLocPositionMode);
         mEngHubProxy->gnssStartFix();
+        checkUpdateDgnssNtrip(false);
     }
 
     checkAndRestartSPESession();
@@ -2638,6 +2639,10 @@ GnssAdapter::suspendSessions()
         // inform engine hub that GNSS session has stopped
         mEngHubProxy->gnssStopFix();
         mLocApi->stopFix(nullptr);
+        if (isDgnssNmeaRequired()) {
+            mDgnssState &= ~DGNSS_STATE_NO_NMEA_PENDING;
+        }
+        stopDgnssNtrip();
         mSPEAlreadyRunningAtHighestInterval = false;
     }
 }
@@ -2834,7 +2839,6 @@ GnssAdapter::saveTrackingSession(LocationAPI* client, uint32_t sessionId,
         mTimeBasedTrackingSessions[key] = options;
     }
     reportPowerStateIfChanged();
-    checkUpdateDgnssNtrip(false);
 }
 
 void
@@ -2851,15 +2855,7 @@ GnssAdapter::eraseTrackingSession(LocationAPI* client, uint32_t sessionId)
         }
     }
     reportPowerStateIfChanged();
-
-    if (mSendNmeaConsent && mStartDgnssNtripParams.ntripParams.requiresNmeaLocation) {
-        LOC_LOGd("requiresNmeaLocation");
-        mDgnssState &= ~DGNSS_STATE_NO_NMEA_PENDING;
-        mStartDgnssNtripParams.nmea.clear();
-    }
-    stopDgnssNtrip();
 }
-
 
 bool GnssAdapter::setLocPositionMode(const LocPosMode& mode) {
     if (!mLocPositionMode.equals(mode)) {
@@ -3078,6 +3074,8 @@ GnssAdapter::startTimeBasedTracking(LocationAPI* client, uint32_t sessionId,
                           [this, client, sessionId] (LocationError err) {
                 if (LOCATION_ERROR_SUCCESS != err) {
                     eraseTrackingSession(client, sessionId);
+                } else {
+                    checkUpdateDgnssNtrip(false);
                 }
 
                 reportResponse(client, err, sessionId);
@@ -3418,6 +3416,11 @@ GnssAdapter::stopTracking(LocationAPI* client, uint32_t id)
                      [this, client, id] (LocationError err) {
         reportResponse(client, err, id);
     }));
+
+    if (isDgnssNmeaRequired()) {
+        mDgnssState &= ~DGNSS_STATE_NO_NMEA_PENDING;
+    }
+    stopDgnssNtrip();
 
     mSPEAlreadyRunningAtHighestInterval = false;
 }
@@ -6785,9 +6788,6 @@ void GnssAdapter::enablePPENtripStreamCommand(const GnssNtripConnectionParams& p
 }
 
 void GnssAdapter::handleEnablePPENtrip(const GnssNtripConnectionParams& params) {
-
-    LOC_LOGd("isInSession %d mDgnssState 0x%x", isInSession(), mDgnssState);
-
     LOC_LOGd("%d %s %d %s %s %s %d mSendNmeaConsent %d",
              params.useSSL, params.hostNameOrIp.data(), params.port,
              params.mountPoint.data(), params.username.data(), params.password.data(),
@@ -6801,7 +6801,8 @@ void GnssAdapter::handleEnablePPENtrip(const GnssNtripConnectionParams& params) 
             0 == pNtripParams->mountPoint.compare(params.mountPoint) &&
             0 == pNtripParams->username.compare(params.username) &&
             0 == pNtripParams->password.compare(params.password) &&
-            params.requiresNmeaLocation == params.requiresNmeaLocation) {
+            pNtripParams->requiresNmeaLocation == params.requiresNmeaLocation &&
+            mDgnssState & DGNSS_STATE_ENABLE_NTRIP_COMMAND) {
         LOC_LOGd("received same Ntrip param");
         return;
     }
@@ -6836,13 +6837,14 @@ void GnssAdapter::disablePPENtripStreamCommand() {
 }
 
 void GnssAdapter::handleDisablePPENtrip() {
-    mStartDgnssNtripParams.clear();
     mDgnssState &= ~DGNSS_STATE_ENABLE_NTRIP_COMMAND;
     mDgnssState |= DGNSS_STATE_NO_NMEA_PENDING;
     stopDgnssNtrip();
 }
 
 void GnssAdapter::checkUpdateDgnssNtrip(bool isLocationValid) {
+    LOC_LOGd("isInSession %d mDgnssState 0x%x isLocationValid %d",
+            isInSession(), mDgnssState, isLocationValid);
     if (isInSession()) {
         uint64_t curBootTime = getBootTimeMilliSec();
         if (mDgnssState == (DGNSS_STATE_ENABLE_NTRIP_COMMAND | DGNSS_STATE_NO_NMEA_PENDING)) {
@@ -6861,12 +6863,11 @@ void GnssAdapter::checkUpdateDgnssNtrip(bool isLocationValid) {
 }
 
 void GnssAdapter::stopDgnssNtrip() {
+    LOC_LOGd("isInSession %d mDgnssState 0x%x", isInSession(), mDgnssState);
+    mStartDgnssNtripParams.nmea.clear();
     if (mDgnssState & DGNSS_STATE_NTRIP_SESSION_STARTED) {
         mDgnssState &= ~DGNSS_STATE_NTRIP_SESSION_STARTED;
         mXtraObserver.stopDgnssSource();
-    } else {
-        LOC_LOGd("isInSession %d mDgnssState 0x%x",
-                 isInSession(), mDgnssState);
     }
 }
 

@@ -2267,6 +2267,12 @@ enum OdcpiPrioritytype {
  */
 typedef void (*AgnssStatusIpV4Cb)(AGnssExtStatusIpV4 status);
 
+typedef bool(*IsInEmergencySession)(void);
+
+typedef struct {
+    void* isInEmergencySession;
+} NfwCbInfo;
+
 /*
  * Callback with AGNSS(IpV6) status information.
  *

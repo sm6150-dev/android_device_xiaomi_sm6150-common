@@ -122,7 +122,8 @@ GnssAdapter::GnssAdapter() :
     mLocSystemInfo{},
     mGnssMbSvIdUsedInPosition{},
     mGnssMbSvIdUsedInPosAvail(false),
-    mPowerState(POWER_STATE_UNKNOWN)
+    mPowerState(POWER_STATE_UNKNOWN),
+    mIsE911Session(NULL)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2403,6 +2404,10 @@ GnssAdapter::stopClientSessions(LocationAPI* client)
 
 }
 
+bool isInEmergencySession() {
+    return false;
+}
+
 void
 GnssAdapter::updateClientsEventMask()
 {
@@ -2415,9 +2420,6 @@ GnssAdapter::updateClientsEventMask()
             it->second.gnssLocationInfoCb != nullptr ||
             it->second.engineLocationsInfoCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
-        }
-        if (it->second.gnssNiCb != nullptr) {
-            mask |= LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
         }
         if (it->second.gnssSvCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_SATELLITE_REPORT;
@@ -2465,6 +2467,15 @@ GnssAdapter::updateClientsEventMask()
     if (nullptr != mOdcpiRequestCb) {
         mask |= LOC_API_ADAPTER_BIT_REQUEST_WIFI;
     }
+
+    // always register for NI NOTIFY VERIFY to handle internally in HAL
+    mask |= LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
+    // and register callback
+
+    NfwCbInfo cbInfo = {};
+    cbInfo.isInEmergencySession = (void*)isInEmergencySession;
+
+    initNfw(cbInfo);
 
     // Enable the latency report
     if (mask & LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT) {
@@ -4201,21 +4212,36 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
 
     struct MsgReportNiNotify : public LocMsg {
         GnssAdapter& mAdapter;
+        LocApiBase& mApi;
         const GnssNiNotification mNotify;
         const void* mData;
         inline MsgReportNiNotify(GnssAdapter& adapter,
+                                 LocApiBase& api,
                                  const GnssNiNotification& notify,
                                  const void* data) :
             LocMsg(),
             mAdapter(adapter),
+            mApi(api),
             mNotify(notify),
             mData(data) {}
         inline virtual void proc() const {
-            mAdapter.requestNiNotify(mNotify, mData);
+            if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type ||
+                GNSS_NI_TYPE_CONTROL_PLANE == mNotify.type) {
+                if (mAdapter.getE911State() ||
+                    ((GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES) &&
+                     (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type))) {
+                    mApi.informNiResponse(GNSS_NI_RESPONSE_ACCEPT, mData);
+                }
+                else {
+                    mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
+                }
+            } else {
+                mAdapter.requestNiNotify(mNotify, mData);
+            }
         }
     };
 
-    sendMsg(new MsgReportNiNotify(*this, notify, data));
+    sendMsg(new MsgReportNiNotify(*this, *mLocApi, notify, data));
 
     return true;
 }
@@ -4799,9 +4825,19 @@ void GnssAdapter::initAgps(const AgpsCbInfo& cbInfo) {
 
         mAgpsManager.createAgpsStateMachines();
 
+        LOC_API_ADAPTER_EVENT_MASK_T mask;
+        // always register for NI NOTIFY VERIFY to handle internally in HAL
+        mask = LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST |
+               LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST;
+        // and register callback
+
+        NfwCbInfo cbInfo = {};
+        cbInfo.isInEmergencySession = (void*)isInEmergencySession;
+
+        initNfw(cbInfo);
+
         /* Register for AGPS event mask */
-        updateEvtMask(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST,
-                LOC_REGISTRATION_MASK_ENABLED);
+        updateEvtMask(mask, LOC_REGISTRATION_MASK_ENABLED);
     }
 }
 

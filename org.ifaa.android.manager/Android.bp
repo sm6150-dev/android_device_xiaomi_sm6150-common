@@ -29,3 +29,21 @@ java_library {
         local_include_dirs: ["src"],
     },
 }
+
+android_app {
+    name: "IFAAService",
+
+    srcs: ["src/**/*.java"],
+
+    certificate: "platform",
+    libs: ["org.ifaa.android.manager"],
+
+    platform_apis: true,
+    optimize: {
+        enabled: false,
+    },
+    static_libs: [
+        "vendor.xiaomi.hardware.mlipay-V1.0-java",
+    ],
+
+}

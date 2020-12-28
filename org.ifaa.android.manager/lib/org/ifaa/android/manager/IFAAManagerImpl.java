@@ -17,10 +17,10 @@ import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.util.Slog;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.json.JSONObject;
 
 public class IFAAManagerImpl extends IFAAManagerV4 {
     private static final int CODE_PROCESS_CMD = 1;
@@ -32,26 +32,27 @@ public class IFAAManagerImpl extends IFAAManagerV4 {
 
     private static final int ACTIVITY_START_SUCCESS = 0;
     private static final int ACTIVITY_START_FAILED = -1;
-
-    private static volatile IFAAManagerImpl INSTANCE = null;
-
     private static final String CA_CERT_ALIAS_DELIMITER = " ";
-
     private static final String INTERFACE_DESCRIPTOR =
             "vendor.xiaomi.hardware.mlipay@1.0::IMlipayService";
     private static final String SERVICE_NAME =
             "vendor.xiaomi.hardware.mlipay@1.0::IMlipayService";
     private static final String TAG = "IfaaManagerImpl";
-
     private static final String mIfaaActName = "org.ifaa.android.manager.IFAAService";
     private static final String mIfaaInterfaceDesc = "org.ifaa.android.manager.IIFAAService";
     private static final String mIfaaPackName = "com.tencent.soter.soterserver";
-
+    private static volatile IFAAManagerImpl INSTANCE = null;
     private static IBinder mService = null;
-    private String mDevModel = null;
+    private static final DeathRecipient mDeathRecipient = new DeathRecipient() {
+        public void binderDied() {
+            if (mService != null) {
+                Slog.d(TAG, "binderDied, unlink the service.");
+                mService.unlinkToDeath(mDeathRecipient, 0);
+            }
+        }
+    };
     private static Context mContext = null;
-
-    private static ServiceConnection ifaaconn = new ServiceConnection() {
+    private static final ServiceConnection ifaaconn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
             mService = service;
             try {
@@ -68,15 +69,7 @@ public class IFAAManagerImpl extends IFAAManagerV4 {
             }
         }
     };
-
-    private static DeathRecipient mDeathRecipient = new DeathRecipient() {
-        public void binderDied() {
-            if (mService != null) {
-                Slog.d(TAG, "binderDied, unlink the service.");
-                mService.unlinkToDeath(mDeathRecipient, 0);
-            }
-        }
-    };
+    private String mDevModel = null;
 
     public static IFAAManagerV4 getInstance(Context context) {
         if (INSTANCE == null) {
@@ -92,6 +85,14 @@ public class IFAAManagerImpl extends IFAAManagerV4 {
         }
 
         return INSTANCE;
+    }
+
+    private static void initService() {
+        Intent ifaaIntent = new Intent();
+        ifaaIntent.setClassName(mIfaaPackName, mIfaaActName);
+        if (!mContext.bindService(ifaaIntent, ifaaconn, 1)) {
+            Slog.e(TAG, "cannot bind service org.ifaa.android.manager.IFAAService");
+        }
     }
 
     private String initExtString() {
@@ -129,14 +130,6 @@ public class IFAAManagerImpl extends IFAAManagerV4 {
         }
 
         return extStr;
-    }
-
-    private static void initService() {
-        Intent ifaaIntent = new Intent();
-        ifaaIntent.setClassName(mIfaaPackName, mIfaaActName);
-        if (!mContext.bindService(ifaaIntent, ifaaconn, 1)) {
-            Slog.e(TAG, "cannot bind service org.ifaa.android.manager.IFAAService");
-        }
     }
 
     private boolean validateVal(String value) {

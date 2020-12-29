@@ -1492,7 +1492,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
             float magTrack = location.gpsLocation.bearing;
             if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_MAG_DEV)
             {
-                float magTrack = location.gpsLocation.bearing - locationExtended.magneticDeviation;
+                magTrack = location.gpsLocation.bearing - locationExtended.magneticDeviation;
                 if (magTrack < 0.0)
                     magTrack += 360.0;
                 else if (magTrack > 360.0)
@@ -2185,6 +2185,14 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
         }
         else if (GNSS_SV_TYPE_BEIDOU == svNotify.gnssSvs[svOffset].type)
         {
+            // cache the used in fix mask, as it will be needed to send $PQGSA
+            // during the position report
+            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
+                (svNotify.gnssSvs[svOffset].gnssSvOptionsMask &
+                  GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
+            {
+                setSvMask(sv_cache_info.bds_used_mask, svNotify.gnssSvs[svOffset].svId);
+            }
             if ((GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svOffset].gnssSignalTypeMask) ||
                    (GNSS_SIGNAL_BEIDOU_B2AQ == svNotify.gnssSvs[svOffset].gnssSignalTypeMask)) {
                 sv_cache_info.bds_b2_count++;
@@ -2301,6 +2309,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
     // -----------------------------
     // ------$GBGSV (BEIDOU:B1C)----
     // -----------------------------
+
     loc_nmea_generate_GSV(svNotify, sentence, sizeof(sentence),
             loc_nmea_sv_meta_init(sv_meta, sv_cache_info, GNSS_SV_TYPE_BEIDOU,
             GNSS_SIGNAL_BEIDOU_B1C, false), nmeaArraystr);

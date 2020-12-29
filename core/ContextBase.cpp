@@ -50,6 +50,7 @@ uint64_t ContextBase::sSupportedMsgMask = 0;
 bool ContextBase::sGnssMeasurementSupported = false;
 uint8_t ContextBase::sFeaturesSupported[MAX_FEATURE_LENGTH];
 GnssNMEARptRate ContextBase::sNmeaReportRate = GNSS_NMEA_REPORT_RATE_NHZ;
+LocationCapabilitiesMask ContextBase::sQwesFeatureMask = 0;
 
 const loc_param_s_type ContextBase::mGps_conf_table[] =
 {

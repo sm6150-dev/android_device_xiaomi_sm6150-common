@@ -66,8 +66,8 @@ static void agpsDataConnOpen(AGpsExtType agpsType, const char* apnName, int apnL
 static void agpsDataConnClosed(AGpsExtType agpsType);
 static void agpsDataConnFailed(AGpsExtType agpsType);
 static void getDebugReport(GnssDebugReport& report);
-static void updateConnectionStatus(bool connected, int8_t type, bool roaming = false,
-                                   NetworkHandle networkHandle = NETWORK_HANDLE_UNKNOWN);
+static void updateConnectionStatus(bool connected, int8_t type, bool roaming,
+                                   NetworkHandle networkHandle, string& apn);
 static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
 static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
@@ -371,10 +371,11 @@ static void getDebugReport(GnssDebugReport& report) {
 }
 
 static void updateConnectionStatus(bool connected, int8_t type,
-                                   bool roaming, NetworkHandle networkHandle) {
+                                   bool roaming, NetworkHandle networkHandle,
+                                   string& apn) {
     if (NULL != gGnssAdapter) {
         gGnssAdapter->getSystemStatus()->eventConnectionStatus(
-                connected, type, roaming, networkHandle);
+                connected, type, roaming, networkHandle, apn);
     }
 }
 

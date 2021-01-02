@@ -16,7 +16,6 @@
  */
 
 #define LOG_TAG "android.hardware.lights-service_xiaomi.sm6150"
-#define DEBUG
 
 #include "Lights.h"
 #include <android-base/file.h>
@@ -43,8 +42,11 @@ using ::android::base::WriteStringToFile;
 // Default max brightness
 constexpr auto kDefaultMaxLedBrightness = 255;
 
-// Each step will stay on for 50ms by default.
-constexpr auto kRampStepDuration = 50;
+// Each step will stay on for 70ms by default.
+constexpr auto kRampStepDurationDefault = 70;
+
+// Each step will stay on for 35ms for popup.
+constexpr auto kRampStepDurationPopUp = kRampStepDurationDefault / 2;
 
 // Each value represents a duty percent (0 - 100) for the led pwm.
 constexpr std::array kBrightnessRamp = {0, 12, 25, 37, 50, 72, 85, 100};
@@ -179,40 +181,42 @@ void Lights::applyNotificationState(const HwLightState& state) {
     auto makeLedPath = [](const std::string& led, const std::string& op) -> std::string {
         return "/sys/class/leds/" + led + "/" + op;
     };
-
-    // Turn off the leds (initially)
-    for (const auto& entry : colorValues) {
-        WriteToFile(makeLedPath(entry.first, "breath"), 0);
-    }
-
-    if (state.flashMode == FlashMode::TIMED && state.flashOnMs > 0 && state.flashOffMs > 0) {
-        /*
-         * If the flashOnMs duration is not long enough to fit ramping up
-         * and down at the default step duration, step duration is modified
-         * to fit.
-         */
-        int32_t step_duration = kRampStepDuration;
-        int32_t pause_hi = state.flashOnMs - (step_duration * kBrightnessRamp.size() * 2);
-        if (pause_hi < 0) {
-            step_duration = state.flashOnMs / (kBrightnessRamp.size() * 2);
-            pause_hi = 0;
-        }
-
-        LOG(DEBUG) << __func__ << ": color=" << std::hex << state.color << std::dec
-                   << " onMs=" << state.flashOnMs << " offMs=" << state.flashOffMs;
-        for (const auto& entry : colorValues) {
-            WriteToFile(makeLedPath(entry.first, "lo_idx"), 0);
-            WriteToFile(makeLedPath(entry.first, "delay_off"), static_cast<uint32_t>(pause_hi));
-            WriteToFile(makeLedPath(entry.first, "delay_on"),
-                        static_cast<uint32_t>(state.flashOffMs));
-            WriteToFile(makeLedPath(entry.first, "lut_pattern"), GetScaledDutyPcts(entry.second));
-            WriteToFile(makeLedPath(entry.first, "step_ms"), static_cast<uint32_t>(step_duration));
-            WriteToFile(makeLedPath(entry.first, "breath"), 1);
-        }
-    } else {
-        for (const auto& entry : colorValues) {
-            WriteToFile(makeLedPath(entry.first, "brightness"), entry.second);
-        }
+    int blink = state.flashOnMs != 0 && state.flashOffMs != 0;
+    switch (state.flashMode) {
+        case FlashMode::HARDWARE:
+            for (const auto& entry : colorValues) {
+                WriteToFile(makeLedPath(entry.first, "breath"), blink);
+            }
+            break;
+        case FlashMode::TIMED:
+            if (state.flashOnMs != 801 && state.flashOffMs != 801) {
+                for (const auto& entry : colorValues) {
+                    WriteToFile(makeLedPath(entry.first, "step_ms"), 35),
+                            WriteToFile(makeLedPath(entry.first, "pause_lo_count"), 0),
+                            WriteToFile(makeLedPath(entry.first, "io_idx"), 1);
+                    WriteToFile(makeLedPath(entry.first, "lux_pattern"), 22);
+                }
+            } else if (state.flashOnMs != 802 && state.flashOffMs != 802) {
+                for (const auto& entry : colorValues) {
+                    WriteToFile(makeLedPath(entry.first, "step_ms"), 70),
+                            WriteToFile(makeLedPath(entry.first, "pause_lo_count"), 30),
+                            WriteToFile(makeLedPath(entry.first, "io_idx"), 0);
+                    WriteToFile(makeLedPath(entry.first, "lux_pattern"), 0);
+                }
+            } else {
+                for (const auto& entry : colorValues) {
+                    WriteToFile(makeLedPath(entry.first, "step_ms"), 35),
+                            WriteToFile(makeLedPath(entry.first, "pause_lo_count"), 5),
+                            WriteToFile(makeLedPath(entry.first, "io_idx"), 0);
+                    WriteToFile(makeLedPath(entry.first, "lux_pattern"), 1);
+                }
+            }
+            break;
+        case FlashMode::NONE:
+        default:
+            for (const auto& entry : colorValues) {
+                WriteToFile(makeLedPath(entry.first, "brightness"), entry.second);
+            }
     }
 }
 

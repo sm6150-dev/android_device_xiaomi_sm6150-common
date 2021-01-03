@@ -356,7 +356,8 @@ uint16_t GnssAdapter::getNumSvUsed(uint64_t svUsedIdsMask,
 
 void
 GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
-                                 const GpsLocationExtended& locationExtended)
+                                 const GpsLocationExtended& locationExtended,
+                                 enum loc_sess_status status)
 {
     out.size = sizeof(GnssLocationInfoNotification);
     if (GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL & locationExtended.flags) {
@@ -665,6 +666,9 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_ALTITUDE_ASSUMED_BIT;
         out.altitudeAssumed = locationExtended.altitudeAssumed;
     }
+
+    out.flags |= GNSS_LOCATION_INFO_SESSION_STATUS_BIT;
+    out.sessionStatus = status;
 }
 
 inline uint32_t
@@ -3954,7 +3958,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
 
     if (reportToGnssClient || reportToFlpClient) {
         GnssLocationInfoNotification locationInfo = {};
-        convertLocationInfo(locationInfo, locationExtended);
+        convertLocationInfo(locationInfo, locationExtended, status);
         convertLocation(locationInfo.location, ulpLocation, locationExtended);
         logLatencyInfo();
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
@@ -4084,7 +4088,8 @@ GnssAdapter::reportEnginePositions(unsigned int count,
         }
 
         if (needReportEnginePositions) {
-            convertLocationInfo(locationInfo[i], engLocation->locationExtended);
+            convertLocationInfo(locationInfo[i], engLocation->locationExtended,
+                                engLocation->sessionStatus);
             convertLocation(locationInfo[i].location,
                             engLocation->location,
                             engLocation->locationExtended);

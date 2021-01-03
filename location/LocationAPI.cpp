@@ -42,6 +42,13 @@ typedef const BatchingInterface* (getBatchingInterface)();
 typedef void (createOSFramework)();
 typedef void (destroyOSFramework)();
 
+// GTP services
+typedef uint32_t (setOptInStatusGetter)(bool userConsent, responseCallback* callback);
+typedef void (enableProviderGetter)();
+typedef void (disableProviderGetter)();
+typedef void (getSingleNetworkLocationGetter)(trackingCallback* callback);
+typedef void (stopNetworkLocationGetter)(trackingCallback* callback);
+
 typedef struct {
     // bit mask of the adpaters that we need to wait for the removeClientCompleteCallback
     // before we invoke the registered locationApiDestroyCompleteCallback
@@ -188,6 +195,7 @@ LocationAPI::createInstance (LocationCallbacks& locationCallbacks)
     if (nullptr == locationCallbacks.capabilitiesCb ||
         nullptr == locationCallbacks.responseCb ||
         nullptr == locationCallbacks.collectiveResponseCb) {
+        LOC_LOGe("missing mandatory callback, return null");
         return NULL;
     }
 
@@ -641,6 +649,52 @@ LocationAPI::gnssNiResponse(uint32_t id, GnssNiResponse response)
     pthread_mutex_unlock(&gDataMutex);
 }
 
+void LocationAPI::enableNetworkProvider() {
+    void* libHandle = nullptr;
+    enableProviderGetter* setter = (enableProviderGetter*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "enableNetworkProvider");
+    if (setter != nullptr) {
+        (*setter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+void LocationAPI::disableNetworkProvider() {
+    void* libHandle = nullptr;
+    disableProviderGetter* setter = (disableProviderGetter*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "disableNetworkProvider");
+    if (setter != nullptr) {
+        (*setter)();
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+void LocationAPI::startNetworkLocation(trackingCallback* callback) {
+    void* libHandle = nullptr;
+    getSingleNetworkLocationGetter* setter =
+            (getSingleNetworkLocationGetter*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "startNetworkLocation");
+    if (setter != nullptr) {
+        (*setter)(callback);
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
+void LocationAPI::stopNetworkLocation(trackingCallback* callback) {
+    void* libHandle = nullptr;
+    stopNetworkLocationGetter* setter = (stopNetworkLocationGetter*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "stopNetworkLocation");
+    if (setter != nullptr) {
+        LOC_LOGe("called");
+        (*setter)(callback);
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+}
+
 LocationControlAPI*
 LocationControlAPI::createInstance(LocationControlCallbacks& locationControlCallbacks)
 {
@@ -906,4 +960,17 @@ uint32_t LocationControlAPI::configEngineRunState(
 
     pthread_mutex_unlock(&gDataMutex);
     return id;
+}
+
+uint32_t LocationControlAPI::setOptInStatus(bool userConsent) {
+    void* libHandle = nullptr;
+    uint32_t sessionId = 0;
+    setOptInStatusGetter* setter = (setOptInStatusGetter*)dlGetSymFromLib(libHandle,
+            "liblocationservice_glue.so", "setOptInStatus");
+    if (setter != nullptr) {
+        sessionId = (*setter)(userConsent, &gData.controlCallbacks.responseCb);
+    } else {
+        LOC_LOGe("dlGetSymFromLib failed for liblocationservice_glue.so");
+    }
+    return sessionId;
 }

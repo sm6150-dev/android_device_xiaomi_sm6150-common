@@ -156,7 +156,7 @@ public:
         return ContextBase::isFeatureSupported(featureVal);
     }
 
-    uint32_t generateSessionId();
+    static uint32_t generateSessionId();
 
     inline bool isAdapterMaster() {
         return mIsMaster;

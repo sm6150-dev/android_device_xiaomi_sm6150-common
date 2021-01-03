@@ -879,12 +879,6 @@ typedef struct {
     bool altitudeAssumed;
 } GpsLocationExtended;
 
-enum loc_sess_status {
-    LOC_SESS_SUCCESS,
-    LOC_SESS_INTERMEDIATE,
-    LOC_SESS_FAILURE
-};
-
 // struct that contains complete position info from engine
 typedef struct {
     UlpLocation location;
@@ -1555,6 +1549,10 @@ typedef uint64_t GpsSvMeasHeaderFlags;
 #define GNSS_SV_MEAS_HEADER_HAS_DGNSS_CORRECTION_SOURCE_ID    0x020000000
 #define GNSS_SV_MEAS_HEADER_HAS_DGNSS_REF_STATION_ID          0x040000000
 #define GNSS_SV_MEAS_HEADER_HAS_REF_COUNT_TICKS               0x080000000
+#define GNSS_SV_MEAS_HEADER_HAS_GPSL1L2C_TIME_BIAS            0x100000000
+#define GNSS_SV_MEAS_HEADER_HAS_GLOG1G2_TIME_BIAS             0x200000000
+#define GNSS_SV_MEAS_HEADER_HAS_BDSB1IB1C_TIME_BIAS           0x400000000
+#define GNSS_SV_MEAS_HEADER_HAS_GALE1E5B_TIME_BIAS            0x800000000
 
 typedef struct
 {
@@ -1581,6 +1579,10 @@ typedef struct
     Gnss_InterSystemBiasStructType              gpsL1L5TimeBias;
     Gnss_InterSystemBiasStructType              galE1E5aTimeBias;
     Gnss_InterSystemBiasStructType              bdsB1iB2aTimeBias;
+    Gnss_InterSystemBiasStructType              gpsL1L2cTimeBias;
+    Gnss_InterSystemBiasStructType              gloG1G2TimeBias;
+    Gnss_InterSystemBiasStructType              bdsB1iB1cTimeBias;
+    Gnss_InterSystemBiasStructType              galE1E5bTimeBias;
 
     GnssSystemTimeStructType                    gpsSystemTime;
     GnssSystemTimeStructType                    galSystemTime;

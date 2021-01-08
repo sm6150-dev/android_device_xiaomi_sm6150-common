@@ -137,7 +137,8 @@ GnssAdapter::GnssAdapter() :
     mLastDeleteAidingDataTime(0),
     mDgnssState(0),
     mSendNmeaConsent(false),
-    mDgnssLastNmeaBootTimeMilli(0)
+    mDgnssLastNmeaBootTimeMilli(0),
+    mNativeAgpsHandler(mSystemStatus->getOsObserver(), *this)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -5035,22 +5036,19 @@ GnssAdapter::reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstB
 
 void GnssAdapter::initDefaultAgps() {
     LOC_LOGD("%s]: ", __func__);
-
     void *handle = nullptr;
-    if ((handle = dlopen("libloc_net_iface.so", RTLD_NOW)) == nullptr) {
-        LOC_LOGD("%s]: libloc_net_iface.so not found !", __func__);
-        return;
-    }
 
-    LocAgpsGetAgpsCbInfo getAgpsCbInfo = (LocAgpsGetAgpsCbInfo)
-            dlsym(handle, "LocNetIfaceAgps_getAgpsCbInfo");
-    if (getAgpsCbInfo == nullptr) {
-        LOC_LOGE("%s]: Failed to get method LocNetIfaceAgps_getStatusCb", __func__);
-        dlclose(handle);
-        return;
+    LocAgpsGetAgpsCbInfo getAgpsCbInfo =
+        (LocAgpsGetAgpsCbInfo)dlGetSymFromLib(handle, "libloc_net_iface.so",
+            "LocNetIfaceAgps_getAgpsCbInfo");
+    // Below step is to make sure we init nativeAgpsHandler
+    // for Android platforms only
+    AgpsCbInfo cbInfo = {};
+    if (nullptr != getAgpsCbInfo) {
+        cbInfo = getAgpsCbInfo(agpsOpenResultCb, agpsCloseResultCb, this);
+    } else {
+        cbInfo = mNativeAgpsHandler.getAgpsCbInfo();
     }
-
-    AgpsCbInfo& cbInfo = getAgpsCbInfo(agpsOpenResultCb, agpsCloseResultCb, this);
 
     if (cbInfo.statusV4Cb == nullptr) {
         LOC_LOGE("%s]: statusV4Cb is nullptr!", __func__);

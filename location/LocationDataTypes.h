@@ -61,7 +61,8 @@ typedef enum {
     LOCATION_ERROR_ID_UNKNOWN,
     LOCATION_ERROR_ALREADY_STARTED,
     LOCATION_ERROR_GEOFENCES_AT_MAX,
-    LOCATION_ERROR_NOT_SUPPORTED
+    LOCATION_ERROR_NOT_SUPPORTED,
+    LOCATION_ERROR_TIMEOUT,
 } LocationError;
 
 // Flags to indicate which values are valid in a Location
@@ -211,6 +212,7 @@ typedef enum {
     GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<30), // VRP-based east/north/up vel
     GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT      = (1ULL<<31), // Valid DR solution status
     GNSS_LOCATION_INFO_ALTITUDE_ASSUMED_BIT             = (1ULL<<32), // Valid altitude assumed
+    GNSS_LOCATION_INFO_SESSION_STATUS_BIT               = (1ULL<<33), // session status
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -1184,6 +1186,12 @@ typedef struct {
     float altitude;  // altitude wrt to ellipsoid
 } LLAInfo;
 
+enum loc_sess_status {
+    LOC_SESS_SUCCESS,
+    LOC_SESS_INTERMEDIATE,
+    LOC_SESS_FAILURE
+};
+
 typedef struct {
     uint32_t size;                      // set to sizeof(GnssLocationInfo)
     Location location;                  // basic locaiton info, latitude, longitude, and etc
@@ -1243,6 +1251,8 @@ typedef struct {
     DrSolutionStatusMask drSolutionStatusMask;
     // true: altitude is assumed, false: altitude is calculated
     bool altitudeAssumed;
+    // location session status
+    loc_sess_status sessionStatus;
 } GnssLocationInfoNotification;
 
 typedef struct {
@@ -1300,6 +1310,7 @@ typedef struct {
     float carrierFrequencyHz; // carrier frequency of the signal tracked
     GnssSignalTypeMask gnssSignalTypeMask; // Specifies GNSS signal type
     double basebandCarrierToNoiseDbHz; // baseband signal strength
+    uint16_t  gloFrequency; // GLONASS Frequency channel number
 } GnssSv;
 
 struct GnssConfigSetAssistanceServer {
@@ -1709,6 +1720,11 @@ typedef enum {
 struct LocationSystemInfo {
     LocationSystemInfoMask systemInfoMask;
     LeapSecondSystemInfo   leapSecondSysInfo;
+};
+
+// Specify the set of terrestrial technologies
+enum TerrestrialTechMask {
+    TERRESTRIAL_TECH_GTP_WWAN = 1 << 0,
 };
 
 // Specify parameters related to lever arm

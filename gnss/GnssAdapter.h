@@ -41,6 +41,7 @@
 #include <functional>
 #include <loc_misc_utils.h>
 #include <queue>
+#include <NativeAgpsHandler.h>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -281,6 +282,9 @@ class GnssAdapter : public LocAdapterBase {
     GnssReportLoggerUtil mLogger;
     bool mDreIntEnabled;
 
+    /* === NativeAgpsHandler ======================================================== */
+    NativeAgpsHandler mNativeAgpsHandler;
+
     /* === Misc callback from QMI LOC API ============================================== */
     GnssEnergyConsumedCallback mGnssEnergyConsumedCb;
     std::function<void(bool)> mPowerStateCb;
@@ -290,7 +294,8 @@ class GnssAdapter : public LocAdapterBase {
     static void convertLocation(Location& out, const UlpLocation& ulpLocation,
                                 const GpsLocationExtended& locationExtended);
     static void convertLocationInfo(GnssLocationInfoNotification& out,
-                                    const GpsLocationExtended& locationExtended);
+                                    const GpsLocationExtended& locationExtended,
+                                    loc_sess_status status);
     static uint16_t getNumSvUsed(uint64_t svUsedIdsMask,
                                  int totalSvCntInThisConstellation);
 

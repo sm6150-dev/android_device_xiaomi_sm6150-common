@@ -359,7 +359,7 @@ public:
     ElapsedRealtimeEstimator(int64_t travelTimeNanosEstimate):
             mInitialTravelTime(travelTimeNanosEstimate) {reset();}
     int64_t getElapsedRealtimeEstimateNanos(int64_t curDataTimeNanos,
-            bool isCurDataTimeTrustable, uint32_t tbf);
+            bool isCurDataTimeTrustable, int64_t tbf);
     inline int64_t getElapsedRealtimeUncNanos() { return 5000000;}
     void reset();
 

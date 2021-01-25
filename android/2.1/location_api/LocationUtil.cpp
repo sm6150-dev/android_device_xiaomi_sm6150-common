@@ -218,7 +218,11 @@ void convertGnssSvid(GnssSv& in, int16_t& out)
             out = in.svId;
             break;
         case GNSS_SV_TYPE_GLONASS:
-            out = in.svId - GLO_SV_PRN_MIN + 1;
+            if (!isGloSlotUnknown(in.svId)) { // OSN is known
+                out = in.svId - GLO_SV_PRN_MIN + 1;
+            } else { // OSN is not known, report FCN
+                out = in.gloFrequency + 92;
+            }
             break;
         case GNSS_SV_TYPE_QZSS:
             out = in.svId;
@@ -230,8 +234,6 @@ void convertGnssSvid(GnssSv& in, int16_t& out)
             out = in.svId - GAL_SV_PRN_MIN + 1;
             break;
         case GNSS_SV_TYPE_NAVIC:
-            /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
-              will update this once Android give Navic svid definiitons */
             out = in.svId - NAVIC_SV_PRN_MIN + 1;
             break;
         default:
@@ -250,7 +252,7 @@ void convertGnssSvid(GnssMeasurementsData& in, int16_t& out)
             out = in.svId;
             break;
         case GNSS_SV_TYPE_GLONASS:
-            if (in.svId != 255) { // OSN is known
+            if (!isGloSlotUnknown(in.svId)) { // OSN is known
                 out = in.svId - GLO_SV_PRN_MIN + 1;
             } else { // OSN is not known, report FCN
                 out = in.gloFrequency + 92;
@@ -266,8 +268,6 @@ void convertGnssSvid(GnssMeasurementsData& in, int16_t& out)
             out = in.svId - GAL_SV_PRN_MIN + 1;
             break;
         case GNSS_SV_TYPE_NAVIC:
-            /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
-              will update this once Android give Navic svid definiitons */
             out = in.svId - NAVIC_SV_PRN_MIN + 1;
             break;
         default:

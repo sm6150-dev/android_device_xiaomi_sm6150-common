@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 The LineageOS Project
+ * Copyright (C) 2019-2021 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 
 #include "FingerprintInscreen.h"
 
+#include <android-base/file.h>
 #include <android-base/logging.h>
-#include <fstream>
 #include <hardware_legacy/power.h>
 
 #define FINGERPRINT_ACQUIRED_VENDOR 6
@@ -30,11 +30,21 @@
 
 #define Touch_Fod_Enable 10
 #define Touch_Aod_Enable 11
-
 #define FOD_SENSOR_X 445
 #define FOD_SENSOR_Y FOD_POS_Y
 #define FOD_SENSOR_SIZE 190
 
+#define DIM_LAYER_HBM_PATH "/sys/devices/platform/soc/soc:qcom,dsi-display/dimlayer_hbm"
+#define FOD_UI_PATH "/sys/devices/platform/soc/soc:qcom,dsi-display/fod_ui"
+
+using ::android::base::WriteStringToFile;
+
+namespace {
+// Write value to path and close file.
+bool WriteToFile(const std::string& path, uint32_t content) {
+    return WriteStringToFile(std::to_string(content), path);
+}
+}  // namespace
 namespace vendor {
 namespace lineage {
 namespace biometrics {
@@ -82,6 +92,7 @@ Return<void> FingerprintInscreen::onRelease() {
 }
 
 Return<void> FingerprintInscreen::onShowFODView() {
+    WriteToFile(DIM_LAYER_HBM_PATH, 1);
     TouchFeatureService->setTouchMode(Touch_Fod_Enable, 1);
     return Void();
 }

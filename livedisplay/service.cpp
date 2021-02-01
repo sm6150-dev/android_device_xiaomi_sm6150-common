@@ -20,6 +20,7 @@
 #include <binder/ProcessState.h>
 #include <hidl/HidlTransportSupport.h>
 
+#include "AntiFlicker.h"
 #include "SunlightEnhancement.h"
 #include "livedisplay/sdm/SDMController.h"
 
@@ -27,13 +28,16 @@ using android::OK;
 using android::sp;
 using android::status_t;
 
+using ::vendor::lineage::livedisplay::V2_0::IAntiFlicker;
 using ::vendor::lineage::livedisplay::V2_0::ISunlightEnhancement;
 using ::vendor::lineage::livedisplay::V2_0::implementation::SunlightEnhancement;
+using ::vendor::lineage::livedisplay::V2_0::implementation::AntiFlicker;
 using ::vendor::lineage::livedisplay::V2_0::sdm::SDMController;
 
 int main() {
     status_t status = OK;
     std::shared_ptr<SDMController> controller = std::make_shared<SDMController>();
+    sp<AntiFlicker> af = new AntiFlicker();
     sp<SunlightEnhancement> se = new SunlightEnhancement();
     android::hardware::configureRpcThreadpool(1, true /*callerWillJoin*/);
 
@@ -42,6 +46,14 @@ int main() {
     if (status != OK) {
         LOG(ERROR) << "Could not register service for LiveDisplay HAL SunlightEnhancement Iface ("
                    << status << ")";
+        return 1;
+    }
+
+    // AntiFlicker service
+    status = af->registerAsService();
+    if (status != OK) {
+        LOG(ERROR) << "Could not register service for LiveDisplay HAL AntiFlicker Iface (" << status
+                   << ")";
         return 1;
     }
 

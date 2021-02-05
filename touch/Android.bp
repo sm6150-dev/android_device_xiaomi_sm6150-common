@@ -1,0 +1,23 @@
+// FIXME: your file license if you have one
+
+cc_binary {
+    name: "vendor.lineage.touch@1.0-service.xiaomi_sm6150",
+    relative_install_path: "hw",
+    init_rc: ["vendor.lineage.touch@1.0-service.xiaomi_sm6150.rc"],
+    vintf_fragments: ["vendor.lineage.touch@1.0-service.xiaomi_sm6150.xml"],
+    defaults: ["hidl_defaults"],
+    proprietary: true,
+    srcs: [
+        "TouchFeature.cpp",
+        "service.cpp",
+    ],
+    shared_libs: [
+        "libbinder",
+        "libhidlbase",
+        "libutils",
+        "vendor.lineage.touch@1.0",
+    ],
+    header_libs: [
+        "generated_kernel_headers",
+    ],
+}

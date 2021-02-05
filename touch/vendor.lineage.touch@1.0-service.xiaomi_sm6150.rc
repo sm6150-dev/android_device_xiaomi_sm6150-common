@@ -1,0 +1,9 @@
+on boot
+    chmod 0666 /dev/input/event2
+
+service fingerprint-inscreen-1-0 /vendor/bin/hw/vendor.lineage.touch1.0-service.xiaomi_sm6150
+    interface vendor.lineage.touch@1.0::ITouchFeature default
+    class hal
+    user system
+    group system input
+    shutdown critical

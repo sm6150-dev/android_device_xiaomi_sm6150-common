@@ -63,6 +63,9 @@ ril.subscription.types=RUIM
 # Shutdown
 ro.build.shutdown_timeout=2
 
+# System Server
+arm64.memtag.process.system_server=off
+
 # Time
 persist.vendor.delta_time.enable=true
 

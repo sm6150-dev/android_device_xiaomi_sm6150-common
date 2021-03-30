@@ -197,6 +197,9 @@ ro.telephony.default_cdma_sub=0
 ro.telephony.default_network=22,22
 telephony.lteOnCdmaDevice=1
 
+# Skia
+renderthread.skia.reduceopstasksplitting=true
+
 # USB
 vendor.usb.use_ffs_mtp=0
 

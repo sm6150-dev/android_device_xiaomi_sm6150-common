@@ -65,10 +65,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml \
     $(LOCAL_PATH)/configs/component-overrides_qti.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/sysconfig/component-overrides.xml
 
-# AID/fs configs
-PRODUCT_PACKAGES += \
-    fs_config_files
-
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio.effect@6.0-impl:32 \
@@ -130,16 +126,6 @@ PRODUCT_PACKAGES += \
     libMegviiFacepp-0.5.2 \
     libmegface
 
-# Charger
-PRODUCT_PACKAGES += \
-    libsuspend
-
-# CNE
-PRODUCT_PACKAGES += \
-    cneapiclient \
-    com.quicinc.cne \
-    services-ext
-
 # Config Store
 PRODUCT_PACKAGES += \
     disable_configstore
@@ -157,7 +143,7 @@ PRODUCT_PACKAGES += \
     android.hardware.memtrack@1.0-service \
     gralloc.sm6150 \
     hwcomposer.sm6150 \
-    libdisplayconfig \
+    libdisplayconfig.qti \
     libtinyxml \
     libtinyxml.vendor \
     libvulkan \
@@ -396,7 +382,7 @@ PRODUCT_PACKAGES += \
     vendor.qti.hardware.vibrator.service
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/excluded-input-devices.xml:$(TARGET_COPY_OUT_VENDOR)//etc/excluded-input-devices.xml
+    $(LOCAL_PATH)/configs/excluded-input-devices.xml:$(TARGET_COPY_OUT_VENDOR)/etc/excluded-input-devices.xml
 
 # VNDK
 PRODUCT_ENFORCE_ARTIFACT_PATH_REQUIREMENTS := strict
@@ -424,7 +410,6 @@ PRODUCT_COPY_FILES += \
 # WiFi Display
 PRODUCT_PACKAGES += \
     libdisplayconfig.system.qti \
-    libdisplayconfig.qti \
     libnl \
     libqdMetaData \
     libqdMetaData.system \

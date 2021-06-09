@@ -69,3 +69,5 @@ mkdir: 1
 rmdir: 1
 creat: 1
 chmod: 1
+lseek: 1
+geteuid32: 1

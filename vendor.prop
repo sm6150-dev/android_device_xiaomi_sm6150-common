@@ -90,7 +90,7 @@ camera.disable_zsl_mode=1
 
 # Chipset
 ro.soc.manufacturer=Qualcomm
-ro.soc.model=SDM7150
+ro.soc.model=SM7150
 
 # Crypto
 ro.crypto.dm_default_key.options_format.version=2

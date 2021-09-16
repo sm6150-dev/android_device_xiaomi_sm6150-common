@@ -2,6 +2,7 @@
 ro.config.media_vol_default=10
 
 # App
+persist.device_config.runtime_native_boot.iorap_perfetto_enable=true
 ro.launcher.blur.appLaunch=0
 
 # Bluetooth

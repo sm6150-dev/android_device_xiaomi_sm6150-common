@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 The Android Open Source Project
- * Copyright (C) 2020 The LineageOS Project
+ * Copyright (C) 2020-2021 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_1_BIOMETRICSFINGERPRINT_H
-#define ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_1_BIOMETRICSFINGERPRINT_H
+#ifndef ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_3_BIOMETRICSFINGERPRINT_H
+#define ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_3_BIOMETRICSFINGERPRINT_H
 
-#define LOG_TAG "android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sm6150"
+#define LOG_TAG "android.hardware.biometrics.fingerprint@2.3-service.xiaomi_sm6150"
 
 #include "fingerprint.h"
 
@@ -33,17 +33,22 @@
 #include <log/log.h>
 #include <unistd.h>
 
-#include <android/hardware/biometrics/fingerprint/2.1/IBiometricsFingerprint.h>
+#include <android/hardware/biometrics/fingerprint/2.3/IBiometricsFingerprint.h>
 
 #ifdef USES_FOD_EXTENSION
+#include <fcntl.h>
+#include <poll.h>
+#include <sys/stat.h>
 #include <vendor/xiaomi/hardware/fingerprintextension/1.0/IXiaomiFingerprint.h>
+#include <vendor/xiaomi/hardware/touchfeature/1.0/ITouchFeature.h>
+#include <thread>
 #endif
 
 namespace android {
 namespace hardware {
 namespace biometrics {
 namespace fingerprint {
-namespace V2_1 {
+namespace V2_3 {
 namespace implementation {
 
 using ::android::sp;
@@ -52,13 +57,18 @@ using ::android::hardware::hidl_string;
 using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
-using ::android::hardware::biometrics::fingerprint::V2_1::IBiometricsFingerprint;
 using ::android::hardware::biometrics::fingerprint::V2_1::IBiometricsFingerprintClientCallback;
-using ::android::hardware::biometrics::fingerprint::V2_1::RequestStatus;
+using ::android::hardware::biometrics::fingerprint::V2_3::IBiometricsFingerprint;
 
 #ifdef USES_FOD_EXTENSION
 using ::vendor::xiaomi::hardware::fingerprintextension::V1_0::IXiaomiFingerprint;
+using ::vendor::xiaomi::hardware::touchfeature::V1_0::ITouchFeature;
 #endif
+
+using RequestStatus = android::hardware::biometrics::fingerprint::V2_1::RequestStatus;
+using FingerprintError = android::hardware::biometrics::fingerprint::V2_1::FingerprintError;
+using FingerprintAcquiredInfo =
+        android::hardware::biometrics::fingerprint::V2_1::FingerprintAcquiredInfo;
 
 #ifdef USES_FOD_EXTENSION
 struct BiometricsFingerprint : public IBiometricsFingerprint, public IXiaomiFingerprint {
@@ -89,6 +99,12 @@ struct BiometricsFingerprint : public IBiometricsFingerprint {
     Return<RequestStatus> setActiveGroup(uint32_t gid, const hidl_string& storePath) override;
     Return<RequestStatus> authenticate(uint64_t operationId, uint32_t gid) override;
 
+    // Methods from ::android::hardware::biometrics::fingerprint::V2_3::IBiometricsFingerprint
+    // follow.
+    Return<bool> isUdfps(uint32_t sensorId) override;
+    Return<void> onFingerDown(uint32_t x, uint32_t y, float minor, float major) override;
+    Return<void> onFingerUp() override;
+
 #ifdef USES_FOD_EXTENSION
     Return<int32_t> extCmd(int32_t cmd, int32_t param) override;
 #endif
@@ -104,13 +120,19 @@ struct BiometricsFingerprint : public IBiometricsFingerprint {
     std::mutex mClientCallbackMutex;
     sp<IBiometricsFingerprintClientCallback> mClientCallback;
     fingerprint_device_t* mDevice;
+#ifdef USES_FOD_EXTENSION
+    int mFod = 1;
+    sp<ITouchFeature> TouchFeatureService;
+#else
+    int mFod = 0;
+#endif
 };
 
 }  // namespace implementation
-}  // namespace V2_1
+}  // namespace V2_3
 }  // namespace fingerprint
 }  // namespace biometrics
 }  // namespace hardware
 }  // namespace android
 
-#endif  // ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_1_BIOMETRICSFINGERPRINT_H
+#endif  // ANDROID_HARDWARE_BIOMETRICS_FINGERPRINT_V2_3_BIOMETRICSFINGERPRINT_H

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 The Android Open Source Project
- * Copyright (C) 2018-2020 The LineageOS Project
+ * Copyright (C) 2018-2021 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,77 @@
 
 #include "BiometricsFingerprint.h"
 
+#define COMMAND_NIT 10
+#define PARAM_NIT_630_FOD 1
+#define PARAM_NIT_NONE 0
+
+#define Touch_Fod_Enable 10
+
+#define FOD_UI_PATH "/sys/devices/platform/soc/soc:qcom,dsi-display/fod_ui"
+
+namespace {
+static bool readBool(int fd) {
+    char c;
+    int rc;
+
+    rc = lseek(fd, 0, SEEK_SET);
+    if (rc) {
+        ALOGE("failed to seek fd, err: %d", rc);
+        return false;
+    }
+
+    rc = read(fd, &c, sizeof(char));
+    if (rc != 1) {
+        ALOGE("failed to read bool from fd, err: %d", rc);
+        return false;
+    }
+
+    return c != '0';
+}
+}  // namespace
+
 namespace android {
 namespace hardware {
 namespace biometrics {
 namespace fingerprint {
-namespace V2_1 {
+namespace V2_3 {
 namespace implementation {
 
 // Supported fingerprint HAL version
 static const uint16_t kVersion = HARDWARE_MODULE_API_VERSION(2, 1);
 
-using RequestStatus = android::hardware::biometrics::fingerprint::V2_1::RequestStatus;
-
 BiometricsFingerprint* BiometricsFingerprint::sInstance = nullptr;
 
 BiometricsFingerprint::BiometricsFingerprint() : mClientCallback(nullptr), mDevice(nullptr) {
     sInstance = this;  // keep track of the most recent instance
+    if (mFod) TouchFeatureService = ITouchFeature::getService();
     mDevice = openHal();
     if (!mDevice) {
         ALOGE("Can't open HAL module");
     }
+    std::thread([this]() {
+        int fd = open(FOD_UI_PATH, O_RDONLY);
+        if (fd < 0) {
+            ALOGE("failed to open fd, err: %d", fd);
+            return;
+        }
+
+        struct pollfd fodUiPoll = {
+                .fd = fd,
+                .events = POLLERR | POLLPRI,
+                .revents = 0,
+        };
+
+        while (true) {
+            int rc = poll(&fodUiPoll, 1, -1);
+            if (rc < 0) {
+                ALOGE("failed to poll fd, err: %d", rc);
+                continue;
+            }
+
+            extCmd(COMMAND_NIT, readBool(fd) ? PARAM_NIT_630_FOD : PARAM_NIT_NONE);
+        }
+    }).detach();
 }
 
 BiometricsFingerprint::~BiometricsFingerprint() {
@@ -378,14 +429,37 @@ void BiometricsFingerprint::notify(const fingerprint_msg_t* msg) {
     }
 }
 
+// Methods from ::android::hardware::biometrics::fingerprint::V2_3::IBiometricsFingerprint follow.
+Return<bool> BiometricsFingerprint::isUdfps(uint32_t /*sensorId*/) {
+    return mFod ? true : false;
+}
+
+Return<void> BiometricsFingerprint::onFingerDown(uint32_t /*x*/, uint32_t /*y*/, float /*minor*/,
+                                                 float /*major*/) {
+    if (mFod) {
+        TouchFeatureService->setTouchMode(Touch_Fod_Enable, 1);
+        extCmd(COMMAND_NIT, PARAM_NIT_630_FOD);
+    }
+    return Void();
+}
+
+Return<void> BiometricsFingerprint::onFingerUp() {
+    if (mFod) {
+        TouchFeatureService->resetTouchMode(Touch_Fod_Enable);
+        extCmd(COMMAND_NIT, PARAM_NIT_NONE);
+    }
+    return Void();
+}
+
 #ifdef USES_FOD_EXTENSION
+// Methods from ::vendor::xiaomi::hardware::fingerprintextension::V1_0::IXiaomiFingerprint follow.
 Return<int32_t> BiometricsFingerprint::extCmd(int32_t cmd, int32_t param) {
     return mDevice->extCmd(mDevice, cmd, param);
 }
 #endif
 
 }  // namespace implementation
-}  // namespace V2_1
+}  // namespace V2_3
 }  // namespace fingerprint
 }  // namespace biometrics
 }  // namespace hardware

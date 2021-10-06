@@ -1,6 +1,6 @@
 /**
- * Copyright (C) 2020 The LineageOS Project
- * <p>
+ * Copyright (C) 2020-2021 The LineageOS Project
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -103,6 +103,7 @@ public class ThermalSettingsFragment extends PreferenceFragment
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().setTitle(getResources().getString(R.string.thermal_title));
         rebuild();
     }
 

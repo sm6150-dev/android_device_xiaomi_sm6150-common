@@ -117,6 +117,7 @@ PRODUCT_COPY_FILES += \
 
 # Bluetooth
 PRODUCT_PACKAGES += \
+    android.hardware.bluetooth@1.0.vendor \
     android.hardware.bluetooth.audio@2.0-impl:32 \
     audio.bluetooth.default \
     libbthost_if \
@@ -128,6 +129,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl:64 \
     android.hardware.camera.provider@2.4-service_64 \
+    android.frameworks.cameraservice.common@2.0.vendor \
+    android.frameworks.cameraservice.device@2.0.vendor \
+    android.frameworks.cameraservice.service@2.1.vendor \
     libdng_sdk.vendor \
     libgui_vendor \
     libxml2 \
@@ -163,6 +167,7 @@ PRODUCT_PACKAGES += \
     hwcomposer.sm6150 \
     libdisplayconfig \
     libtinyxml \
+    libtinyxml.vendor \
     libvulkan \
     memtrack.sm6150 \
     vendor.qti.hardware.display.allocator-service
@@ -177,7 +182,16 @@ PRODUCT_PACKAGES += \
 
 # DRM
 PRODUCT_PACKAGES += \
-    android.hardware.drm@1.4-service.clearkey
+    android.hardware.drm@1.4-service.clearkey \
+    android.hardware.drm@1.3.vendor
+
+# Gatekeeper
+PRODUCT_PACKAGES += \
+    android.hardware.gatekeeper@1.0.vendor
+
+# GPS
+PRODUCT_PACKAGES += \
+    android.hardware.gnss@2.0.vendor
 
 # Fingerprint feature
 PRODUCT_COPY_FILES += \
@@ -211,15 +225,21 @@ PRODUCT_COPY_FILES += \
 # Health
 PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl-qti:64 \
-    android.hardware.health@2.1-service
+    android.hardware.health@2.1-service \
+    android.hardware.health@2.1.vendor
+
+# HIDL
+PRODUCT_PACKAGES += \
+    android.hidl.allocator@1.0.vendor \
+    android.hidl.memory@1.0.vendor \
 
 # IFAA manager
-PRODUCT_PACKAGES += \
-    IFAAService \
-    org.ifaa.android.manager
+# PRODUCT_PACKAGES += \
+#     IFAAService \
+#     org.ifaa.android.manager
 
-PRODUCT_BOOT_JARS += \
-    org.ifaa.android.manager
+#PRODUCT_BOOT_JARS += \
+#    org.ifaa.android.manager
 
 # IMS
 PRODUCT_PACKAGES += \
@@ -238,6 +258,10 @@ PRODUCT_PACKAGES += \
 # IRSC
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/sec_config:$(TARGET_COPY_OUT_VENDOR)/etc/sec_config
+
+# Keymaster
+PRODUCT_PACKAGES += \
+    android.hardware.keymaster@4.0.vendor
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -282,6 +306,7 @@ PRODUCT_COPY_FILES += \
 
 # Net
 PRODUCT_PACKAGES += \
+    android.system.net.netd@1.1.vendor \
     netutils-wrapper-1.0
 
 # Perf
@@ -291,6 +316,7 @@ PRODUCT_PACKAGES += \
 
 # Power
 PRODUCT_PACKAGES += \
+    android.hardware.power@1.2.vendor \
     android.hardware.power-service.xiaomi-libperfmgr
 
 PRODUCT_COPY_FILES += \
@@ -319,9 +345,9 @@ PRODUCT_PACKAGES += \
 
 # RIL
 PRODUCT_PACKAGES += \
-    android.hardware.radio.config@1.1 \
-    android.hardware.radio@1.5 \
-    android.hardware.secure_element@1.1 \
+    android.hardware.radio.config@1.2.vendor \
+    android.hardware.radio@1.5.vendor \
+    android.hardware.secure_element@1.1.vendor \
     libjson \
     libprotobuf-cpp-full \
     librmnetctl \
@@ -410,8 +436,8 @@ PRODUCT_PACKAGES += \
     libqdMetaData.vendor \
     libwfdaac_vendor
 
-PRODUCT_BOOT_JARS += \
-    WfdCommon
+# PRODUCT_BOOT_JARS += \
+#     WfdCommon
 
 # Get non-open-source specific aspects
 $(call inherit-product, vendor/xiaomi/sm6150-common/sm6150-common-vendor.mk)

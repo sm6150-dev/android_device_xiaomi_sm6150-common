@@ -117,6 +117,7 @@ PRODUCT_COPY_FILES += \
 
 # Bluetooth
 PRODUCT_PACKAGES += \
+    android.hardware.bluetooth@1.0.vendor \
     android.hardware.bluetooth.audio@2.0-impl:32 \
     audio.bluetooth.default \
     libbthost_if \
@@ -163,6 +164,7 @@ PRODUCT_PACKAGES += \
     hwcomposer.sm6150 \
     libdisplayconfig \
     libtinyxml \
+    libtinyxml.vendor \
     libvulkan \
     memtrack.sm6150 \
     vendor.qti.hardware.display.allocator-service
@@ -177,7 +179,8 @@ PRODUCT_PACKAGES += \
 
 # DRM
 PRODUCT_PACKAGES += \
-    android.hardware.drm@1.4-service.clearkey
+    android.hardware.drm@1.4-service.clearkey \
+    android.hardware.drm@1.4.vendor
 
 # Fingerprint feature
 PRODUCT_COPY_FILES += \
@@ -197,8 +200,13 @@ PRODUCT_PACKAGES += \
     libqti_vndfwk_detect.vendor \
     libvndfwk_detect_jni.qti.vendor
 
+# Gatekeeper
+PRODUCT_PACKAGES += \
+    android.hardware.gatekeeper@1.0.vendor
+
 # GPS
 PRODUCT_PACKAGES += \
+    android.hardware.gnss@2.0.vendor \
     android.hardware.gnss@2.1-impl-qti:64 \
     android.hardware.gnss@2.1-service-qti \
     libbatching \
@@ -212,7 +220,13 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl:64 \
     android.hardware.health@2.1-impl.recovery \
-    android.hardware.health@2.1-service
+    android.hardware.health@2.1-service \
+    android.hardware.health@2.1.vendor
+
+# HIDL
+PRODUCT_PACKAGES += \
+    android.hidl.allocator@1.0.vendor \
+    android.hidl.memory@1.0.vendor \
 
 # IFAA manager
 PRODUCT_PACKAGES += \
@@ -233,12 +247,18 @@ PRODUCT_COPY_FILES += \
 
 # IPACM
 PRODUCT_PACKAGES += \
+    android.hardware.tetheroffload.config@1.0.vendor \
+    android.hardware.tetheroffload.control@1.0.vendor \
     ipacm \
     IPACM_cfg.xml
 
 # IRSC
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/sec_config:$(TARGET_COPY_OUT_VENDOR)/etc/sec_config
+
+# Keymaster
+PRODUCT_PACKAGES += \
+    android.hardware.keymaster@4.1.vendor
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -283,6 +303,7 @@ PRODUCT_COPY_FILES += \
 
 # Net
 PRODUCT_PACKAGES += \
+    android.system.net.netd@1.1.vendor \
     netutils-wrapper-1.0
 
 # Perf
@@ -292,6 +313,7 @@ PRODUCT_PACKAGES += \
 
 # Power
 PRODUCT_PACKAGES += \
+    android.hardware.power@1.2.vendor \
     android.hardware.power-service.xiaomi-libperfmgr
 
 PRODUCT_COPY_FILES += \
@@ -320,9 +342,10 @@ PRODUCT_PACKAGES += \
 
 # RIL
 PRODUCT_PACKAGES += \
-    android.hardware.radio.config@1.1 \
-    android.hardware.radio@1.5 \
-    android.hardware.secure_element@1.1 \
+    android.hardware.radio.config@1.2.vendor \
+    android.hardware.radio.deprecated@1.0.vendor \
+    android.hardware.radio@1.5.vendor \
+    android.hardware.secure_element@1.2.vendor \
     libjson \
     libprotobuf-cpp-full \
     librmnetctl \

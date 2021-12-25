@@ -46,10 +46,6 @@ on charger
     write /config/usb_gadget/g1/strings/0x409/product ${vendor.usb.product_string}
     setprop sys.usb.configfs 1
     setprop sys.usb.config adb
-    trigger userspace-reboot-fs-remount
-    trigger post-fs-data
-    trigger early-fs
-    trigger fs
     start adbd
 
 on boot

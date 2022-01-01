@@ -201,6 +201,8 @@ VENDOR_SECURITY_PATCH := 2021-02-01
 # Sepolicy
 TARGET_SEPOLICY_DIR := msmsteppe
 include device/qcom/sepolicy_vndr/SEPolicy.mk
+BOARD_PLAT_PRIVATE_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/private
+BOARD_PLAT_PUBLIC_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/public
 BOARD_VENDOR_SEPOLICY_DIRS += $(COMMON_PATH)/sepolicy/vendor
 BOARD_SEPOLICY_M4DEFS += \
     debugfs_clk=vendor_debugfs_clk \
@@ -220,8 +222,6 @@ BOARD_SEPOLICY_M4DEFS += \
     sysfs_ssr=vendor_sysfs_ssr \
     wcnss_service_exec=vendor_wcnss_service_exec \
     wifi_vendor_data_file=vendor_wifi_vendor_data_file
-PRODUCT_PLAT_PRIVATE_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/private
-PRODUCT_PLAT_PUBLIC_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/public
 
 # Soong
 SOONG_CONFIG_NAMESPACES += xiaomiVars

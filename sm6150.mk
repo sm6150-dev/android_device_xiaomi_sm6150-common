@@ -424,12 +424,11 @@ PRODUCT_COPY_FILES += \
 
 # WiFi Display
 PRODUCT_PACKAGES += \
-    libdisplayconfig.vendor \
+    libdisplayconfig.system.qti \
     libdisplayconfig.qti \
     libnl \
     libqdMetaData \
     libqdMetaData.system \
-    libqdMetaData.vendor \
     libwfdaac_vendor
 
 PRODUCT_BOOT_JARS += \

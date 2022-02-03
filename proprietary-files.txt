@@ -244,10 +244,11 @@ vendor/etc/init/vendor.qti.hardware.dsp@1.0-service.rc
 vendor/etc/seccomp_policy/vendor.qti.hardware.dsp.policy
 vendor/lib64/vendor.qti.hardware.dsp@1.0.so
 
-# DRM - Widevine -L1 - from DAVINCIGLOBAL
-vendor/lib64/libhdcpsrm.so
-vendor/lib64/liboemcrypto.so|2cee717b25559030a61709e826b4a5dae6043c20
-vendor/lib64/libwvhidl.so
+# DRM - Widevine -L1 - from miui_DAVINCIGlobal_V12.1.4.0.RFJMIXM_e0ac13ed89_11.0
+vendor/lib64/libminksocket.so|0722b9042892e83d4c615e0f70e4ad040365b170
+vendor/lib64/liboemcrypto.so|6b8c5ab8cb16b7f42071ddc59ac868fa684cff4e
+vendor/lib64/libtrustedapploader.so|53f72443cbbdec707658ffd46fcf418361315a06
+vendor/lib64/libwvhidl.so|ed83989b00a1194fd8eeff11086745cb1e445ad6
 
 # Firmware
 vendor/firmware/a615_zap.b00

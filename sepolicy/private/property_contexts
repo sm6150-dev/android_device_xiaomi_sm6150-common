@@ -18,3 +18,6 @@ ro.fota.oem             u:object_r:exported_system_prop:s0
 
 # Hardware
 ro.hardware.chipname    u:object_r:build_prop:s0
+
+# WiFi Display
+persist.vendor.setWFDInfo. u:object_r:vendor_wfd_sys_debug_prop:s0

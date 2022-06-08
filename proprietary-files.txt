@@ -586,7 +586,7 @@ vendor/radio/qcril_database/upgrade/8_version_update_ecc_table.sql
 vendor/radio/qcril_database/upgrade/9_version_update_ecc_table.sql
 
 # Telephony - from smali edit: https://gist.github.com/PIPIPIG233666/72806386c8b93729ce7f2b2c263d8889
-system_ext/framework/qti-telephony-common.jar|f73eba0c9eade035b1c91162f6e26322840ed6d0
+system_ext/framework/qti-telephony-common.jar|00c1e65120b386371b516bc707c3aab3b95bff2d
 
 # Radio - IMS
 system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.0-java.xml

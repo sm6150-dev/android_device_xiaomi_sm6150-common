@@ -118,7 +118,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
        <name>android.hardware.keymaster</name>
        <transport>hwbinder</transport>
-       <version>4.0</version>
+       <version>4.1</version>
        <interface>
            <name>IKeymasterDevice</name>
            <instance>default</instance>

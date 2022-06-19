@@ -20,6 +20,9 @@ ro.bluetooth.library_name=libbluetooth_qti.so
 # Camera
 vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,org.lineageos.snap
 
+# Charger
+ro.charger.enable_suspend=true
+
 # CNE
 persist.vendor.cne.feature=1
 
@@ -48,9 +51,6 @@ ro.incremental.enable=1
 
 # LMKD
 ro.config.low_ram=false
-ro.lmk.kill_heaviest_task=true
-ro.lmk.kill_timeout_ms=100
-ro.lmk.use_minfree_levels=true
 
 # Media
 media.stagefright.thumbnail.prefer_hw_codecs=true
